@@ -5,7 +5,7 @@ import { computed, ref } from 'vue'
 import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
-import { formatDateTimeString } from '../../../shared/lib.js'
+import { fileExtension, formatDateTimeString } from '../../../shared/lib.js'
 import './style.css'
 
 const props = defineProps({
@@ -13,6 +13,7 @@ const props = defineProps({
   selectedRows: { type: Array, required: true },
   isDragOver: { type: Boolean, default: false },
   singleFile: { type: Boolean, default: false },
+  accept: { type: String, default: '.ckl,.cklb,.xml' },
   note: { type: String, default: '' },
   busy: { type: Boolean, default: false },
 })
@@ -33,12 +34,31 @@ const selectedRowsModel = computed({
   set: next => emit('update:selectedRows', next),
 })
 
-const fileType = name => name?.split('.').pop()?.toUpperCase() ?? ''
+const fileType = name => fileExtension(name ?? '').toUpperCase()
 
 const { filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions } = useGridSearch(() => props.sourceFiles, [
   { field: 'name', header: 'Filename' },
   { field: 'type', header: 'Type', filterValues: r => fileType(r.name) },
 ], { selection: selectedRowsModel, dataKey: '_queueId' })
+
+const acceptsZip = computed(() => props.accept.split(',').includes('.zip'))
+
+const addButtonLabel = computed(() => {
+  if (!props.singleFile) {
+    return 'Add files to queue...'
+  }
+  return props.sourceFiles.length > 0 ? 'Replace file...' : 'Add file...'
+})
+
+const emptyHint = computed(() => {
+  if (isFiltered.value && props.sourceFiles.length) {
+    return 'No files match the filters.'
+  }
+  if (props.singleFile) {
+    return 'You may drop a file here'
+  }
+  return acceptsZip.value ? 'You may drop files, folders or ZIP archives here' : 'You may drop files or folders here'
+})
 
 function onFilePicked(event) {
   const files = Array.from(event.target.files)
@@ -62,19 +82,19 @@ function onFilePicked(event) {
         @click="fileInputRef?.click()"
       >
         <span :class="`pi ${singleFile && sourceFiles.length > 0 ? 'pi-refresh' : 'pi-plus'} toolbar-btn__icon-font`" />
-        <span class="toolbar-btn__label">{{ singleFile && sourceFiles.length > 0 ? 'Replace file...' : singleFile ? 'Add file...' : 'Add files to queue...' }}</span>
+        <span class="toolbar-btn__label">{{ addButtonLabel }}</span>
       </button>
       <input
         ref="fileInputRef"
         type="file"
-        :accept="singleFile ? '.ckl,.cklb,.xml' : '.ckl,.cklb,.xml,.zip'"
+        :accept="accept"
         :multiple="!singleFile"
         style="display: none"
         @change="onFilePicked"
       >
       <span v-if="busy" class="queue-busy">
         <i class="pi pi-spin pi-spinner" />
-        Extracting archives…
+        Reading files…
       </span>
       <span v-else-if="note" class="queue-note">
         <i class="pi pi-exclamation-triangle" />
@@ -122,7 +142,7 @@ function onFilePicked(event) {
           </template>
         </Column>
         <template #empty>
-          <span class="queue-empty-hint">{{ isFiltered && sourceFiles.length ? 'No files match the filters.' : singleFile ? 'You may drop a file here' : 'You may drop files, folders or ZIP archives here' }}</span>
+          <span class="queue-empty-hint">{{ emptyHint }}</span>
         </template>
       </DataTable>
     </div>

@@ -1,26 +1,8 @@
-import JSZip from 'jszip'
 import { describe, expect, it } from 'vitest'
+import { makeZipFile, ZIP_ENTRY_DATE, zipBytes } from '../../testUtils/zipFixtures.js'
 import { extractFilesFromZip, MAX_ZIP_DEPTH } from './zipFiles.js'
 
-const ENTRY_DATE = new Date(1600000000000)
 const EXTS = ['ckl', 'cklb', 'xml']
-
-async function zipBytes(entries) {
-  const zip = new JSZip()
-  for (const [path, content] of Object.entries(entries)) {
-    if (content === null) {
-      zip.folder(path)
-    }
-    else {
-      zip.file(path, content, { date: ENTRY_DATE })
-    }
-  }
-  return zip.generateAsync({ type: 'uint8array' })
-}
-
-async function makeZipFile(name, entries) {
-  return new File([await zipBytes(entries)], name)
-}
 
 function readText(file) {
   return new Promise((resolve, reject) => {
@@ -101,7 +83,7 @@ describe('extractFilesFromZip', () => {
   it('sets lastModified from the zip entry date', async () => {
     const zip = await makeZipFile('a.zip', { 'host.ckl': '1' })
     const [file] = await extractFilesFromZip(zip, EXTS)
-    expect(file.lastModified).toBe(ENTRY_DATE.getTime())
+    expect(file.lastModified).toBe(ZIP_ENTRY_DATE.getTime())
   })
 
   it('returns an empty array when nothing matches', async () => {
@@ -118,32 +100,25 @@ describe('extractFilesFromZip', () => {
     await expect(extractFilesFromZip(new File(['not a zip'], 'bad.zip'), EXTS)).rejects.toThrow()
   })
 
-  it('skips a corrupt nested zip, reports it via onSkip and keeps its siblings', async () => {
+  it('skips a corrupt nested zip, keeps its siblings and reports it via onSkip when given', async () => {
     const zip = await makeZipFile('outer.zip', { 'ok.ckl': '1', 'bad.zip': 'not a zip' })
+    expect(paths(await extractFilesFromZip(zip, EXTS))).toEqual(['outer.zip/ok.ckl'])
     const skipped = []
-    const files = await extractFilesFromZip(zip, EXTS, { onSkip: (path, reason) => skipped.push([path, reason]) })
-    expect(paths(files)).toEqual(['outer.zip/ok.ckl'])
+    await extractFilesFromZip(zip, EXTS, { onSkip: (path, reason) => skipped.push([path, reason]) })
     expect(skipped).toEqual([['outer.zip/bad.zip', 'could not be opened']])
   })
 
-  it('skips a corrupt nested zip without an onSkip callback', async () => {
-    const zip = await makeZipFile('outer.zip', { 'ok.ckl': '1', 'bad.zip': 'not a zip' })
-    expect(paths(await extractFilesFromZip(zip, EXTS))).toEqual(['outer.zip/ok.ckl'])
-  })
-
   it('stops recursing into archives nested deeper than MAX_ZIP_DEPTH', async () => {
-    // level N archive holds levelN.ckl and the level N+1 archive
-    let bytes = await zipBytes({ [`level${MAX_ZIP_DEPTH + 2}.ckl`]: 'x' })
-    for (let level = MAX_ZIP_DEPTH + 1; level > 0; level--) {
+    // level N archive holds levelN.ckl and the level N+1 archive; the last one is past the limit
+    let bytes = await zipBytes({ [`level${MAX_ZIP_DEPTH + 1}.ckl`]: 'x' })
+    for (let level = MAX_ZIP_DEPTH; level > 0; level--) {
       bytes = await zipBytes({ [`level${level}.ckl`]: 'x', 'next.zip': bytes })
     }
     const zip = await makeZipFile('level0.zip', { 'level0.ckl': 'x', 'next.zip': bytes })
     const skipped = []
     const files = await extractFilesFromZip(zip, EXTS, { onSkip: (path, reason) => skipped.push([path, reason]) })
-    const names = files.map(f => f.name).sort()
-    expect(names).toHaveLength(MAX_ZIP_DEPTH + 1)
-    expect(names).toContain(`level${MAX_ZIP_DEPTH}.ckl`)
-    expect(names).not.toContain(`level${MAX_ZIP_DEPTH + 1}.ckl`)
+    const expectedNames = Array.from({ length: MAX_ZIP_DEPTH + 1 }, (_, level) => `level${level}.ckl`)
+    expect(files.map(f => f.name).sort()).toEqual(expectedNames)
     expect(skipped).toEqual([[`level0.zip${'/next.zip'.repeat(MAX_ZIP_DEPTH + 1)}`, `nested more than ${MAX_ZIP_DEPTH} levels deep`]])
   })
 })

@@ -1,5 +1,5 @@
-import JSZip from 'jszip'
 import { describe, expect, it } from 'vitest'
+import { makeZipFile } from '../../../testUtils/zipFixtures.js'
 import { useFileQueue } from '../composables/useFileQueue.js'
 
 function makeFile(name, { lastModified = 1700000000000 } = {}) {
@@ -33,14 +33,6 @@ function makeDirEntry(name, children) {
   }
 }
 
-async function makeZip(name, entries, { lastModified = 1700000000000 } = {}) {
-  const zip = new JSZip()
-  for (const [path, content] of Object.entries(entries)) {
-    zip.file(path, content, { date: new Date(1600000000000) })
-  }
-  return new File([await zip.generateAsync({ type: 'blob' })], name, { lastModified })
-}
-
 function makeDataTransferItem(entry) {
   return { webkitGetAsEntry: () => entry }
 }
@@ -61,10 +53,10 @@ describe('useFileQueue', () => {
   })
 
   describe('addFilesToQueue', () => {
-    it('adds files and assigns _queueId', () => {
+    it('adds files and assigns _queueId', async () => {
       const q = useFileQueue()
       const f = makeFile('a.ckl')
-      q.addFilesToQueue([f])
+      await q.addFilesToQueue([f])
       expect(q.sourceFiles.value).toHaveLength(1)
       expect(q.sourceFiles.value[0]._queueId).toBe(`a.ckl-${f.size}-${f.lastModified}`)
       expect(q.canContinue.value).toBe(true)
@@ -316,7 +308,7 @@ describe('useFileQueue', () => {
   describe('zip archives', () => {
     it('expands a zip into its .ckl / .cklb / .xml files and skips others', async () => {
       const q = useFileQueue()
-      const zip = await makeZip('export.zip', { 'a.ckl': 'a', 'b.cklb': 'b', 'c.xml': 'c', 'readme.txt': 'r' })
+      const zip = await makeZipFile('export.zip', { 'a.ckl': 'a', 'b.cklb': 'b', 'c.xml': 'c', 'readme.txt': 'r' })
       await q.addFilesToQueue([zip])
       expect(q.sourceFiles.value.map(f => f.name).sort()).toEqual(['a.ckl', 'b.cklb', 'c.xml'])
       expect(q.queueNote.value).toBe('')
@@ -324,46 +316,28 @@ describe('useFileQueue', () => {
 
     it('sets fullPath to the archive-qualified path, including folders inside the zip', async () => {
       const q = useFileQueue()
-      const zip = await makeZip('export.zip', { 'hosts/web/a.ckl': 'a' })
+      const zip = await makeZipFile('export.zip', { 'hosts/web/a.ckl': 'a' })
       await q.addFilesToQueue([zip])
       expect(q.sourceFiles.value[0].name).toBe('a.ckl')
       expect(q.sourceFiles.value[0].fullPath).toBe('export.zip/hosts/web/a.ckl')
     })
 
-    it('recurses into nested zips', async () => {
-      const q = useFileQueue()
-      const innerZip = new JSZip()
-      innerZip.file('inner.ckl', 'i')
-      const zip = await makeZip('outer.zip', {
-        'outer.ckl': 'o',
-        'nested.zip': await innerZip.generateAsync({ type: 'uint8array' }),
-      })
-      await q.addFilesToQueue([zip])
-      expect(q.sourceFiles.value.map(f => f.fullPath).sort()).toEqual(['outer.zip/nested.zip/inner.ckl', 'outer.zip/outer.ckl'])
-    })
-
-    it('keeps each entry\'s modified date from the archive', async () => {
-      const q = useFileQueue()
-      await q.addFilesToQueue([await makeZip('export.zip', { 'a.ckl': 'a' })])
-      expect(q.sourceFiles.value[0].lastModified).toBe(1600000000000)
-    })
-
     it('queues plain files alongside zip contents', async () => {
       const q = useFileQueue()
-      await q.addFilesToQueue([makeFile('plain.ckl'), await makeZip('export.zip', { 'a.ckl': 'a' })])
+      await q.addFilesToQueue([makeFile('plain.ckl'), await makeZipFile('export.zip', { 'a.ckl': 'a' })])
       expect(q.sourceFiles.value.map(f => f.name).sort()).toEqual(['a.ckl', 'plain.ckl'])
     })
 
     it('sets queueNote when a zip has no supported files', async () => {
       const q = useFileQueue()
-      await q.addFilesToQueue([await makeZip('empty.zip', { 'readme.txt': 'r' })])
+      await q.addFilesToQueue([await makeZipFile('empty.zip', { 'readme.txt': 'r' })])
       expect(q.sourceFiles.value).toEqual([])
       expect(q.queueNote.value).toContain('empty.zip')
     })
 
     it('notes a skipped nested zip while keeping its siblings', async () => {
       const q = useFileQueue()
-      await q.addFilesToQueue([await makeZip('outer.zip', { 'ok.ckl': '1', 'inner/bad.zip': 'not a zip' })])
+      await q.addFilesToQueue([await makeZipFile('outer.zip', { 'ok.ckl': '1', 'inner/bad.zip': 'not a zip' })])
       expect(q.sourceFiles.value.map(f => f.name)).toEqual(['ok.ckl'])
       expect(q.queueNote.value).toBe('Skipped nested archive outer.zip/inner/bad.zip (could not be opened)')
     })
@@ -377,29 +351,35 @@ describe('useFileQueue', () => {
 
     it('accepts dropped zips and expands them', async () => {
       const q = useFileQueue()
-      const zip = await makeZip('export.zip', { 'a.ckl': 'a' })
+      const zip = await makeZipFile('export.zip', { 'a.ckl': 'a' })
       const entry = { ...makeFileEntry(zip), fullPath: '/drops/export.zip' }
       await q.onDropFiles(makeDropEvent([entry]))
       expect(q.sourceFiles.value[0].fullPath).toBe('/drops/export.zip/a.ckl')
     })
 
-    it('reports isExtracting and blocks Continue while a zip is being expanded', async () => {
+    it('reports isAdding and blocks Continue while a zip is being expanded', async () => {
       const q = useFileQueue()
-      q.addFilesToQueue([makeFile('plain.ckl')])
+      await q.addFilesToQueue([makeFile('plain.ckl')])
       expect(q.canContinue.value).toBe(true)
-      const pending = q.addFilesToQueue([await makeZip('export.zip', { 'a.ckl': 'a' })])
-      expect(q.isExtracting.value).toBe(true)
+      const pending = q.addFilesToQueue([await makeZipFile('export.zip', { 'a.ckl': 'a' })])
+      expect(q.isAdding.value).toBe(true)
       expect(q.canContinue.value).toBe(false)
       await pending
-      expect(q.isExtracting.value).toBe(false)
+      expect(q.isAdding.value).toBe(false)
       expect(q.canContinue.value).toBe(true)
       expect(q.sourceFiles.value.map(f => f.name).sort()).toEqual(['a.ckl', 'plain.ckl'])
     })
 
-    it('clears isExtracting even when a zip is corrupt', async () => {
+    it('reports isAdding while a dropped folder is still being read', async () => {
       const q = useFileQueue()
-      await q.addFilesToQueue([new File(['not a zip'], 'bad.zip')])
-      expect(q.isExtracting.value).toBe(false)
+      await q.addFilesToQueue([makeFile('plain.ckl')])
+      expect(q.canContinue.value).toBe(true)
+      const pending = q.onDropFiles(makeDropEvent([makeDirEntry('dir', [makeFileEntry(makeFile('a.ckl'))])]))
+      expect(q.isAdding.value).toBe(true)
+      expect(q.canContinue.value).toBe(false)
+      await pending
+      expect(q.isAdding.value).toBe(false)
+      expect(q.sourceFiles.value.map(f => f.name).sort()).toEqual(['a.ckl', 'plain.ckl'])
     })
 
     it('reset clears queueNote', async () => {

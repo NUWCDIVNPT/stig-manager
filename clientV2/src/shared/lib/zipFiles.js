@@ -1,6 +1,5 @@
 import JSZip from 'jszip'
-
-const extOf = name => name.split('.').pop().toLowerCase()
+import { fileExtension } from '../lib.js'
 
 // Nested archives deeper than this are skipped (guards against zip quines
 // and runaway nesting; real inputs nest one or two levels at most)
@@ -13,15 +12,18 @@ export const MAX_ZIP_DEPTH = 5
  * A nested zip that is unreadable or too deeply nested is skipped (reported
  * via `onSkip(fullPath, reason)` when given); its siblings are still returned.
  */
-export async function extractFilesFromZip(source, extensions, { basePath = source.fullPath ?? source.name, depth = 0, onSkip } = {}) {
-  const accepted = new Set(extensions)
+export function extractFilesFromZip(source, extensions, { basePath = source.fullPath ?? source.name, onSkip } = {}) {
+  return walk(source, new Set(extensions), basePath, 0, onSkip)
+}
+
+async function walk(source, accepted, basePath, depth, onSkip) {
   const zip = await JSZip.loadAsync(source)
   const files = []
   for (const [path, entry] of Object.entries(zip.files)) {
     if (entry.dir) {
       continue
     }
-    const ext = extOf(path)
+    const ext = fileExtension(path)
     const fullPath = `${basePath}/${path}`
     if (ext === 'zip') {
       if (depth >= MAX_ZIP_DEPTH) {
@@ -29,7 +31,7 @@ export async function extractFilesFromZip(source, extensions, { basePath = sourc
         continue
       }
       try {
-        files.push(...await extractFilesFromZip(await entry.async('blob'), extensions, { basePath: fullPath, depth: depth + 1, onSkip }))
+        files.push(...await walk(await entry.async('blob'), accepted, fullPath, depth + 1, onSkip))
       }
       catch {
         onSkip?.(fullPath, 'could not be opened')
