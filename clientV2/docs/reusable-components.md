@@ -16,7 +16,6 @@ src/
 ├── components/
 │   ├── common/          # Small reusable pieces
 │   │   ├── Label.vue            # Shared: one label chip (LabelChip); every chip renders through it
-│   │   ├── LabelsRow.vue        # Shared: label chips with overflow, built from LabelChip
 │   │   ├── SeverityBadge.vue    # Shared: Cat I/II/III styled badge
 │   │   ├── CORABadge.vue        # Shared: risk rating with color
 │   │   └── ...
@@ -24,6 +23,7 @@ src/
 │   │   ├── DurationColumn.vue
 │   │   ├── PercentageColumn.vue
 │   │   ├── AssetWithLabelsColumn.vue
+│   │   ├── LabelsRow.vue        # Shared: label chips with overflow, built from LabelChip
 │   │   └── ...
 │   └── global/          # App-wide singletons (Banner, Overlays, error messages)
 ├── shared/
