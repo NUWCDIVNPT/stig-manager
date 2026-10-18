@@ -160,6 +160,18 @@ export function formatNumber(value) {
   return Number.isFinite(n) ? localeNumberFormat.format(n) : '0'
 }
 
+/** Lowercase extension of a filename or path ('' when there is no dot). */
+export function fileExtension(name) {
+  const dot = name.lastIndexOf('.')
+  return dot === -1 ? '' : name.slice(dot + 1).toLowerCase()
+}
+
+/** ['ckl', 'xml'] -> '.ckl and .xml' (or '.ckl, .cklb or .xml' with conjunction 'or'). */
+export function formatExtensionList(extensions, conjunction = 'and') {
+  const list = extensions.map(ext => `.${ext}`)
+  return list.length <= 1 ? (list[0] ?? '') : `${list.slice(0, -1).join(', ')} ${conjunction} ${list.at(-1)}`
+}
+
 export function filenameEscaped(value) {
   /**
    * Regexes match characters that need to be escaped in filenames.
