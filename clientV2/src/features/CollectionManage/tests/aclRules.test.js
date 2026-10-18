@@ -14,7 +14,7 @@ describe('resourceParts', () => {
     ])
   })
 
-  it('maps a label rule and passes the color through raw (LabelChip normalizes it)', () => {
+  it('maps a label rule and passes the label color through unchanged', () => {
     expect(resourceParts({ labelName: 'Prod', label: { color: 'ff0000' } })).toEqual([
       { type: 'label', text: 'Prod', color: 'ff0000' },
     ])

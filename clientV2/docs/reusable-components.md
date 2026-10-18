@@ -15,7 +15,8 @@ Component patterns for the new client. Candidates for implementation as we devel
 src/
 ├── components/
 │   ├── common/          # Small reusable pieces
-│   │   ├── LabelsRow.vue        # Shared: label badges with overflow
+│   │   ├── Label.vue            # Shared: one label chip (LabelChip); every chip renders through it
+│   │   ├── LabelsRow.vue        # Shared: label chips with overflow, built from LabelChip
 │   │   ├── SeverityBadge.vue    # Shared: Cat I/II/III styled badge
 │   │   ├── CORABadge.vue        # Shared: risk rating with color
 │   │   └── ...
@@ -102,7 +103,7 @@ Small pieces used inside columns AND in other contexts (dashboards, panels).
 | **LabelsRow** | Label badges, "+N" overflow with tooltip | LabelsColumn, AssetWithLabelsColumn, dashboard panels |
 | **SeverityBadge** | Cat I/II/III with appropriate color | SeverityColumn, SeverityCountColumn, rule displays |
 | **CORABadge** | Risk rating (Very Low → Very High) with color | CORAColumn, dashboard Overview panel |
-| **LabelBadge** | Single styled label | SingleLabelColumn, various |
+| **LabelChip** (`Label.vue`) | One label chip: normalises the hex colour, picks contrast text, highlights a search term | LabelsRow, label pickers and forms, ACL and aging-rule tables |
 | **ClassificationBadge** | Security classification styling | DataWithBadgeColumn (benchmarks) |
 
 ---

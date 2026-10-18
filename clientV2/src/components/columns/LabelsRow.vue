@@ -27,8 +27,8 @@ let hideTimeout = null
 
 // Chip geometry in px derived from rem so it tracks the root font-size along
 // with the chip CSS. Padding, gap and font (--text-md) mirror the global
-// .label-tag (style.css) and .labels-row below exactly; the +N badge is a chip too and is measured the same
-// way. `compact` only drops the trailing margin.
+// .label-tag (style.css) and .labels-row below exactly; the +N badge is a chip
+// too and is measured the same way. `compact` only drops the trailing margin.
 const root = rootFontSizePx()
 const LABEL_FONT = `600 ${TEXT_SCALE_REM.md * root}px ${bodyFontFamily()}`
 const LABEL_PADDING = 0.9 * root
@@ -74,14 +74,10 @@ const visibleLabelsData = computed(() => {
   const labels = props.labels
   const width = containerWidth.value
 
-  if (!labels || labels.length === 0) {
-    return { visible: [], overflow: [], overflowCount: 0 }
-  }
-
   // Render nothing until the container is measured. Rendering every label
   // first would widen an auto-layout column and flash before collapsing.
-  if (!width || width <= 0) {
-    return { visible: [], overflow: [], overflowCount: 0 }
+  if (!labels?.length || !(width > 0)) {
+    return { visible: [], overflow: [] }
   }
 
   const availableWidth = width - RIGHT_MARGIN.value
@@ -111,13 +107,7 @@ const visibleLabelsData = computed(() => {
     visible.push(labels[0])
   }
 
-  const overflow = labels.slice(visible.length)
-
-  return {
-    visible,
-    overflow,
-    overflowCount: overflow.length,
-  }
+  return { visible, overflow: labels.slice(visible.length) }
 })
 
 function showPopover(event) {
@@ -159,15 +149,17 @@ function hidePopover() {
       :search-term="searchTerm"
     />
     <span
-      v-if="visibleLabelsData.overflowCount > 0"
+      v-if="visibleLabelsData.overflow.length > 0"
       class="label-tag label-overflow"
       @mouseenter="showPopover"
       @mouseleave="scheduleHide"
     >
-      +{{ visibleLabelsData.overflowCount }}
+      +{{ visibleLabelsData.overflow.length }}
     </span>
 
-    <Popover ref="popoverRef">
+    <!-- Only mounted when there is something to show: a row per virtual
+         scroller item would otherwise carry an idle Popover + Portal each. -->
+    <Popover v-if="visibleLabelsData.overflow.length > 0" ref="popoverRef">
       <div
         class="overflow-labels-popover"
         @mouseenter="cancelHide"

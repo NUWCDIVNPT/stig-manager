@@ -19,7 +19,7 @@ import {
   fetchCollectionAssetsBasic,
   replaceLabelAssets,
 } from '../../api/labelManageApi.js'
-import { assetTextFilter as matchAsset, partitionAssets } from './tagAssets.js'
+import { assetTextFilter, buildLabelMap, partitionAssets } from '../../lib/assetRows.js'
 
 const props = defineProps({
   visible: { type: Boolean, required: true },
@@ -41,7 +41,6 @@ const VIRTUAL_SCROLLER_OPTIONS = { itemSize: rowHeightPx('compact') }
 const isLoading = ref(false)
 const saving = ref(false)
 const pickerValue = ref([[], []])
-const labelMap = ref(new Map())
 
 const availableCount = computed(() => pickerValue.value[0].length)
 const taggedCount = computed(() => pickerValue.value[1].length)
@@ -58,13 +57,7 @@ async function loadData() {
       fetchAssetsByLabel(props.collectionId, props.label.labelId),
       fetchCollectionLabels(props.collectionId),
     ])
-    const map = new Map()
-    for (const label of (labels ?? [])) {
-      map.set(label.labelId, label)
-    }
-    labelMap.value = map
-
-    pickerValue.value = partitionAssets(allAssets, taggedAssets, map)
+    pickerValue.value = partitionAssets(allAssets, taggedAssets, buildLabelMap(labels))
   }
   catch (err) {
     triggerError(err)
@@ -104,10 +97,6 @@ async function onSave() {
   finally {
     saving.value = false
   }
-}
-
-function assetTextFilter(item, text) {
-  return matchAsset(item, text, labelMap.value)
 }
 
 const dialogPt = {

@@ -20,6 +20,7 @@ import {
   fetchInstalledStigsWithRevisions,
   writeStigProps,
 } from '../../api/stigManageApi.js'
+import { assetTextFilter, buildAssetRow, buildLabelMap } from '../../lib/assetRows.js'
 
 const props = defineProps({
   visible: { type: Boolean, required: true },
@@ -177,12 +178,7 @@ function resetSelections() {
 }
 
 async function loadLabels() {
-  const result = await fetchLabelsAsync()
-  const map = new Map()
-  for (const label of (result ?? [])) {
-    map.set(label.labelId, label)
-  }
-  labelMap.value = map
+  labelMap.value = buildLabelMap(await fetchLabelsAsync())
 }
 
 async function onOpen() {
@@ -218,23 +214,6 @@ watch(() => props.visible, (open) => {
   }
 })
 
-function buildAssetRow(asset) {
-  const labelIds = asset.labelIds ?? []
-  const labels = []
-  for (const id of labelIds) {
-    const label = labelMap.value.get(id)
-    if (label) {
-      labels.push(label)
-    }
-  }
-  return {
-    assetId: asset.assetId,
-    name: asset.name,
-    labels,
-    benchmarkIds: (asset.stigs ?? []).map(s => s.benchmarkId),
-  }
-}
-
 function rebuildPicker() {
   const benchId = selectedBenchmarkId.value
   if (!benchId) {
@@ -247,7 +226,7 @@ function rebuildPicker() {
   const available = []
   const assigned = []
   for (const asset of (assets.value ?? [])) {
-    const row = buildAssetRow(asset)
+    const row = buildAssetRow(asset, labelMap.value)
     if (assignedIds.has(String(row.assetId))) {
       assigned.push(row)
     }
@@ -283,14 +262,6 @@ function onPickerUpdate(newValue) {
 
 const assignedCount = computed(() => pickerValue.value[1].length)
 const availableCount = computed(() => pickerValue.value[0].length)
-
-function assetTextFilter(item, text) {
-  const lower = text.toLowerCase()
-  if (item.name && item.name.toLowerCase().includes(lower)) {
-    return true
-  }
-  return (item.labels ?? []).some(l => l.name.toLowerCase().includes(lower))
-}
 
 const dialogPt = {
   root: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 8px; color: var(--color-text-primary); display: flex; flex-direction: column; overflow: hidden;' },

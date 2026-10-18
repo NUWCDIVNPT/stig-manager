@@ -18,13 +18,13 @@ const props = defineProps({
   },
 })
 
-const backgroundColor = computed(() => normalizeColor(props.color, '#cccccc'))
+const backgroundColor = computed(() => normalizeColor(props.color))
 const textColor = computed(() => getContrastColor(backgroundColor.value, 'var(--color-text-dark)', 'var(--color-text-primary)'))
 </script>
 
 <template>
-  <!-- .label-tag is global (style.css); LabelsRow measures chip width from its padding and font -->
+  <!-- .label-tag is global (style.css) -->
   <span class="label-tag" :style="{ backgroundColor, color: textColor }">
-    <HighlightText :text="props.value" :term="props.searchTerm" />
+    <HighlightText :text="value" :term="searchTerm" />
   </span>
 </template>
