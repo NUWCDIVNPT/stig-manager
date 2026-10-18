@@ -12,7 +12,6 @@ import GridFilterButton from '../../../../components/common/GridFilterButton.vue
 import LabelChip from '../../../../components/common/Label.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
-import { normalizeColor } from '../../../../shared/lib/colorUtils.js'
 import {
   ruleSummary,
   ruleTargetLines,
@@ -102,7 +101,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
                 <LabelChip
                   v-if="line.type === 'label'"
                   :value="line.label.name"
-                  :color="normalizeColor(line.label.color, '#cccccc')"
+                  :color="line.label.color"
                 />
                 <template v-else>
                   <img

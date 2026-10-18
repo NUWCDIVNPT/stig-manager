@@ -98,12 +98,4 @@ describe('useLabelSelection — helpers', () => {
     expect(getLabelById('l2').name).toBe('Staging')
     expect(getLabelById('nope')).toBeUndefined()
   })
-
-  it('labelColor falls back to a default when color is missing', () => {
-    const labels = ref(makeLabels())
-    const selectedIds = ref([])
-    const { labelColor } = useLabelSelection(labels, selectedIds)
-    expect(labelColor({ color: null })).toBe('#888888')
-    expect(labelColor(undefined)).toBe('#888888')
-  })
 })

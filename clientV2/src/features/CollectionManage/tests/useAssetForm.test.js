@@ -69,14 +69,6 @@ describe('useAssetForm — label helpers', () => {
     expect(f.labels.getLabelById('1')).toEqual({ labelId: '1', name: 'prod' })
     expect(f.labels.getLabelById('missing')).toBeUndefined()
   })
-
-  it('labels.labelColor uses normalizeColor with a #888888 default', () => {
-    const f = setupCreate()
-    expect(f.labels.labelColor({ color: 'ff0000' })).toBe('#ff0000')
-    expect(f.labels.labelColor({ color: '#abcdef' })).toBe('#abcdef')
-    expect(f.labels.labelColor(null)).toBe('#888888')
-    expect(f.labels.labelColor({})).toBe('#888888')
-  })
 })
 
 describe('useAssetForm — initialize / loadFormData', () => {

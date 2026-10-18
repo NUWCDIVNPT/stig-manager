@@ -8,7 +8,6 @@ import LabelChip from '../../../../components/common/Label.vue'
 import { apiCall } from '../../../../shared/api/apiClient.js'
 import { fetchCollectionLabels, fetchCollectionStigs } from '../../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
-import { normalizeColor } from '../../../../shared/lib/colorUtils.js'
 import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import { useLazyResource } from '../../composables/useLazyResource.js'
 import { isDuplicateAclRule } from '../../lib/aclRules.js'
@@ -231,11 +230,11 @@ defineExpose({ clear })
         :pt="{ label: { style: 'font-size: var(--text-lg);' }, item: { style: 'font-size: var(--text-lg);' } }"
       >
         <template #value="{ value, placeholder }">
-          <LabelChip v-if="value" :value="value.name" :color="normalizeColor(value.color)" />
+          <LabelChip v-if="value" :value="value.name" :color="value.color" />
           <span v-else class="builder-placeholder">{{ placeholder }}</span>
         </template>
         <template #option="{ option }">
-          <LabelChip :value="option.name" :color="normalizeColor(option.color)" />
+          <LabelChip :value="option.name" :color="option.color" />
         </template>
       </Select>
     </div>
