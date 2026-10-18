@@ -139,7 +139,10 @@ export function useAppBreadcrumb() {
     })
   })
 
-  // Navigation helper for collection dropdown
+  // Navigation helper for collection dropdown. Unlike the STIG and revision helpers
+  // this does not carry the label filter: label names are collection-scoped, so the
+  // new collection starts unfiltered rather than querying with the old collection's
+  // names until LabelFilterPicker prunes them.
   function navigateToCollection(collectionId) {
     // If we're on a CollectionView child route (flagged in router meta), preserve the tab
     const isCollectionViewChild = route.matched.some(r => r.meta.collectionView)

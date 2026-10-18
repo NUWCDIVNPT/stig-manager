@@ -54,6 +54,20 @@ describe('useAppBreadcrumb', () => {
     })
   })
 
+  it('drops the label filter when switching collection', () => {
+    useRoute.mockReturnValue({
+      name: 'collection-stigs',
+      params: { collectionId: 'coll-1' },
+      query: { labelName: 'label-a' },
+      matched: [{ meta: { collectionView: true } }],
+    })
+    const { navigateToCollection } = useAppBreadcrumb()
+
+    navigateToCollection('coll-2')
+
+    expect(mockPush).toHaveBeenCalledWith({ name: 'collection-stigs', params: { collectionId: 'coll-2' } })
+  })
+
   it('carries the label filter when switching STIG from Collection Review', () => {
     const { navigateToStig } = useAppBreadcrumb()
 

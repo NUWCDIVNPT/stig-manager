@@ -224,6 +224,23 @@ describe('collectionReview.vue', () => {
       expect(screen.getByTestId('mock-rule-info').dataset.hasRule).toBe('false')
     })
 
+    it('ignores a rule response that lands after the filtered checklist emptied the selection', async () => {
+      let resolveRule
+      fetchRule.mockReturnValue(new Promise((resolve) => { resolveRule = resolve }))
+      createWrapper()
+      await flushPromises()
+      expect(fetchRule).toHaveBeenCalledWith('bench-1', 'rev-1', 'V-123')
+
+      fetchCollectionChecklist.mockResolvedValue([])
+      routeState.query = { labelName: 'no-asset-label' }
+      await flushPromises()
+      expect(screen.getByTestId('mock-rule-info').dataset.hasRule).toBe('false')
+
+      resolveRule({ id: 'V-123', content: 'Test Rule Content' })
+      await flushPromises()
+      expect(screen.getByTestId('mock-rule-info').dataset.hasRule).toBe('false')
+    })
+
     it('adds recent view entry when collection metadata loads', async () => {
       createWrapper()
       await flushPromises()

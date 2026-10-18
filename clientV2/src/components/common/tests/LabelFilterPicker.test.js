@@ -49,6 +49,20 @@ describe('labelFilterPicker', () => {
       expect(emitted()['update:modelValue']).toBeUndefined()
     })
 
+    it('offers no labels when the refetch for a new collection fails', async () => {
+      const { container, rerender } = renderPills([])
+      await flushPromises()
+
+      fetchCollectionLabels.mockRejectedValue(new Error('boom'))
+      await rerender({ collectionId: '8' })
+      await flushPromises()
+
+      await fireEvent.click(container.querySelector('.p-multiselect'))
+      await flushPromises()
+      expect(screen.getByText('No label')).toBeInTheDocument()
+      expect(screen.queryByText('prod')).not.toBeInTheDocument()
+    })
+
     it('prunes a stale name arriving after the labels have loaded', async () => {
       const { emitted, rerender } = renderPills(['prod'])
       await flushPromises()
@@ -72,6 +86,12 @@ describe('labelFilterPicker', () => {
       await flushPromises()
       await fireEvent.click(screen.getByTitle('Remove prod'))
       expect(emitted()['update:modelValue'].at(-1)).toEqual([['dmz', null]])
+    })
+
+    it('exposes chip remove as a labelled button', async () => {
+      renderPills(['prod'])
+      await flushPromises()
+      expect(screen.getByRole('button', { name: 'Remove prod' })).toBeInTheDocument()
     })
 
     it('removes "No label" without touching named labels', async () => {

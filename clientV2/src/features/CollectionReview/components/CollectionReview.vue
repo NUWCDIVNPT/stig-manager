@@ -72,7 +72,7 @@ const assetCount = computed(() => assets.value?.length ?? 0)
 const selectedRuleId = ref(null)
 
 const {
-  state: ruleContent,
+  state: loadedRule,
   isLoading: isRuleLoading,
   error: ruleContentError,
   execute: loadRuleContent,
@@ -80,6 +80,10 @@ const {
   ruleId => fetchRule(benchmarkId.value, revisionStr.value, ruleId),
   { immediate: false, initialState: null, onError: null },
 )
+
+// A rule fetch can resolve after the selection was emptied (a label filter that
+// matches no Assets clears the grid), so the panel shows content only for a selected rule.
+const ruleContent = computed(() => selectedRuleId.value ? loadedRule.value : null)
 
 const {
   state: reviewsData,
@@ -167,7 +171,7 @@ watch(gridData, (data) => {
 // load data when we have a selected rule and collection/benchmarkid/revisionstr
 watch(selectedRuleId, (ruleId) => {
   if (!ruleId) {
-    ruleContent.value = null
+    loadedRule.value = null
     reviewsData.value = []
     return
   }

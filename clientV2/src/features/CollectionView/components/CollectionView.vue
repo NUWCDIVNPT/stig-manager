@@ -117,11 +117,11 @@ const activeTab = computed({
   set: (newTab) => {
     const routeName = tabToRoute[newTab]
     if (routeName) {
-      router.push({
-        name: routeName,
-        params: { collectionId: props.collectionId },
-        query: labelFilterParams.value,
-      })
+      const target = { name: routeName, params: { collectionId: props.collectionId } }
+      // A tab that hides the label filter (meta.labelFilter false, i.e. Management)
+      // does not carry it either, so the filter is never applied invisibly
+      const carriesLabelFilter = router.resolve(target).meta.labelFilter !== false
+      router.push(carriesLabelFilter ? { ...target, query: labelFilterParams.value } : target)
     }
   },
 })

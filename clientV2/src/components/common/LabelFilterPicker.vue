@@ -33,7 +33,9 @@ const { state: loaded, isLoading, execute: loadOptions } = useAsyncState(
   { initialState: null, immediate: false },
 )
 
-const options = computed(() => loaded.value?.labels ?? [])
+// Empty while the current collection's labels are not loaded (including a failed
+// refetch after a collection switch, which leaves the previous list in `loaded`).
+const options = computed(() => loaded.value?.collectionId === props.collectionId ? loaded.value.labels : [])
 
 watch(() => props.collectionId, () => loadOptions(), { immediate: true })
 

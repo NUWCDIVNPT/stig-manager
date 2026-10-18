@@ -46,12 +46,16 @@ const hiddenPillCount = computed(() => props.pills.length - visiblePills.value.l
           :style="pill.style"
         >
           <span class="trigger-pills__name">{{ pill.name }}</span>
-          <i
-            class="pi pi-times trigger-pills__remove"
+          <button
+            type="button"
+            class="trigger-pills__remove"
             :style="open ? { visibility: 'hidden' } : null"
             :title="`Remove ${pill.name}`"
+            :aria-label="`Remove ${pill.name}`"
             @click.stop.prevent="emit('remove', pill)"
-          />
+          >
+            <i class="pi pi-times" />
+          </button>
         </span>
         <span v-if="hiddenPillCount" class="trigger-pills__more">+{{ hiddenPillCount }}</span>
       </span>
@@ -113,9 +117,16 @@ const hiddenPillCount = computed(() => props.pills.length - visiblePills.value.l
 }
 
 .trigger-pills__remove {
+  display: inline-grid;
   flex-shrink: 0;
+  place-items: center;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
   font-size: var(--icon-xs);
   opacity: 0.7;
+  cursor: pointer;
 }
 
 .trigger-pills__remove:hover {

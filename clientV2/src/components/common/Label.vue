@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { getContrastColor, normalizeColor } from '../../shared/lib/colorUtils.js'
+import { labelChipStyle } from '../../shared/lib/colorUtils.js'
 import HighlightText from './HighlightText.vue'
 
 const props = defineProps({
@@ -18,13 +18,12 @@ const props = defineProps({
   },
 })
 
-const backgroundColor = computed(() => normalizeColor(props.color))
-const textColor = computed(() => getContrastColor(backgroundColor.value, 'var(--color-text-dark)', 'var(--color-text-primary)'))
+const style = computed(() => labelChipStyle(props.color))
 </script>
 
 <template>
   <!-- .label-tag is global (style.css) -->
-  <span class="label-tag" :style="{ backgroundColor, color: textColor }">
+  <span class="label-tag" :style="style">
     <HighlightText :text="value" :term="searchTerm" />
   </span>
 </template>

@@ -56,11 +56,6 @@ Most originated from the Findings feature review (2026-06-10) — see
   Caveats: token is regular-weight only (no bold), and `DiffPropertySection.vue`'s
   bold header needs a decision.
 
-- [ ] **Collapse `Label.vue` onto `labelChipStyle`.** Both compute the same two-line
-  chip style via `getContrastColor`, but disagree on the no-colour fallback
-  (`normalizeColor` default `#cccccc` vs `--color-label-default-bg`). Have `Label.vue`
-  bind `labelChipStyle(color)` and pick one fallback.
-
 - [ ] **Pills-picker style near-duplicates.** `PillsTrigger.vue` chevron copies
   `BreadcrumbSelect.vue`'s `.p-select-dropdown` box (padding differs by a hair);
   `.trigger-pills__chip--neutral` restates the `--color-chip-default-*` tokens with a
