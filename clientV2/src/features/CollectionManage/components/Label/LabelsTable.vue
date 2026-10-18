@@ -12,7 +12,7 @@ import LabelChip from '../../../../components/common/Label.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { useColumnVisibility } from '../../../../shared/composables/useColumnVisibility.js'
 import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
-import { normalizeColor } from '../../../../shared/lib/colorUtils.js'
+import { dashZero } from '../../../../shared/lib/numberFormat.js'
 
 const props = defineProps({
   labels: {
@@ -54,10 +54,6 @@ const {
   { field: 'name', header: 'Name' },
   { field: 'description', header: 'Description' },
 ], { visibleFields, selection, dataKey: 'labelId' })
-
-function chipColor(label) {
-  return normalizeColor(label.color, '#cccccc')
-}
 
 const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-border-default)' } }
 const tablePt = {
@@ -120,7 +116,7 @@ const dataTableRef = ref(null)
       >
         <template #body="{ data }">
           <div class="sm-grid-cell-with-toolbar">
-            <LabelChip :value="data.name" :color="chipColor(data)" />
+            <LabelChip :value="data.name" :color="data.color" />
             <button
               type="button"
               class="row-edit-btn"
@@ -162,7 +158,7 @@ const dataTableRef = ref(null)
           </div>
         </template>
         <template #body="{ data }">
-          <span class="uses-cell">{{ data.uses ?? 0 }}</span>
+          <span class="uses-cell">{{ dashZero(data.uses) }}</span>
         </template>
       </Column>
 

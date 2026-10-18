@@ -11,6 +11,7 @@ import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { useColumnVisibility } from '../../../../shared/composables/useColumnVisibility.js'
 import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
+import { dashZero } from '../../../../shared/lib/numberFormat.js'
 import { createdByLabel, formatDateTime, isSystemJob, scheduleSummary } from '../lib/serviceJobsFormat.js'
 import { borderPt } from '../lib/serviceJobsPt.js'
 import RunStatePill from './RunStatePill.vue'
@@ -158,7 +159,7 @@ const tablePt = {
             <span class="center-label">Runs</span>
           </template>
           <template #body="{ data }">
-            {{ data.runCount ?? 0 }}
+            {{ dashZero(data.runCount) }}
           </template>
         </Column>
 

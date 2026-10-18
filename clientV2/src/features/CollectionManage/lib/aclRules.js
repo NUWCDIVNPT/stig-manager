@@ -1,5 +1,3 @@
-import { normalizeColor } from '../../../shared/lib/colorUtils.js'
-
 // gets the default access for a role everoyne has rw access except restricted users who only have no access by default restrectied number is 1
 export function getDefaultAccessForRole(roleId) {
   return Number(roleId) === 1 ? 'none' : 'rw'
@@ -69,7 +67,7 @@ export function resourceParts(rule) {
     parts.push({ type: 'asset', text: rule.assetName })
   }
   if (rule.labelName) {
-    parts.push({ type: 'label', text: rule.labelName, color: normalizeColor(rule.label?.color ?? rule.color) })
+    parts.push({ type: 'label', text: rule.labelName, color: rule.label?.color ?? rule.color })
   }
   if (rule.benchmarkId) {
     parts.push({ type: 'stig', text: rule.benchmarkId })

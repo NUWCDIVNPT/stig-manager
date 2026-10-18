@@ -15,7 +15,7 @@ Component patterns for the new client. Candidates for implementation as we devel
 src/
 ├── components/
 │   ├── common/          # Small reusable pieces
-│   │   ├── LabelsRow.vue        # Shared: label badges with overflow
+│   │   ├── Label.vue            # Shared: one label chip (LabelChip); every chip renders through it
 │   │   ├── SeverityBadge.vue    # Shared: Cat I/II/III styled badge
 │   │   ├── CORABadge.vue        # Shared: risk rating with color
 │   │   └── ...
@@ -23,6 +23,7 @@ src/
 │   │   ├── DurationColumn.vue
 │   │   ├── PercentageColumn.vue
 │   │   ├── AssetWithLabelsColumn.vue
+│   │   ├── LabelsRow.vue        # Shared: label chips with overflow, built from LabelChip
 │   │   └── ...
 │   └── global/          # App-wide singletons (Banner, Overlays, error messages)
 ├── shared/
@@ -41,7 +42,7 @@ These don't need wrapper components—just inline templates with helper function
 
 | Pattern | Template Example | Helper Needed |
 |---------|------------------|---------------|
-| CountColumn | `{{ data.count }}` | none |
+| Count with own header slot | `{{ dashZero(data.count) }}` (use `CountColumn` when the column has no custom slots) | `dashZero()` |
 | CountWithTooltip | `<span v-tooltip="itemList">{{ count }}</span>` | `formatTooltipList()` |
 | IconColumn | `<i :class="getIcon(data)" v-tooltip="label" />` | `getIconClass()` |
 | ResponseCodeColumn | `<Tag :severity="getHttpSeverity(code)">{{ code }}</Tag>` | `getHttpSeverity()` |
@@ -59,6 +60,7 @@ These warrant dedicated `.vue` files for reuse and consistency.
 
 | Column | Why Wrapper | Shared Sub-components |
 |--------|-------------|----------------------|
+| **CountColumn** | Zero/missing counts render as `-` so tallies of nothing read as blank; accepts dotted field paths. Needs a `key` when used directly (DataTable finds wrapped Columns by vnode key) | `dashZero()` helper |
 | **DurationColumn** | Complex relative time logic ("5 d", "2 h", "now") | `formatDuration()` helper |
 | **PercentageColumn** | Custom thermometer visualization | none |
 | **SeverityCountColumn** | Count + severity-appropriate color styling | `SeverityBadge` |
@@ -101,7 +103,7 @@ Small pieces used inside columns AND in other contexts (dashboards, panels).
 | **LabelsRow** | Label badges, "+N" overflow with tooltip | LabelsColumn, AssetWithLabelsColumn, dashboard panels |
 | **SeverityBadge** | Cat I/II/III with appropriate color | SeverityColumn, SeverityCountColumn, rule displays |
 | **CORABadge** | Risk rating (Very Low → Very High) with color | CORAColumn, dashboard Overview panel |
-| **LabelBadge** | Single styled label | SingleLabelColumn, various |
+| **LabelChip** (`Label.vue`) | One label chip: normalises the hex colour, picks contrast text, highlights a search term | LabelsRow, label pickers and forms, ACL and aging-rule tables |
 | **ClassificationBadge** | Security classification styling | DataWithBadgeColumn (benchmarks) |
 
 ---

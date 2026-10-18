@@ -3,7 +3,7 @@ import MultiSelect from 'primevue/multiselect'
 import { computed, ref, watch } from 'vue'
 import { fetchCollectionLabels } from '../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../shared/composables/useAsyncState.js'
-import { labelChipStyle, normalizeColor } from '../../shared/lib/colorUtils.js'
+import { labelChipStyle } from '../../shared/lib/colorUtils.js'
 import LabelChip from './Label.vue'
 import { pillsMultiSelectPt } from './pillsPicker.js'
 import PillsTrigger from './PillsTrigger.vue'
@@ -140,7 +140,7 @@ function removePill(pill) {
       </template>
 
       <template #option="slotProps">
-        <LabelChip :value="slotProps.option.name" :color="normalizeColor(slotProps.option.color)" />
+        <LabelChip :value="slotProps.option.name" :color="slotProps.option.color" />
       </template>
 
       <template #footer>

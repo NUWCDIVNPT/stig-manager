@@ -26,7 +26,6 @@ function userFilter(user, searchText) {
     show-target-filter
     source-filter-placeholder="Search users..."
     target-filter-placeholder="Search users..."
-    option-style="padding: 0.4rem 0.75rem;"
     :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
   >
     <template #sourceheader>

@@ -3,7 +3,6 @@ import MultiSelect from 'primevue/multiselect'
 import Popover from 'primevue/popover'
 import Select from 'primevue/select'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { normalizeColor } from '../../shared/lib/colorUtils.js'
 import { isActive, TEXT_MODES } from '../../shared/lib/columnFilters.js'
 import {
   ALL_COLUMNS,
@@ -220,7 +219,7 @@ const popoverPt = {
               <span v-else class="grid-filter__chips">
                 <template v-for="opt in selectedOptions(rule).slice(0, MAX_VALUE_CHIPS)" :key="opt.value">
                   <slot name="option" :option="opt" :field="rule.key">
-                    <LabelChip v-if="opt.color" :value="opt.name" :color="normalizeColor(opt.color)" />
+                    <LabelChip v-if="opt.color" :value="opt.name" :color="opt.color" />
                     <span v-else :class="{ 'grid-filter__empty-option': opt.value === '' }">{{ opt.name }}</span>
                   </slot>
                 </template>
@@ -230,7 +229,7 @@ const popoverPt = {
             <template #option="{ option }">
               <!-- Lets a grid render its own chip for a value (e.g. user status pills) -->
               <slot name="option" :option="option" :field="rule.key">
-                <LabelChip v-if="option.color" :value="option.name" :color="normalizeColor(option.color)" />
+                <LabelChip v-if="option.color" :value="option.name" :color="option.color" />
                 <span v-else :class="{ 'grid-filter__empty-option': option.value === '' }">{{ option.name }}</span>
               </slot>
             </template>

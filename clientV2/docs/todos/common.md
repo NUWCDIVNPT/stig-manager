@@ -40,6 +40,13 @@ Most originated from the Findings feature review (2026-06-10) — see
   signal must declare it in slot 0, which only holds while `execute()` is called with
   no arguments — see [async-state-abort-signal.md](async-state-abort-signal.md).
 
+- [ ] **STIG import's zip walker has no nesting limit.** `expandZipRow` in
+  `features/AppManagement/STIGManage/stores/stigImportStore.js` recurses into nested
+  zips unbounded (a zip quine would spin forever). The Import Wizard's walker,
+  `shared/lib/zipFiles.js`, caps at `MAX_ZIP_DEPTH` and reports skipped archives via
+  `onSkip`; give the store the same guard — track depth on the row (or count `→` in
+  `row.source`) and mark the row as an error past the limit, so the user sees why.
+
 ## Consistency
 
 - [ ] **Consolidate ad-hoc mono fonts onto `var(--font-mono)`.** The token serves
@@ -49,15 +56,10 @@ Most originated from the Findings feature review (2026-06-10) — see
   Caveats: token is regular-weight only (no bold), and `DiffPropertySection.vue`'s
   bold header needs a decision.
 
-- [ ] **One label-chip colour mechanism.** Three contrast functions coexist:
-  `shared/lib/colorUtils.js` (`getContrastColor`/`labelChipStyle`, theme tokens),
-  `components/common/Label.vue` (own YIQ fn, hardcoded `#080808`/`#f7f7f7`), and
-  `features/AssetReview/lib/labels.js` (unused). `LabelFilterPicker.vue` renders the
-  same label both ways (trigger chip vs option row), so near-threshold colours get
-  different text. Fix: `Label.vue` binds `:style="labelChipStyle(color)"`, `color`
-  becomes optional, delete `labels.js`; callers stop pre-normalising
-  (`grep -rn "normalizeColor(.*'#" src`). Visual shift in ~9 consumers, so do it as
-  its own pass with screenshots.
+- [ ] **Collapse `Label.vue` onto `labelChipStyle`.** Both compute the same two-line
+  chip style via `getContrastColor`, but disagree on the no-colour fallback
+  (`normalizeColor` default `#cccccc` vs `--color-label-default-bg`). Have `Label.vue`
+  bind `labelChipStyle(color)` and pick one fallback.
 
 - [ ] **Pills-picker style near-duplicates.** `PillsTrigger.vue` chevron copies
   `BreadcrumbSelect.vue`'s `.p-select-dropdown` box (padding differs by a hair);
