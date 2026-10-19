@@ -56,6 +56,13 @@ Most originated from the Findings feature review (2026-06-10) — see
   Caveats: token is regular-weight only (no bold), and `DiffPropertySection.vue`'s
   bold header needs a decision.
 
+- [ ] **Pills-picker style near-duplicates.** `PillsTrigger.vue` chevron copies
+  `BreadcrumbSelect.vue`'s `.p-select-dropdown` box (padding differs by a hair);
+  `.trigger-pills__chip--neutral` restates the `--color-chip-default-*` tokens with a
+  different bg; `pillsPicker.js` overlay sizes echo `GridFilterButton.vue` `valuesPt`
+  (280 vs 250px). Each merge nudges one side a few px, so decide the canonical values
+  together rather than one at a time.
+
 ## Behavior / UX
 
 - [ ] **Dashboard tab switches wipe per-tab URL state — fix at the CollectionView
@@ -70,3 +77,15 @@ Most originated from the Findings feature review (2026-06-10) — see
   because hidden tabs are inert, so the saved query cannot go stale. Separable
   follow-up: give the STIGs tab Findings-style state→query mirroring so it has
   restorable state at all.
+
+- [ ] **Label filter is lost on any round trip through Asset Review.** Carry is
+  per-site today (`grep -rn "pickLabelFilterQuery\|labelFilterParams.value" src`), and
+  the links into `collection-asset-review` (`grep -rn "collection-asset-review" src`)
+  plus the asset-review crumb back do not spread it. If the filter should survive
+  that drill-down, replace the per-site spreads with one `router.beforeEach` that
+  copies the label keys when `to.params.collectionId === from.params.collectionId`
+  and `to.query` has none, skipping routes with `meta.labelFilter: false` (Management
+  drops the filter on purpose; see the tab setter in `CollectionView.vue`). Costs: keys
+  ride along on Asset Review URLs and recent-view entries; the nav-rail link to the
+  current collection would keep the filter instead of resetting. Pairs with the tab-URL-state item above (same
+  mechanism could restore both).

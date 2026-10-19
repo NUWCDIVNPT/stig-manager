@@ -8,6 +8,7 @@ import { computed, ref, watch } from 'vue'
 import LabelChip from '../../../../components/common/Label.vue'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
 import { normalizeColor } from '../../../../shared/lib/colorUtils.js'
+import { LABEL_NAME_MAX_LENGTH } from '../../../../shared/lib/labelFilters.js'
 import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { createCollectionLabel, patchCollectionLabel } from '../../api/labelManageApi.js'
 import { DEFAULT_LABEL_COLOR, LABEL_COLOR_PALETTE, validateLabelName } from './labelPalette.js'
@@ -163,7 +164,7 @@ const textareaPt = {
           v-model="form.name"
           :invalid="!!nameError"
           :pt="inputTextPt"
-          maxlength="16"
+          :maxlength="LABEL_NAME_MAX_LENGTH"
           placeholder="Label name"
           @blur="touched = true"
         />

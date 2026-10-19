@@ -62,7 +62,7 @@ function mountFindings({ query = {} } = {}) {
   replace = vi.fn()
   useRouter.mockReturnValue({ replace })
   return renderWithProviders(Findings, {
-    props: { collectionId: '17', selectedLabelIds: [] },
+    props: { collectionId: '17', selectedLabelNames: [] },
   })
 }
 
