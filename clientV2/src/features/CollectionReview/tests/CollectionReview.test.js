@@ -13,8 +13,8 @@ import { renderWithProviders } from '../../../testUtils/utils.js'
 import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 
 import { fetchAssetsByCollectionStig, fetchCollectionChecklist, fetchReviewsByRule, fetchRule, postReviewBatch } from '../api/collectionReviewApi.js'
-import { useReviewActionAvailability } from '../composables/useReviewActionAvailability.js'
 import CollectionReview from '../components/CollectionReview.vue'
+import { useReviewActionAvailability } from '../composables/useReviewActionAvailability.js'
 
 vi.mock('../../../shared/api/collectionsApi.js', () => ({
   fetchCollection: vi.fn(),
@@ -226,7 +226,9 @@ describe('collectionReview.vue', () => {
 
     it('ignores a rule response that lands after the filtered checklist emptied the selection', async () => {
       let resolveRule
-      fetchRule.mockReturnValue(new Promise((resolve) => { resolveRule = resolve }))
+      fetchRule.mockReturnValue(new Promise((resolve) => {
+        resolveRule = resolve
+      }))
       createWrapper()
       await flushPromises()
       expect(fetchRule).toHaveBeenCalledWith('bench-1', 'rev-1', 'V-123')

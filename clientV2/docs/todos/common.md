@@ -84,7 +84,8 @@ Most originated from the Findings feature review (2026-06-10) — see
   plus the asset-review crumb back do not spread it. If the filter should survive
   that drill-down, replace the per-site spreads with one `router.beforeEach` that
   copies the label keys when `to.params.collectionId === from.params.collectionId`
-  and `to.query` has none. Costs: keys ride along on Asset Review / Management URLs
-  and recent-view entries; the nav-rail link to the current collection would keep the
-  filter instead of resetting. Pairs with the tab-URL-state item above (same
+  and `to.query` has none, skipping routes with `meta.labelFilter: false` (Management
+  drops the filter on purpose; see the tab setter in `CollectionView.vue`). Costs: keys
+  ride along on Asset Review URLs and recent-view entries; the nav-rail link to the
+  current collection would keep the filter instead of resetting. Pairs with the tab-URL-state item above (same
   mechanism could restore both).

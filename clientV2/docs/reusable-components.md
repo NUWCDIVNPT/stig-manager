@@ -108,6 +108,23 @@ Small pieces used inside columns AND in other contexts (dashboards, panels).
 
 ---
 
+## Breadcrumb Filters
+
+Filters that sit after the breadcrumb in the menu bar. A route opts in through its
+meta (`labelFilter` for Collection Labels, `collectionFilter` for the Collections page);
+MenuBar renders the matching pills component.
+
+| Component | Description | Used By |
+|-----------|-------------|---------|
+| **BreadcrumbFilter** | The filter box: a slot for the picker plus a clear button | LabelFilterPills, CollectionFilterPills |
+| **PillsTrigger** | MultiSelect `#value` chips: removable chips for applied options, "+N" overflow, chevron. Chip remove is hidden while the overlay is open | LabelFilterPicker, MetaMetricsFilter |
+| **LabelFilterPicker** | Collection Label picker with a "No label" option; refetches Labels on open and prunes names the Collection no longer has. Selection lives in the route query (`useLabelFilterQuery`) | LabelFilterPills |
+| **MetaMetricsFilter** | Include/exclude Collection picker; selection lives in `useMetaCollectionFilter` (in memory only) | CollectionFilterPills |
+
+Shared styling for the picker overlay is in `pillsPicker.css` / `pillsPicker.js`.
+
+---
+
 ## PrimeVue Native Features
 
 Don't reinvent these—use PrimeVue's built-in capabilities.
