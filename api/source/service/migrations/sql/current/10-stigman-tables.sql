@@ -1386,7 +1386,9 @@ BEGIN
               END IF;
             END IF;
 
-            -- Apply target scoping
+            -- Apply target scoping. Benchmark targets also require the asset to be
+            -- assigned that STIG, otherwise a review whose rule is shared by several
+            -- STIGs would be selected through a STIG the asset does not have.
             IF v_assetId IS NOT NULL AND v_benchmarkId IS NULL THEN
               -- Asset target only: all reviews on this asset
               SET @v_sql = CONCAT(@v_sql, ' AND r.assetId = ', v_assetId);
@@ -1394,7 +1396,9 @@ BEGIN
               -- Asset + benchmark: reviews on this asset for this STIG only
               SET @v_sql = CONCAT(@v_sql,
                 ' AND r.assetId = ', v_assetId,
-                ' AND rev.benchmarkId = ''', v_benchmarkId, '''');
+                ' AND rev.benchmarkId = ''', v_benchmarkId, '''',
+                ' AND r.assetId IN (',
+                '  SELECT assetId FROM stig_asset_map WHERE benchmarkId = ''', v_benchmarkId, ''')');
             ELSEIF v_clId IS NOT NULL AND v_benchmarkId IS NULL THEN
               -- Label target only: reviews on assets with this label
               SET @v_sql = CONCAT(@v_sql,
@@ -1405,11 +1409,15 @@ BEGIN
               SET @v_sql = CONCAT(@v_sql,
                 ' AND r.assetId IN (',
                 '  SELECT assetId FROM collection_label_asset_map WHERE clId = ', v_clId, ')',
-                ' AND rev.benchmarkId = ''', v_benchmarkId, '''');
+                ' AND rev.benchmarkId = ''', v_benchmarkId, '''',
+                ' AND r.assetId IN (',
+                '  SELECT assetId FROM stig_asset_map WHERE benchmarkId = ''', v_benchmarkId, ''')');
             ELSEIF v_benchmarkId IS NOT NULL THEN
               -- Benchmark only: all reviews for this STIG in the collection
               SET @v_sql = CONCAT(@v_sql,
-                ' AND rev.benchmarkId = ''', v_benchmarkId, '''');
+                ' AND rev.benchmarkId = ''', v_benchmarkId, '''',
+                ' AND r.assetId IN (',
+                '  SELECT assetId FROM stig_asset_map WHERE benchmarkId = ''', v_benchmarkId, ''')');
             -- ELSE: all three NULL — no target restriction, rule applies to entire collection
             END IF;
 
