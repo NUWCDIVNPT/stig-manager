@@ -242,7 +242,7 @@ describe('useAssetCsvImport — runDryRun (server failure shapes)', () => {
   it('maps a named-asset failure to the matching CSV row and blocks only that asset', async () => {
     apiCall.mockResolvedValue({
       error: 'X',
-      detail: [{ failure: 'Bad data', detail: { name: 'badAsset' } }],
+      detail: [{ failure: 'name exists', detail: { assetIndex: 2, name: 'badAsset' } }],
     })
     const c = useAssetCsvImport(getCollectionId)
     c.parsedAssets.value = [
@@ -251,9 +251,46 @@ describe('useAssetCsvImport — runDryRun (server failure shapes)', () => {
     ]
     await c.runDryRun()
     expect(c.serverErrors.value).toEqual([
-      { row: 2, messages: 'Data error: Bad data\n• Asset Affected: badAsset' },
+      { row: 2, messages: 'Data error: name exists\n• Asset Affected: badAsset' },
     ])
     expect(c.validAssets.value).toEqual([{ name: 'goodAsset', CSVRow: 1 }])
+  })
+
+  // Regression: assetIndex is a 1-based JSON_TABLE ordinal, not an array index. Reading it
+  // as 0-based put the error on the wrong row and let the bad asset through. The row is
+  // resolved by name, so assetIndex must not influence which asset is blocked.
+  it('resolves the CSV row by name, not by assetIndex', async () => {
+    apiCall.mockResolvedValue({
+      error: 'X',
+      detail: [{
+        failure: 'unknown benchmarkId',
+        detail: { assetIndex: 2, name: 'bad', benchmarkIdIndex: 1, benchmarkId: 'NOPE' },
+      }],
+    })
+    const c = useAssetCsvImport(getCollectionId)
+    c.parsedAssets.value = [
+      { name: 'good', CSVRow: 2 },
+      { name: 'bad', CSVRow: 3 },
+    ]
+    await c.runDryRun()
+    expect(c.serverErrors.value).toHaveLength(1)
+    expect(c.serverErrors.value[0].row).toBe(3)
+    expect(c.validAssets.value).toEqual([{ name: 'good', CSVRow: 2 }])
+  })
+
+  it('blocks a single-asset failure whose assetIndex is 1', async () => {
+    apiCall.mockResolvedValue({
+      error: 'X',
+      detail: [{
+        failure: 'unknown benchmarkId',
+        detail: { assetIndex: 1, name: 'only', benchmarkIdIndex: 1, benchmarkId: 'NOPE' },
+      }],
+    })
+    const c = useAssetCsvImport(getCollectionId)
+    c.parsedAssets.value = [{ name: 'only', CSVRow: 2 }]
+    await c.runDryRun()
+    expect(c.serverErrors.value[0].row).toBe(2)
+    expect(c.validAssets.value).toEqual([])
   })
 
   it('includes benchmarkId and benchmarkIdIndex lines when present', async () => {
@@ -261,14 +298,14 @@ describe('useAssetCsvImport — runDryRun (server failure shapes)', () => {
       error: 'X',
       detail: [{
         failure: 'STIG missing',
-        detail: { name: 'a', benchmarkId: 'X', benchmarkIdIndex: 0 },
+        detail: { assetIndex: 1, name: 'a', benchmarkId: 'X', benchmarkIdIndex: 2 },
       }],
     })
     const c = useAssetCsvImport(getCollectionId)
     c.parsedAssets.value = [{ name: 'a', CSVRow: 1 }]
     await c.runDryRun()
     expect(c.serverErrors.value[0].messages).toBe(
-      'Data error: STIG missing\n• Asset Affected: a\n• STIG Unknown: X\n• STIG Unknown Index: 0',
+      'Data error: STIG missing\n• Asset Affected: a\n• STIG Unknown: X\n• STIG Unknown Index: 2',
     )
   })
 })
@@ -401,6 +438,30 @@ describe('useAssetCsvImport — submit', () => {
     const c = useAssetCsvImport(getCollectionId)
     c.validAssets.value = [{ name: 'a', CSVRow: 1 }]
     await expect(c.submit()).rejects.toThrow('500')
+    expect(c.isSubmitting.value).toBe(false)
+  })
+
+  // The non-dry-run POST also returns 200 ClientErrorBadAssetPost on validation failure
+  // (e.g. an asset name taken between dry run and submit). Nothing was created, so submit
+  // must not resolve as success; the failing row is surfaced and removed from validAssets.
+  it('throws and records row errors when the real POST returns a validation error body', async () => {
+    apiCall.mockResolvedValue({
+      error: 'Validation Error',
+      detail: [{ failure: 'name exists', detail: { assetIndex: 2, name: 'b' } }],
+    })
+    const c = useAssetCsvImport(getCollectionId)
+    c.parsedAssets.value = [
+      { name: 'a', CSVRow: 2 },
+      { name: 'b', CSVRow: 3 },
+    ]
+    c.validAssets.value = [...c.parsedAssets.value]
+    c.serverErrors.value = [{ row: 9, messages: 'earlier' }]
+    await expect(c.submit()).rejects.toThrow('Validation Error')
+    expect(c.serverErrors.value).toEqual([
+      { row: 9, messages: 'earlier' },
+      { row: 3, messages: 'Data error: name exists\n• Asset Affected: b' },
+    ])
+    expect(c.validAssets.value).toEqual([{ name: 'a', CSVRow: 2 }])
     expect(c.isSubmitting.value).toBe(false)
   })
 

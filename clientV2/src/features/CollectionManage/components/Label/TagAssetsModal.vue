@@ -10,16 +10,16 @@ import LabelChip from '../../../../components/common/Label.vue'
 import PickListTable from '../../../../components/common/PickListTable.vue'
 import { fetchCollectionLabels } from '../../../../shared/api/collectionsApi.js'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
-import { normalizeColor } from '../../../../shared/lib/colorUtils.js'
 
 import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
+import { dashZero } from '../../../../shared/lib/numberFormat.js'
 import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import {
   fetchAssetsByLabel,
   fetchCollectionAssetsBasic,
   replaceLabelAssets,
 } from '../../api/labelManageApi.js'
-import { assetTextFilter as matchAsset, partitionAssets } from './tagAssets.js'
+import { assetTextFilter, buildLabelMap, partitionAssets } from '../../lib/assetRows.js'
 
 const props = defineProps({
   visible: { type: Boolean, required: true },
@@ -41,9 +41,6 @@ const VIRTUAL_SCROLLER_OPTIONS = { itemSize: rowHeightPx('compact') }
 const isLoading = ref(false)
 const saving = ref(false)
 const pickerValue = ref([[], []])
-const labelMap = ref(new Map())
-
-const labelColor = computed(() => normalizeColor(props.label?.color, '#cccccc'))
 
 const availableCount = computed(() => pickerValue.value[0].length)
 const taggedCount = computed(() => pickerValue.value[1].length)
@@ -60,13 +57,7 @@ async function loadData() {
       fetchAssetsByLabel(props.collectionId, props.label.labelId),
       fetchCollectionLabels(props.collectionId),
     ])
-    const map = new Map()
-    for (const label of (labels ?? [])) {
-      map.set(label.labelId, label)
-    }
-    labelMap.value = map
-
-    pickerValue.value = partitionAssets(allAssets, taggedAssets, map)
+    pickerValue.value = partitionAssets(allAssets, taggedAssets, buildLabelMap(labels))
   }
   catch (err) {
     triggerError(err)
@@ -108,10 +99,6 @@ async function onSave() {
   }
 }
 
-function assetTextFilter(item, text) {
-  return matchAsset(item, text, labelMap.value)
-}
-
 const dialogPt = {
   root: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 8px; color: var(--color-text-primary); display: flex; flex-direction: column; overflow: hidden;' },
   header: { style: 'background: var(--color-background-dark); padding: 0; border-bottom: 1px solid var(--color-border-default); flex-shrink: 0;' },
@@ -135,7 +122,7 @@ const tablePt = {
     v-model:visible="localVisible"
     modal
     :draggable="false"
-    :style="{ width: 'min(940px, 96vw)', height: '74vh', maxHeight: '720px', minHeight: '480px' }"
+    :style="{ width: 'min(1040px, 96vw)', height: '74vh', maxHeight: '720px', minHeight: '480px' }"
     :pt="dialogPt"
   >
     <template #header>
@@ -148,7 +135,7 @@ const tablePt = {
             Tag Assets
           </div>
           <div class="modal-header-sub">
-            <LabelChip v-if="label" :value="label.name" :color="labelColor" />
+            <LabelChip v-if="label" :value="label.name" :color="label.color" />
             <span v-else>Select assets for this label</span>
           </div>
         </div>
@@ -196,7 +183,7 @@ const tablePt = {
             <template #body="{ data }">
               <span class="asset-stig-count" style="justify-content: center;">
                 <img :src="shieldIcon" class="asset-stig-icon" alt="">
-                {{ data.stigCount }}
+                {{ dashZero(data.stigCount) }}
               </span>
             </template>
           </Column>

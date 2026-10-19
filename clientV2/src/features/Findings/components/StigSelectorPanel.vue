@@ -188,7 +188,7 @@ function onSelect(row) {
   align-items: center;
   padding: 0.6rem 0.6rem 0.5rem;
   border-bottom: 1px solid var(--color-border-default);
-  background: linear-gradient(180deg, var(--color-background-light), var(--color-background-dark));
+  background: var(--color-background-dark);
 }
 
 .stig-panel__filter-icon {

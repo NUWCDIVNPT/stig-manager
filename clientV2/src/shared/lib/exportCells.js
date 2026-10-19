@@ -3,11 +3,12 @@ import { REVIEW_STATUS } from './reviewConstants.js'
 
 const REVIEW_STATUSES = new Set(Object.values(REVIEW_STATUS))
 
-function capitalize(text) {
-  return text.charAt(0).toUpperCase() + text.slice(1)
+export function capitalize(text) {
+  return text ? text.charAt(0).toUpperCase() + text.slice(1) : ''
 }
 
-function statusText(data) {
+/** Review status (string or { label }) → `Submitted`; anything unrecognised passes through. */
+export function statusText(data) {
   const label = typeof data === 'object' && data !== null ? data.label : data
   return typeof label === 'string' && REVIEW_STATUSES.has(label.toLowerCase())
     ? capitalize(label.toLowerCase())

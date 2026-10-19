@@ -3,18 +3,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '../../../../testUtils/utils.js'
 import JobsTable from '../components/JobsTable.vue'
 
-// Stub the column filter (its real value lives behind a PrimeVue Popover that
-// does not open under jsdom): a button applies a preset filter term so
-// nameFilter can be driven deterministically.
-vi.mock('../../../../components/common/ColumnSearchFilter.vue', () => ({
-  default: {
-    name: 'ColumnSearchFilter',
-    props: ['modelValue', 'placeholder'],
-    emits: ['update:modelValue'],
-    template: `<button data-testid="apply-name-filter" @click="$emit('update:modelValue', 'nightly')"></button>`,
-  },
-}))
-
 // An admin-created job (jobId >= 100): removable, with a real createdBy owner.
 const ADMIN_JOB = {
   jobId: 200,
@@ -63,16 +51,15 @@ describe('jobsTable', () => {
     expect(screen.getByText('system')).toBeInTheDocument()
   })
 
-  it('filters rows by name and flips filtersActive (filtered count in footer)', async () => {
+  it('searches jobs and shows the filtered count in the footer', async () => {
     const { container } = renderTable()
     const total = () => container.querySelector('.status-footer__metric-total')
-    // Before filtering: no filtered count, footer shows the plain total.
+    // Before searching: no filtered count, footer shows the plain total.
     expect(total().textContent).toMatch(/2\s*jobs/)
     expect(total().textContent).not.toMatch(/of/)
 
-    await fireEvent.click(screen.getByTestId('apply-name-filter'))
-
-    // 'nightly' matches only ADMIN_JOB -> filtersActive flips, footer reads "1 of 2 jobs".
+    // 'beta' matches only SYSTEM_JOB's task -> footer reads "1 of 2 jobs".
+    await fireEvent.update(screen.getByRole('textbox', { name: 'Search jobs' }), 'beta')
     await waitFor(() => expect(total().textContent).toMatch(/1\s*of\s*2\s*jobs/))
   })
 })

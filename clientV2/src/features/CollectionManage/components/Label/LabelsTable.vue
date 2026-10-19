@@ -3,10 +3,16 @@ import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref } from 'vue'
 
-import ColumnSearchFilter from '../../../../components/common/ColumnSearchFilter.vue'
+import ColumnToggle from '../../../../components/common/ColumnToggle.vue'
+import GridFilterButton from '../../../../components/common/GridFilterButton.vue'
+import GridSearch from '../../../../components/common/GridSearch.vue'
+import GridToolbar from '../../../../components/common/GridToolbar.vue'
+import HighlightText from '../../../../components/common/HighlightText.vue'
 import LabelChip from '../../../../components/common/Label.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
-import { normalizeColor } from '../../../../shared/lib/colorUtils.js'
+import { useColumnVisibility } from '../../../../shared/composables/useColumnVisibility.js'
+import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
+import { dashZero } from '../../../../shared/lib/numberFormat.js'
 
 const props = defineProps({
   labels: {
@@ -30,23 +36,24 @@ const selection = computed({
   set: value => emit('update:selected-labels', value),
 })
 
-const nameFilter = ref('')
+const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibility([
+  { field: 'name', header: 'Name', locked: true },
+  { field: 'description', header: 'Description' },
+  { field: 'uses', header: 'Uses' },
+], 'manageLabels.columns')
 
-const filteredLabels = computed(() => {
-  const q = nameFilter.value.trim().toLowerCase()
-  const list = props.labels ?? []
-  if (!q) {
-    return list
-  }
-  return list.filter(label =>
-    label.name?.toLowerCase().includes(q)
-    || label.description?.toLowerCase().includes(q),
-  )
-})
-
-function chipColor(label) {
-  return normalizeColor(label.color, '#cccccc')
-}
+const {
+  term: searchTerm,
+  filters: gridFilters,
+  filteredRows,
+  isFiltered,
+  filterColumns,
+  valueOptions,
+  highlightTerm,
+} = useGridSearch(() => props.labels ?? [], [
+  { field: 'name', header: 'Name' },
+  { field: 'description', header: 'Description' },
+], { visibleFields, selection, dataKey: 'labelId' })
 
 const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-border-default)' } }
 const tablePt = {
@@ -70,10 +77,17 @@ const dataTableRef = ref(null)
 
 <template>
   <div class="table-container">
+    <GridToolbar compact>
+      <GridSearch v-model="searchTerm" label="Search labels" placeholder="Search labels..." />
+      <template #end>
+        <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
+        <ColumnToggle v-model="selectedColumns" :columns="toggleableColumns" />
+      </template>
+    </GridToolbar>
     <DataTable
       ref="dataTableRef"
       v-model:selection="selection"
-      :value="filteredLabels"
+      :value="filteredRows"
       data-key="labelId"
       scrollable
       scroll-height="flex"
@@ -88,23 +102,21 @@ const dataTableRef = ref(null)
     >
       <Column selection-mode="multiple" style="width: 2.7rem; height: 32px; padding: 0 0.5rem;" />
 
+      <template #empty>
+        {{ isFiltered && labels.length ? 'No labels match the search.' : 'No labels found.' }}
+      </template>
+
       <Column
-        field="name" export-header="Name"
+        field="name" header="Name"
         sortable
         :pt="borderPt"
         style="min-width: 9rem; width: 18.25rem;"
         :body-style="{ height: '32px', padding: '0 0.5rem', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }"
         :header-style="{ padding: '0 0.5rem' }"
       >
-        <template #header>
-          <div class="column-header-with-filter">
-            Name
-            <ColumnSearchFilter v-model="nameFilter" placeholder="Search labels..." />
-          </div>
-        </template>
         <template #body="{ data }">
           <div class="sm-grid-cell-with-toolbar">
-            <LabelChip :value="data.name" :color="chipColor(data)" />
+            <LabelChip :value="data.name" :color="data.color" />
             <button
               type="button"
               class="row-edit-btn"
@@ -118,22 +130,21 @@ const dataTableRef = ref(null)
       </Column>
 
       <Column
-        field="description" export-header="Description"
+        v-if="visibleFields.has('description')"
+        field="description" header="Description"
         sortable
         :pt="borderPt"
         style="min-width: 13.75rem;"
         :body-style="{ height: '32px', padding: '0 0.5rem', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }"
         :header-style="{ padding: '0 0.5rem' }"
       >
-        <template #header>
-          Description
-        </template>
         <template #body="{ data }">
-          <span class="sm-info" :title="data.description ?? ''">{{ data.description ?? '—' }}</span>
+          <span class="sm-info" :title="data.description ?? ''"><HighlightText :text="data.description ?? '—'" :term="highlightTerm('description')" /></span>
         </template>
       </Column>
 
       <Column
+        v-if="visibleFields.has('uses')"
         field="uses" export-header="Uses"
         sortable
         :pt="borderPt"
@@ -147,7 +158,7 @@ const dataTableRef = ref(null)
           </div>
         </template>
         <template #body="{ data }">
-          <span class="uses-cell">{{ data.uses ?? 0 }}</span>
+          <span class="uses-cell">{{ dashZero(data.uses) }}</span>
         </template>
       </Column>
 
@@ -155,7 +166,8 @@ const dataTableRef = ref(null)
         <StatusFooter
           :dt="dataTableRef"
           :refresh-loading="isLoading"
-          :total-count="filteredLabels.length"
+          :total-count="labels.length"
+          :filtered-count="isFiltered ? filteredRows.length : null"
           :show-selected="selection.length > 0"
           :selected-items="selection"
           total-label="labels"
@@ -184,12 +196,6 @@ const dataTableRef = ref(null)
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
-}
-
-.column-header-with-filter {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
 }
 
 .sm-grid-cell-with-toolbar {

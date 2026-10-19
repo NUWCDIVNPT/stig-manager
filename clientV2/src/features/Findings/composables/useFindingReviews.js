@@ -8,9 +8,9 @@ import { fetchFailedReviews } from '../api/findingsApi.js'
 // records backing the currently selected aggregated finding. All inputs are
 // Refs so the pane reacts to selection changes in the middle pane.
 //   selectedFinding === null → returns [] without firing a request
-// getReviewsByCollection accepts labelId/labelMatch server-side, so review rows
+// getReviewsByCollection accepts labelName/labelMatch server-side, so review rows
 // honor the orchestrator's label filter.
-export function useFindingReviews({ collectionId, selectedFinding, aggregator, labelIds }) {
+export function useFindingReviews({ collectionId, selectedFinding, aggregator, labelNames }) {
   // The reviews API expects the aggregator field's value on the matching
   // record (e.g. aggregator=ruleId&ruleId=SV-12345r1_rule).
   const aggregatorValue = computed(() => {
@@ -26,13 +26,13 @@ export function useFindingReviews({ collectionId, selectedFinding, aggregator, l
     ({ signal } = {}) => fetchFailedReviews(collectionId.value, {
       aggregator: aggregator.value,
       aggregatorValue: aggregatorValue.value,
-      ...buildLabelFilterParams(labelIds.value),
+      ...buildLabelFilterParams(labelNames.value),
     }, { signal }),
     { immediate: false, initialState: [], onError: null },
   )
 
   watch(
-    [collectionId, aggregator, aggregatorValue, labelIds],
+    [collectionId, aggregator, aggregatorValue, labelNames],
     () => {
       if (!collectionId.value || !aggregator.value || !aggregatorValue.value) {
         // No selection in the middle pane — clear the right pane without fetching.

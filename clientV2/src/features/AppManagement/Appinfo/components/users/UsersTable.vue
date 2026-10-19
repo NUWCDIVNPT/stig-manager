@@ -19,10 +19,11 @@ const COLUMNS = [
 
 <template>
   <ReportTableBase
+    searchable
     title="User details"
     :rows="rows"
     :columns="COLUMNS"
-    :key-column="{ field: 'username', header: 'Username', searchPlaceholder: 'Search username...', width: '12rem' }"
+    :key-column="{ field: 'username', header: 'Username', width: '12rem' }"
     data-key="userId"
     export-filename="appinfo-users"
     noun="user"

@@ -322,7 +322,7 @@ onBeforeUnmount(() => {
 }
 
 .tour-step-count {
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
   letter-spacing: 0.04em;
 }
@@ -343,13 +343,13 @@ onBeforeUnmount(() => {
 
 .tour-title {
   margin: 0 0 0.4rem;
-  font-size: 1.35rem;
+  font-size: var(--text-xl);
   font-weight: 600;
 }
 
 .tour-body {
   margin: 0 0 0.9rem;
-  font-size: 1.15rem;
+  font-size: var(--text-lg);
   line-height: 1.45;
   color: var(--color-text-primary);
 }

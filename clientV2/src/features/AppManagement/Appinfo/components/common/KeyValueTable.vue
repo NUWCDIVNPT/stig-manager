@@ -13,6 +13,9 @@ const props = defineProps({
   exportFilename: { type: String, default: 'appinfo-key-value' },
 })
 
+// Stable identity, so the search columns only rebuild when the header changes
+const keyColumn = computed(() => ({ field: 'key', header: props.keyHeader, ellipsis: false }))
+
 const valueColumns = computed(() => [
   { field: 'value', header: props.valueHeader, type: 'string', align: props.valueAlign },
 ])
@@ -33,7 +36,7 @@ function displayValue(value) {
     :title="title"
     :rows="rows"
     :columns="valueColumns"
-    :key-column="{ field: 'key', header: keyHeader, ellipsis: false }"
+    :key-column="keyColumn"
     :export-filename="exportFilename"
     :noun="noun"
   >

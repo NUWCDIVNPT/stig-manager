@@ -24,7 +24,6 @@ function taskFilter(task, searchText) {
     show-target-filter
     source-filter-placeholder="Search tasks..."
     target-filter-placeholder="Search tasks..."
-    option-style="padding: 0.4rem 0.75rem;"
     :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
   >
     <template #sourceheader>

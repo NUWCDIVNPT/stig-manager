@@ -43,16 +43,20 @@ export function effectiveGrantRows(collectionGrants = []) {
 }
 
 // Display transform for statistics.lastClaims: epoch-second claims become
-// Dates and the OIDC scope string becomes an array; other claims pass through.
-export function transformLastClaims(lastClaims) {
+// Dates and each configured scope claim holding a space-separated string
+// becomes an array; other claims pass through. scopeClaims is the list parsed
+// from STIGMAN_JWT_SCOPE_CLAIM (Env oauth.claims.scopeList).
+export function transformLastClaims(lastClaims, scopeClaims = ['scope']) {
   const claims = { ...(lastClaims ?? {}) }
   for (const claim of ['iat', 'exp', 'auth_time']) {
     if (typeof claims[claim] === 'number') {
       claims[claim] = new Date(claims[claim] * 1000)
     }
   }
-  if (typeof claims.scope === 'string') {
-    claims.scope = claims.scope.split(' ')
+  for (const claim of scopeClaims) {
+    if (typeof claims[claim] === 'string') {
+      claims[claim] = claims[claim].split(' ').filter(s => s.length)
+    }
   }
   return claims
 }

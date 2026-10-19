@@ -1,5 +1,7 @@
 <script setup>
 import { computed } from 'vue'
+import { labelChipStyle } from '../../shared/lib/colorUtils.js'
+import HighlightText from './HighlightText.vue'
 
 const props = defineProps({
   value: {
@@ -8,43 +10,20 @@ const props = defineProps({
   },
   color: {
     type: String,
-    required: true,
+    default: '',
+  },
+  searchTerm: {
+    type: String,
+    default: '',
   },
 })
-const getTextColorFromBackground = (hexcolor) => {
-  const r = Number.parseInt(hexcolor.substr(0, 2), 16)
-  const g = Number.parseInt(hexcolor.substr(2, 2), 16)
-  const b = Number.parseInt(hexcolor.substr(4, 2), 16)
-  const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000
-  return (yiq >= 128) ? '#080808' : '#f7f7f7'
-}
 
-const textColor = computed(() => {
-  return getTextColorFromBackground(props.color.replace('#', ''))
-})
+const style = computed(() => labelChipStyle(props.color))
 </script>
 
 <template>
-  <span
-    class="sm-label-sprite"
-    :style="{
-      backgroundColor: props.color,
-      color: textColor,
-    }"
-  >
-    {{ props.value }}
+  <!-- .label-tag is global (style.css) -->
+  <span class="label-tag" :style="style">
+    <HighlightText :text="value" :term="searchTerm" />
   </span>
 </template>
-
-<style scoped>
-.sm-label-sprite {
-  font-weight: 600;
-  font-size: var(--text-md);
-  line-height: 14px;
-  top: 0;
-  padding: 0 5px;
-  border-radius: 3px;
-  margin-left: 3px;
-  white-space: nowrap
-}
-</style>

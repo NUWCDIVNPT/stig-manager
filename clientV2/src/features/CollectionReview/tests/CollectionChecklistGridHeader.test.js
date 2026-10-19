@@ -32,7 +32,7 @@ vi.mock('primevue/tieredmenu', () => ({
     template: `
       <div>
         <div v-for="group in model" :key="group.label">
-          <button v-for="item in group.items" :key="item.label" @click="item.command && item.command()">
+          <button v-for="item in group.items" :key="item.label" :data-icon="item.icon" @click="item.command && item.command()">
             {{ item.label }}
           </button>
         </div>
@@ -70,7 +70,7 @@ describe('checklistGridHeader.vue', () => {
     searchFilter: '',
     toggleableColumns: [{ field: 'col1', header: 'Col 1' }],
     selectedColumns: [{ field: 'col1', header: 'Col 1' }],
-    displayMode: 'groupRule',
+    activePreset: 'groupRule',
   }
 
   function createWrapper(props = {}) {
@@ -158,8 +158,8 @@ describe('checklistGridHeader.vue', () => {
     })
   })
 
-  describe('checklist Menu (Display Mode)', () => {
-    it('updates displayMode when menu items are clicked', async () => {
+  describe('checklist Menu (Display presets)', () => {
+    it('emits apply-preset when menu items are clicked', async () => {
       const { emitted } = createWrapper()
 
       const menuBtn = screen.getByRole('button', { name: /Checklist/i })
@@ -167,16 +167,24 @@ describe('checklistGridHeader.vue', () => {
 
       vi.advanceTimersByTime(500)
 
-      const groupGroupItem = screen.getByText('Group ID and Group Title')
-      await fireEvent.click(groupGroupItem)
+      await fireEvent.click(screen.getByText('Group ID and Group Title'))
+      expect(emitted()['apply-preset'][0]).toEqual(['groupGroup'])
 
-      expect(emitted()['update:displayMode']).toBeTruthy()
-      expect(emitted()['update:displayMode'][0]).toEqual(['groupGroup'])
+      await fireEvent.click(screen.getByText('Rule ID and Rule Title'))
+      expect(emitted()['apply-preset'][1]).toEqual(['ruleRule'])
+    })
 
-      const ruleRuleItem = screen.getByText('Rule ID and Rule Title')
-      await fireEvent.click(ruleRuleItem)
+    it('fills the circle only for the active preset', () => {
+      createWrapper({ activePreset: 'ruleRule' })
+      expect(screen.getByText('Rule ID and Rule Title').dataset.icon).toBe('pi pi-circle-fill')
+      expect(screen.getByText('Group ID and Rule Title').dataset.icon).toBe('pi pi-circle')
+    })
 
-      expect(emitted()['update:displayMode'][1]).toEqual(['ruleRule'])
+    it('fills no circle when the columns match no preset', () => {
+      createWrapper({ activePreset: null })
+      for (const label of ['Group ID and Rule Title', 'Group ID and Group Title', 'Rule ID and Rule Title']) {
+        expect(screen.getByText(label).dataset.icon).toBe('pi pi-circle')
+      }
     })
   })
 

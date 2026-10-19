@@ -1,8 +1,12 @@
 <script setup>
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
+import GridFilterButton from '../../../components/common/GridFilterButton.vue'
+import GridSearch from '../../../components/common/GridSearch.vue'
+import HighlightText from '../../../components/common/HighlightText.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
+import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 
 const props = defineProps({
   statusText: { type: String, default: 'Importing…' },
@@ -18,7 +22,44 @@ const progressValue = computed(() =>
   props.totalCount > 0 ? Math.round((props.statusRows.length / props.totalCount) * 100) : 0,
 )
 
+const yesNo = value => (value ? 'Yes' : 'No')
+
+const {
+  term: searchTerm,
+  filters: gridFilters,
+  filteredRows,
+  isFiltered,
+  filterColumns,
+  valueOptions,
+  highlightTerm,
+} = useGridSearch(() => props.statusRows, [
+  { field: 'assetName', header: 'Asset' },
+  { field: 'created', header: 'Created', filterValues: r => yesNo(r.created), quickSearch: false },
+  { field: 'addedStigs', header: 'Added STIGs', filterValues: r => yesNo(r.addedStigs), quickSearch: false },
+  { field: 'outcome', header: 'Outcome', filterValues: r => (r.error ? 'Error' : r.rejected?.length ? 'Has rejected reviews' : 'OK'), quickSearch: false },
+  { field: 'error', header: 'Error' },
+])
+
+// The Rejected panel reads the selection, so drop it once the filter hides that row
+watch(filteredRows, (rows) => {
+  const selectedId = props.selectedRow?.assetId
+  if (selectedId != null && !rows.some(r => r.assetId === selectedId)) {
+    emit('update:selectedRow', null)
+  }
+})
+
 const rejectedRows = computed(() => props.selectedRow?.rejected ?? [])
+
+const {
+  filters: rejectedFilters,
+  filteredRows: filteredRejected,
+  isFiltered: rejectedFiltered,
+  filterColumns: rejectedFilterColumns,
+  valueOptions: rejectedValueOptions,
+} = useGridSearch(rejectedRows, [
+  { field: 'ruleId', header: 'Rule' },
+  { field: 'reason', header: 'Reason', filterValues: r => r.reason },
+])
 
 const statusRef = ref()
 const rejectedRef = ref()
@@ -44,11 +85,18 @@ const rejectedRef = ref()
 
     <template v-if="isDone">
       <div class="import-table-wrapper">
+        <div class="results-header">
+          <span>Import results</span>
+          <div class="results-header__controls">
+            <GridSearch v-model="searchTerm" class="results-header__search" label="Search results" placeholder="Search assets..." />
+            <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
+          </div>
+        </div>
         <div class="table-flex">
           <DataTable
             ref="statusRef"
             :model-value="selectedRow"
-            :value="statusRows"
+            :value="filteredRows"
             export-filename="import-results"
             selection-mode="single"
             data-key="assetId"
@@ -59,7 +107,14 @@ const rejectedRef = ref()
             @row-select="e => emit('update:selectedRow', e.data)"
             @row-unselect="emit('update:selectedRow', null)"
           >
-            <Column field="assetName" header="Asset" style="min-width: 16.25rem" sortable />
+            <template #empty>
+              {{ isFiltered && statusRows.length ? 'No results match the search.' : 'No results.' }}
+            </template>
+            <Column field="assetName" header="Asset" style="min-width: 16.25rem" sortable>
+              <template #body="{ data }">
+                <HighlightText :text="data.assetName" :term="highlightTerm('assetName')" />
+              </template>
+            </Column>
             <Column field="created" header="Created" style="width: 8.25rem" sortable>
               <template #body="{ data }">
                 {{ data.created ? 'true' : 'false' }}
@@ -89,6 +144,7 @@ const rejectedRef = ref()
         </div>
         <StatusFooter
           :total-count="statusRows.length"
+          :filtered-count="isFiltered ? filteredRows.length : null"
           :show-refresh="false"
           :show-export="true"
           :dt="statusRef"
@@ -99,13 +155,16 @@ const rejectedRef = ref()
 
       <div class="rejected-wrapper">
         <div class="rejected-header">
-          Rejected reviews
+          <span>Rejected reviews</span>
+          <span class="rejected-header__end">
+            <GridFilterButton v-model="rejectedFilters" :columns="rejectedFilterColumns" :value-options="rejectedValueOptions" />
+          </span>
         </div>
         <div class="import-table-wrapper rejected-table-wrapper">
           <div class="table-flex">
             <DataTable
               ref="rejectedRef"
-              :value="rejectedRows"
+              :value="filteredRejected"
               export-filename="rejected-reviews"
               scrollable
               scroll-height="flex"
@@ -118,13 +177,14 @@ const rejectedRef = ref()
               <template #empty>
                 <div class="rejected-empty">
                   <span class="pi pi-info-circle" style="color: var(--color-primary-highlight); font-size: var(--text-xl);" />
-                  <span>{{ selectedRow ? 'No rejected reviews for this asset.' : 'Select a row above with rejected reviews to inspect them here.' }}</span>
+                  <span>{{ rejectedFiltered && rejectedRows.length ? 'No rejected reviews match the filters.' : selectedRow ? 'No rejected reviews for this asset.' : 'Select a row above with rejected reviews to inspect them here.' }}</span>
                 </div>
               </template>
             </DataTable>
           </div>
           <StatusFooter
             :total-count="rejectedRows.length"
+            :filtered-count="rejectedFiltered ? filteredRejected.length : null"
             :show-refresh="false"
             :show-export="true"
             :dt="rejectedRef"
@@ -258,7 +318,8 @@ const rejectedRef = ref()
 }
 
 .rejected-header {
-  padding: 0.6rem 1rem;
+  --checklist-control-height: 1.9rem;
+  padding: 0.35rem 0.5rem 0.35rem 1rem;
   background-color: var(--color-background-light);
   border-bottom: 1px solid var(--color-border-default);
   font-weight: 600;
@@ -267,6 +328,41 @@ const rejectedRef = ref()
   flex-shrink: 0;
   display: flex;
   align-items: center;
+}
+
+/* Same band as the Rejected reviews header below; search and Filter ride the right. */
+.results-header {
+  --checklist-control-height: 1.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.35rem 0.5rem 0.35rem 1rem;
+  background-color: var(--color-background-light);
+  border-bottom: 1px solid var(--color-border-default);
+  font-weight: 600;
+  font-size: var(--text-md);
+  color: var(--color-text-bright);
+  flex-shrink: 0;
+}
+
+.results-header__controls {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 0 1 26rem;
+  min-width: 16rem;
+  font-weight: 400;
+}
+
+.results-header__search {
+  flex: 1;
+  min-width: 0;
+}
+
+.rejected-header__end {
+  margin-left: auto;
+  font-weight: 400;
 }
 
 .rejected-table-wrapper {

@@ -28,6 +28,7 @@ describe('useAssetTable — tableData mapping', () => {
         assetId: 'a1',
         assetName: 'asset-1',
         labels: [],
+        benchmarkIds: [],
         stigCnt: 0,
         checks: 10,
         oldest: '2024-01-01',
@@ -76,61 +77,6 @@ describe('useAssetTable — tableData mapping', () => {
   it('returns an empty list when assets is null or empty', () => {
     expect(useAssetTable(ref(null)).tableData.value).toEqual([])
     expect(useAssetTable(ref([])).tableData.value).toEqual([])
-  })
-})
-
-describe('useAssetTable — labelOptions', () => {
-  it('deduplicates labels by labelId and sorts by name', () => {
-    const assets = ref([
-      makeSummary({ assetId: 'a', labels: [{ labelId: '2', name: 'Zeta' }] }),
-      makeSummary({ assetId: 'b', labels: [{ labelId: '1', name: 'Alpha' }, { labelId: '2', name: 'Zeta' }] }),
-    ])
-    const { labelOptions } = useAssetTable(assets)
-    expect(labelOptions.value).toEqual([
-      { label: 'Alpha', value: '1' },
-      { label: 'Zeta', value: '2' },
-    ])
-  })
-
-  it('is empty when no asset has labels', () => {
-    const { labelOptions } = useAssetTable(ref([makeSummary({ labels: [] })]))
-    expect(labelOptions.value).toEqual([])
-  })
-})
-
-describe('useAssetTable — filteredData', () => {
-  function makeRows() {
-    return ref([
-      makeSummary({ assetId: '1', name: 'Web Server', labels: [{ labelId: 'L1', name: 'prod' }] }),
-      makeSummary({ assetId: '2', name: 'DB Server', labels: [{ labelId: 'L2', name: 'staging' }] }),
-      makeSummary({ assetId: '3', name: 'Cache Server', labels: [] }),
-    ])
-  }
-
-  it('filters by asset name case-insensitively', () => {
-    const { filteredData, assetFilter } = useAssetTable(makeRows())
-    assetFilter.value = 'SERVER'
-    expect(filteredData.value.map(r => r.assetId)).toEqual(['1', '2', '3'])
-    assetFilter.value = 'web'
-    expect(filteredData.value.map(r => r.assetId)).toEqual(['1'])
-  })
-
-  it('filters by label with OR semantics across multiple selected ids', () => {
-    const { filteredData, labelFilter } = useAssetTable(makeRows())
-    labelFilter.value = ['L1', 'L2']
-    expect(filteredData.value.map(r => r.assetId)).toEqual(['1', '2'])
-  })
-
-  it('combines name and label filters (AND across filters)', () => {
-    const { filteredData, assetFilter, labelFilter } = useAssetTable(makeRows())
-    assetFilter.value = 'server'
-    labelFilter.value = ['L1']
-    expect(filteredData.value.map(r => r.assetId)).toEqual(['1'])
-  })
-
-  it('returns everything when both filters are empty', () => {
-    const { filteredData } = useAssetTable(makeRows())
-    expect(filteredData.value).toHaveLength(3)
   })
 })
 

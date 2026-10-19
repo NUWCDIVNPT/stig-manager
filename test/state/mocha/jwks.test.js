@@ -24,7 +24,7 @@ describe('JWKS Tests', function () {
     await oidc.start({port: oidcPort})
     console.log('    ✔ oidc started')
     console.log('    try mysql start')
-    mysql = await spawnMySQL({tag:'8.0.24', port: dbPort})
+    mysql = await spawnMySQL({tag:'8.4', port: dbPort})
     console.log('    ✔ mysql started')
     console.log('    try api start')
     api = await spawnApiPromise({

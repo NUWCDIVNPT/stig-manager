@@ -8,6 +8,7 @@ import { computed, ref, watch } from 'vue'
 import LabelChip from '../../../../components/common/Label.vue'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
 import { normalizeColor } from '../../../../shared/lib/colorUtils.js'
+import { LABEL_NAME_MAX_LENGTH } from '../../../../shared/lib/labelFilters.js'
 import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { createCollectionLabel, patchCollectionLabel } from '../../api/labelManageApi.js'
 import { DEFAULT_LABEL_COLOR, LABEL_COLOR_PALETTE, validateLabelName } from './labelPalette.js'
@@ -66,8 +67,6 @@ const nameError = computed(() => {
 const isValid = computed(() => {
   return validateLabelName(form.value.name, props.labels, props.label?.labelId ?? null) === true
 })
-
-const previewColor = computed(() => normalizeColor(form.value.color, '#cccccc'))
 
 const availablePalette = computed(() => {
   let custom = props.label?.color?.toUpperCase()
@@ -165,7 +164,7 @@ const textareaPt = {
           v-model="form.name"
           :invalid="!!nameError"
           :pt="inputTextPt"
-          maxlength="16"
+          :maxlength="LABEL_NAME_MAX_LENGTH"
           placeholder="Label name"
           @blur="touched = true"
         />
@@ -194,7 +193,7 @@ const textareaPt = {
         <div class="field-header-row">
           <span class="flabel">Color</span>
           <div class="preview-chip-container">
-            <LabelChip :value="form.name || 'Preview'" :color="previewColor" />
+            <LabelChip :value="form.name || 'Preview'" :color="form.color" />
           </div>
         </div>
         <div class="palette-row" style="margin-top: 0.2rem;">

@@ -170,6 +170,8 @@
   --color-chip-default-bg: var(--color-background-darkest);
   --color-chip-default-border: var(--color-border-default);
   --color-chip-default-text: var(--color-text-primary);
+  /* Label chip for a label without a colour (light, so it takes --color-text-dark) */
+  --color-label-default-bg: #cccccc;
 
   /* Inline rule-ID character-level diff highlight (red for old, green for new) */
   --color-diff-inline-del-bg: rgba(239, 68, 68, 0.3);
@@ -444,6 +446,18 @@ mark.search-highlight {
   padding: 0 1px;
 }
 
+/* Label chip rendered by common/Label.vue (and the +N badge in LabelsRow).
+   LabelsRow derives its px width budget from this padding and font, so change
+   them together. */
+.label-tag {
+  display: inline-block;
+  font-size: var(--text-md);
+  font-weight: 600;
+  padding: 0.1rem 0.45rem;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
 /* Label chips already carry a color, so mark the match with the chip's own
    text color instead of the yellow wash. No padding: LabelsRow budgets each
    chip from its text width, so the mark must not widen it. */
@@ -468,22 +482,9 @@ mark.search-highlight {
   background: var(--p-checkbox-icon-color);
 }
 
-/* PrimeVue DataTable icon-only headers (see iconHeaderPt in dataTablePt.js):
-   the sort indicator wrapper leaves the flex flow, hides until the column is
-   sorted, then overlays the cell edge so the badge stays centered. */
-th.column-header-icon {
-  position: relative;
-}
-th.column-header-icon [data-pc-section="sort"] {
+/* PrimeVue DataTable: show the sort indicator only on the sorted column. */
+th.p-datatable-sortable-column:not(.p-datatable-column-sorted) [data-pc-section="sort"] {
   display: none;
-  position: absolute;
-  right: 0.15rem;
-  top: 50%;
-  transform: translateY(-50%);
-  line-height: 0;
-}
-th.column-header-icon.p-datatable-column-sorted [data-pc-section="sort"] {
-  display: block;
 }
 
 /* PrimeVue Splitter global hover style */

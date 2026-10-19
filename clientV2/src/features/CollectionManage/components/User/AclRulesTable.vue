@@ -25,6 +25,15 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  // Unfiltered count and filter state from the modal, for the footer
+  totalCount: {
+    type: Number,
+    default: null,
+  },
+  filtered: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['accessChange'])
@@ -59,7 +68,7 @@ const tablePt = compactTablePt({ footer: 'divider' })
     :pt="tablePt"
   >
     <template #empty>
-      No ACL rules.
+      {{ filtered ? 'No rules match the filters.' : 'No ACL rules.' }}
     </template>
     <Column header="Resource" :export-value="exportResource" sortable :sort-field="resourceSortKey">
       <template #body="{ data }">
@@ -91,7 +100,8 @@ const tablePt = compactTablePt({ footer: 'divider' })
       <StatusFooter
         :dt="rulesDt"
         :show-refresh="false"
-        :total-count="rules.length"
+        :total-count="totalCount ?? rules.length"
+        :filtered-count="filtered ? rules.length : null"
         total-label="rules"
       />
     </template>

@@ -6,24 +6,20 @@ import TabList from 'primevue/tablist'
 import TabPanel from 'primevue/tabpanel'
 import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
-import { ref, watch } from 'vue'
+import { onUnmounted, ref } from 'vue'
 import MetaCollectionMetrics from '../../CollectionMetrics/components/MetaCollectionMetrics.vue'
 import MetaExportMetrics from '../../CollectionMetrics/components/MetaExportMetrics.vue'
-import MetricsFilter from '../../CollectionMetrics/components/MetricsFilter.vue'
+import { useMetaCollectionFilter } from '../composables/useMetaCollectionFilter.js'
 import MetaCollectionsTab from './MetaCollectionsTab.vue'
 import MetaStigsTab from './MetaStigsTab.vue'
-
-const STORAGE_KEY = 'metaCollectionIds'
 
 const activeTab = ref('collections')
 const DASHBOARD_STORAGE_KEY = 'stigman:metaDashboardCollapsed'
 const dashboardCollapsed = ref(localStorage.getItem(DASHBOARD_STORAGE_KEY) === 'true')
-const selectedCollectionIds = ref(loadSelectedCollectionIds())
+// Set from the collection filter after the breadcrumb (MenuBar); each visit starts unfiltered
+const { selectedCollectionIds, reset: resetCollectionFilter } = useMetaCollectionFilter()
+onUnmounted(resetCollectionFilter)
 const isAnimating = ref(false)
-
-watch(selectedCollectionIds, (newIds) => {
-  persistSelectedCollectionIds(newIds)
-}, { deep: true })
 
 function toggleDashboardSidebar() {
   isAnimating.value = true
@@ -35,28 +31,6 @@ function toggleDashboardSidebar() {
 
   try {
     localStorage.setItem(DASHBOARD_STORAGE_KEY, String(dashboardCollapsed.value))
-  }
-  catch {
-    // localStorage unavailable
-  }
-}
-
-function loadSelectedCollectionIds() {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (!stored) {
-      return []
-    }
-    return JSON.parse(stored)
-  }
-  catch {
-    return []
-  }
-}
-
-function persistSelectedCollectionIds(ids) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(ids))
   }
   catch {
     // localStorage unavailable
@@ -126,7 +100,10 @@ const tabPanelPt = {
             <span class="dot dot--rejected" title="Rejected" />
           </div>
           <div v-show="!dashboardCollapsed" class="sidebar-content">
-            <MetaCollectionMetrics vertical :selected-collection-ids="selectedCollectionIds" />
+            <MetaCollectionMetrics
+              :selected-collection-ids="selectedCollectionIds"
+              vertical
+            />
             <div class="sidebar-export">
               <MetaExportMetrics :selected-collection-ids="selectedCollectionIds" />
             </div>
@@ -145,11 +122,6 @@ const tabPanelPt = {
               <Tab value="stigs">
                 STIGs
               </Tab>
-
-              <div class="tab-filter-container">
-                <span class="filter-label">FILTER:</span>
-                <MetricsFilter v-model="selectedCollectionIds" type="collection" />
-              </div>
             </TabList>
 
             <TabPanels :pt="tabPanelsPt">
@@ -257,20 +229,5 @@ const tabPanelPt = {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-}
-
-.tab-filter-container {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-left: auto;
-  padding-right: 1rem;
-}
-
-.filter-label {
-  font-size: var(--text-md);
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  color: var(--color-text-dim);
 }
 </style>

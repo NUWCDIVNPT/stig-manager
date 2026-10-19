@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 
 function pct(numerator, denominator) {
   return denominator ? (numerator / denominator) * 100 : 0
@@ -7,14 +7,11 @@ function pct(numerator, denominator) {
 /**
  * Display-side of the Manage STIGs table:
  * - maps raw collection STIG summaries (getMetricsSummaryByCollectionAggStig)
- *   to display rows with percent calcs,
- * - applies the benchmarkId / title text filter.
+ *   to display rows with percent calcs.
  *
  * `stigs` is the Ref returned by the host's useAsyncState.
  */
 export function useStigTable(stigs) {
-  const stigFilter = ref('')
-
   const tableData = computed(() =>
     (stigs.value ?? []).map((r) => {
       const m = r.metrics ?? {}
@@ -40,19 +37,7 @@ export function useStigTable(stigs) {
     }),
   )
 
-  const filteredData = computed(() => {
-    if (!stigFilter.value) { return tableData.value }
-    const q = stigFilter.value.toLowerCase()
-    return tableData.value.filter(
-      r =>
-        r.benchmarkId.toLowerCase().includes(q)
-        || r.title.toLowerCase().includes(q),
-    )
-  })
-
   return {
-    stigFilter,
     tableData,
-    filteredData,
   }
 }

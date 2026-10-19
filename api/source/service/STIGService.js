@@ -489,7 +489,6 @@ exports.insertManualBenchmark = async function (b, clobber, svcStatus = {}) {
     const {ddl, dml} = queriesFromBenchmarkData(b) // defined below
 
     connection = await dbUtils.pool.getConnection()
-    connection.config.namedPlaceholders = true
 
     // check if this revision exists
     const [revision] = await connection.query('select revId from revision where `benchmarkId` = ? and `version` = ? and `release` = ?', [
@@ -552,7 +551,7 @@ exports.insertManualBenchmark = async function (b, clobber, svcStatus = {}) {
           ;[result] = await connection.query(dml[query].sql, [dml[query].binds])
         }
         else {
-          ;[result] = await connection.query(dml[query].sql, dml[query].binds)
+          ;[result] = await connection.query({sql: dml[query].sql, namedPlaceholders: true}, dml[query].binds)
         }
         hrend = process.hrtime(hrstart)
         stats[query] = `${result.affectedRows} in ${hrend[0]}s  ${hrend[1] / 1000000}ms`
@@ -937,16 +936,15 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, svcSta
     }
 
     connection = await dbUtils.pool.getConnection()
-    connection.config.namedPlaceholders = true
     
     async function transaction () {
       await connection.query('START TRANSACTION')
 
       // note if this is the current revision
-      const [crRows] = await connection.query('SELECT * FROM current_rev WHERE benchmarkId = :benchmarkId and `version` = :version and `release` = :release', binds)
+      const [crRows] = await connection.query({sql: 'SELECT * FROM current_rev WHERE benchmarkId = :benchmarkId and `version` = :version and `release` = :release', namedPlaceholders: true}, binds)
       const wasCurrentRev = !!crRows.length
       // note if this revision is used to calculate stats
-      const [drRows] = await connection.query('SELECT collectionId FROM default_rev WHERE benchmarkId = :benchmarkId and revId = :revId', binds)
+      const [drRows] = await connection.query({sql: 'SELECT collectionId FROM default_rev WHERE benchmarkId = :benchmarkId and revId = :revId', namedPlaceholders: true}, binds)
       const wasDefaultRev = !!drRows.length
 
       // re-materialize current_rev if we're deleting the current revision
@@ -955,7 +953,7 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, svcSta
       }
   
       for (const sql of dmls) {
-       await connection.query(sql, binds)
+       await connection.query({sql, namedPlaceholders: true}, binds)
       }
 
       // re-calculate review statistics and repopulate default_rev from view if we've affected default_rev
@@ -1016,12 +1014,11 @@ exports.deleteStigById = async function(benchmarkId, userObject, svcStatus = {})
     }
 
     connection = await dbUtils.pool.getConnection()
-    connection.config.namedPlaceholders = true
     async function transaction () {
       await connection.query('START TRANSACTION')
 
       for (const sql of dmls) {
-        await connection.query(sql, binds)
+        await connection.query({sql, namedPlaceholders: true}, binds)
       }
    
       await dbUtils.updateStatsAssetStig( connection, {benchmarkId})

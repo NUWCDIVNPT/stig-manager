@@ -1,5 +1,7 @@
 <script setup>
 import { computed } from 'vue'
+import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
+import { catLabel } from '../../../shared/lib/exportCells.js'
 import DiffRuleTable from './DiffRuleTable.vue'
 import RulePaneHeader from './RulePaneHeader.vue'
 import RulePaneToolbar from './RulePaneToolbar.vue'
@@ -102,16 +104,47 @@ const bodyState = computed(() => {
 })
 
 const bodyError = computed(() => (diffMode.value ? props.diffError : props.rulesError))
+
+// One search for whichever table is showing; rules on a column the other mode lacks are dropped
+const viewColumns = [
+  { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false },
+  { field: 'version', header: 'STIG ID' },
+  { field: 'groupId', header: 'Group' },
+  { field: 'ruleId', header: 'Rule Id' },
+  { field: 'title', header: 'Rule Title' },
+]
+const diffColumns = computed(() => [
+  { field: 'stigId', header: 'STIG ID' },
+  { field: 'leftRule', header: `Rule in ${props.compareRev ?? 'compared'}` },
+  { field: 'rightRule', header: `Rule in ${props.viewRev ?? 'viewed'}` },
+  { field: 'cat', header: 'CAT', filterValues: r => catLabel(r.cat) ?? '', quickSearch: false },
+  { field: 'changed', header: 'Changed properties', filterValues: r => r.changed, multiple: true },
+])
+
+const tableRows = computed(() => (diffMode.value ? props.diffRows : props.rules) ?? [])
+const {
+  term: searchTerm,
+  filters: gridFilters,
+  filteredRows,
+  isFiltered,
+  filterColumns,
+  valueOptions,
+  highlightTerm,
+} = useGridSearch(tableRows, () => (diffMode.value ? diffColumns.value : viewColumns))
 </script>
 
 <template>
   <section class="stiglib-panel">
     <RulePaneHeader :benchmark="benchmark" :benchmark-id="benchmarkId" @close="emit('close')" />
     <RulePaneToolbar
+      v-model:search="searchTerm"
+      v-model:filters="gridFilters"
       :revisions="revisions"
       :revisions-loading="revisionsLoading"
       :view-rev="viewRev"
       :compare-rev="compareRev"
+      :filter-columns="filterColumns"
+      :value-options="valueOptions"
       @change-view-rev="rev => emit('change-view-rev', rev)"
       @change-compare-rev="rev => emit('change-compare-rev', rev)"
     />
@@ -137,7 +170,10 @@ const bodyError = computed(() => (diffMode.value ? props.diffError : props.rules
       <template v-else>
         <DiffRuleTable
           v-if="diffMode"
-          :rows="diffRows"
+          :rows="filteredRows"
+          :total-count="diffRows.length"
+          :filtered="isFiltered"
+          :highlight-term="highlightTerm"
           :view-rev="viewRev"
           :compare-rev="compareRev"
           :selected-key="selectedDiffRowKey"
@@ -145,7 +181,10 @@ const bodyError = computed(() => (diffMode.value ? props.diffError : props.rules
         />
         <ViewRuleTable
           v-else
-          :rules="rules"
+          :rules="filteredRows"
+          :total-count="rules.length"
+          :filtered="isFiltered"
+          :highlight-term="highlightTerm"
           :selected-rule-id="selectedRuleId"
           :export-filename="benchmark?.benchmarkId ?? 'Rules'"
           @select-rule="rule => emit('select-rule', rule)"

@@ -14,7 +14,7 @@ vi.mock('../api/metricsApi.js', () => ({
 
 vi.mock('../../../shared/lib/labelFilters.js', () => ({
   buildLabelFilterParams: vi.fn().mockImplementation((ids) => {
-    return ids?.length ? { labelId: ids } : {}
+    return ids?.length ? { labelName: ids } : {}
   }),
 }))
 
@@ -55,14 +55,14 @@ describe('collectionMetrics', () => {
     expect(fetchCollectionMetricsSummaryMock).toHaveBeenCalledWith('1', {})
   })
 
-  it('watches selectedLabelIds and triggers fetchMetrics', async () => {
+  it('watches selectedLabelNames and triggers fetchMetrics', async () => {
     fetchCollectionMetricsSummaryMock.mockClear()
 
     const { rerender } = render(CollectionMetrics, {
       props: {
         collectionId: '1',
         collectionName: 'Test Collection',
-        selectedLabelIds: [],
+        selectedLabelNames: [],
       },
     })
 
@@ -70,12 +70,12 @@ describe('collectionMetrics', () => {
     expect(initialCallCount).toBeGreaterThan(0)
 
     // Change the labels
-    await rerender({ selectedLabelIds: ['labelA', 'labelB'] })
+    await rerender({ selectedLabelNames: ['labelA', 'labelB'] })
     await nextTick()
 
     // Should be called a second time
     expect(fetchCollectionMetricsSummaryMock).toHaveBeenCalledTimes(2)
-    expect(fetchCollectionMetricsSummaryMock).toHaveBeenLastCalledWith('1', { labelId: ['labelA', 'labelB'] })
+    expect(fetchCollectionMetricsSummaryMock).toHaveBeenLastCalledWith('1', { labelName: ['labelA', 'labelB'] })
   })
 
   it('watches collectionId and triggers fetchMetrics', async () => {

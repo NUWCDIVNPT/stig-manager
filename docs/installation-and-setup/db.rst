@@ -20,8 +20,8 @@ The STIG Manager API requires a dedicated MySQL database (equivalent to a schema
 Database - MySQL 8.4.x
 -----------------------------
 
-The STIG Manager API is tested with the latest 3 versions of the MySQL 8.4.x series, and requires MySQL 8.0.24 at minimum.
-The API will still bootstrap when provided with an 8.0.24+ MySQL database, but the MySQL 8.0.x series has reached end of life and is no longer tested with STIG Manager, and the API logs a warning at startup when the MySQL release is older than 8.4.x. Support for MySQL releases older than 8.4.x is deprecated and will be removed in a future release. It is strongly recommended you use the latest version of MySQL 8.4.x available.
+The STIG Manager API is tested with MySQL 8.4.0 and the latest 2 versions of the MySQL 8.4.x series, and requires MySQL 8.4.0 at minimum.
+The API will not start when provided with a MySQL release older than 8.4.0. The MySQL 8.0.x series has reached end of life and is not supported. It is strongly recommended you use the latest version of MySQL 8.4.x available.
 
 The API requires knowledge of 1) the DB address/port, 2) which schema (database) is used for STIG Manager, and 3) User credentials with necessary privileges on that schema. `More information about MySQL. <https://dev.mysql.com/doc/>`_
 

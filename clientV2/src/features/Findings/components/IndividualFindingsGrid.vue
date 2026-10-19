@@ -6,17 +6,25 @@ import { useRouter } from 'vue-router'
 import bot2 from '../../../assets/bot2.svg'
 import shieldGreenCheck from '../../../assets/shield-green-check.svg'
 import LabelsRow from '../../../components/columns/LabelsRow.vue'
+import ColumnToggle from '../../../components/common/ColumnToggle.vue'
 import DensityControls from '../../../components/common/DensityControls.vue'
 import EngineBadge from '../../../components/common/EngineBadge.vue'
 import EngineIconCell from '../../../components/common/EngineIconCell.vue'
+import GridFilterButton from '../../../components/common/GridFilterButton.vue'
+import GridSearch from '../../../components/common/GridSearch.vue'
+import GridToolbar from '../../../components/common/GridToolbar.vue'
+import HighlightText from '../../../components/common/HighlightText.vue'
 import ManualBadge from '../../../components/common/ManualBadge.vue'
 import OverrideBadge from '../../../components/common/OverrideBadge.vue'
 import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
+import { useColumnVisibility } from '../../../shared/composables/useColumnVisibility.js'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
+import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 import { durationToNow } from '../../../shared/lib.js'
 import { getEngineDisplay } from '../../../shared/lib/checklistUtils.js'
 import { compactTablePt } from '../../../shared/lib/dataTablePt.js'
+import { capitalize, statusText } from '../../../shared/lib/exportCells.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
 import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 
@@ -73,6 +81,31 @@ const decoratedRows = computed(() => {
     }
   })
 })
+
+const TOGGLE_COLUMNS = [
+  { field: 'assetName', header: 'Asset', locked: true },
+  { field: 'stigs', header: 'STIGs' },
+  { field: 'detail', header: 'Detail' },
+  { field: 'comment', header: 'Comment' },
+  { field: 'resultEngine', header: 'Engine' },
+  { field: 'status', header: 'Status' },
+  { field: 'username', header: 'Reviewer' },
+  { field: 'ts', header: 'Last changed' },
+]
+const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibility(TOGGLE_COLUMNS, 'findingsIndividual.columns')
+
+const stigIds = r => (r.stigs ?? []).map(s => s.benchmarkId)
+// Labels show inside the asset cell, so they search whenever Asset is visible
+const { term: searchTerm, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(decoratedRows, [
+  { field: 'assetName', header: 'Asset' },
+  { field: 'labels', header: 'Labels', filterValues: r => r.labels, multiple: true, shownWith: 'assetName' },
+  { field: 'stigs', header: 'STIGs', filterValues: stigIds, multiple: true },
+  { field: 'detail', header: 'Detail' },
+  { field: 'comment', header: 'Comment' },
+  { field: 'resultEngine', header: 'Engine', filterValues: r => capitalize(r._engineDisplay) },
+  { field: 'status', header: 'Status', filterValues: r => statusText(r.status) },
+  { field: 'username', header: 'Reviewer', filterValues: r => r.username },
+], { visibleFields })
 
 // itemSize must cover the tallest cell: a <tr>'s height is a minimum, so an
 // over-tall cell grows the row past itemSize and drifts the virtual scroller's
@@ -156,6 +189,13 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
         </div>
         <DensityControls grid-key="findings-individual" />
       </header>
+      <GridToolbar v-if="selectedAggregated && !error">
+        <GridSearch v-model="searchTerm" label="Search reviews" placeholder="Search reviews..." />
+        <template #end>
+          <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
+          <ColumnToggle v-model="selectedColumns" :columns="toggleableColumns" />
+        </template>
+      </GridToolbar>
 
       <div v-if="error" class="ind-grid-panel__error">
         <p>Couldn't load reviews.</p>
@@ -172,7 +212,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
       <div v-else class="table-container">
         <DataTable
           ref="dataTableRef"
-          :value="decoratedRows"
+          :value="filteredRows"
           :loading="isLoading"
           data-key="_rowKey"
           export-filename="Finding Details"
@@ -190,7 +230,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
               <div class="asset-cell">
                 <div class="asset-cell__name-row">
                   <div class="asset-cell__name" :title="data.assetName">
-                    {{ data.assetName }}
+                    <HighlightText :text="data.assetName" :term="highlightTerm('assetName')" />
                   </div>
                   <button
                     type="button"
@@ -201,7 +241,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
                     <img :src="shieldGreenCheck" width="14" height="14" alt="Review">
                   </button>
                 </div>
-                <LabelsRow v-if="data.labels?.length" :labels="data.labels" compact />
+                <LabelsRow v-if="data.labels?.length" :labels="data.labels" :search-term="highlightTerm('labels')" compact />
               </div>
             </template>
           </Column>
@@ -209,22 +249,22 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
                varies per row under the CCI aggregator. -->
           <Column field="labels" header="Labels" hidden />
           <Column field="ruleId" header="Rule" hidden />
-          <Column header="STIGs" field="stigs" :style="{ width: '14rem', minWidth: '11rem' }" :pt="borderPt">
+          <Column v-if="visibleFields.has('stigs')" header="STIGs" field="stigs" :style="{ width: '14rem', minWidth: '11rem' }" :pt="borderPt">
             <template #body="{ data }">
-              <span class="cell-text cell-text--clamped" :title="(data.stigs ?? []).map(s => s.benchmarkId).join(', ')">{{ (data.stigs ?? []).map(s => s.benchmarkId).join(', ') || '—' }}</span>
+              <span class="cell-text cell-text--clamped" :title="(data.stigs ?? []).map(s => s.benchmarkId).join(', ')"><HighlightText :text="(data.stigs ?? []).map(s => s.benchmarkId).join(', ') || '—'" :term="highlightTerm('stigs')" /></span>
             </template>
           </Column>
-          <Column field="detail" header="Detail" :style="{ minWidth: '12rem' }" :pt="borderPt">
+          <Column v-if="visibleFields.has('detail')" field="detail" header="Detail" :style="{ minWidth: '12rem' }" :pt="borderPt">
             <template #body="{ data }">
-              <span class="cell-text cell-text--clamped" :title="data.detail">{{ data.detail || '—' }}</span>
+              <span class="cell-text cell-text--clamped" :title="data.detail"><HighlightText :text="data.detail || '—'" :term="highlightTerm('detail')" /></span>
             </template>
           </Column>
-          <Column field="comment" header="Comment" :style="{ minWidth: '12rem' }" :pt="borderPt">
+          <Column v-if="visibleFields.has('comment')" field="comment" header="Comment" :style="{ minWidth: '12rem' }" :pt="borderPt">
             <template #body="{ data }">
-              <span class="cell-text cell-text--clamped" :title="data.comment">{{ data.comment || '—' }}</span>
+              <span class="cell-text cell-text--clamped" :title="data.comment"><HighlightText :text="data.comment || '—'" :term="highlightTerm('comment')" /></span>
             </template>
           </Column>
-          <Column field="resultEngine" export-header="Engine" :pt="borderPt" :style="{ width: '2.8rem', minWidth: '2.8rem', textAlign: 'center' }">
+          <Column v-if="visibleFields.has('resultEngine')" field="resultEngine" export-header="Engine" :pt="borderPt" :style="{ width: '2.8rem', minWidth: '2.8rem', textAlign: 'center' }">
             <template #header>
               <img :src="bot2" alt="" class="engine-header-icon" title="Result engine">
             </template>
@@ -232,17 +272,17 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
               <EngineIconCell :display="data._engineDisplay" />
             </template>
           </Column>
-          <Column header="Status" field="status" :style="{ width: '5.5rem', minWidth: '5.5rem', textAlign: 'center' }" :pt="borderPt">
+          <Column v-if="visibleFields.has('status')" header="Status" field="status" :style="{ width: '5.5rem', minWidth: '5.5rem', textAlign: 'center' }" :pt="borderPt">
             <template #body="{ data }">
               <StatusBadge :status="data._statusLabel" />
             </template>
           </Column>
-          <Column field="username" header="Reviewer" sortable :style="{ width: '8rem', minWidth: '7rem' }" :pt="borderPt">
+          <Column v-if="visibleFields.has('username')" field="username" header="Reviewer" sortable :style="{ width: '8rem', minWidth: '7rem' }" :pt="borderPt">
             <template #body="{ data }">
-              <span :title="data.username">{{ data.username || '—' }}</span>
+              <span :title="data.username"><HighlightText :text="data.username || '—'" :term="highlightTerm('username')" /></span>
             </template>
           </Column>
-          <Column field="ts" export-header="Last Changed" sortable :style="{ width: '4.5rem', minWidth: '4.5rem', textAlign: 'center' }" :pt="borderPt">
+          <Column v-if="visibleFields.has('ts')" field="ts" export-header="Last Changed" sortable :style="{ width: '4.5rem', minWidth: '4.5rem', textAlign: 'center' }" :pt="borderPt">
             <template #header>
               <i class="pi pi-clock" title="Last action" />
             </template>
@@ -251,11 +291,18 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
             </template>
           </Column>
 
+          <template #empty>
+            <div v-if="isFiltered && rows.length" class="ind-grid-no-match">
+              No reviews match the current search and filters.
+            </div>
+          </template>
+
           <template #footer>
             <StatusFooter
               :dt="dataTableRef"
               :metrics="[]"
               :total-count="rows.length"
+              :filtered-count="isFiltered ? filteredRows.length : null"
               total-label="reviews"
               :show-refresh="true"
               :show-export="true"
@@ -317,7 +364,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
   justify-content: space-between;
   gap: 0.5rem 0.75rem;
   padding: 0.5rem 0.75rem;
-  background: linear-gradient(180deg, var(--color-background-light), var(--color-background-dark));
+  background: var(--color-background-dark);
   border-bottom: 1px solid var(--color-border-default);
   flex-shrink: 0;
 }
@@ -382,6 +429,12 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 .ind-grid-panel__table {
   flex: 1;
   min-height: 0;
+}
+
+.ind-grid-no-match {
+  padding: 3rem;
+  text-align: center;
+  color: var(--color-text-dim);
 }
 
 .ind-grid-empty {

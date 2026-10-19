@@ -115,8 +115,19 @@ module.exports.getChecklistByCollectionStig = async function getChecklistByColle
   try {
     const benchmarkId = req.params.benchmarkId
     const revisionStr = req.params.revisionStr
+    const labelIds = req.query.labelId
+    const labelNames = req.query.labelName
+    const labelMatch = req.query.labelMatch
     const { collectionId } = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Restricted)
-    const response = await CollectionService.getChecklistByCollectionStig(collectionId, benchmarkId, revisionStr, req.userObject )
+    const response = await CollectionService.getChecklistByCollectionStig({
+      collectionId,
+      benchmarkId,
+      revisionStr,
+      labelIds,
+      labelNames,
+      labelMatch,
+      userObject: req.userObject
+    })
     res.json(response)
   }
   catch (err) {

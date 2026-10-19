@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 
 function pct(numerator, denominator) {
   return denominator ? (numerator / denominator) * 100 : 0
@@ -8,17 +8,12 @@ function pct(numerator, denominator) {
  * Display-side of the Manage Assets table:
  * - maps raw collection asset summaries to display rows (with the percent
  *   calcs that have divide-by-zero risk on every column),
- * - derives the label filter dropdown options,
- * - applies the asset-name + label filters,
  * - exposes mutators for the in-place list updates after create/edit/transfer.
  *
  * `assets` is the Ref returned by the host's useAsyncState — this composable
  * reads it and writes back to it for the in-place updates.
  */
 export function useAssetTable(assets) {
-  const assetFilter = ref('')
-  const labelFilter = ref([])
-
   const tableData = computed(() =>
     (assets.value ?? []).map((r) => {
       const m = r.metrics
@@ -29,6 +24,7 @@ export function useAssetTable(assets) {
         assetId: r.assetId,
         assetName: r.name,
         labels: r.labels,
+        benchmarkIds: r.benchmarkIds ?? [],
         stigCnt: r.benchmarkIds?.length ?? 0,
         checks: assessments,
         oldest: m?.minTs,
@@ -40,31 +36,6 @@ export function useAssetTable(assets) {
       }
     }),
   )
-
-  const labelOptions = computed(() => {
-    const seen = new Map()
-    for (const row of tableData.value) {
-      for (const lbl of (row.labels ?? [])) {
-        if (!seen.has(lbl.labelId)) {
-          seen.set(lbl.labelId, { label: lbl.name, value: lbl.labelId })
-        }
-      }
-    }
-    return [...seen.values()].sort((a, b) => a.label.localeCompare(b.label))
-  })
-
-  const filteredData = computed(() => {
-    let data = tableData.value
-    if (assetFilter.value) {
-      const q = assetFilter.value.toLowerCase()
-      data = data.filter(r => r.assetName.toLowerCase().includes(q))
-    }
-    if (labelFilter.value.length > 0) {
-      const ids = new Set(labelFilter.value)
-      data = data.filter(r => (r.labels ?? []).some(l => ids.has(l.labelId)))
-    }
-    return data
-  })
 
   function applyAssetCreated(row) {
     assets.value = [...assets.value, {
@@ -96,11 +67,7 @@ export function useAssetTable(assets) {
   }
 
   return {
-    assetFilter,
-    labelFilter,
     tableData,
-    labelOptions,
-    filteredData,
     applyAssetCreated,
     applyAssetChanged,
     applyAssetsTransferred,

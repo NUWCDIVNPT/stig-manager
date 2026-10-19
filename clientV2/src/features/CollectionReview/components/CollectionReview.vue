@@ -8,6 +8,7 @@ import { getHttpStatus } from '../../../shared/api/apiClient.js'
 import { fetchCollection } from '../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
+import { useLabelFilterQuery } from '../../../shared/composables/useLabelFilterQuery.js'
 import { defaultFieldSettings, statusPayloadForAction } from '../../../shared/lib/reviewFormUtils.js'
 import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 import { fetchAssetsByCollectionStig, fetchCollectionChecklist, fetchReviewsByRule, fetchRule, postReviewBatch } from '../api/collectionReviewApi.js'
@@ -25,6 +26,9 @@ const { getCollectionRoleId } = useCurrentUser()
 const collectionId = computed(() => route.params.collectionId)
 const benchmarkId = computed(() => route.params.benchmarkId)
 const revisionStr = computed(() => route.params.revisionStr)
+
+// Label filter from the route query (set from the breadcrumb); the API takes the names as is.
+const { selectedLabelNames, labelFilterParams } = useLabelFilterQuery()
 
 function recentViewKey(cId = collectionId.value, bId = benchmarkId.value) {
   return `collection-review:${cId}:${bId}`
@@ -54,12 +58,12 @@ const canAccept = computed(() =>
 )
 
 const { state: gridData, isLoading: isChecklistLoading, error: checklistError, execute: loadChecklist } = useAsyncState(
-  () => fetchCollectionChecklist(collectionId.value, benchmarkId.value, revisionStr.value),
+  () => fetchCollectionChecklist(collectionId.value, benchmarkId.value, revisionStr.value, labelFilterParams.value),
   { immediate: false, initialState: [] },
 )
 
 const { state: assets, execute: loadAssets } = useAsyncState(
-  () => fetchAssetsByCollectionStig(collectionId.value, benchmarkId.value),
+  () => fetchAssetsByCollectionStig(collectionId.value, benchmarkId.value, labelFilterParams.value),
   { immediate: false, initialState: [] },
 )
 
@@ -68,7 +72,7 @@ const assetCount = computed(() => assets.value?.length ?? 0)
 const selectedRuleId = ref(null)
 
 const {
-  state: ruleContent,
+  state: loadedRule,
   isLoading: isRuleLoading,
   error: ruleContentError,
   execute: loadRuleContent,
@@ -77,12 +81,16 @@ const {
   { immediate: false, initialState: null, onError: null },
 )
 
+// A rule fetch can resolve after the selection was emptied (a label filter that
+// matches no Assets clears the grid), so the panel shows content only for a selected rule.
+const ruleContent = computed(() => selectedRuleId.value ? loadedRule.value : null)
+
 const {
   state: reviewsData,
   isLoading: isReviewsLoading,
   execute: loadReviews,
 } = useAsyncState(
-  ruleId => fetchReviewsByRule(collectionId.value, ruleId),
+  ruleId => fetchReviewsByRule(collectionId.value, ruleId, labelFilterParams.value),
   { immediate: false, initialState: [], onError: null },
 )
 
@@ -110,15 +118,25 @@ watch(collectionId, () => {
   }
 }, { immediate: true })
 
-watch([collectionId, benchmarkId, revisionStr], () => {
-  if (collectionId.value && benchmarkId.value && revisionStr.value) {
-    loadChecklist()
-    loadAssets()
+const stigKey = computed(() => `${collectionId.value}/${benchmarkId.value}/${revisionStr.value}`)
+
+// Reviews are per collection and rule, fetched label-scoped (rule clicks stay
+// small), so a label-only change reloads the selected rule's reviews too. A STIG
+// or revision change leaves that to the gridData watcher below, which replaces
+// the selection (and would make a reviews request for the old rule wasted).
+watch([stigKey, selectedLabelNames], ([key], [prevKey] = []) => {
+  if (!(collectionId.value && benchmarkId.value && revisionStr.value)) {
+    return
+  }
+  loadChecklist()
+  loadAssets()
+  if (key === prevKey && selectedRuleId.value) {
+    loadReviews(selectedRuleId.value)
   }
 }, { immediate: true })
 
 watch(
-  [collection, () => route.params.benchmarkId, () => route.params.revisionStr],
+  [collection, () => route.params.benchmarkId, () => route.params.revisionStr, selectedLabelNames],
   ([c]) => {
     if (c?.name && route.params.benchmarkId) {
       addView({
@@ -153,6 +171,8 @@ watch(gridData, (data) => {
 // load data when we have a selected rule and collection/benchmarkid/revisionstr
 watch(selectedRuleId, (ruleId) => {
   if (!ruleId) {
+    loadedRule.value = null
+    reviewsData.value = []
     return
   }
   if (benchmarkId.value && revisionStr.value) {

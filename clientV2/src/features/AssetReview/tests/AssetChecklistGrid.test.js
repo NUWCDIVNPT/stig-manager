@@ -1,5 +1,5 @@
-import { screen, waitFor } from '@testing-library/vue'
 import { fireEvent } from '@testing-library/dom'
+import { screen, waitFor } from '@testing-library/vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { postReviewBatch } from '../../../shared/api/reviewsApi.js'
 import { renderWithProviders } from '../../../testUtils/utils.js'
@@ -25,17 +25,13 @@ vi.mock('../../../shared/api/reviewsApi.js', () => ({
   putReview: vi.fn(),
 }))
 
-// Stub the heavy children. The table stub re-emits the rows it is given as the
-// "visible" set on mount, standing in for the real filter pipeline.
+// Stub the heavy children; the table echoes the rows search and filters left
 vi.mock('../components/AssetChecklistGridTable.vue', () => ({
   default: {
     name: 'AssetChecklistGridTable',
     props: ['gridData'],
-    emits: ['update:visible-rows', 'update:selectedRow', 'row-click', 'refresh'],
-    template: '<div data-testid="grid-table" />',
-    mounted() {
-      this.$emit('update:visible-rows', this.gridData)
-    },
+    emits: ['update:selectedRow', 'row-click', 'refresh'],
+    template: '<div data-testid="grid-table">{{ gridData.map(r => r.ruleId).join(",") }}</div>',
   },
 }))
 
@@ -83,7 +79,7 @@ beforeEach(() => {
   postReviewBatch.mockResolvedValue({ inserted: 0, updated: 1, failedValidation: 0, validationErrors: [] })
 })
 
-describe('AssetChecklistGrid bulk actions', () => {
+describe('assetChecklistGrid bulk actions', () => {
   it('submits only the saved-complete rule via Submit All', async () => {
     const { emitted } = render()
     await fireEvent.click(await screen.findByRole('button', { name: /Submit All/i }))
@@ -117,5 +113,16 @@ describe('AssetChecklistGrid bulk actions', () => {
     render({ accessMode: 'r' })
     expect(screen.queryByRole('button', { name: /Submit All/i })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Accept All/i })).not.toBeInTheDocument()
+  })
+})
+
+describe('assetChecklistGrid search', () => {
+  it('passes only matching rows to the table and to bulk actions', async () => {
+    render()
+    expect(screen.getByTestId('grid-table').textContent).toBe('r1,r2,r3')
+    await fireEvent.input(screen.getByRole('textbox', { name: 'Search reviews' }), { target: { value: 'r2' } })
+    await waitFor(() => expect(screen.getByTestId('grid-table').textContent).toBe('r2'))
+    // The saved-complete rule is filtered out, so there is nothing left to submit
+    expect(screen.getByRole('button', { name: /Submit All/i })).toBeDisabled()
   })
 })

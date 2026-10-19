@@ -47,22 +47,4 @@ describe('useStigTable', () => {
       rejectedPct: 0,
     })
   })
-
-  it('filters data by benchmarkId or title', () => {
-    const stigs = ref([
-      { benchmarkId: 'WINDOWS_10', title: 'Microsoft Windows 10' },
-      { benchmarkId: 'RHEL_8', title: 'Red Hat Enterprise Linux 8' },
-    ])
-    const { filteredData, stigFilter } = useStigTable(stigs)
-
-    expect(filteredData.value.length).toBe(2)
-
-    stigFilter.value = 'windows'
-    expect(filteredData.value[0].benchmarkId).toBe('WINDOWS_10')
-    expect(filteredData.value.length).toBe(1)
-
-    stigFilter.value = 'RED HAT' // case insensitive
-    expect(filteredData.value[0].benchmarkId).toBe('RHEL_8')
-    expect(filteredData.value.length).toBe(1)
-  })
 })

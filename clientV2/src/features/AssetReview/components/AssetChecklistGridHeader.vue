@@ -1,5 +1,6 @@
 <script setup>
 import { saveAs } from 'file-saver-es'
+import Popover from 'primevue/popover'
 import TieredMenu from 'primevue/tieredmenu'
 import { computed, ref, toRefs } from 'vue'
 import { useRoute } from 'vue-router'
@@ -10,6 +11,7 @@ import submitIcon from '../../../assets/submit.svg'
 import LabelsRow from '../../../components/columns/LabelsRow.vue'
 import ColumnToggle from '../../../components/common/ColumnToggle.vue'
 import DensityControls from '../../../components/common/DensityControls.vue'
+import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../components/common/GridSearch.vue'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import AssetStigImportModal from '../../AssetStigImport/components/AssetStigImportModal.vue'
@@ -32,6 +34,18 @@ const props = defineProps({
     type: Array,
     required: true,
   },
+  activePreset: {
+    type: String,
+    default: null,
+  },
+  filterColumns: {
+    type: Array,
+    default: () => [],
+  },
+  filterValueOptions: {
+    type: Object,
+    default: () => ({}),
+  },
   canAccept: {
     type: Boolean,
     default: false,
@@ -46,7 +60,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['refresh', 'bulk-action'])
+const emit = defineEmits(['refresh', 'bulk-action', 'apply-preset'])
 
 const {
   asset,
@@ -60,6 +74,26 @@ const showImportModal = ref(false)
 const exportIsRunning = ref(false)
 
 const canImport = computed(() => accessMode.value === 'rw')
+
+// Asset details popover rows; empty fields are skipped
+const assetProps = computed(() => {
+  const a = asset.value ?? {}
+  return [
+    { label: 'ID', value: a.assetId || a.id },
+    { label: 'IP', value: a.ip },
+    { label: 'FQDN', value: a.fqdn },
+    { label: 'MAC', value: a.mac },
+    { label: 'Non-computing', value: a.noncomputing ? 'Yes' : '' },
+    { label: 'Description', value: a.description },
+  ].filter(p => p.value)
+})
+
+const assetDetails = ref()
+
+// Matches the Checklist menu panel; the vars also recolor the arrow
+const assetDetailsPt = {
+  root: { style: '--p-popover-background: var(--color-background-light); --p-popover-border-color: var(--color-border-hover); --p-popover-content-padding: 0; box-shadow: 0 6px 24px rgba(0,0,0,0.6);' },
+}
 
 const importContext = computed(() => {
   const params = route?.params ?? {}
@@ -117,10 +151,10 @@ async function exportChecklist(format) {
   }
 }
 
-const displayMode = defineModel('displayMode', { type: String, required: true })
 const selectedColumns = defineModel('selectedColumns', { type: Array, required: true })
 
 const searchFilter = defineModel('searchFilter', { type: String, default: '' })
+const filters = defineModel('filters', { type: Array, default: () => [] })
 
 const checklistMenu = ref()
 
@@ -139,18 +173,18 @@ const checklistMenuItems = computed(() => {
       items: [
         {
           label: 'Group ID and Rule Title',
-          icon: displayMode.value === 'groupRule' ? 'pi pi-circle-fill' : 'pi pi-circle',
-          command: () => { displayMode.value = 'groupRule' },
+          icon: props.activePreset === 'groupRule' ? 'pi pi-circle-fill' : 'pi pi-circle',
+          command: () => emit('apply-preset', 'groupRule'),
         },
         {
           label: 'Group ID and Group Title',
-          icon: displayMode.value === 'groupGroup' ? 'pi pi-circle-fill' : 'pi pi-circle',
-          command: () => { displayMode.value = 'groupGroup' },
+          icon: props.activePreset === 'groupGroup' ? 'pi pi-circle-fill' : 'pi pi-circle',
+          command: () => emit('apply-preset', 'groupGroup'),
         },
         {
           label: 'Rule ID and Rule Title',
-          icon: displayMode.value === 'ruleRule' ? 'pi pi-circle-fill' : 'pi pi-circle',
-          command: () => { displayMode.value = 'ruleRule' },
+          icon: props.activePreset === 'ruleRule' ? 'pi pi-circle-fill' : 'pi pi-circle',
+          command: () => emit('apply-preset', 'ruleRule'),
         },
       ],
     },
@@ -211,14 +245,15 @@ function toggleChecklistMenu(event) {
     <div class="checklist-grid__header-top">
       <div class="checklist-grid__title-row">
         <span class="checklist-grid__title">{{ headerTitle }}</span>
-        <div v-if="asset" class="checklist-grid__asset-info">
-          <span class="asset-info__name">{{ asset.name }}</span>
-          <span class="asset-info__id">ID: {{ asset.assetId || asset.id }}</span>
-          <span v-if="asset.ip" class="asset-info__ip">IP: {{ asset.ip }}</span>
+        <template v-if="asset">
+          <button type="button" class="asset-info__name" title="Asset details" aria-haspopup="true" @click="assetDetails.toggle($event)">
+            <span class="asset-info__name-text">{{ asset.name }}</span>
+            <i class="pi pi-chevron-down asset-info__caret" />
+          </button>
           <div v-if="asset.labels?.length" class="asset-info__labels">
             <LabelsRow :labels="asset.labels" />
           </div>
-        </div>
+        </template>
       </div>
       <div class="checklist-grid__header-summary">
         <span class="checklist-grid__access-badge" :class="accessMode === 'rw' ? 'access-rw' : 'access-r'">
@@ -227,12 +262,25 @@ function toggleChecklistMenu(event) {
         </span>
       </div>
     </div>
+    <Popover ref="assetDetails" :pt="assetDetailsPt">
+      <div class="asset-details">
+        <dl class="asset-details__list">
+          <template v-for="prop in assetProps" :key="prop.label">
+            <dt>{{ prop.label }}</dt>
+            <dd>{{ prop.value }}</dd>
+          </template>
+        </dl>
+      </div>
+    </Popover>
     <div class="checklist-grid__header-bottom">
       <TieredMenu ref="checklistMenu" :model="checklistMenuItems" :popup="true" :pt="checklistMenuPT" />
-      <GridSearch
-        v-model="searchFilter" class="checklist-grid__header-search"
-        placeholder="Search reviews..." label="Search reviews"
-      />
+      <div class="checklist-grid__header-search">
+        <GridSearch
+          v-model="searchFilter" class="checklist-grid__header-search-input"
+          placeholder="Search reviews..." label="Search reviews"
+        />
+        <GridFilterButton v-model="filters" :columns="filterColumns" :value-options="filterValueOptions" />
+      </div>
       <div class="checklist-grid__header-controls">
         <button
           v-if="accessMode === 'rw'"
@@ -289,7 +337,7 @@ function toggleChecklistMenu(event) {
   flex-direction: column;
   justify-content: center;
   padding: 0.75rem 1rem;
-  background: linear-gradient(180deg, var(--color-background-light), var(--color-background-dark));
+  background: var(--color-background-dark);
   border-bottom: 1px solid var(--color-border-default);
   flex-shrink: 0;
   gap: 0.85rem;
@@ -314,8 +362,16 @@ function toggleChecklistMenu(event) {
 }
 
 .checklist-grid__header-search {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   flex: 1 1 24rem;
-  max-width: 42rem;
+  max-width: 48rem;
+  min-width: 0;
+}
+
+.checklist-grid__header-search-input {
+  flex: 1;
 }
 
 .checklist-grid__title-row {
@@ -371,44 +427,90 @@ function toggleChecklistMenu(event) {
   min-width: 0;
 }
 
-.checklist-grid__asset-info {
-  display: flex;
-  align-items: center;
-  flex: 1 1 auto;
-  min-width: 0;
-  gap: 0.5rem;
-  margin-left: 0.5rem;
-  padding-left: 0.5rem;
-  border-left: 1px solid var(--color-border-default);
-  font-size: var(--text-lg);
-  color: var(--color-text-primary);
-  white-space: nowrap;
-}
-
 .asset-info__name {
-  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 0 1 auto;
+  min-width: 0;
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.5rem;
+  border: none;
+  border-left: 1px solid var(--color-border-default);
+  background: none;
+  font: inherit;
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-text-bright);
+  cursor: pointer;
 }
 
-.asset-info__id, .asset-info__ip {
+.asset-info__name:hover {
+  background: color-mix(in srgb, var(--color-background-light) 85%, transparent);
+}
+
+.asset-info__name-text {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.asset-info__caret {
+  flex-shrink: 0;
+  font-size: var(--icon-xs);
   color: var(--color-text-dim);
 }
 
 /* Block, not flex: LabelsRow sizes itself to this box (it has no intrinsic
-   width), and the box takes whatever the header row has left. */
+   width), and the box takes whatever the title row has left. */
 .asset-info__labels {
   flex: 1 1 auto;
-  margin-left: 0.25rem;
   min-width: 0;
 }
 
-.asset-info__labels-overflow {
-  display: inline-block;
+.asset-details {
+  width: 28rem;
+  max-width: 90vw;
+  font-size: var(--text-md);
+}
+
+.asset-details__list {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  margin: 0;
+  padding: 0.3rem 0.9rem;
+}
+
+.asset-details__list dt,
+.asset-details__list dd {
+  padding: 0.45rem 0;
+  border-top: 1px solid var(--color-border-default);
+}
+
+.asset-details__list dt:first-of-type,
+.asset-details__list dt:first-of-type + dd {
+  border-top: none;
+}
+
+.asset-details__list dt {
+  max-width: 11rem;
+  padding-right: 1rem;
   font-size: var(--text-sm);
-  background-color: var(--color-background-soft);
-  padding: 1px 4px;
-  border-radius: 2px;
+  font-weight: 600;
   color: var(--color-text-dim);
-  margin-left: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  overflow-wrap: anywhere;
+}
+
+.asset-details__list dd {
+  margin: 0;
+  color: var(--color-text-bright);
+  overflow-wrap: anywhere;
+  /* Long descriptions scroll instead of stretching the panel */
+  max-height: 7.5rem;
+  overflow-y: auto;
 }
 
 .checklist-grid__access-badge {

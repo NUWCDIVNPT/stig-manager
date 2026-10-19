@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { fieldMatches, getMatchedFields, highlightText } from './searchUtils.js'
 import { escapeHtml } from './htmlUtils.js'
+import { fieldMatches, highlightText } from './searchUtils.js'
 
 describe('escapeHtml', () => {
   it('should escape &, <, >, "', () => {
@@ -74,38 +74,5 @@ describe('fieldMatches', () => {
     expect(fieldMatches('value', '')).toBe(false)
     expect(fieldMatches('', 'term')).toBe(false)
     expect(fieldMatches(null, null)).toBe(false)
-  })
-})
-
-describe('getMatchedFields', () => {
-  const fieldDefs = [
-    { key: 'name', label: 'name' },
-    { key: 'title', label: 'title' },
-    { getter: row => row.nested?.value, label: 'nested' },
-  ]
-
-  it('should return labels of matching fields using key accessor', () => {
-    const row = { name: 'alpha', title: 'beta' }
-    expect(getMatchedFields(row, fieldDefs, 'alpha')).toEqual(['name'])
-  })
-
-  it('should return labels of matching fields using getter accessor', () => {
-    const row = { name: 'x', title: 'y', nested: { value: 'gamma' } }
-    expect(getMatchedFields(row, fieldDefs, 'gamma')).toEqual(['nested'])
-  })
-
-  it('should return multiple labels when multiple fields match', () => {
-    const row = { name: 'test value', title: 'test title' }
-    expect(getMatchedFields(row, fieldDefs, 'test')).toEqual(['name', 'title'])
-  })
-
-  it('should return empty array when no term', () => {
-    expect(getMatchedFields({ name: 'a' }, fieldDefs, '')).toEqual([])
-    expect(getMatchedFields({ name: 'a' }, fieldDefs, null)).toEqual([])
-  })
-
-  it('should return empty array when no fields match', () => {
-    const row = { name: 'alpha', title: 'beta' }
-    expect(getMatchedFields(row, fieldDefs, 'zzz')).toEqual([])
   })
 })
