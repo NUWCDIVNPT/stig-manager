@@ -261,16 +261,11 @@ function onRemoveAll() {
 
         <Column
           v-if="visibleFields.has('status')"
-          field="status" export-header="Status"
+          field="status" header="Status"
           sortable
-          :pt="centerBorderPt"
-          style="width: 7%; text-align: center;"
+          :pt="borderPt"
+          style="width: 7%;"
         >
-          <template #header>
-            <span style="display: inline-block; text-align: center; width: 100%;">
-              Status
-            </span>
-          </template>
           <template #body="{ data }">
             <span :class="{ 'dim-value': !data.status }"><HighlightText :text="data.status || '—'" :term="highlightTerm('status')" /></span>
           </template>
