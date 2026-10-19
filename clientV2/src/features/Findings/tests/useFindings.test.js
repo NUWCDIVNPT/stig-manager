@@ -13,12 +13,12 @@ const { fetchFindings } = await import('../api/findingsApi.js')
 
 const SIGNAL = { signal: expect.any(AbortSignal) }
 
-function setup({ collectionId = '17', aggregator = 'groupId', benchmarkId = null, labelIds = [] } = {}) {
+function setup({ collectionId = '17', aggregator = 'groupId', benchmarkId = null, labelNames = [] } = {}) {
   const refs = {
     collectionId: ref(collectionId),
     aggregator: ref(aggregator),
     benchmarkId: ref(benchmarkId),
-    labelIds: ref(labelIds),
+    labelNames: ref(labelNames),
   }
   const composable = useFindings(refs)
   return { ...refs, ...composable }
@@ -62,16 +62,16 @@ describe('useFindings', () => {
   it('threads the label filter into the request and refetches when it changes', async () => {
     fetchFindings.mockClear()
     fetchFindings.mockResolvedValue([])
-    const { labelIds } = setup({ labelIds: ['label-a'] })
+    const { labelNames } = setup({ labelNames: ['label-a'] })
     await flushPromises()
     expect(fetchFindings).toHaveBeenLastCalledWith('17', {
       aggregator: 'groupId',
       benchmarkId: undefined,
-      labelId: ['label-a'],
+      labelName: ['label-a'],
     }, SIGNAL)
 
     fetchFindings.mockClear()
-    labelIds.value = [null]
+    labelNames.value = [null]
     await flushPromises()
     expect(fetchFindings).toHaveBeenLastCalledWith('17', {
       aggregator: 'groupId',

@@ -15,11 +15,11 @@ import IndividualFindingsGrid from './IndividualFindingsGrid.vue'
 
 const props = defineProps({
   collectionId: { type: [String, Number], required: true },
-  selectedLabelIds: { type: Array, default: () => [] },
+  selectedLabelNames: { type: Array, default: () => [] },
 })
 
 const collectionId = toRef(props, 'collectionId')
-const labelIds = toRef(props, 'selectedLabelIds')
+const labelNames = toRef(props, 'selectedLabelNames')
 
 const route = useRoute()
 const router = useRouter()
@@ -85,14 +85,14 @@ watch([selectedBenchmarkId, aggregator, selectedFinding], ([stig, agg, sel]) => 
 
 // Per-STIG metrics + collection totals. Drives both the popover STIG list and
 // the "Overall" CAT 1/2/3 totals in the AggregatedFindingsGrid header. Like
-// useFindings/useFindingReviews below, honors `labelIds` server-side.
+// useFindings/useFindingReviews below, honors `labelNames` server-side.
 const {
   stigs,
   totals,
   isLoading: isStigsLoading,
   error: stigsError,
   retry: retryStigs,
-} = useCollectionStigSummary({ collectionId, labelIds })
+} = useCollectionStigSummary({ collectionId, labelNames })
 
 // Middle pane: aggregated findings, optionally scoped to one STIG.
 const {
@@ -101,7 +101,7 @@ const {
   error: findingsError,
   retry: retryFindings,
   totalOccurrences,
-} = useFindings({ collectionId, aggregator, benchmarkId: selectedBenchmarkId, labelIds })
+} = useFindings({ collectionId, aggregator, benchmarkId: selectedBenchmarkId, labelNames })
 
 // Restore the ?sel= selection once the first findings load completes. One-shot:
 // pending is consumed on the first load regardless of outcome, so subsequent
@@ -129,7 +129,7 @@ const {
   error: reviewsError,
   retry: retryReviews,
   statusCounts,
-} = useFindingReviews({ collectionId, selectedFinding, aggregator, labelIds })
+} = useFindingReviews({ collectionId, selectedFinding, aggregator, labelNames })
 
 // Labels for decorating review rows. The reviews payload includes assetLabelIds
 // only; this endpoint supplies the full {name, color} objects LabelsRow needs.

@@ -1,16 +1,24 @@
 import { describe, expect, it } from 'vitest'
 
-import { assetTextFilter, buildAssetRow, partitionAssets } from '../components/Label/tagAssets.js'
+import { assetTextFilter, buildAssetRow, buildLabelMap, partitionAssets } from '../lib/assetRows.js'
 
 const labelMap = new Map([
   ['l1', { labelId: 'l1', name: 'Production' }],
   ['l2', { labelId: 'l2', name: 'Critical' }],
 ])
 
+describe('buildLabelMap', () => {
+  it('keys labels by labelId and tolerates null', () => {
+    const map = buildLabelMap([...labelMap.values()])
+    expect(map.get('l2')).toEqual({ labelId: 'l2', name: 'Critical' })
+    expect(buildLabelMap(null).size).toBe(0)
+  })
+})
+
 describe('buildAssetRow', () => {
-  it('maps label ids to label objects and counts stigs', () => {
+  it('maps label ids to label objects and summarises stigs', () => {
     const row = buildAssetRow(
-      { assetId: 'a1', name: 'web01', labelIds: ['l1'], stigs: [{}, {}] },
+      { assetId: 'a1', name: 'web01', labelIds: ['l1'], stigs: [{ benchmarkId: 'B1' }, { benchmarkId: 'B2' }] },
       labelMap,
     )
     expect(row).toMatchObject({
@@ -18,13 +26,15 @@ describe('buildAssetRow', () => {
       name: 'web01',
       labelIds: ['l1'],
       labels: [{ labelId: 'l1', name: 'Production' }],
+      benchmarkIds: ['B1', 'B2'],
       stigCount: 2,
     })
   })
 
-  it('defaults labels and stigCount when the asset has neither', () => {
+  it('defaults labels, benchmarkIds and stigCount when the asset has neither', () => {
     const row = buildAssetRow({ assetId: 'a2', name: 'db01' }, labelMap)
     expect(row.labels).toEqual([])
+    expect(row.benchmarkIds).toEqual([])
     expect(row.stigCount).toBe(0)
   })
 
@@ -71,14 +81,14 @@ describe('assetTextFilter', () => {
   const row = buildAssetRow({ assetId: 'a1', name: 'web01', labelIds: ['l1'] }, labelMap)
 
   it('matches on asset name (case-insensitive)', () => {
-    expect(assetTextFilter(row, 'WEB', labelMap)).toBe(true)
+    expect(assetTextFilter(row, 'WEB')).toBe(true)
   })
 
   it('matches on an applied label name', () => {
-    expect(assetTextFilter(row, 'prod', labelMap)).toBe(true)
+    expect(assetTextFilter(row, 'prod')).toBe(true)
   })
 
   it('returns false when nothing matches', () => {
-    expect(assetTextFilter(row, 'zzz', labelMap)).toBe(false)
+    expect(assetTextFilter(row, 'zzz')).toBe(false)
   })
 })

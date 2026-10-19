@@ -4,7 +4,7 @@ import { filenameFromContentDisposition } from '../../../shared/lib/contentDispo
 
 export { fetchCollectionStigSummary } from '../../CollectionView/api/collectionApi.js'
 
-// Any extra keys (e.g. labelId/labelMatch from buildLabelFilterParams) pass
+// Any extra keys (e.g. labelName/labelMatch from buildLabelFilterParams) pass
 // through as query params, matching the flat-params convention of the other
 // API wrappers.
 // opts: fetch options forwarded to apiCall (e.g. { signal } from useAsyncState,

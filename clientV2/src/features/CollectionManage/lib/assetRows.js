@@ -1,13 +1,20 @@
-// Pure helpers for TagAssetsModal: building asset rows, partitioning assets into
-// available/tagged, and text-filter matching. Kept free of component state so they
-// can be unit-tested directly. `labelMap` is a Map<labelId, label> passed in by the
-// caller.
+// Pure helpers shared by the asset pick-list modals (TagAssetsModal,
+// StigAssignmentModal): building asset rows with their labels resolved,
+// partitioning assets into available/tagged, and text-filter matching. Kept
+// free of component state so they can be unit-tested directly.
+
+// Map<labelId, label> from a collection's label list.
+export function buildLabelMap(labels) {
+  return new Map((labels ?? []).map(l => [l.labelId, l]))
+}
 
 export function buildAssetRow(asset, labelMap) {
+  const stigs = asset.stigs ?? []
   return {
     ...asset,
     labels: (asset.labelIds ?? []).map(id => labelMap.get(id)).filter(Boolean),
-    stigCount: (asset.stigs ?? []).length,
+    benchmarkIds: stigs.map(s => s.benchmarkId),
+    stigCount: stigs.length,
   }
 }
 
@@ -30,18 +37,12 @@ export function partitionAssets(allAssets, taggedAssets, labelMap) {
   return [available, tagged]
 }
 
-// Matches an asset row against search text by asset name or by the name of any
-// label applied to it.
-export function assetTextFilter(item, text, labelMap) {
+// Matches a row from buildAssetRow against search text by asset name or by the
+// name of any label applied to it.
+export function assetTextFilter(item, text) {
   const lower = text.toLowerCase()
   if (item.name && item.name.toLowerCase().includes(lower)) {
     return true
   }
-  for (const id of (item.labelIds ?? [])) {
-    const label = labelMap.get(id)
-    if (label?.name?.toLowerCase().includes(lower)) {
-      return true
-    }
-  }
-  return false
+  return item.labels.some(l => l.name.toLowerCase().includes(lower))
 }

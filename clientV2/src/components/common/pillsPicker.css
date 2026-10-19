@@ -1,0 +1,44 @@
+/* Overlay footer of a pills picker (MultiSelect with class "pills-picker"); the
+   trigger chip row is PillsTrigger.vue. Loaded scoped by each picker. */
+
+.panel-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.4rem 0.5rem;
+  border-top: 1px solid var(--color-border-default);
+  background-color: var(--color-background-light);
+}
+
+.footer-buttons {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.footer-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--color-border-default);
+  border-radius: 5px;
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  font-size: var(--text-md);
+}
+
+.footer-btn--primary {
+  font-weight: 600;
+}
+
+.footer-btn:hover:not(:disabled) {
+  background: var(--color-bg-hover-strong);
+}
+
+.footer-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

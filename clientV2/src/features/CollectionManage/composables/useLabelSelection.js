@@ -1,5 +1,4 @@
 import { computed, ref } from 'vue'
-import { normalizeColor } from '../../../shared/lib/colorUtils.js'
 
 /**
  * Label multi-select: a filterable checklist with bulk ("select all visible").
@@ -33,10 +32,6 @@ export function useLabelSelection(collectionLabels, selectedIds) {
 
   function getLabelById(id) {
     return collectionLabels.value.find(l => l.labelId === id)
-  }
-
-  function labelColor(label) {
-    return normalizeColor(label?.color, '#888888')
   }
 
   function isLabelSelected(id) {
@@ -76,7 +71,6 @@ export function useLabelSelection(collectionLabels, selectedIds) {
     filteredLabels,
     allFilteredSelected,
     getLabelById,
-    labelColor,
     isLabelSelected,
     toggleLabel,
     toggleAllFiltered,

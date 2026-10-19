@@ -2,6 +2,8 @@
 import MultiSelect from 'primevue/multiselect'
 import SelectButton from 'primevue/selectbutton'
 import { computed, ref, watch } from 'vue'
+import { pillsMultiSelectPt } from '../../../components/common/pillsPicker.js'
+import PillsTrigger from '../../../components/common/PillsTrigger.vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { isActive as isFilterActive, valuesFilter } from '../../../shared/lib/columnFilters.js'
 import { fetchMetaCollections } from '../../MetaCollectionView/api/metaApi.js'
@@ -20,7 +22,6 @@ const MODE_OPTIONS = [
   { label: 'Include', value: false },
   { label: 'Exclude', value: true },
 ]
-const MAX_VISIBLE_SELECTED = 3
 // Every id goes in the request URL, so keep it well under proxy URL limits
 const MAX_SENT_IDS = 250
 
@@ -28,18 +29,6 @@ const { state: options, isLoading } = useAsyncState(
   fetchMetaCollections,
   { initialState: [], immediate: true },
 )
-
-const multiSelectPt = {
-  root: { style: 'width: 100%; background-color: var(--color-background-light); border-color: var(--color-border-default)' },
-  label: { style: 'padding: 5px 10px; font-size: var(--text-md); color: var(--color-text-primary)' },
-  labelContainer: { style: { display: 'flex', alignItems: 'center' } },
-  overlay: { style: { width: '250px' } },
-  listContainer: { style: { maxHeight: '270px' } },
-  list: { style: { padding: '0.25rem' } },
-  option: { style: { padding: '0.35rem 0.6rem', fontSize: 'var(--text-md)' } },
-  header: { style: { padding: '0.4rem 0.5rem' } },
-  pcFilter: { root: { style: { padding: '0.3rem 0.5rem', fontSize: 'var(--text-md)' } } },
-}
 
 const selectButtonPt = {
   root: { style: { display: 'flex', width: '100%' } },
@@ -52,6 +41,8 @@ const selectButtonPt = {
 const multiSelectRef = ref()
 const draftIds = ref([])
 const draftExclude = ref(false)
+// Chip remove is hidden (space kept) while open, matching the label filter
+const isOverlayOpen = ref(false)
 
 const appliedExclude = computed(() => Boolean(props.modelValue?.exclude))
 const appliedIds = computed(() => props.modelValue?.value || [])
@@ -61,7 +52,9 @@ const appliedOptions = computed(() => {
   return (options.value || []).filter(opt => selected.has(opt.collectionId))
 })
 
-const isActive = computed(() => isFilterActive(props.modelValue) && appliedOptions.value.length > 0)
+const isActive = computed(() => appliedOptions.value.length > 0)
+
+const nameOf = opt => opt.name || 'unnamed collection'
 
 // Excluding every collection would resolve to an empty list, which the API treats as "all"
 const excludesEverything = computed(() =>
@@ -75,27 +68,19 @@ const tooManyIds = computed(() => {
   return sent > MAX_SENT_IDS
 })
 
-const selectedNames = computed(() => appliedOptions.value.map(opt => opt.name || 'unnamed collection'))
-
-const displayText = computed(() => {
-  if (isLoading.value) {
-    return 'Loading...'
-  }
-  if (!isActive.value) {
-    return 'Select Collections to Filter...'
-  }
-  const prefix = appliedExclude.value ? 'Excluding: ' : ''
-  const visible = selectedNames.value.slice(0, MAX_VISIBLE_SELECTED).join(', ')
-  const hidden = selectedNames.value.length - MAX_VISIBLE_SELECTED
-  return hidden > 0 ? `${prefix}${visible} +${hidden} more` : `${prefix}${visible}`
-})
+// Collections have no colour, so neutral chips
+const pills = computed(() => appliedOptions.value.map(opt => ({
+  key: opt.collectionId,
+  name: nameOf(opt),
+  class: 'trigger-pills__chip--neutral',
+})))
 
 const titleText = computed(() => {
   if (!isActive.value) {
     return ''
   }
   const verb = appliedExclude.value ? 'Excluding' : 'Including'
-  return `${verb}: ${selectedNames.value.join(', ')}`
+  return `${verb}: ${pills.value.map(pill => pill.name).join(', ')}`
 })
 
 // Include passes ids straight through; exclude resolves against the full collection list
@@ -132,10 +117,9 @@ function cancelFilters() {
   multiSelectRef.value?.hide?.()
 }
 
-function clearFilters() {
-  draftIds.value = []
-  draftExclude.value = false
-  emit('update:modelValue', valuesFilter())
+function removeCollection(collectionId) {
+  const ids = appliedIds.value.filter(id => id !== collectionId)
+  emit('update:modelValue', ids.length ? valuesFilter({ value: ids, exclude: appliedExclude.value }) : valuesFilter())
 }
 </script>
 
@@ -144,27 +128,28 @@ function clearFilters() {
     <MultiSelect
       ref="multiSelectRef"
       v-model="draftIds"
-      :class="{ 'is-active': isActive }"
+      class="pills-picker"
       :options="options"
       option-value="collectionId"
       option-label="name"
-      placeholder="Select Collections to Filter..."
+      placeholder="Filter by collection"
       :filter="true"
       :show-toggle-all="true"
       :loading="isLoading"
-      :pt="multiSelectPt"
-      :show-clear="true"
+      :pt="pillsMultiSelectPt"
       @show="syncDraftFromModel"
+      @before-show="isOverlayOpen = true"
+      @before-hide="isOverlayOpen = false"
     >
-      <template #clearicon>
-        <i class="pi pi-times sm-clear-icon" title="Clear filters" @click.stop.prevent="clearFilters" />
-      </template>
-
       <template #value>
-        <div class="trigger-left" :title="titleText">
-          <i class="pi" :class="isActive ? 'pi-filter-fill' : 'pi-filter'" />
-          <span class="placeholder-text">{{ displayText }}</span>
-        </div>
+        <PillsTrigger
+          :pills="pills"
+          placeholder="Filter by collection"
+          :prefix="appliedExclude ? 'Excluding' : ''"
+          :open="isOverlayOpen"
+          :title="titleText"
+          @remove="removeCollection($event.key)"
+        />
       </template>
 
       <template #header>
@@ -181,7 +166,7 @@ function clearFilters() {
       </template>
 
       <template #option="slotProps">
-        <span>{{ slotProps.option.name || 'unnamed collection' }}</span>
+        <span>{{ nameOf(slotProps.option) }}</span>
       </template>
 
       <template #footer>
@@ -203,6 +188,8 @@ function clearFilters() {
   </div>
 </template>
 
+<style scoped src="../../../components/common/pillsPicker.css"></style>
+
 <style scoped>
 .meta-metrics-filter {
   display: flex;
@@ -210,86 +197,12 @@ function clearFilters() {
   width: 100%;
 }
 
-.is-active {
-  background-color: var(--color-bg-hover-strong) !important;
-}
-
-.sm-clear-icon {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  right: 2rem;
-  padding: 0.3rem;
-  cursor: pointer;
-  color: var(--color-text-dim);
-}
-
-.sm-clear-icon:hover {
-  color: var(--color-text-bright);
-}
-
-.trigger-left {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex: 1;
-  overflow: hidden;
-}
-
-.placeholder-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .mode-row {
   padding: 0.4rem 0.5rem 0;
-}
-
-.panel-footer {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  padding: 0.4rem 0.5rem;
-  border-top: 1px solid var(--color-border-default);
-  background-color: var(--color-background-light);
 }
 
 .footer-warning {
   font-size: var(--text-sm);
   color: var(--color-text-dim);
-}
-
-.footer-buttons {
-  display: flex;
-  gap: 0.4rem;
-}
-
-.footer-btn {
-  flex: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.3rem;
-  padding: 0.3rem 0.6rem;
-  border: 1px solid var(--color-border-default);
-  border-radius: 5px;
-  background: var(--color-bg-elevated);
-  color: var(--color-text-primary);
-  cursor: pointer;
-  font-size: var(--text-md);
-}
-
-.footer-btn--primary {
-  font-weight: 600;
-}
-
-.footer-btn:hover:not(:disabled) {
-  background: var(--color-bg-hover-strong);
-}
-
-.footer-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 </style>

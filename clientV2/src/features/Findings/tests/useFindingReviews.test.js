@@ -10,12 +10,12 @@ vi.mock('../api/findingsApi.js', () => ({
 
 const { fetchFailedReviews } = await import('../api/findingsApi.js')
 
-function setup({ collectionId = '17', aggregator = 'groupId', selectedFinding = null, labelIds = [] } = {}) {
+function setup({ collectionId = '17', aggregator = 'groupId', selectedFinding = null, labelNames = [] } = {}) {
   const refs = {
     collectionId: ref(collectionId),
     aggregator: ref(aggregator),
     selectedFinding: ref(selectedFinding),
-    labelIds: ref(labelIds),
+    labelNames: ref(labelNames),
   }
   const composable = useFindingReviews(refs)
   return { ...refs, ...composable }
@@ -46,17 +46,17 @@ describe('useFindingReviews', () => {
   it('threads the label filter into the request and refetches when it changes', async () => {
     fetchFailedReviews.mockClear()
     fetchFailedReviews.mockResolvedValue([{ assetId: '1' }])
-    const { selectedFinding, labelIds } = setup({ labelIds: ['label-a'] })
+    const { selectedFinding, labelNames } = setup({ labelNames: ['label-a'] })
     selectedFinding.value = { groupId: 'V-219148' }
     await flushPromises()
     expect(fetchFailedReviews).toHaveBeenLastCalledWith('17', {
       aggregator: 'groupId',
       aggregatorValue: 'V-219148',
-      labelId: ['label-a'],
+      labelName: ['label-a'],
     }, { signal: expect.any(AbortSignal) })
 
     fetchFailedReviews.mockClear()
-    labelIds.value = [null]
+    labelNames.value = [null]
     await flushPromises()
     expect(fetchFailedReviews).toHaveBeenLastCalledWith('17', {
       aggregator: 'groupId',

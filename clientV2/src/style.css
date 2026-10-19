@@ -170,6 +170,8 @@
   --color-chip-default-bg: var(--color-background-darkest);
   --color-chip-default-border: var(--color-border-default);
   --color-chip-default-text: var(--color-text-primary);
+  /* Label chip for a label without a colour (light, so it takes --color-text-dark) */
+  --color-label-default-bg: #cccccc;
 
   /* Inline rule-ID character-level diff highlight (red for old, green for new) */
   --color-diff-inline-del-bg: rgba(239, 68, 68, 0.3);
@@ -442,6 +444,18 @@ mark.search-highlight {
   color: inherit;
   border-radius: 1px;
   padding: 0 1px;
+}
+
+/* Label chip rendered by common/Label.vue (and the +N badge in LabelsRow).
+   LabelsRow derives its px width budget from this padding and font, so change
+   them together. */
+.label-tag {
+  display: inline-block;
+  font-size: var(--text-md);
+  font-weight: 600;
+  padding: 0.1rem 0.45rem;
+  border-radius: 6px;
+  white-space: nowrap;
 }
 
 /* Label chips already carry a color, so mark the match with the chip's own

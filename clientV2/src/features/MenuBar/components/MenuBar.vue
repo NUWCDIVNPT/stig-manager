@@ -1,9 +1,16 @@
 <script setup>
 import Menubar from 'primevue/menubar'
 import { computed, inject } from 'vue'
+import { useRoute } from 'vue-router'
+import LabelFilterPills from '../../../components/common/LabelFilterPills.vue'
 import { useEnv } from '../../../shared/stores/useEnv.js'
+import CollectionFilterPills from '../../MetaCollectionView/components/CollectionFilterPills.vue'
 import { useAppBreadcrumb } from '../composables/useAppBreadcrumb.js'
 import BreadcrumbSelect from './BreadcrumbSelect.vue'
+
+// Routes flag which filter shows after the breadcrumb: `meta.labelFilter` (collection
+// labels) or `meta.collectionFilter` (Collections page).
+const route = useRoute()
 
 const oidcWorker = inject('worker')
 const env = useEnv()
@@ -77,9 +84,17 @@ const pt = {
       minWidth: '18rem',
     },
   },
+  // Left side shrinks (label filter first) so it never runs under the menu items
+  start: {
+    style: {
+      flex: '0 1 auto',
+      minWidth: 0,
+    },
+  },
   rootList: {
     style: {
       marginLeft: 'auto',
+      flexShrink: 0,
     },
   },
 
@@ -192,6 +207,10 @@ const pt = {
             >/</span>
           </template>
         </nav>
+        <div v-if="route.meta.labelFilter || route.meta.collectionFilter" class="breadcrumb-filter">
+          <LabelFilterPills v-if="route.meta.labelFilter" />
+          <CollectionFilterPills v-else />
+        </div>
       </div>
     </template>
 
@@ -233,6 +252,13 @@ const pt = {
   display: flex;
   align-items: center;
   gap: 1.5rem;
+  min-width: 0;
+}
+
+.home-link,
+.badges,
+.breadcrumb {
+  flex-shrink: 0;
 }
 
 .home-link {
@@ -284,6 +310,12 @@ const pt = {
 }
 
 /* Breadcrumb */
+.breadcrumb-filter {
+  flex: 0 1 auto;
+  min-width: 0;
+  margin-left: 0.5rem;
+}
+
 .breadcrumb {
   display: flex;
   align-items: center;
