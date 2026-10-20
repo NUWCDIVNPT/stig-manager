@@ -2,6 +2,7 @@
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { ref } from 'vue'
+import GridCopyMenu from '../../../../../components/common/GridCopyMenu.vue'
 import StatusFooter from '../../../../../components/common/StatusFooter.vue'
 import { compactTablePt } from '../../../../../shared/lib/dataTablePt.js'
 import { formatDateTime } from '../../lib/serviceJobsFormat.js'
@@ -13,6 +14,7 @@ defineProps({
 })
 
 const dataTableRef = ref(null)
+const copyMenuRef = ref(null)
 const tablePt = compactTablePt({ footer: 'divider', headerPadding: '0.3rem 0.6rem' })
 </script>
 
@@ -35,6 +37,7 @@ const tablePt = compactTablePt({ footer: 'divider', headerPadding: '0.3rem 0.6re
         class="flex-fill"
         :table-style="{ 'min-width': '40rem' }"
         :pt="tablePt"
+        @row-contextmenu="copyMenuRef.show($event, dataTableRef)"
       >
         <template #empty>
           No output to display.
@@ -72,6 +75,7 @@ const tablePt = compactTablePt({ footer: 'divider', headerPadding: '0.3rem 0.6re
           />
         </template>
       </DataTable>
+      <GridCopyMenu ref="copyMenuRef" />
     </div>
   </div>
 </template>

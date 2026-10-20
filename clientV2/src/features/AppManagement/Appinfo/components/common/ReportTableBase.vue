@@ -3,6 +3,7 @@ import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref, watch } from 'vue'
 import ColumnToggle from '../../../../../components/common/ColumnToggle.vue'
+import GridCopyMenu from '../../../../../components/common/GridCopyMenu.vue'
 import GridFilterButton from '../../../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../../../components/common/GridSearch.vue'
 import HighlightText from '../../../../../components/common/HighlightText.vue'
@@ -35,6 +36,7 @@ const props = defineProps({
 const emit = defineEmits(['update:selection'])
 
 const dataTableRef = ref(null)
+const copyMenuRef = ref(null)
 
 // Callers mark default-off columns with `hidden`; choices are saved per report
 const toggleColumns = computed(() => props.columns.map(c => ({ ...c, defaultHidden: Boolean(c.hidden) })))
@@ -134,6 +136,7 @@ function columnStyle(col) {
       class="flex-fill"
       :table-style="tableMinWidth ? { 'min-width': tableMinWidth } : null"
       :pt="tablePt"
+      @row-contextmenu="copyMenuRef.show($event, dataTableRef)"
     >
       <template #empty>
         No records to display
@@ -199,5 +202,6 @@ function columnStyle(col) {
         />
       </template>
     </DataTable>
+    <GridCopyMenu ref="copyMenuRef" />
   </div>
 </template>

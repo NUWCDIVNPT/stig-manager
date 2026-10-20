@@ -9,6 +9,7 @@ import ActionButton from '../../../../components/common/ActionButton.vue'
 import ActionToolbar from '../../../../components/common/ActionToolbar.vue'
 import ClassificationBadge from '../../../../components/common/ClassificationBadge.vue'
 import ColumnToggle from '../../../../components/common/ColumnToggle.vue'
+import GridCopyMenu from '../../../../components/common/GridCopyMenu.vue'
 import GridSearch from '../../../../components/common/GridSearch.vue'
 import HighlightText from '../../../../components/common/HighlightText.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
@@ -38,6 +39,7 @@ const emit = defineEmits(['update:selection', 'import', 'remove-stig', 'remove-r
 const ROW_HEIGHT = rowHeightPx('compact')
 
 const dataTableRef = ref(null)
+const copyMenuRef = ref(null)
 
 const selectedStigs = computed({
   get: () => props.selection ?? [],
@@ -226,6 +228,7 @@ function onRemoveAll() {
         class="flex-fill"
         :table-style="{ 'min-width': '75rem' }"
         :pt="tablePt"
+        @row-contextmenu="copyMenuRef.show($event, dataTableRef)"
       >
         <template #empty>
           {{ isFiltered && stigs.length ? 'No STIGs match the search.' : 'No STIGs found.' }}
@@ -372,6 +375,7 @@ function onRemoveAll() {
           />
         </template>
       </DataTable>
+      <GridCopyMenu ref="copyMenuRef" />
     </div>
   </div>
 </template>

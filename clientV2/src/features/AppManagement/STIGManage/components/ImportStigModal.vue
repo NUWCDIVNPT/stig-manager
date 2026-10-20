@@ -5,6 +5,7 @@ import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import Dialog from 'primevue/dialog'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import GridCopyMenu from '../../../../components/common/GridCopyMenu.vue'
 import GridFilterButton from '../../../../components/common/GridFilterButton.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
@@ -210,6 +211,7 @@ const { filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOpti
 
 // ── auto-scroll: follow the processing frontier ──────────────────────────────
 const dataTableRef = ref(null)
+const copyMenuRef = ref(null)
 const { attach, detach, followRow } = useFollowRow(
   () => dataTableRef.value?.getVirtualScrollerRef?.()?.$el ?? null,
   { itemSize: ROW_HEIGHT },
@@ -390,6 +392,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
           class="flex-fill"
           :pt="tablePt"
+          @row-contextmenu="copyMenuRef.show($event, dataTableRef)"
         >
           <template #empty>
             No matching files.
@@ -465,6 +468,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
             </StatusFooter>
           </template>
         </DataTable>
+        <GridCopyMenu ref="copyMenuRef" />
       </div>
 
       <!-- ── progress bar + summary ── -->

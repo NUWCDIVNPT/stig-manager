@@ -1,9 +1,10 @@
 <script setup>
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { roleMap } from '../../../../components/common/grants/roleOptions.js'
 import RolePopover from '../../../../components/common/grants/RolePopover.vue'
+import GridCopyMenu from '../../../../components/common/GridCopyMenu.vue'
 import GridFilterButton from '../../../../components/common/GridFilterButton.vue'
 import HelpIcon from '../../../../components/common/HelpIcon.vue'
 import PanelTitle from '../../../../components/common/PanelTitle.vue'
@@ -34,6 +35,8 @@ const { filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOpti
 ])
 
 const tablePt = compactTablePt()
+const dataTableRef = ref(null)
+const copyMenuRef = ref(null)
 </script>
 
 <template>
@@ -45,12 +48,14 @@ const tablePt = compactTablePt()
       </template>
     </PanelTitle>
     <DataTable
+      ref="dataTableRef"
       :value="filteredRows"
       sort-field="name"
       :sort-order="1"
       scrollable
       scroll-height="flex"
       :pt="tablePt"
+      @row-contextmenu="copyMenuRef.show($event, dataTableRef)"
     >
       <template #empty>
         {{ isFiltered && rows.length ? 'No grants match the filters.' : 'No effective grants.' }}
@@ -98,6 +103,7 @@ const tablePt = compactTablePt()
         </template>
       </Column>
     </DataTable>
+    <GridCopyMenu ref="copyMenuRef" />
   </div>
 </template>
 

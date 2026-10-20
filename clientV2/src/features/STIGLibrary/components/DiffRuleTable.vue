@@ -4,6 +4,7 @@ import DataTable from 'primevue/datatable'
 import { computed, ref } from 'vue'
 import CatBadge from '../../../components/common/CatBadge.vue'
 import ChangedPropertyChip from '../../../components/common/ChangedPropertyChip.vue'
+import GridCopyMenu from '../../../components/common/GridCopyMenu.vue'
 import HelpIcon from '../../../components/common/HelpIcon.vue'
 import HighlightText from '../../../components/common/HighlightText.vue'
 import RuleIdDiffSpan from '../../../components/common/RuleIdDiffSpan.vue'
@@ -50,6 +51,7 @@ const emit = defineEmits(['select-row'])
 const exportCat = ({ data }) => catLabel(data)
 
 const dataTableRef = ref(null)
+const copyMenuRef = ref(null)
 const { itemSize, gridStyle } = useGridDensity('stig-library-rules')
 
 const selectedRow = computed(() =>
@@ -80,6 +82,7 @@ function onRowClick(event) {
     :style="gridStyle"
     :pt="dataTablePt"
     @row-click="onRowClick"
+    @row-contextmenu="copyMenuRef.show($event, dataTableRef)"
   >
     <Column header="STIG ID" field="stigId" sortable :style="{ width: '15rem' }" :pt="paneColumnPt.left">
       <template #body="{ data }">
@@ -156,6 +159,7 @@ function onRowClick(event) {
         :show-refresh="false"
         :show-export="true"
       />
+      <GridCopyMenu ref="copyMenuRef" />
     </template>
   </DataTable>
 </template>

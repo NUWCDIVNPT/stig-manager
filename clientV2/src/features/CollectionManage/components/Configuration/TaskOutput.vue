@@ -3,7 +3,8 @@ import Button from 'primevue/button'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import Dialog from 'primevue/dialog'
-import { computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
+import GridCopyMenu from '../../../../components/common/GridCopyMenu.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { formatDateTimeString } from '../../../../shared/lib.js'
@@ -26,6 +27,9 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:visible'])
+
+const dataTableRef = ref(null)
+const copyMenuRef = ref(null)
 
 const localVisible = computed({
   get: () => props.visible,
@@ -84,6 +88,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 
     <div class="modal-body">
       <DataTable
+        ref="dataTableRef"
         :value="output"
         data-key="seq"
         scrollable
@@ -93,6 +98,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
         :loading="isLoading"
         class="flex-fill"
         :pt="tablePt"
+        @row-contextmenu="copyMenuRef.show($event, dataTableRef)"
       >
         <Column field="seq" header="Seq" sortable :pt="borderPt" style="width: 5rem;" />
         <Column field="ts" header="Timestamp" sortable :pt="borderPt" style="width: 15.5rem;">
@@ -126,6 +132,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           />
         </template>
       </DataTable>
+      <GridCopyMenu ref="copyMenuRef" />
     </div>
 
     <template #footer>

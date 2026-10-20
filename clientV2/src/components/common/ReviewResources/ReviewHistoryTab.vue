@@ -13,6 +13,7 @@ import { capitalize } from '../../../shared/lib/exportCells.js'
 import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import EngineBadge from '../EngineBadge.vue'
+import GridCopyMenu from '../GridCopyMenu.vue'
 import GridFilterButton from '../GridFilterButton.vue'
 import LongTextPopover from '../LongTextPopover.vue'
 import ManualBadge from '../ManualBadge.vue'
@@ -130,6 +131,7 @@ const getApplyTooltip = (data) => {
 }
 
 const dataTableRef = ref(null)
+const copyMenuRef = ref(null)
 
 const longTextPopover = ref(null)
 const showLongText = (event, label, text) => {
@@ -208,6 +210,7 @@ const historyStats = computed(() => {
       column-resize-mode="fit"
       class="history-table"
       :pt="reviewResourcesTablePt"
+      @row-contextmenu="copyMenuRef.show($event, dataTableRef)"
     >
       <Column header="Timestamp" field="touchTs" sortable :style="{ width: '12.5rem' }" :pt="columnPt.left">
         <template #body="{ data }">
@@ -370,6 +373,7 @@ const historyStats = computed(() => {
         </StatusFooter>
       </template>
     </DataTable>
+    <GridCopyMenu ref="copyMenuRef" />
 
     <LongTextPopover ref="longTextPopover" />
   </div>

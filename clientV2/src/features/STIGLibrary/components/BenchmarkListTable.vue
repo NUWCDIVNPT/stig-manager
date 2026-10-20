@@ -8,6 +8,7 @@ import ActionButton from '../../../components/common/ActionButton.vue'
 import ClassificationBadge from '../../../components/common/ClassificationBadge.vue'
 import ColumnToggle from '../../../components/common/ColumnToggle.vue'
 import DensityControls from '../../../components/common/DensityControls.vue'
+import GridCopyMenu from '../../../components/common/GridCopyMenu.vue'
 import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../components/common/GridSearch.vue'
 import HighlightText from '../../../components/common/HighlightText.vue'
@@ -36,6 +37,7 @@ const props = defineProps({
 const emit = defineEmits(['select', 'refresh'])
 
 const dataTableRef = ref(null)
+const copyMenuRef = ref(null)
 
 // materialize earlierRevisions so the column sorts and exports
 const rows = computed(() =>
@@ -131,6 +133,7 @@ function onRowClick(event) {
         :style="gridStyle"
         :pt="tablePt"
         @row-click="onRowClick"
+        @row-contextmenu="copyMenuRef.show($event, dataTableRef)"
       >
         <Column
           field="benchmarkId"
@@ -230,6 +233,7 @@ function onRowClick(event) {
           />
         </template>
       </DataTable>
+      <GridCopyMenu ref="copyMenuRef" />
     </div>
   </div>
 </template>

@@ -2,6 +2,7 @@
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { ref } from 'vue'
+import GridCopyMenu from '../../../components/common/GridCopyMenu.vue'
 import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
@@ -42,6 +43,7 @@ const {
 
 const errorsRef = ref()
 const dupesRef = ref()
+const copyMenuRef = ref(null)
 </script>
 
 <template>
@@ -66,6 +68,7 @@ const dupesRef = ref()
             resizable-columns
             striped-rows
             :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
+            @row-contextmenu="copyMenuRef.show($event, errorsRef)"
           >
             <template #empty>
               No errors or warnings match the filters.
@@ -109,6 +112,7 @@ const dupesRef = ref()
             resizable-columns
             striped-rows
             :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
+            @row-contextmenu="copyMenuRef.show($event, dupesRef)"
           >
             <template #empty>
               No duplicates match the filters.
@@ -146,6 +150,7 @@ const dupesRef = ref()
         />
       </div>
     </div>
+    <GridCopyMenu ref="copyMenuRef" />
   </div>
 </template>
 

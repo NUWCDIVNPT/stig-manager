@@ -6,6 +6,7 @@ import CountColumn from '../../../../components/columns/CountColumn.vue'
 import ActionButton from '../../../../components/common/ActionButton.vue'
 import ActionToolbar from '../../../../components/common/ActionToolbar.vue'
 import ColumnToggle from '../../../../components/common/ColumnToggle.vue'
+import GridCopyMenu from '../../../../components/common/GridCopyMenu.vue'
 import GridSearch from '../../../../components/common/GridSearch.vue'
 import HighlightText from '../../../../components/common/HighlightText.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
@@ -32,6 +33,7 @@ const props = defineProps({
 const emit = defineEmits(['update:selection', 'create', 'delete', 'refresh'])
 
 const dataTableRef = ref(null)
+const copyMenuRef = ref(null)
 
 const selectedGroup = computed({
   get: () => props.selection,
@@ -109,6 +111,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
         class="flex-fill"
         :table-style="{ 'min-width': '40rem' }"
         :pt="tablePt"
+        @row-contextmenu="copyMenuRef.show($event, dataTableRef)"
       >
         <template #empty>
           {{ isFiltered && groups.length ? 'No groups match the search.' : 'No user groups found.' }}
@@ -148,6 +151,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           />
         </template>
       </DataTable>
+      <GridCopyMenu ref="copyMenuRef" />
     </div>
   </div>
 </template>

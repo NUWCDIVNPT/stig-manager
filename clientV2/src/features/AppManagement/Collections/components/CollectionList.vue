@@ -6,6 +6,7 @@ import CountColumn from '../../../../components/columns/CountColumn.vue'
 import ActionButton from '../../../../components/common/ActionButton.vue'
 import ActionToolbar from '../../../../components/common/ActionToolbar.vue'
 import ColumnToggle from '../../../../components/common/ColumnToggle.vue'
+import GridCopyMenu from '../../../../components/common/GridCopyMenu.vue'
 import GridSearch from '../../../../components/common/GridSearch.vue'
 import HighlightText from '../../../../components/common/HighlightText.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
@@ -34,6 +35,7 @@ const emit = defineEmits(['update:selection', 'create', 'delete', 'refresh'])
 const exportOwners = ({ data }) => (data ?? []).map(o => o.displayName || o.username).filter(Boolean).join(', ')
 
 const dataTableRef = ref(null)
+const copyMenuRef = ref(null)
 
 const selectedCollection = computed({
   get: () => props.selection,
@@ -101,6 +103,7 @@ const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-con
         class="flex-fill clickable-rows"
         :table-style="{ 'min-width': '50rem' }"
         :pt="tablePt"
+        @row-contextmenu="copyMenuRef.show($event, dataTableRef)"
       >
         <template #empty>
           {{ isFiltered && collections.length ? 'No collections match the search.' : 'No collections found.' }}
@@ -154,6 +157,7 @@ const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-con
           />
         </template>
       </DataTable>
+      <GridCopyMenu ref="copyMenuRef" />
     </div>
   </div>
 </template>

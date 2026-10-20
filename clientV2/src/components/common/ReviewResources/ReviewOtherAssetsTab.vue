@@ -15,6 +15,7 @@ import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import LabelsRow from '../../columns/LabelsRow.vue'
 import EngineBadge from '../EngineBadge.vue'
+import GridCopyMenu from '../GridCopyMenu.vue'
 import GridFilterButton from '../GridFilterButton.vue'
 import LongTextPopover from '../LongTextPopover.vue'
 import ManualBadge from '../ManualBadge.vue'
@@ -74,6 +75,7 @@ const columnPt = {
 const ROW_HEIGHT = rowHeightPx('standard')
 
 const dataTableRef = ref(null)
+const copyMenuRef = ref(null)
 
 const longTextPopover = ref(null)
 const showLongText = (event, label, text) => {
@@ -199,6 +201,7 @@ watch([() => ruleId.value, () => collectionId.value], () => {
       striped-rows
       class="other-assets-table"
       :pt="reviewResourcesTablePt"
+      @row-contextmenu="copyMenuRef.show($event, dataTableRef)"
     >
       <Column field="assetName" header="Asset" sortable :style="{ width: '9rem' }" :pt="columnPt.left">
         <template #body="{ data }">
@@ -351,6 +354,7 @@ watch([() => ruleId.value, () => collectionId.value], () => {
         </StatusFooter>
       </template>
     </DataTable>
+    <GridCopyMenu ref="copyMenuRef" />
 
     <LongTextPopover ref="longTextPopover" />
   </div>

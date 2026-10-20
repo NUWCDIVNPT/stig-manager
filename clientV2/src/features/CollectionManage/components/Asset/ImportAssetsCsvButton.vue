@@ -5,6 +5,7 @@ import DataTable from 'primevue/datatable'
 import Dialog from 'primevue/dialog'
 import { ref } from 'vue'
 import ActionButton from '../../../../components/common/ActionButton.vue'
+import GridCopyMenu from '../../../../components/common/GridCopyMenu.vue'
 import GridFilterButton from '../../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../../components/common/GridSearch.vue'
 import HighlightText from '../../../../components/common/HighlightText.vue'
@@ -26,6 +27,10 @@ const { triggerError } = useGlobalError()
 
 const fileInputRef = ref(null)
 const modalVisible = ref(false)
+const assetsDtRef = ref(null)
+const errorsDtRef = ref(null)
+const labelsDtRef = ref(null)
+const copyMenuRef = ref(null)
 
 const {
   isValidating,
@@ -224,12 +229,14 @@ const dataTablePt = {
             </template>
           </PanelTitle>
           <DataTable
+            ref="assetsDtRef"
             :value="filteredAssets"
             class="flex-fill"
             scrollable
             scroll-height="flex"
             :loading="isValidating"
             :pt="dataTablePt"
+            @row-contextmenu="copyMenuRef.show($event, assetsDtRef)"
           >
             <template v-if="assetsFiltered && validAssets.length" #empty>
               No assets match the search.
@@ -306,11 +313,13 @@ const dataTablePt = {
             </template>
           </PanelTitle>
           <DataTable
+            ref="errorsDtRef"
             :value="filteredErrors"
             class="flex-fill"
             scrollable
             scroll-height="flex"
             :pt="dataTablePt"
+            @row-contextmenu="copyMenuRef.show($event, errorsDtRef)"
           >
             <template v-if="errorsFiltered && allErrors.length" #empty>
               No errors match the filters.
@@ -343,11 +352,13 @@ const dataTablePt = {
             </template>
           </PanelTitle>
           <DataTable
+            ref="labelsDtRef"
             :value="filteredLabels"
             class="flex-fill"
             scrollable
             scroll-height="flex"
             :pt="dataTablePt"
+            @row-contextmenu="copyMenuRef.show($event, labelsDtRef)"
           >
             <template v-if="labelsFiltered && newLabels.length" #empty>
               No labels match the filters.
@@ -382,6 +393,7 @@ const dataTablePt = {
       </div>
     </template>
   </Dialog>
+  <GridCopyMenu ref="copyMenuRef" />
 </template>
 
 <style scoped>

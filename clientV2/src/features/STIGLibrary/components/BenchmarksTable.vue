@@ -4,6 +4,7 @@ import DataTable from 'primevue/datatable'
 import { computed, ref } from 'vue'
 import ActionButton from '../../../components/common/ActionButton.vue'
 import ClassificationBadge from '../../../components/common/ClassificationBadge.vue'
+import GridCopyMenu from '../../../components/common/GridCopyMenu.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 import { paneColumnPt, paneTablePt } from '../tablePt.js'
@@ -40,6 +41,7 @@ const exportEarlierRevisions = ({ data }) => (data ?? []).slice(1).join(', ')
 const filter = defineModel('filter', { type: String, default: '' })
 
 const dataTableRef = ref(null)
+const copyMenuRef = ref(null)
 
 // Fixed card row: clamped title, id row and meta row (no density control here).
 const ROW_HEIGHT = rowHeightPx('card')
@@ -125,6 +127,7 @@ function clearFilter() {
         :style="{ '--item-size': `${ROW_HEIGHT}px` }"
         :pt="dataTablePt"
         @row-click="onRowClick"
+        @row-contextmenu="copyMenuRef.show($event, dataTableRef)"
       >
         <Column field="title" export-header="Benchmark" :style="{ minWidth: '11rem' }" :pt="paneColumnPt.left">
           <template #body="{ data }">
@@ -168,6 +171,7 @@ function clearFilter() {
           />
         </template>
       </DataTable>
+      <GridCopyMenu ref="copyMenuRef" />
     </div>
   </div>
 </template>

@@ -4,10 +4,12 @@ import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import Tag from 'primevue/tag'
 import Toolbar from 'primevue/toolbar'
+import { ref } from 'vue'
 import collectionIcon from '../../../../assets/collection.svg'
 import shieldGreenCheckIcon from '../../../../assets/shield-green-check.svg'
 import targetIcon from '../../../../assets/target.svg'
 import ActionButton from '../../../../components/common/ActionButton.vue'
+import GridCopyMenu from '../../../../components/common/GridCopyMenu.vue'
 import GridFilterButton from '../../../../components/common/GridFilterButton.vue'
 import LabelChip from '../../../../components/common/Label.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
@@ -35,6 +37,9 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['new', 'edit', 'move', 'delete'])
+
+const dataTableRef = ref(null)
+const copyMenuRef = ref(null)
 
 const iconMap = {
   collection: collectionIcon,
@@ -75,6 +80,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
     </Toolbar>
 
     <DataTable
+      ref="dataTableRef"
       :value="filteredRows"
       data-key="_clientId"
       :loading="loading"
@@ -83,6 +89,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
       class="rules-table"
       :pt="tablePt"
       @row-dblclick="emit('edit', $event.data)"
+      @row-contextmenu="copyMenuRef.show($event, dataTableRef)"
     >
       <Column header="Rule" :pt="borderPt">
         <template #body="{ data }">
@@ -182,6 +189,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
         />
       </template>
     </DataTable>
+    <GridCopyMenu ref="copyMenuRef" />
   </div>
 </template>
 

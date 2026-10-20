@@ -2,6 +2,7 @@
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref, watch } from 'vue'
+import GridCopyMenu from '../../../components/common/GridCopyMenu.vue'
 import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../components/common/GridSearch.vue'
 import HighlightText from '../../../components/common/HighlightText.vue'
@@ -63,6 +64,7 @@ const {
 
 const statusRef = ref()
 const rejectedRef = ref()
+const copyMenuRef = ref(null)
 
 const centerPt = { columnHeaderContent: { style: 'justify-content: center;' }, bodyCell: { style: 'text-align: center;' } }
 </script>
@@ -108,6 +110,7 @@ const centerPt = { columnHeaderContent: { style: 'justify-content: center;' }, b
             striped-rows
             @row-select="e => emit('update:selectedRow', e.data)"
             @row-unselect="emit('update:selectedRow', null)"
+            @row-contextmenu="copyMenuRef.show($event, statusRef)"
           >
             <template #empty>
               {{ isFiltered && statusRows.length ? 'No results match the search.' : 'No results.' }}
@@ -173,6 +176,7 @@ const centerPt = { columnHeaderContent: { style: 'justify-content: center;' }, b
               resizable-columns
               striped-rows
               class="rejected-table"
+              @row-contextmenu="copyMenuRef.show($event, rejectedRef)"
             >
               <Column field="ruleId" header="Rule" style="min-width: 14.5rem" sortable />
               <Column field="reason" header="Reason" sortable />
@@ -210,6 +214,7 @@ const centerPt = { columnHeaderContent: { style: 'justify-content: center;' }, b
         Full results appear here when the import finishes.
       </div>
     </div>
+    <GridCopyMenu ref="copyMenuRef" />
   </div>
 </template>
 

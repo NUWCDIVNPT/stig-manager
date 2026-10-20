@@ -3,6 +3,7 @@ import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref } from 'vue'
 import CatBadge from '../../../components/common/CatBadge.vue'
+import GridCopyMenu from '../../../components/common/GridCopyMenu.vue'
 import HighlightText from '../../../components/common/HighlightText.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
@@ -41,6 +42,7 @@ const props = defineProps({
 const emit = defineEmits(['select-rule'])
 
 const dataTableRef = ref(null)
+const copyMenuRef = ref(null)
 const { itemSize, gridStyle } = useGridDensity('stig-library-rules')
 
 const selectedRow = computed(() =>
@@ -71,6 +73,7 @@ function onRowClick(event) {
     :style="gridStyle"
     :pt="dataTablePt"
     @row-click="onRowClick"
+    @row-contextmenu="copyMenuRef.show($event, dataTableRef)"
   >
     <Column header="CAT" field="severity" :style="{ width: '6.5rem', minWidth: '6.5rem' }" :pt="paneColumnPt.center">
       <template #body="{ data }">
@@ -111,6 +114,7 @@ function onRowClick(event) {
         :show-refresh="false"
         :show-export="true"
       />
+      <GridCopyMenu ref="copyMenuRef" />
     </template>
   </DataTable>
 </template>

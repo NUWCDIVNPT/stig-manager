@@ -46,6 +46,10 @@ const menuPt = {
 
 /** `event` is the DataTable row-contextmenu payload; `dt` is the DataTable instance. */
 function show(event, dt) {
+  // Editable cells keep the browser menu so paste still works.
+  if (event.originalEvent.target.closest('input, textarea, select, [contenteditable="true"]')) {
+    return
+  }
   const cell = event.originalEvent.target.closest('td')
   cellText.value = cell?.textContent.replace(/\s+/g, ' ').trim() ?? ''
   rowCsv.value = dataTableCsv(dt, [event.data])

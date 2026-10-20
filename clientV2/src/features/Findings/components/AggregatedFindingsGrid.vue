@@ -6,6 +6,7 @@ import Select from 'primevue/select'
 import { computed, nextTick, ref } from 'vue'
 import CatBadge from '../../../components/common/CatBadge.vue'
 import DensityControls from '../../../components/common/DensityControls.vue'
+import GridCopyMenu from '../../../components/common/GridCopyMenu.vue'
 import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../components/common/GridSearch.vue'
 import GridToolbar from '../../../components/common/GridToolbar.vue'
@@ -43,6 +44,7 @@ const props = defineProps({
 const emit = defineEmits(['update:aggregator', 'select-finding', 'retry', 'select-stig', 'retry-stigs'])
 
 const dataTableRef = ref(null)
+const copyMenuRef = ref(null)
 const stigPopover = ref(null)
 const stigSelectorRef = ref(null)
 
@@ -269,6 +271,7 @@ const flexCellPt = {
           :style="gridStyle"
           :pt="dataTablePt"
           @row-select="onRowSelect"
+          @row-contextmenu="copyMenuRef.show($event, dataTableRef)"
         >
           <Column v-if="visibleColumns.has('cat')" field="severity" :sort-field="severitySortValue" header="CAT" sortable :style="{ width: '5rem', minWidth: '4.5rem' }" :pt="centerCellPt">
             <template #body="{ data }">
@@ -360,6 +363,7 @@ const flexCellPt = {
             </StatusFooter>
           </template>
         </DataTable>
+        <GridCopyMenu ref="copyMenuRef" />
       </div>
     </div>
 

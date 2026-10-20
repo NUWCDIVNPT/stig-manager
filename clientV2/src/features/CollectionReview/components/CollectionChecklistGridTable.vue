@@ -6,6 +6,7 @@ import assessmentIcon from '../../../assets/assessment.svg'
 import shieldGreenCheck from '../../../assets/shield-green-check.svg'
 import targetIcon from '../../../assets/target.svg'
 import CatBadge from '../../../components/common/CatBadge.vue'
+import GridCopyMenu from '../../../components/common/GridCopyMenu.vue'
 import HighlightText from '../../../components/common/HighlightText.vue'
 import ResultBadge from '../../../components/common/ResultBadge.vue'
 import StatusBadge from '../../../components/common/StatusBadge.vue'
@@ -64,6 +65,7 @@ const props = defineProps({
 const emit = defineEmits(['update:selectedRow', 'refresh'])
 
 const dataTableRef = ref(null)
+const copyMenuRef = ref(null)
 
 function sumCounts(data) {
   const results = { fail: 0, pass: 0, notapplicable: 0, other: 0 }
@@ -132,6 +134,7 @@ const dataTablePt = {
     class="checklist-grid__table"
     :pt="dataTablePt"
     @update:selection="(val) => emit('update:selectedRow', val)"
+    @row-contextmenu="copyMenuRef.show($event, dataTableRef)"
   >
     <Column field="severity" header="CAT" :sort-field="severitySortValue" sortable :style="{ width: '5.5rem', minWidth: '5.5rem' }" :pt="columnPt.center">
       <template #body="{ data }">
@@ -276,6 +279,7 @@ const dataTablePt = {
           <StatusBadge status="accepted" :count="footerStats.statuses.accepted" />
         </template>
       </StatusFooter>
+      <GridCopyMenu ref="copyMenuRef" />
     </template>
   </DataTable>
 </template>
