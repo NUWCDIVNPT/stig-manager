@@ -1,7 +1,8 @@
 <script setup>
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
-import { ref } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { useTours } from '../../../shared/composables/useTours.js'
 import { readStoredValue, storeValue } from '../../../shared/lib/localStorage.js'
 import { useNavItems } from '../composables/useNavItems.js'
 import { useRouteTracking } from '../composables/useRouteTracking.js'
@@ -13,18 +14,27 @@ const STORAGE_KEY = 'stigman:navRailExpanded'
 useRouteTracking()
 const { navItems } = useNavItems()
 
-const expanded = ref(readStoredValue(STORAGE_KEY, 'false') === 'true')
+const { navRailExpanded: expandedByTour } = useTours()
+
+const userExpanded = ref(readStoredValue(STORAGE_KEY, 'false') === 'true')
+// A tour can hold the rail open without changing the user's stored setting.
+const expanded = computed(() => userExpanded.value || expandedByTour.value)
 const isAnimating = ref(false)
 
-function toggleExpanded() {
+function animate() {
   isAnimating.value = true
-  expanded.value = !expanded.value
-  storeValue(STORAGE_KEY, String(expanded.value))
-
   setTimeout(() => {
     isAnimating.value = false
   }, 200)
 }
+
+function toggleExpanded() {
+  animate()
+  userExpanded.value = !expanded.value
+  storeValue(STORAGE_KEY, String(userExpanded.value))
+}
+
+watch(expandedByTour, animate)
 </script>
 
 <template>
@@ -40,7 +50,7 @@ function toggleExpanded() {
       :min-size="4"
       :pt="{ root: { class: { 'nav-panel--collapsed': !expanded, 'nav-panel--animating': isAnimating }, style: 'min-width: 12rem; max-width: 35rem;' } }"
     >
-      <nav class="nav-rail">
+      <nav class="nav-rail" data-tour="nav-rail">
         <button
           class="nav-rail-toggle"
           :aria-label="expanded ? 'Collapse navigation' : 'Expand navigation'"
@@ -58,6 +68,7 @@ function toggleExpanded() {
                 :active="item.matchFn()"
                 :label="item.label"
                 :icon-class="item.iconClass"
+                :data-tour="`nav-item-${item.key}`"
               />
 
               <router-link
@@ -66,6 +77,7 @@ function toggleExpanded() {
                 class="nav-rail-item"
                 :class="{ 'nav-rail-item--active': item.matchFn() }"
                 :title="expanded ? undefined : item.label"
+                :data-tour="`nav-item-${item.key}`"
               >
                 <span
                   v-if="item.icon"
@@ -84,7 +96,9 @@ function toggleExpanded() {
 
           <div class="nav-rail-separator" />
 
-          <NavRailRecentViews :expanded="expanded" />
+          <div data-tour="nav-recent">
+            <NavRailRecentViews :expanded="expanded" />
+          </div>
         </div>
       </nav>
     </SplitterPanel>

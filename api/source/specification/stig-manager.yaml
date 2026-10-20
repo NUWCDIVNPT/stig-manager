@@ -10192,6 +10192,12 @@ components:
         lastWhatsNew:
           type: string
           format: date
+        tours:
+          description: The version date of each client tour the user has seen, keyed by tour id
+          type: object
+          additionalProperties:
+            type: string
+            format: date
       additionalProperties: false
       required:
         - darkMode
@@ -10204,6 +10210,12 @@ components:
         lastWhatsNew:
           type: string
           format: date
+        tours:
+          description: The version date of each client tour the user has seen, keyed by tour id
+          type: object
+          additionalProperties:
+            type: string
+            format: date
       additionalProperties: false
       minProperties: 1
     Version:

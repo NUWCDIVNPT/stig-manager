@@ -1,4 +1,6 @@
 <script setup>
+import { useTours } from '../../shared/composables/useTours.js'
+
 defineProps({
   features: {
     type: Array,
@@ -10,6 +12,24 @@ defineProps({
     default: true,
   },
 })
+
+// Fired after a feature body's "take the tour" link starts a tour, so a
+// containing dialog can get out of the way.
+const emit = defineEmits(['tour-started'])
+
+const { startTour } = useTours()
+
+// Feature bodies are HTML strings, so a link in one starts a tour through
+// delegation: <a href="#" data-tour-start="<tour id>">.
+function onBodyClick(event) {
+  const link = event.target.closest?.('[data-tour-start]')
+  if (!link) {
+    return
+  }
+  event.preventDefault()
+  startTour(link.dataset.tourStart)
+  emit('tour-started')
+}
 </script>
 
 <template>
@@ -38,7 +58,7 @@ defineProps({
             {{ feature.header }}
             <span class="feature-date">({{ feature.date }})</span>
           </div>
-          <div class="feature-body" v-html="feature.body" />
+          <div class="feature-body" @click="onBodyClick" v-html="feature.body" />
         </div>
         <hr v-if="index < features.length - 1" class="whats-new-divider">
       </template>

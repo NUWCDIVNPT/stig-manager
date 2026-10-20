@@ -71,7 +71,7 @@ const tabPanelPt = {
 </script>
 
 <template>
-  <div class="meta-collection-view">
+  <div class="meta-collection-view" data-tour="meta-dashboard">
     <Splitter
       :pt="{
         gutter: { style: 'background: var(--color-border-dark)' },
