@@ -13,7 +13,7 @@ import { Sources } from './whatsNewSources.js'
 const emit = defineEmits(['settled'])
 
 const globalAppStore = useGlobalAppStore()
-const { patchPreferences } = useWebPreferences()
+const { preferences, patchPreferences } = useWebPreferences()
 const { triggerError } = useGlobalError()
 const visible = ref(false)
 const lastShownDate = ref('')
@@ -44,9 +44,7 @@ function normalizeDate(dateStr) {
 }
 
 function checkAndShow() {
-  const user = globalAppStore.user
-  let lastWhatsNew = user?.webPreferences?.lastWhatsNew || '1970-01-01'
-  lastWhatsNew = normalizeDate(lastWhatsNew)
+  const lastWhatsNew = normalizeDate(preferences.value.lastWhatsNew || '1970-01-01')
 
   // Store needed for filtering
   lastShownDate.value = lastWhatsNew

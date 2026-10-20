@@ -30,7 +30,7 @@ function animate() {
 
 function toggleExpanded() {
   animate()
-  userExpanded.value = !userExpanded.value
+  userExpanded.value = !expanded.value
   storeValue(STORAGE_KEY, String(userExpanded.value))
 }
 

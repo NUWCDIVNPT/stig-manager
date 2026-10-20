@@ -13,7 +13,7 @@ export const Sources = [
     <p>Your input is welcome. Please share feedback, problems, or suggestions by opening an issue on our
     <a target="_blank" href="https://github.com/NUWCDIVNPT/stig-manager/issues">GitHub Issues page</a>.</p>
 
-    <p><img src="${baseUrl}whatsnew/2026-10-15-new-client-collection-dashboard.png" width=900/></p>`,
+    <p><img src="${baseUrl}whatsnew/2026-10-15-new-client-collection-dashboard.png" width=900 loading="lazy"/></p>`,
   },
   {
     date: '2026-09-15',
@@ -25,7 +25,7 @@ export const Sources = [
     <p>The browser Back and Forward buttons move between views as you would expect, and the breadcrumb at the top of the
     page always shows where you are and offers a quick way back up.</p>
 
-    <p><img src="${baseUrl}whatsnew/2026-09-15-bookmarkable-url.png" width=900/></p>`,
+    <p><img src="${baseUrl}whatsnew/2026-09-15-bookmarkable-url.png" width=900 loading="lazy"/></p>`,
   },
   {
     date: '2026-08-15',
@@ -36,7 +36,7 @@ export const Sources = [
     <p>The pop-up stays open as you move between Rules, and the Review Resources section expands to show the Review's
     History, the same Rule on other Assets, and Status text without leaving the checklist.</p>
 
-    <p><img src="${baseUrl}whatsnew/2026-08-15-review-popup.png" width=900/></p>`,
+    <p><img src="${baseUrl}whatsnew/2026-08-15-review-popup.png" width=900 loading="lazy"/></p>`,
   },
   {
     date: '2026-07-15',
@@ -48,7 +48,7 @@ export const Sources = [
     <p>The filter travels with you. Opening a STIG from a filtered Dashboard carries the same Labels into
     Collection Review, and the filter is part of the URL, so a bookmarked or shared link reopens the same filtered view.</p>
 
-    <p><img src="${baseUrl}whatsnew/2026-07-15-label-filter-collection-review.png" width=900/></p>`,
+    <p><img src="${baseUrl}whatsnew/2026-07-15-label-filter-collection-review.png" width=900 loading="lazy"/></p>`,
   },
   {
     date: '2026-06-15',
@@ -59,6 +59,6 @@ export const Sources = [
     <p>The Rule content for the selected Rule is shown in a resizable panel alongside the checklist, and the footer keeps a
     running count of results and statuses as you work.</p>
 
-    <p><img src="${baseUrl}whatsnew/2026-06-15-asset-review-full-checklist.png" width=900/></p>`,
+    <p><img src="${baseUrl}whatsnew/2026-06-15-asset-review-full-checklist.png" width=900 loading="lazy"/></p>`,
   },
 ]

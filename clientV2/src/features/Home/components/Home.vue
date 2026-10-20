@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import navyLogo from '../../../assets/navy.svg'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { useTours } from '../../../shared/composables/useTours.js'
 import { useEnv } from '../../../shared/stores/useEnv.js'
 import { fetchAppManagers } from '../api/api'
 import HomePanel from './HomePanel.vue'
@@ -21,7 +22,11 @@ const {
   onError: null, // the panel reports the failure itself
 })
 
+const { offerTour } = useTours()
+
 onMounted(async () => {
+  // Shown once per user; the app shell around this view is already rendered
+  offerTour('shell')
   if (env.displayAppManagers) {
     await execute()
   }

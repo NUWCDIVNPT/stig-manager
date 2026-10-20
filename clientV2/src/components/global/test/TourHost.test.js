@@ -32,9 +32,11 @@ function addAnchor(name) {
   return el
 }
 
+// Home offers the shell tour when it mounts; the host picks it up on mount.
 async function renderAndStart() {
+  useTours().offerTour('shell')
   const utils = renderWithProviders(TourHost)
-  await vi.advanceTimersByTimeAsync(500)
+  await vi.advanceTimersByTimeAsync(0)
   return utils
 }
 
@@ -50,6 +52,11 @@ describe('tourHost', () => {
     routeMock.path = '/'
     useTours().takeRequest()
     useGlobalAppStore().setUser({ webPreferences: { lastWhatsNew: '2000-01-01' } })
+    // The API answers a merge-patch with the merged preferences
+    api.patch.mockImplementation((_path, body) => {
+      const prefs = useGlobalAppStore().user.webPreferences
+      return Promise.resolve({ ...prefs, tours: { ...prefs.tours, ...body.tours } })
+    })
   })
 
   afterEach(() => {
@@ -111,11 +118,75 @@ describe('tourHost', () => {
     expect(pushMock).not.toHaveBeenCalled()
   })
 
+  it('leaves navigation to the clicked link even before the route has changed', async () => {
+    addAnchor('nav-rail')
+    addAnchor('nav-collections-dashboard')
+    await renderAndStart()
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    await fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    expect(screen.getByText('3 / 3')).toBeInTheDocument()
+    expect(pushMock).not.toHaveBeenCalled()
+  })
+
+  it('advances on ArrowRight but leaves Enter to the focused button', async () => {
+    addAnchor('nav-rail')
+    addAnchor('nav-item-home')
+    addAnchor('user-menu')
+    await renderAndStart()
+
+    await fireEvent.keyDown(window, { key: 'Enter' })
+    expect(screen.getByText('1 / 4')).toBeInTheDocument()
+
+    await fireEvent.keyDown(window, { key: 'ArrowRight' })
+    expect(screen.getByText('2 / 4')).toBeInTheDocument()
+  })
+
+  it('traps focus inside the card', async () => {
+    addAnchor('nav-rail')
+    await renderAndStart()
+    const card = screen.getByRole('dialog').querySelector('.tour-card')
+    expect(card).toHaveAttribute('data-pd-focustrap')
+  })
+
+  it('does not open without a request', async () => {
+    addAnchor('nav-rail')
+    renderWithProviders(TourHost)
+    await vi.advanceTimersByTimeAsync(0)
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  it('offers a view tour requested while the shell tour was open once it finishes', async () => {
+    addAnchor('nav-rail')
+    addAnchor('asset-review-checklist')
+    await renderAndStart()
+    expect(screen.getByText('Navigation moved to the left rail')).toBeInTheDocument()
+
+    useTours().offerTour('assetReview')
+    await vi.advanceTimersByTimeAsync(0)
+    expect(screen.getByText('Navigation moved to the left rail')).toBeInTheDocument()
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Skip' }))
+    await vi.advanceTimersByTimeAsync(0)
+    expect(screen.getByText('Checklist')).toBeInTheDocument()
+  })
+
+  it('does not reopen a tour requested while it was already open', async () => {
+    addAnchor('nav-rail')
+    await renderAndStart()
+    useTours().startTour('shell')
+    await fireEvent.click(screen.getByRole('button', { name: 'Skip' }))
+    await vi.advanceTimersByTimeAsync(0)
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
   it('does not navigate for a route step when already on that route', async () => {
     routeMock.path = '/collections'
     addAnchor('user-menu')
     addAnchor('meta-dashboard')
     await renderAndStart()
+    useTours().startTour('shell')
+    await vi.advanceTimersByTimeAsync(0)
 
     await fireEvent.click(screen.getByRole('button', { name: 'Next' }))
     expect(screen.getByText('Collections Dashboard')).toBeInTheDocument()
