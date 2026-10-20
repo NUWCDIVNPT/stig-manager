@@ -1,5 +1,4 @@
 <script setup>
-import targetIcon from '../../../../assets/target.svg'
 import ActionButton from '../../../../components/common/ActionButton.vue'
 import ActionToolbar from '../../../../components/common/ActionToolbar.vue'
 import ExportByAssetButton from '../../ExportResults/components/ExportByAssetButton.vue'
@@ -70,8 +69,8 @@ const emit = defineEmits(['imported', 'clear-selection', 'create-asset', 'modify
       @assets-transferred="emit('assets-transferred', $event)"
     />
     <div class="toolbar-divider" />
-    <ActionButton :disabled="!singleSelection" @click="emit('modify-asset')">
-      <img :src="targetIcon" class="btn-icon"> Modify
+    <ActionButton icon="pi pi-pencil icon-grey" :disabled="!singleSelection" @click="emit('modify-asset')">
+      Modify
     </ActionButton>
     <div class="toolbar-spacer" />
     <ActionButton variant="clear" :disabled="!hasSelection" @click="emit('clear-selection')">
@@ -87,15 +86,5 @@ const emit = defineEmits(['imported', 'clear-selection', 'create-asset', 'modify
 
 .clear-x {
   font-size: var(--icon-xs);
-}
-
-.btn-icon {
-  width: 1rem;
-  height: 1rem;
-  opacity: 0.6;
-}
-
-.action-btn:hover .btn-icon {
-  opacity: 1;
 }
 </style>

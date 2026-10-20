@@ -18,6 +18,7 @@ import { useColumnVisibility } from '../../../../shared/composables/useColumnVis
 import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
 import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import { useStigTable } from '../../composables/useStigTable.js'
+import StigAssignmentModal from './StigAssignmentModal.vue'
 import StigToolbar from './StigToolbar.vue'
 
 const props = defineProps({
@@ -90,6 +91,14 @@ function onStigsChanged() {
   clearSelection()
   loadStigs()
 }
+
+const editStig = ref(null)
+const editModalVisible = ref(false)
+
+function openEditModal(stig) {
+  editStig.value = stig
+  editModalVisible.value = true
+}
 </script>
 
 <template>
@@ -100,6 +109,15 @@ function onStigsChanged() {
       :has-selection="hasSelection"
       :single-selection="singleSelection"
       @clear-selection="clearSelection"
+      @stigs-changed="onStigsChanged"
+    />
+
+    <StigAssignmentModal
+      v-if="editStig"
+      v-model:visible="editModalVisible"
+      mode="modify"
+      :collection-id="props.collectionId"
+      :selected-stig="editStig"
       @stigs-changed="onStigsChanged"
     />
 
@@ -148,6 +166,14 @@ function onStigsChanged() {
               <div class="sm-info" :title="data.title || data.benchmarkId">
                 <HighlightText :text="data.benchmarkId" :term="highlightTerm('benchmarkId')" />
               </div>
+              <button
+                type="button"
+                class="row-edit-btn"
+                title="Modify STIG assignment"
+                @click.stop="openEditModal(data)"
+              >
+                <i class="pi pi-pencil" />
+              </button>
             </div>
           </template>
         </Column>
@@ -223,6 +249,31 @@ function onStigsChanged() {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.row-edit-btn {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  color: var(--color-text-dim);
+  font-size: var(--icon-xs);
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+
+:deep(tr:hover) .row-edit-btn {
+  opacity: 1;
+}
+
+.row-edit-btn:hover {
+  color: var(--color-text-bright);
 }
 
 :deep(th.metric-col .p-datatable-column-header-content) {

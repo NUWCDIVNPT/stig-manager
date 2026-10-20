@@ -40,7 +40,7 @@ function onStigsChanged() {
 </script>
 
 <template>
-  <ActionButton icon="pi pi-sliders-h icon-grey" :disabled="props.disabled" @click="openModal">
+  <ActionButton icon="pi pi-pencil icon-grey" :disabled="props.disabled" @click="openModal">
     Modify
   </ActionButton>
 
