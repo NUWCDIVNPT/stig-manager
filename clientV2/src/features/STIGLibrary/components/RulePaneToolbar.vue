@@ -54,9 +54,9 @@ function onChangeCompareRev(rev) {
 </script>
 
 <template>
-  <div class="stiglib-subbar">
+  <div class="stiglib-subbar rule-pane-toolbar">
     <RevisionSelect
-      label="Viewing:"
+      label="View"
       :options="revisions"
       :model-value="viewRev"
       :exclude-value="compareRev"
@@ -65,23 +65,22 @@ function onChangeCompareRev(rev) {
     />
     <template v-if="hasOtherRevisions">
       <RevisionSelect
-        label="Compare with:"
+        label="Compare with"
         :options="revisions"
         :model-value="compareRev"
         :exclude-value="viewRev"
         allow-none
-        none-label="— None (view mode) —"
+        none-label="None"
         :disabled="revisionsLoading"
         @update:model-value="onChangeCompareRev"
       />
       <ActionButton
         v-if="diffMode"
         icon="pi pi-times icon-grey"
-        title="Return to single-revision view"
+        title="Exit diff"
+        aria-label="Exit diff"
         @click="onChangeCompareRev(null)"
-      >
-        Exit diff
-      </ActionButton>
+      />
     </template>
     <div class="stiglib-panel__spacer" />
     <div class="rule-pane-toolbar__search">
@@ -93,13 +92,19 @@ function onChangeCompareRev(rev) {
 </template>
 
 <style scoped>
+/* One line only: selects and search shrink instead of wrapping. */
+.rule-pane-toolbar {
+  flex-wrap: nowrap;
+  gap: 0.5rem;
+}
+
 .rule-pane-toolbar__search {
   --checklist-control-height: 2rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   flex: 0 1 32rem;
-  min-width: 18rem;
+  min-width: 10rem;
 }
 
 .rule-pane-toolbar__input {
