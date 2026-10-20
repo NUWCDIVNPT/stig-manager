@@ -183,7 +183,9 @@ export function useStigImportStore() {
       row.message = 'No XML files found in archive'
       return
     }
-    state.rows.splice(index, 1, ...children)
+    // A new array, not an in-place splice: the DataTable virtual scroller only
+    // re-measures when the items reference it receives changes
+    state.rows = [...state.rows.slice(0, index), ...children, ...state.rows.slice(index + 1)]
   }
 
   async function start(clobber) {

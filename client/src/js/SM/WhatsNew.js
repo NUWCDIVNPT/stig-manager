@@ -11,6 +11,8 @@ SM.WhatsNew.Sources = [
 
     <p>This interface remains fully available, and your existing links and bookmarks continue to open it.</p>
 
+    <p><img src="img/whatsnew/2026-10-04-new-client-preview.png" width=600/></p>
+
     <p>Your input on the new interface is welcome. Please share feedback, problems, or suggestions by opening an issue on our <a target="_blank" href="https://github.com/NUWCDIVNPT/stig-manager/issues">GitHub Issues page</a>.</p>`
   },
   {

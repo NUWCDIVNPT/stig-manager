@@ -95,7 +95,7 @@ watch(visible, (isVisible) => {
     :closable="true"
     :pt="dialogPt"
   >
-    <WhatsNewContent :features="newFeatures" />
+    <WhatsNewContent :features="newFeatures" @tour-started="visible = false" />
 
     <template #footer>
       <div class="footer-actions">
