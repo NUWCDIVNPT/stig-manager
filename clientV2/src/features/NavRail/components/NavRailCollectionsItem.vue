@@ -142,6 +142,7 @@ async function onQuickCreated(created) {
             to="/collections"
             class="collection-list-link"
             :class="{ 'collection-list-link--active': route.name === 'collections' }"
+            data-tour="nav-collections-dashboard"
           >
             <span class="collection-list-icon pi pi-desktop collection-list-icon--dashboard" />
             <span class="collection-list-name">Collections Dashboard</span>

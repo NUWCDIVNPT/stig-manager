@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { api } from '../../../shared/api/apiClient.js'
+import { useTours } from '../../../shared/composables/useTours.js'
 import { renderWithProviders } from '../../../testUtils/utils.js'
 import WhatsNew from '../WhatsNew.vue'
 
@@ -137,6 +138,20 @@ describe('whatsNew Component', () => {
     })
 
     // API should NOT be called
+    expect(api.patch).not.toHaveBeenCalled()
+  })
+  it('starts the shell tour and closes the modal from the "Take the tour" link', async () => {
+    mockUser.webPreferences.lastWhatsNew = '1970-01-01'
+
+    renderWithProviders(WhatsNew)
+
+    const link = await screen.findByText('Take the tour')
+    await fireEvent.click(link)
+
+    expect(useTours().takeRequest()).toEqual({ id: 'shell', onlyIfUnseen: false })
+    await waitFor(() => {
+      expect(screen.queryByText('Have a Feature Request?')).not.toBeInTheDocument()
+    })
     expect(api.patch).not.toHaveBeenCalled()
   })
 })

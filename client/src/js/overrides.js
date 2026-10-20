@@ -1158,6 +1158,7 @@ Ext.override(Ext.grid.GridView,{
 })
 
 // TreeNodeUI rendered without href="#", which supresses Chrome status bar
+// (a node that sets attributes.href still renders a real link)
 // Move checkbox before icon
 // Support radio buttons if TreePanel has property "radio" set to true
 // Source: Carl Smigielski
@@ -1189,6 +1190,7 @@ Ext.override(Ext.tree.TreeNodeUI,{
                 (a.iconCls ? " "+a.iconCls : ""),
                 '" unselectable="on" />',
                 '<a hidefocus="on" class="x-tree-node-anchor" tabIndex="1" ',
+                a.href ? ' href="'+a.href+'"' : "",
                 a.hrefTarget ? ' target="'+a.hrefTarget+'"' : "", 
                 '><span unselectable="on">',
                 n.text,

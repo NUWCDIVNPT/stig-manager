@@ -7,6 +7,7 @@ import RuleInfo from '../../../components/common/RuleInfo.vue'
 import { getHttpStatus } from '../../../shared/api/apiClient.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
+import { useTours } from '../../../shared/composables/useTours.js'
 import { getRevisionInfo } from '../../../shared/lib/checklistUtils.js'
 import { defaultFieldSettings } from '../../../shared/lib/reviewFormUtils.js'
 import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
@@ -23,6 +24,7 @@ const route = useRoute()
 const router = useRouter()
 const { addView, removeView } = useRecentViews()
 const { getCollectionRoleId } = useCurrentUser()
+const { offerTour } = useTours()
 
 const collectionId = computed(() => route.params.collectionId)
 const assetId = computed(() => route.params.assetId)
@@ -171,6 +173,13 @@ watch(checklistError, (err) => {
   }
 })
 
+// The tour points at the checklist and Rule panels, so it waits for them.
+watch(() => Boolean(asset.value && gridData.value?.length), (ready) => {
+  if (ready) {
+    offerTour('assetReview')
+  }
+}, { immediate: true })
+
 function mergeReview(review) {
   upsertReview(review.ruleId, review)
 }
@@ -207,6 +216,7 @@ function onGridRefresh() {
       >
         <SplitterPanel :size="75" :min-size="40">
           <AssetChecklistGrid
+            data-tour="asset-review-checklist"
             :grid-data="gridData"
             :is-checklist-loading="isChecklistLoading"
             :selected-rule-id="selectedRuleId"
@@ -226,6 +236,7 @@ function onGridRefresh() {
         </SplitterPanel>
         <SplitterPanel :size="25" :min-size="20">
           <RuleInfo
+            data-tour="asset-review-rule"
             :rule-content="ruleContent"
             :is-loading="isRuleLoading"
             :rule-content-error="ruleContentError"
