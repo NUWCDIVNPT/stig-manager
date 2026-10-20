@@ -160,6 +160,7 @@ uglifyjs \
 'SM/AppData.js' \
 'SM/Job.js' \
 'SM/TaskConfig.js' \
+'SM/Routines.js' \
 'library.js' \
 'collectionAdmin.js' \
 'collectionManager.js' \

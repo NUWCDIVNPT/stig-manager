@@ -2,6 +2,7 @@
 
 const config = require('../utils/config')
 const ReviewService = require(`../service/ReviewService`)
+const RoutineService = require(`../service/RoutineService`)
 const CollectionService = require(`../service/CollectionService`)
 const Collection = require(`./Collection`)
 const SmError = require('../utils/error')
@@ -28,7 +29,8 @@ module.exports.postReviewsByAsset = async function postReviewsByAsset (req, res,
       collectionId, 
       userId: req.userObject.userId,
       grant: req.userObject.grants[collectionId],
-      svcStatus: res.svcStatus
+      svcStatus: res.svcStatus,
+      applyRoutines: req.query.applyRoutines
     })
     res.json(result)
   }
@@ -46,7 +48,7 @@ module.exports.deleteReviewByAssetRule = async function deleteReviewByAssetRule 
     const {collectionId, grant} = await Collection.getCollectionInfoAndCheckPermission(req, Security.ROLES.Restricted)
     const userHasRule = await ReviewService.checkRuleByAssetUser({ruleId, assetId, collectionId, grant, checkWritable: true})
     if (userHasRule) {
-      let response = await ReviewService.deleteReviewByAssetRule({assetId, ruleId, projections, grant, svcStatus: res.svcStatus})
+      let response = await ReviewService.deleteReviewByAssetRule({collectionId, assetId, ruleId, projections, grant, svcStatus: res.svcStatus})
       res.status(response ? 200 : 204).json(response)
     }
     else {
@@ -85,6 +87,9 @@ module.exports.getReviewByAssetRule = async function (req, res, next) {
       grant,
       userObject: req.userObject
     })
+    if (response.length && projections?.includes('routineSource')) {
+      response[0].routineSource = await RoutineService.getRoutineSource(collectionId, response[0])
+    }
     // res.json(response[0])
     // res.status(typeof response === 'undefined' ? 204 : 200).json(response[0])
     res.status(response.length == 0 ? 204 : 200).json(response[0])
@@ -447,7 +452,8 @@ module.exports.postReviewBatch = async function (req, res, next) {
       grant,
       svcStatus: res.svcStatus,
       historyMaxReviews: historySettings.maxReviews,
-      skipGrantCheck
+      skipGrantCheck,
+      applyRoutines: req.query.applyRoutines
     })
     res.json(result)
   }

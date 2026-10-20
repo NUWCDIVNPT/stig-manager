@@ -1961,10 +1961,19 @@ SM.Manage.Collection.Panel = Ext.extend(Ext.Panel, {
       border: false,
     })
 
+    const routinesGrid = new SM.Routines.Grid({
+      collectionId: _this.apiCollection.collectionId,
+      canManage: _this.canManageRoutines,
+      iconCls: 'sm-setting-icon',
+      title: 'Routines',
+      border: false
+    })
+
     const tp = new Ext.TabPanel({
       region: 'center',
       activeTab: 0,
       border: false,
+      enableTabScroll: true,
       items: [
         grantGrid,
         usersGrid,
@@ -1988,14 +1997,15 @@ SM.Manage.Collection.Panel = Ext.extend(Ext.Panel, {
         },
         metadataGrid,
         this.labelGrid,
-        tasksPanel
+        tasksPanel,
+        routinesGrid
       ],
       listeners: {
         tabchange: function (tp, tab) {
           if (tab.title === 'Users') {
             usersGrid.store.load()
           }
-          if (tab.title === 'Tasks' && !tab.initialized) {
+          if (tab.initPanel && !tab.initialized) {
             tab.initPanel()
             tab.initialized = true
           }

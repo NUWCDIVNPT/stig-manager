@@ -1451,6 +1451,7 @@ paths:
       operationId: postReviewBatch
       parameters:
         - $ref: '#/components/parameters/CollectionIdPath'
+        - $ref: '#/components/parameters/ApplyRoutinesQuery'
       requestBody:
         content:
           application/json:
@@ -1544,6 +1545,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/CollectionIdPath'
         - $ref: '#/components/parameters/AssetIdPath'
+        - $ref: '#/components/parameters/ApplyRoutinesQuery'
       requestBody:
         content:
           application/json:
@@ -1579,6 +1581,8 @@ paths:
         - Review
       summary: Return the Review for an Asset and Rule
       operationId: getReviewByAssetRule
+      parameters:
+        - $ref: '#/components/parameters/ReviewGetProjectionQuery'
       responses:
         '200':
           description: ReviewAssetRuleRead response
@@ -2793,6 +2797,144 @@ paths:
       security:
         - oauth:
             - 'stig-manager:collection:read'
+  '/collections/{collectionId}/routines':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+    get:
+      tags:
+        - Collection
+      summary: Return the Review Routines of the specified Collection
+      description: Long match details are truncated; see match.detailTruncated.
+      operationId: getCollectionRoutines
+      responses:
+        '200':
+          description: Routines response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Routine'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+    post:
+      tags:
+        - Collection
+      summary: Create a Review Routine in the specified Collection
+      description: Provide either ruleId and match, or a source Review whose match is derived from its most recent automated result.
+      operationId: createCollectionRoutine
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoutineCreate'
+      responses:
+        '201':
+          description: Routine response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Routine'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
+  '/collections/{collectionId}/routines/{routineId}':
+    parameters:
+      - $ref: '#/components/parameters/CollectionIdPath'
+      - $ref: '#/components/parameters/RoutineIdPath'
+    get:
+      tags:
+        - Collection
+      summary: Return the specified Review Routine
+      operationId: getCollectionRoutineById
+      parameters:
+        - $ref: '#/components/parameters/RoutineProjectionQuery'
+      responses:
+        '200':
+          description: Routine response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Routine'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection:read'
+    patch:
+      tags:
+        - Collection
+      summary: Update a Review Routine, or re-approve it against the current check content of a Rule
+      operationId: patchCollectionRoutineById
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoutineUpdate'
+      responses:
+        '200':
+          description: Routine response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Routine'
+        '409':
+          description: reviewedCheckDigest is not the current check content of ruleId, or reviewedApprovedTs is not the Routine's approvedTs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
+    delete:
+      tags:
+        - Collection
+      summary: Delete a Review Routine
+      operationId: deleteCollectionRoutineById
+      responses:
+        '204':
+          description: No Content
+        '409':
+          description: The Routine is referenced by Reviews; disable it instead
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - oauth:
+            - 'stig-manager:collection'
   '/collections/{collectionId}/stigs':
     parameters:
       - $ref: '#/components/parameters/CollectionIdPath'
@@ -6816,6 +6958,13 @@ components:
             Deprecated. The source Collection's Labels and their Asset mappings
             are always cloned. This option is retained for compatibility and
             only accepts true.
+        routines:
+          default: true
+          type: boolean
+          description: >-
+            Clone the source Collection's Review Routines. Cloned Routines are
+            marked needsReview, with the cloning user as approver, so they do
+            not apply until a Manager re-approves them.
         pinRevisions:
           default: matchSource
           type: string
@@ -8767,6 +8916,8 @@ components:
           $ref: '#/components/schemas/ReviewResult'
         resultEngine:
           $ref: '#/components/schemas/ResultEngine'
+        routine:
+          $ref: '#/components/schemas/RoutineBasicNullable'
         rule:
           $ref: '#/components/schemas/RuleAbbr'
         ruleId:
@@ -8885,6 +9036,10 @@ components:
           $ref: '#/components/schemas/ReviewResult'
         resultEngine:
           $ref: '#/components/schemas/ResultEngine'
+        routine:
+          $ref: '#/components/schemas/RoutineBasicNullable'
+        routineSource:
+          $ref: '#/components/schemas/ReviewRoutineSource'
         rule:
           $ref: '#/components/schemas/RuleAbbr'
         ruleIds:
@@ -9106,6 +9261,9 @@ components:
           type: integer
         inserted:
           type: integer
+        routineApplied:
+          description: The number of accepted rows a Collection Routine matched, including those whose stored Review it left unchanged
+          type: integer
         updated:
           type: integer
         validationErrors:
@@ -9124,6 +9282,7 @@ components:
         - updated
         - failedValidation
         - validationErrors
+        - routineApplied
     ReviewBatchResponseDryRun:
       additionalProperties: false
       type: object
@@ -9273,6 +9432,9 @@ components:
               type: number
             updated:
               type: number
+            routineApplied:
+              description: The number of accepted rows a Collection Routine matched, including those whose stored Review it left unchanged
+              type: number
         rejected:
           type: array
           items:
@@ -9315,6 +9477,8 @@ components:
           $ref: '#/components/schemas/ReviewResult'
         resultEngine:
           $ref: '#/components/schemas/ResultEngine'
+        routine:
+          $ref: '#/components/schemas/RoutineBasicNullable'
         rule:
           $ref: '#/components/schemas/RuleAbbr'
         ruleId:
@@ -9362,6 +9526,16 @@ components:
         - informational
         - fixed
       type: string
+    ReviewRoutineSource:
+      description: Projection routineSource, offered only by getReviewByAssetRule. The match a Routine created from this Review would store. Null when the Review has no detail to match.
+      nullable: true
+      additionalProperties: false
+      type: object
+      properties:
+        match:
+          $ref: '#/components/schemas/RoutineMatch'
+      required:
+        - match
     ReviewStatusLabel:
       enum:
         - saved
@@ -9509,6 +9683,286 @@ components:
         - version
         - title
         - severity
+    Routine:
+      additionalProperties: false
+      type: object
+      properties:
+        routineId:
+          $ref: '#/components/schemas/RoutineId'
+        name:
+          $ref: '#/components/schemas/RoutineName'
+        description:
+          $ref: '#/components/schemas/String255Nullable'
+        state:
+          $ref: '#/components/schemas/RoutineState'
+        needsReview:
+          description: True when state is needsReview, the Routine is stale, or its approver no longer exists. Such Routines never apply.
+          type: boolean
+        stale:
+          description: True when no Rule in the Collection's effective revisions has the Routine's version and checkDigest as its review key. A Rule's review key is the version and checkDigest its Reviews are stored under, from the newest-dated revision of its STIG, whichever revision the Collection pins.
+          type: boolean
+        ruleIds:
+          description: Rules in the Collection's effective revisions whose review key is the Routine's version and checkDigest.
+          type: array
+          items:
+            $ref: '#/components/schemas/RuleId'
+        version:
+          $ref: '#/components/schemas/String45'
+        checkDigest:
+          $ref: '#/components/schemas/RoutineCheckDigest'
+        match:
+          $ref: '#/components/schemas/RoutineMatchRead'
+        action:
+          $ref: '#/components/schemas/RoutineAction'
+        createdUser:
+          $ref: '#/components/schemas/UserBasicNullable'
+        approvedUser:
+          $ref: '#/components/schemas/UserBasicNullable'
+        approvedTs:
+          $ref: '#/components/schemas/StringDateTime'
+        reviewCount:
+          description: Reviews whose current value this Routine set; 0 means it can be deleted.
+          type: integer
+        approvedCheckContent:
+          description: Projection checks. The check content the Routine was approved against, or null when it is no longer stored.
+          nullable: true
+          type: string
+        currentChecks:
+          description: Projection checks. The Rules in the Collection's effective revisions whose review key has the Routine's version, with the check content of that key. For re-approval this supersedes ruleIds.
+          type: array
+          items:
+            $ref: '#/components/schemas/RoutineCheck'
+      required:
+        - routineId
+        - name
+        - description
+        - state
+        - needsReview
+        - stale
+        - ruleIds
+        - version
+        - checkDigest
+        - match
+        - action
+        - createdUser
+        - approvedUser
+        - approvedTs
+        - reviewCount
+    RoutineAction:
+      description: Applied to a matching import. A null or blank detail keeps the imported detail, and detail is trimmed. A null comment keeps the imported comment.
+      additionalProperties: false
+      type: object
+      properties:
+        result:
+          $ref: '#/components/schemas/RoutineActionResult'
+        detail:
+          $ref: '#/components/schemas/CommentaryStringNullable'
+        comment:
+          $ref: '#/components/schemas/CommentaryStringNullable'
+        status:
+          $ref: '#/components/schemas/RoutineStatus'
+      required:
+        - result
+        - status
+    RoutineActionResult:
+      description: The Result a Routine sets. Any Review Result except notchecked; a Routine records a decision, so it never sets a Result of Not Reviewed.
+      enum:
+        - fail
+        - pass
+        - notapplicable
+        - unknown
+        - error
+        - notselected
+        - informational
+        - fixed
+      type: string
+    RoutineActionUpdate:
+      additionalProperties: false
+      type: object
+      minProperties: 1
+      properties:
+        result:
+          $ref: '#/components/schemas/RoutineActionResult'
+        detail:
+          $ref: '#/components/schemas/CommentaryStringNullable'
+        comment:
+          $ref: '#/components/schemas/CommentaryStringNullable'
+        status:
+          $ref: '#/components/schemas/RoutineStatus'
+    RoutineBasicNullable:
+      nullable: true
+      additionalProperties: false
+      type: object
+      properties:
+        routineId:
+          $ref: '#/components/schemas/RoutineId'
+        name:
+          $ref: '#/components/schemas/RoutineName'
+      required:
+        - routineId
+        - name
+    RoutineCheck:
+      additionalProperties: false
+      type: object
+      properties:
+        ruleId:
+          $ref: '#/components/schemas/RuleId'
+        checkDigest:
+          $ref: '#/components/schemas/RoutineCheckDigest'
+        content:
+          type: string
+      required:
+        - ruleId
+        - checkDigest
+        - content
+    RoutineCheckDigest:
+      description: Lowercase hex SHA-256 of the Rule's check content
+      pattern: ^[0-9a-f]{64}$
+      type: string
+    RoutineCreate:
+      oneOf:
+        - $ref: '#/components/schemas/RoutineCreateFromMatch'
+        - $ref: '#/components/schemas/RoutineCreateFromSource'
+    RoutineCreateFromMatch:
+      additionalProperties: false
+      type: object
+      properties:
+        name:
+          $ref: '#/components/schemas/RoutineName'
+        description:
+          $ref: '#/components/schemas/String255Nullable'
+        ruleId:
+          $ref: '#/components/schemas/String45'
+        match:
+          $ref: '#/components/schemas/RoutineMatch'
+        action:
+          $ref: '#/components/schemas/RoutineAction'
+      required:
+        - name
+        - ruleId
+        - match
+        - action
+    RoutineCreateFromSource:
+      additionalProperties: false
+      type: object
+      properties:
+        name:
+          $ref: '#/components/schemas/RoutineName'
+        description:
+          $ref: '#/components/schemas/String255Nullable'
+        source:
+          $ref: '#/components/schemas/RoutineSource'
+        action:
+          $ref: '#/components/schemas/RoutineAction'
+      required:
+        - name
+        - source
+        - action
+    RoutineEdit:
+      additionalProperties: false
+      type: object
+      minProperties: 1
+      properties:
+        name:
+          $ref: '#/components/schemas/RoutineName'
+        description:
+          $ref: '#/components/schemas/String255Nullable'
+        state:
+          $ref: '#/components/schemas/RoutineState'
+        match:
+          $ref: '#/components/schemas/RoutineMatchUpdate'
+        action:
+          $ref: '#/components/schemas/RoutineActionUpdate'
+    RoutineId:
+      $ref: '#/components/schemas/StringUuid'
+    RoutineMatch:
+      additionalProperties: false
+      type: object
+      properties:
+        result:
+          $ref: '#/components/schemas/ReviewResult'
+        detail:
+          $ref: '#/components/schemas/RoutineMatchDetail'
+      required:
+        - result
+        - detail
+    RoutineMatchDetail:
+      description: Matched exactly against the imported detail; leading and trailing spaces are trimmed.
+      maxLength: 32767
+      pattern: \S
+      type: string
+    RoutineMatchRead:
+      additionalProperties: false
+      type: object
+      properties:
+        result:
+          $ref: '#/components/schemas/ReviewResult'
+        detail:
+          $ref: '#/components/schemas/CommentaryString'
+        detailTruncated:
+          type: boolean
+      required:
+        - result
+        - detail
+        - detailTruncated
+    RoutineMatchUpdate:
+      additionalProperties: false
+      type: object
+      minProperties: 1
+      properties:
+        result:
+          $ref: '#/components/schemas/ReviewResult'
+        detail:
+          $ref: '#/components/schemas/RoutineMatchDetail'
+    RoutineName:
+      maxLength: 64
+      minLength: 1
+      type: string
+    RoutineReapproval:
+      description: Re-points the Routine at the current check content of ruleId, which must have the Routine's version, and reactivates it, renaming it when name is given.
+      additionalProperties: false
+      type: object
+      properties:
+        ruleId:
+          $ref: '#/components/schemas/String45'
+        name:
+          $ref: '#/components/schemas/RoutineName'
+        reviewedCheckDigest:
+          $ref: '#/components/schemas/RoutineCheckDigest'
+        reviewedApprovedTs:
+          description: The approvedTs of the Routine as it was reviewed.
+          $ref: '#/components/schemas/StringDateTime'
+      required:
+        - ruleId
+        - reviewedCheckDigest
+        - reviewedApprovedTs
+    RoutineSource:
+      additionalProperties: false
+      type: object
+      properties:
+        assetId:
+          $ref: '#/components/schemas/AssetId'
+        ruleId:
+          $ref: '#/components/schemas/String45'
+      required:
+        - assetId
+        - ruleId
+    RoutineState:
+      enum:
+        - active
+        - disabled
+        - needsReview
+      type: string
+    RoutineStatus:
+      description: Routines never accept or reject; acceptance stays a human act.
+      enum:
+        - saved
+        - submitted
+      type: string
+    RoutineUpdate:
+      oneOf:
+        - $ref: '#/components/schemas/RoutineEdit'
+        - $ref: '#/components/schemas/RoutineReapproval'
     RuleCount:
       nullable: true
       type: integer
@@ -10220,6 +10674,13 @@ components:
       description: The format of the appdata
       schema:
         $ref: '#/components/schemas/AppDataFormat'
+    ApplyRoutinesQuery:
+      name: applyRoutines
+      in: query
+      description: Apply the Collection's Review Routines to the written Reviews. If `false`, every Review is written as the request alone would write it, and routineApplied is 0.
+      schema:
+        type: boolean
+        default: true
     AssetIdArrayQuery:
       name: assetId
       in: query
@@ -10642,6 +11103,26 @@ components:
             - rule
             - stigs
             - history
+            - routine
+    ReviewGetProjectionQuery:
+      name: projection
+      in: query
+      description: Additional properties to include in the response. Only this operation offers routineSource.
+      style: form
+      explode: true
+      schema:
+        type: array
+        uniqueItems: true
+        minItems: 1
+        items:
+          type: string
+          enum:
+            - metadata
+            - rule
+            - stigs
+            - history
+            - routine
+            - routineSource
     ReviewHistoryStatsProjectionQuery:
       name: projection
       in: query
@@ -10672,6 +11153,7 @@ components:
             - metadata
             - rule
             - stigs
+            - routine
     ReviewResultQuery:
       name: result
       in: query
@@ -10715,6 +11197,27 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/RevisionStr'
+    RoutineIdPath:
+      name: routineId
+      in: path
+      required: true
+      description: A path parameter that identifies a Review Routine
+      schema:
+        $ref: '#/components/schemas/RoutineId'
+    RoutineProjectionQuery:
+      name: projection
+      in: query
+      description: Additional properties to include in the response.
+      style: form
+      explode: true
+      schema:
+        type: array
+        uniqueItems: true
+        minItems: 1
+        items:
+          type: string
+          enum:
+            - checks
     RuleIdPath:
       name: ruleId
       in: path

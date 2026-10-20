@@ -12,6 +12,7 @@
 - Copyright 2024 Rajesh Shrestha, rshrestha@rite-solutions.com
 - Copyright 2024 David Whalen, david.whalen@usmc.mil
 - Copyright 2025 Christian Rodriguez, christian.a.rodriguez@mantech.com
+- Copyright 2026 Tyler Boch, tboch3@gmail.com
 - _Add the copyright date, your name, and email address here. (PLEASE KEEP THIS LINE)_
 
 ## Note for U.S. Federal Employees

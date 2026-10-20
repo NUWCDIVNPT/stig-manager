@@ -873,6 +873,14 @@ SM.ReviewsImport.ParseOptionsFieldSet = Ext.extend(Ext.form.FieldSet, {
         this.updateAssetPropsCb.setReadOnly = function (readOnly) {
             _this.updateAssetPropsCb.setDisabled(readOnly)
         }
+        // A choice for this import, not a Collection import option, so it is outside getOptions.
+        this.applyRoutinesCb = new SM.Global.HelperCheckbox({
+            boxLabel: 'Apply Review Routines',
+            name: 'applyRoutines',
+            checked: true,
+            helpText: SM.TipContent.ImportOptions.ApplyRoutines,
+            hideLabel: true
+        })
 
         this.autoStatusFieldGroup = new Ext.form.FieldSet({
             title: 'Review Status Per Result',
@@ -997,9 +1005,7 @@ SM.ReviewsImport.ParseOptionsFieldSet = Ext.extend(Ext.form.FieldSet, {
         }
         items.push(...this.optionComboBoxes)
         items.push(this.canUpdateAssetProps ? this.updateAssetPropsCb : this.noUpdateAssetPropsDisplay)
-        if (this.context !== 'wizard') {
-            items.push(this.allowCustomCb)
-        }
+        items.push(this.context === 'wizard' ? this.applyRoutinesCb : this.allowCustomCb)
         const config = {
             title: 'Import options',
             labelWidth: 200,
@@ -1358,7 +1364,7 @@ SM.ReviewsImport.MultiSelectPanel = Ext.extend(Ext.Panel, {
     initComponent: function () {
         const _this = this
         this.parseOptionsFieldSet = new SM.ReviewsImport.ParseOptionsFieldSet({
-            height: 330,
+            height: 355,
             context: this.optionsContext,
             canAccept: true,
             initialOptions: this.initialOptions,
@@ -1443,7 +1449,7 @@ SM.ReviewsImport.SelectFilesPanel = Ext.extend(Ext.Panel, {
         }
 
         this.parseOptionsFieldSet = new SM.ReviewsImport.ParseOptionsFieldSet({
-            height: 300,
+            height: 325,
             context: 'wizard',
             initialOptions: this.initialOptions,
             canAccept: this.canAccept,
@@ -1789,6 +1795,7 @@ SM.ReviewsImport.ImportStatusGrid = Ext.extend(Ext.grid.GridPanel, {
             { name: 'addedStigs', type: 'boolean'},
             'inserted',
             'updated',
+            'routineApplied',
             'rejected'
         ]
         const totalTextCmp = new Ext.Toolbar.TextItem({
@@ -2072,6 +2079,14 @@ SM.ReviewsImport.ImportProgressPanel = Ext.extend(Ext.Panel, {
 
         Ext.apply(this, Ext.apply(this.initialConfig, config))
         this.superclass().initComponent.call(this)
+    },
+
+    finish: function () {
+        const routineApplied = this.st.store.sum('routineApplied')
+        this.pb.updateProgress(0, routineApplied
+            ? `Finished. ${routineApplied} review${routineApplied === 1 ? '' : 's'} matched routines`
+            : 'Finished')
+        this.doneBtn.setDisabled(false)
     }
 })
 
@@ -2089,6 +2104,8 @@ async function showImportResultFiles(collectionId, createObjects = true, canUpda
         let height = vpSize.height * 0.85
         let width = vpSize.width * 0.75 <= 1024 ? vpSize.width * 0.75 : 1024
 
+        // Captured when leaving the parse panel, because later steps destroy it (fpwindow.removeAll)
+        let applyRoutines = true
         const fp = new SM.ReviewsImport.MultiSelectPanel({
             border: false,
             height: 'auto',
@@ -2101,6 +2118,7 @@ async function showImportResultFiles(collectionId, createObjects = true, canUpda
                 continue: function(panel) {
                     const records = panel.selectFilesGrid.store.getRange()
                     const files = records.map( r => r.json )
+                    applyRoutines = panel.parseOptionsFieldSet.applyRoutinesCb.getValue()
                     warnOnExcessFiles(files)
                 },
                 filelist: function(list) {
@@ -2426,8 +2444,7 @@ async function showImportResultFiles(collectionId, createObjects = true, canUpda
                         updateProgress(processedCount / taskAssets.size, taskAsset.assetProps.name)
                     }
                 }
-                updateProgress(0, 'Finished')
-                progressPanel.doneBtn.setDisabled(false)
+                progressPanel.finish()
                 SM.Dispatcher.fireEvent('assetchanged', {collection:{collectionId}})
             }
             catch (e) {
@@ -2495,7 +2512,7 @@ async function showImportResultFiles(collectionId, createObjects = true, canUpda
                     }                    
                 }
                 else{
-                    let url = `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews/${assetId}`
+                    let url = `${STIGMAN.Env.apiBase}/collections/${collectionId}/reviews/${assetId}?applyRoutines=${applyRoutines}`
                     let result = await Ext.Ajax.requestPromise({
                         url: url,
                         method: 'POST',
@@ -2504,8 +2521,7 @@ async function showImportResultFiles(collectionId, createObjects = true, canUpda
                     })
                     const apiReviews = JSON.parse(result.response.responseText)
                     return {
-                        inserted: apiReviews.affected.inserted,
-                        updated: apiReviews.affected.updated,
+                        ...apiReviews.affected,
                         rejected: apiReviews.rejected
                     }
                 }
@@ -2532,6 +2548,8 @@ async function showImportResultFile(params) {
         let height = vpSize.height * 0.85
         let width = vpSize.width * 0.75 <= 1024 ? vpSize.width * 0.75 : 1024
 
+        // Captured when leaving the parse panel, because later steps destroy it (fpwindow.removeAll)
+        let applyRoutines = true
         const fp = new SM.ReviewsImport.SelectFilesPanel({
             border: false,
             autoScroll: true,
@@ -2621,6 +2639,7 @@ async function showImportResultFile(params) {
         }
 
         async function showParseFile(file) {
+            applyRoutines = fp.parseOptionsFieldSet.applyRoutinesCb.getValue()
             let task
             try {
                 const pb = new Ext.ProgressBar({
@@ -2795,8 +2814,7 @@ async function showImportResultFile(params) {
                     addedStigs: false
                 }
                 updateStatusGrid({...commonProps, ...importReviewArrayResult})
-                updateProgress(0, 'Finished')
-                progressPanel.doneBtn.setDisabled(false)
+                progressPanel.finish()
                 params.store.reload()
             }
             catch (e) {
@@ -2820,7 +2838,7 @@ async function showImportResultFile(params) {
                     }           
                 }
                 else{                
-                    let url = `${STIGMAN.Env.apiBase}/collections/${params.collectionId}/reviews/${params.assetId}`
+                    let url = `${STIGMAN.Env.apiBase}/collections/${params.collectionId}/reviews/${params.assetId}?applyRoutines=${applyRoutines}`
                     let result = await Ext.Ajax.requestPromise({
                         url: url,
                         method: 'POST',
@@ -2829,8 +2847,7 @@ async function showImportResultFile(params) {
                     })
                     const apiReviews = JSON.parse(result.response.responseText)
                     return {
-                        inserted: apiReviews.affected.inserted,
-                        updated: apiReviews.affected.updated,
+                        ...apiReviews.affected,
                         rejected: apiReviews.rejected
                     }
                 }

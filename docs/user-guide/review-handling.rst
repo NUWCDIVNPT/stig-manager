@@ -18,6 +18,8 @@ When DISA Reference STIG releases are imported into STIG Manager, the Check Cont
     - Rule "Version" (often called "STIG Id")
     - The Rule's check content, in the form of a unique SHA-256 digest of that Check Content.
 
+:ref:`Review Routines<review-routines>` are keyed the same way, so a Routine never applies to a Rule whose Check Content has changed. When a Collection moves to a DISA release that changes a Rule's Check Content, that Rule's Routines are reported as Needs Review until a Manager re-approves them against the new Check Content.
+
 
 
 Review Handling Comparison with STIG Viewer
