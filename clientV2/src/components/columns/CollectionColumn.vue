@@ -1,7 +1,6 @@
 <script setup>
 import Column from 'primevue/column'
 import collectionColorIcon from '../../assets/collection-color.svg'
-import collectionIcon from '../../assets/collection.svg'
 import shieldGreenCheck from '../../assets/shield-green-check.svg'
 import HighlightText from '../common/HighlightText.vue'
 
@@ -57,8 +56,7 @@ function handleCollectionIconClick(rowData) {
           title="Go to Collection"
           @click.stop="handleCollectionIconClick(slotProps.data)"
         >
-          <img class="collection-icon-default" :src="collectionIcon" width="14" height="14" alt="Collection">
-          <img class="collection-icon-hover" :src="collectionColorIcon" width="14" height="14" alt="Collection">
+          <img :src="collectionColorIcon" width="14" height="14" alt="Collection">
         </button>
         <button
           v-if="showShield"
@@ -96,26 +94,16 @@ function handleCollectionIconClick(rowData) {
   background: transparent;
   border: none;
   border-radius: 4px;
-  visibility: hidden;
   cursor: pointer;
   margin-left: auto;
   flex-shrink: 0;
-  transition: background-color 0.15s;
-}
-
-.collection-icon-action .collection-icon-hover {
-  display: none;
-}
-
-.collection-icon-action:hover .collection-icon-default {
-  display: none;
-}
-
-.collection-icon-action:hover .collection-icon-hover {
-  display: inline;
+  opacity: 0.5;
+  transition: opacity 0.15s, transform 0.15s, background-color 0.15s;
 }
 
 .collection-icon-action:hover {
+  opacity: 1;
+  transform: scale(1.2);
   background-color: var(--color-button-hover-bg);
 }
 

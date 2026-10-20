@@ -597,8 +597,4 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
 :deep(.agg-grid-column-toggle) {
   min-width: auto;
 }
-
-:deep(tr:hover .collection-icon-action) {
-  visibility: visible;
-}
 </style>
