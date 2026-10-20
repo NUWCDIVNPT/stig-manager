@@ -8,6 +8,10 @@
 //   placement:  where the card sits relative to the target: 'right' (default),
 //               'left', 'below-end' or 'center' (over the target).
 //   expandRail: holds the nav rail open while the step is showing.
+//   clickTarget: Next clicks the target before moving on, so a step can walk
+//               the user through a link.
+//   route:      navigates there when the step opens. The step is kept even
+//               though its target is not on screen when the tour starts.
 export const TOURS = {
   shell: {
     date: '2026-10-04',
@@ -59,6 +63,20 @@ export const TOURS = {
         title: 'Your account moved to the top right',
         body: 'Your username and Sign out are under the user icon here, instead of at the top of the navigation tree.',
         placement: 'below-end',
+      },
+      {
+        target: 'nav-collections-dashboard',
+        title: 'Collections Dashboard',
+        body: 'The first entry in your Collection list opens a dashboard across all of your Collections. Next opens it.',
+        expandRail: true,
+        clickTarget: true,
+      },
+      {
+        target: 'meta-dashboard',
+        title: 'Collections Dashboard',
+        body: 'Metrics across every Collection you can access, with the Collections and STIGs grids beside them. Select Collections to narrow the view, or click one to open it.',
+        placement: 'center',
+        route: '/collections',
       },
     ],
   },

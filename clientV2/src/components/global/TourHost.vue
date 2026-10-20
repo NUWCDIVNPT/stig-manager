@@ -10,6 +10,7 @@
 // other tour is open.
 import Button from 'primevue/button'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useGlobalError } from '../../shared/composables/useGlobalError.js'
 import { useTours } from '../../shared/composables/useTours.js'
 import { useWebPreferences } from '../../shared/composables/useWebPreferences.js'
@@ -22,6 +23,8 @@ const globalAppStore = useGlobalAppStore()
 const { triggerError } = useGlobalError()
 const { preferences, patchPreferences } = useWebPreferences()
 const { request, takeRequest, setNavRailExpanded } = useTours()
+const router = useRouter()
+const route = useRoute()
 
 const SPOTLIGHT_PAD = 6
 const CARD_GAP = 14
@@ -119,6 +122,9 @@ function next() {
     finish()
     return
   }
+  if (step.value?.clickTarget) {
+    findTarget(step.value.target)?.click()
+  }
   stepIndex.value += 1
 }
 
@@ -169,7 +175,10 @@ async function start(id) {
   // before deciding which steps are available.
   setNavRailExpanded(steps.some(s => s.expandRail))
   await nextTick()
-  availableSteps.value = steps.filter(s => findTarget(s.target))
+  // A step with a route brings its own target along once it navigates, but
+  // only joins a tour that has something to show on the current screen.
+  const onScreen = steps.filter(s => findTarget(s.target))
+  availableSteps.value = onScreen.length ? steps.filter(s => s.route || onScreen.includes(s)) : []
   if (availableSteps.value.length === 0) {
     setNavRailExpanded(false)
     return
@@ -204,10 +213,16 @@ function stopTracking() {
   }
 }
 
-// The rail stays open only for the steps that point into it.
+// The rail stays open only for the steps that point into it. A step with a
+// route navigates there; the per-frame measurement picks up the target once
+// the view renders, and the card sits centred until then.
 watch(step, (current) => {
-  if (visible.value) {
-    setNavRailExpanded(Boolean(current?.expandRail))
+  if (!visible.value) {
+    return
+  }
+  setNavRailExpanded(Boolean(current?.expandRail))
+  if (current?.route && route.path !== current.route) {
+    router.push(current.route)
   }
 })
 

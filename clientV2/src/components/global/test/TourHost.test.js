@@ -13,6 +13,16 @@ vi.mock('../../../shared/api/apiClient.js', () => ({
   },
 }))
 
+const { routeMock, pushMock } = vi.hoisted(() => ({
+  routeMock: { path: '/' },
+  pushMock: vi.fn(),
+}))
+
+vi.mock('vue-router', () => ({
+  useRoute: () => routeMock,
+  useRouter: () => ({ push: pushMock }),
+}))
+
 // jsdom lays nothing out, so anchors get an explicit non-zero rect.
 function addAnchor(name) {
   const el = document.createElement('div')
@@ -37,6 +47,7 @@ describe('tourHost', () => {
     vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1))
     vi.stubGlobal('cancelAnimationFrame', vi.fn())
     vi.clearAllMocks()
+    routeMock.path = '/'
     useTours().takeRequest()
     useGlobalAppStore().setUser({ webPreferences: { lastWhatsNew: '2000-01-01' } })
   })
@@ -60,19 +71,55 @@ describe('tourHost', () => {
     await renderAndStart()
 
     expect(screen.getByRole('dialog')).toBeInTheDocument()
-    expect(screen.getByText('1 / 3')).toBeInTheDocument()
+    expect(screen.getByText('1 / 4')).toBeInTheDocument()
     expect(screen.getByText('Navigation moved to the left rail')).toBeInTheDocument()
 
     await fireEvent.click(screen.getByRole('button', { name: 'Next' }))
-    expect(screen.getByText('2 / 3')).toBeInTheDocument()
+    expect(screen.getByText('2 / 4')).toBeInTheDocument()
     expect(screen.getByText('Home')).toBeInTheDocument()
 
     await fireEvent.click(screen.getByRole('button', { name: 'Next' }))
-    expect(screen.getByText('3 / 3')).toBeInTheDocument()
+    expect(screen.getByText('3 / 4')).toBeInTheDocument()
     expect(screen.getByText('Your account moved to the top right')).toBeInTheDocument()
+    expect(pushMock).not.toHaveBeenCalled()
+
+    // The last step has a route, so it stays in the tour without an anchor and navigates on arrival
+    await fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    expect(screen.getByText('4 / 4')).toBeInTheDocument()
+    expect(screen.getByText('Collections Dashboard')).toBeInTheDocument()
+    expect(pushMock).toHaveBeenCalledWith('/collections')
 
     await fireEvent.click(screen.getByRole('button', { name: 'Done' }))
     expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  it('clicks the target of a clickTarget step when moving on from it', async () => {
+    addAnchor('nav-rail')
+    const link = addAnchor('nav-collections-dashboard')
+    link.addEventListener('click', () => {
+      routeMock.path = '/collections'
+    })
+    await renderAndStart()
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    expect(screen.getByText('2 / 3')).toBeInTheDocument()
+    expect(screen.getByText('The first entry in your Collection list opens a dashboard across all of your Collections. Next opens it.')).toBeInTheDocument()
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    expect(screen.getByText('3 / 3')).toBeInTheDocument()
+    // The link's own navigation got there first, so the route step has nothing to push
+    expect(pushMock).not.toHaveBeenCalled()
+  })
+
+  it('does not navigate for a route step when already on that route', async () => {
+    routeMock.path = '/collections'
+    addAnchor('user-menu')
+    addAnchor('meta-dashboard')
+    await renderAndStart()
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    expect(screen.getByText('Collections Dashboard')).toBeInTheDocument()
+    expect(pushMock).not.toHaveBeenCalled()
   })
 
   it('back is disabled on the first step and returns to the previous step afterwards', async () => {
@@ -84,7 +131,7 @@ describe('tourHost', () => {
     expect(screen.getByRole('button', { name: 'Back' })).toBeDisabled()
     await fireEvent.click(screen.getByRole('button', { name: 'Next' }))
     await fireEvent.click(screen.getByRole('button', { name: 'Back' }))
-    expect(screen.getByText('1 / 2')).toBeInTheDocument()
+    expect(screen.getByText('1 / 3')).toBeInTheDocument()
   })
 
   it('skip and escape both close the tour', async () => {
