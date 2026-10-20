@@ -68,16 +68,22 @@ function trackFrame() {
   frameId = requestAnimationFrame(trackFrame)
 }
 
+// A target larger than the window (a whole view, say) is outlined only where
+// it is visible, so the spotlight never runs off the edge of the screen.
 const spotlightStyle = computed(() => {
   const r = targetRect.value
   if (!r) {
     return { display: 'none' }
   }
+  const top = Math.max(SPOTLIGHT_PAD, r.top - SPOTLIGHT_PAD)
+  const left = Math.max(SPOTLIGHT_PAD, r.left - SPOTLIGHT_PAD)
+  const bottom = Math.min(window.innerHeight - SPOTLIGHT_PAD, r.bottom + SPOTLIGHT_PAD)
+  const right = Math.min(window.innerWidth - SPOTLIGHT_PAD, r.right + SPOTLIGHT_PAD)
   return {
-    top: `${r.top - SPOTLIGHT_PAD}px`,
-    left: `${r.left - SPOTLIGHT_PAD}px`,
-    width: `${r.width + SPOTLIGHT_PAD * 2}px`,
-    height: `${r.height + SPOTLIGHT_PAD * 2}px`,
+    top: `${top}px`,
+    left: `${left}px`,
+    width: `${Math.max(0, right - left)}px`,
+    height: `${Math.max(0, bottom - top)}px`,
   }
 })
 

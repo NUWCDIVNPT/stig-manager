@@ -103,7 +103,7 @@ describe('tourHost', () => {
 
     await fireEvent.click(screen.getByRole('button', { name: 'Next' }))
     expect(screen.getByText('2 / 3')).toBeInTheDocument()
-    expect(screen.getByText('The first entry in your Collection list opens a dashboard across all of your Collections. Next opens it.')).toBeInTheDocument()
+    expect(screen.getByText('The first entry in your Collection list opens a dashboard across all of your Collections.')).toBeInTheDocument()
 
     await fireEvent.click(screen.getByRole('button', { name: 'Next' }))
     expect(screen.getByText('3 / 3')).toBeInTheDocument()

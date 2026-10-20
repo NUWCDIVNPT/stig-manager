@@ -19,7 +19,7 @@ export const TOURS = {
       {
         target: 'nav-rail',
         title: 'Navigation moved to the left rail',
-        body: 'The navigation tree from the previous interface is now this rail. It is open for this tour; the arrow at the top expands it for labels and your Collection list, or collapses it to icons.',
+        body: 'The navigation tree from the previous interface is now this rail. The arrow at the top expands it for section labels and your Collection list, or collapses it to icons.',
         expandRail: true,
       },
       {
@@ -37,13 +37,13 @@ export const TOURS = {
       {
         target: 'nav-item-library',
         title: 'STIG Library',
-        body: 'Browse every STIG installed on this server and compare revisions.',
+        body: 'Browse every STIG installed on this system and compare revisions.',
         expandRail: true,
       },
       {
         target: 'nav-item-whats-new',
         title: 'What\'s New',
-        body: 'Release notes and feature announcements, formerly under Interface in the navigation tree.',
+        body: 'Release notes and feature announcements.',
         expandRail: true,
       },
       {
@@ -55,7 +55,7 @@ export const TOURS = {
       {
         target: 'nav-recent',
         title: 'Recent Views',
-        body: 'Quick links back to workspaces you have opened recently.',
+        body: 'Quick links back to workspaces you have opened recently replace the tabbed navigation of the previous interface.',
         expandRail: true,
       },
       {
@@ -67,7 +67,7 @@ export const TOURS = {
       {
         target: 'nav-collections-dashboard',
         title: 'Collections Dashboard',
-        body: 'The first entry in your Collection list opens a dashboard across all of your Collections. Next opens it.',
+        body: 'The first entry in your Collection list opens a dashboard across all of your Collections.',
         expandRail: true,
         clickTarget: true,
       },
