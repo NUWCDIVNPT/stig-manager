@@ -16,6 +16,7 @@ import LabelsColumn from '../columns/LabelsColumn.vue'
 import PercentageColumn from '../columns/PercentageColumn.vue'
 import TextColumn from '../columns/TextColumn.vue'
 import ColumnToggle from '../common/ColumnToggle.vue'
+import GridCopyMenu from '../common/GridCopyMenu.vue'
 import GridFilterButton from '../common/GridFilterButton.vue'
 import GridSearch from '../common/GridSearch.vue'
 import StatusFooter from '../common/StatusFooter.vue'
@@ -115,6 +116,7 @@ const LEFT_HEADER = { columnHeaderContent: { style: 'justify-content: flex-start
 
 const dataTableRef = ref(null)
 const selectedRow = ref(null)
+const copyMenuRef = ref(null)
 
 function onRowSelect(event) {
   emit('row-select', event.data)
@@ -463,6 +465,7 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
       :virtual-scroller-options="{ itemSize: ROW_HEIGHT, delay: 0 }"
       :style="{ '--item-size': `${ROW_HEIGHT}px` }"
       @row-select="onRowSelect"
+      @row-contextmenu="copyMenuRef.show($event, dataTableRef)"
     >
       <template v-for="col in visibleColumns" :key="col.field">
         <component :is="col.component" v-bind="col" :search-term="highlightTerm(col.field)" sortable />
@@ -484,6 +487,7 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
         />
       </template>
     </DataTable>
+    <GridCopyMenu ref="copyMenuRef" />
   </div>
 </template>
 

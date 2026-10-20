@@ -112,12 +112,25 @@ export function downloadCsv(content, filename) {
  * column with `export-value` but no `field` still exports.
  */
 export function exportDataTableCsv(dt) {
+  const csv = dataTableCsv(dt, dt?.processedData)
+  if (csv == null) {
+    return
+  }
+  // Legacy filename convention: `${basename}_${compact UTC timestamp}.csv`
+  downloadCsv(csv, `${dt.exportFilename || 'export'}_${filenameComponentFromDate()}.csv`)
+}
+
+/**
+ * Serializes `rows` to a CSV string (header line included) using the
+ * DataTable's column export rules described on exportDataTableCsv.
+ * Returns null when the table renders no columns or rows isn't an array.
+ */
+export function dataTableCsv(dt, rows) {
   const columns = dt?.columns
-  const rows = dt?.processedData
   // PrimeVue's `columns` is null (not []) when no Column is rendered, so a
   // table with nothing to export is a no-op rather than an empty file.
   if (!Array.isArray(columns) || !Array.isArray(rows)) {
-    return
+    return null
   }
 
   const exportable = columns.filter(col =>
@@ -144,8 +157,7 @@ export function exportDataTableCsv(dt) {
     csvRows.push(cells.join(','))
   }
 
-  // Legacy filename convention: `${basename}_${compact UTC timestamp}.csv`
-  downloadCsv(csvRows.join('\n'), `${dt.exportFilename || 'export'}_${filenameComponentFromDate()}.csv`)
+  return csvRows.join('\n')
 }
 
 export const ASSET_FIELDS = [
