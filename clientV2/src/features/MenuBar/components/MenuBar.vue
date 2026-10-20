@@ -1,8 +1,11 @@
 <script setup>
+import Button from 'primevue/button'
 import Menubar from 'primevue/menubar'
-import { computed, inject } from 'vue'
+import Popover from 'primevue/popover'
+import { computed, inject, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import LabelFilterPills from '../../../components/common/LabelFilterPills.vue'
+import { formatDateTimeString } from '../../../shared/lib.js'
 import { useEnv } from '../../../shared/stores/useEnv.js'
 import CollectionFilterPills from '../../MetaCollectionView/components/CollectionFilterPills.vue'
 import { useAppBreadcrumb } from '../composables/useAppBreadcrumb.js'
@@ -24,14 +27,37 @@ const {
   navigateToRevision,
 } = useAppBreadcrumb()
 
-const tokenTooltip = computed(() => {
+// Epoch-second claims also get a readable date, as in the legacy client.
+const TOKEN_DATE_CLAIMS = ['exp', 'iat', 'auth_time', 'nbf']
+
+const tokenPopover = ref(null)
+const tokenText = ref('')
+
+// Built on open, not cached, so a refreshed token shows its current claims.
+function tokenPayloadText() {
   try {
-    return JSON.stringify(oidcWorker.tokenParsed, null, 2)
+    const payload = { ...oidcWorker.tokenParsed }
+    for (const claim of TOKEN_DATE_CLAIMS) {
+      if (typeof payload[claim] === 'number') {
+        payload[claim] = `${payload[claim]} (${formatDateTimeString(payload[claim] * 1000)})`
+      }
+    }
+    return JSON.stringify(payload, null, 2)
   }
   catch {
     return ''
   }
-})
+}
+
+function showTokenPayload(event) {
+  tokenText.value = tokenPayloadText()
+  tokenPopover.value.show(event)
+}
+
+function copyToken() {
+  navigator.clipboard.writeText(tokenText.value)
+  tokenPopover.value.hide()
+}
 
 function handleLogout() {
   oidcWorker.logout()
@@ -54,7 +80,7 @@ const items = computed(() => {
           label: oidcWorker.tokenParsed.preferred_username,
           subLabel: name,
           class: 'profile-header-item',
-          tooltip: tokenTooltip.value,
+          showToken: true,
         },
         {
           separator: true,
@@ -212,6 +238,11 @@ const pt = {
           <LabelFilterPills v-if="route.meta.labelFilter" />
           <CollectionFilterPills v-else />
         </div>
+        <!-- Inside a slot so MenuBar keeps one root; the popover teleports to body -->
+        <Popover ref="tokenPopover">
+          <Button label="Copy" icon="pi pi-copy" size="small" text @click="copyToken" />
+          <pre class="token-payload">{{ tokenText }}</pre>
+        </Popover>
       </div>
     </template>
 
@@ -228,7 +259,12 @@ const pt = {
             {{ item.subLabel }}
           </div>
         </div>
-        <i v-if="item.tooltip" class="pi pi-info-circle tooltip-icon" :title="item.tooltip" />
+        <i
+          v-if="item.showToken"
+          class="pi pi-info-circle tooltip-icon"
+          title="Show token payload"
+          @click.stop="showTokenPayload"
+        />
       </div>
 
       <router-link v-else-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
@@ -360,6 +396,18 @@ const pt = {
   gap: 0.75rem;
   border-bottom: 1px solid var(--color-border-default);
   cursor: default;
+}
+
+.menu-profile-header .tooltip-icon {
+  cursor: pointer;
+}
+
+.token-payload {
+  margin: 0;
+  max-height: 24rem;
+  overflow: auto;
+  font-family: var(--font-mono);
+  user-select: text;
 }
 
 .profile-avatar {
