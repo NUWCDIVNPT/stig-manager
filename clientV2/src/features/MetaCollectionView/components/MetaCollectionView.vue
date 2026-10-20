@@ -59,6 +59,10 @@ const tabPanelsPt = {
   },
 }
 
+// Tab strip matches the 3.25rem sidebar and nav rail headers.
+const tabListPt = { tabList: { style: 'height: 3.25rem;' } }
+const tabPt = { root: { style: 'display: flex; align-items: center; padding-top: 0; padding-bottom: 0;' } }
+
 const tabPanelPt = {
   root: {
     style: {
@@ -115,11 +119,11 @@ const tabPanelPt = {
       <SplitterPanel :size="72">
         <div class="right-panel">
           <Tabs v-model:value="activeTab" :pt="tabsPt">
-            <TabList>
-              <Tab value="collections">
+            <TabList :pt="tabListPt">
+              <Tab value="collections" :pt="tabPt">
                 Collections
               </Tab>
-              <Tab value="stigs">
+              <Tab value="stigs" :pt="tabPt">
                 STIGs
               </Tab>
             </TabList>

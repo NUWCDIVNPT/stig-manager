@@ -167,6 +167,10 @@ const tabPanelsPt = {
   },
 }
 
+// Tab strip matches the 3.25rem sidebar and nav rail headers.
+const tabListPt = { tabList: { style: 'height: 3.25rem;' } }
+const tabPt = { root: { style: 'display: flex; align-items: center; padding-top: 0; padding-bottom: 0;' } }
+
 const tabPanelPt = {
   root: {
     style: {
@@ -259,22 +263,22 @@ function toggleDashboardSidebar() {
       <SplitterPanel :size="82">
         <div class="right-panel">
           <Tabs v-model:value="activeTab" :pt="tabsPt">
-            <TabList>
-              <Tab value="stigs">
+            <TabList :pt="tabListPt">
+              <Tab value="stigs" :pt="tabPt">
                 STIGs
               </Tab>
-              <Tab value="assets">
+              <Tab value="assets" :pt="tabPt">
                 Assets
               </Tab>
-              <Tab value="labels">
+              <Tab value="labels" :pt="tabPt">
                 Labels
               </Tab>
-              <Tab value="findings">
+              <Tab value="findings" :pt="tabPt">
                 Findings
               </Tab>
               <template v-if="canManage">
                 <div class="tab-separator" />
-                <Tab value="management">
+                <Tab value="management" :pt="tabPt">
                   <i class="pi pi-cog tab-icon" />
                   Management
                 </Tab>
