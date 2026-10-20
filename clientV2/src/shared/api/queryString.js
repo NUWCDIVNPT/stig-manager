@@ -5,6 +5,8 @@
 // Our API server (express-openapi-validator with strict RFC3986 rules) rejects
 // '+' as a reserved character, so request URLs need '%20' for spaces.
 // encodeURIComponent follows RFC3986: spaces → %20, literal '+' → %2B.
+// encodeURIComponent leaves ! ' ( ) * unencoded (RFC3986 sub-delims), but the
+// server treats them as reserved too, so they are percent-encoded here as well.
 //
 // Behavior:
 //   - Array values produce repeated key=value pairs (form/explode style).
@@ -15,7 +17,7 @@
 // Usage:
 //   urlObj.search = buildQueryString({ benchmarkId: 'VMware Aria 8.x', projection: ['stigs'] })
 export function buildQueryString(params) {
-  const e = encodeURIComponent
+  const e = s => encodeURIComponent(s).replace(/[!'()*]/g, c => `%${c.charCodeAt(0).toString(16).toUpperCase()}`)
   const parts = []
   for (const [key, value] of Object.entries(params ?? {})) {
     const items = Array.isArray(value) ? value : [value]
