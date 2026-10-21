@@ -143,6 +143,11 @@ The claims presented by the authentication provider the last time this User auth
     import: `Replacing application data truncates and rewrites most database tables from the uploaded file. Migration-owned, reference, configuration, and service-job tables are not affected. The file is analyzed locally in your browser before anything is uploaded.`,
   }),
 
+  // Collection Review breadcrumb STIG picker, when the label filter excludes the current STIG.
+  collectionReview: Object.freeze({
+    stigNotInLabelFilter: `No Assets matching the label filter have this STIG. Change the filter or choose another STIG.`,
+  }),
+
   // App Management "Log Stream" page.
   logStream: Object.freeze({
     experimental: `This feature is experimental and may change or be removed. It is only available when the API's <code>STIGMAN_EXPERIMENTAL_LOGSTREAM</code> setting is enabled. It live-tails the server's structured log over a WebSocket and requires admin privileges.`,

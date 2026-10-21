@@ -327,6 +327,7 @@ async function onBatchEditConfirm(payload) {
                 :is-loading="isChecklistLoading"
                 :selected-rule-id="selectedRuleId"
                 :asset-count="assetCount"
+                :is-label-filtered="selectedLabelNames.length > 0"
                 :export-filename="benchmarkId"
                 @select-rule="onSelectRule"
                 @refresh="loadChecklist"

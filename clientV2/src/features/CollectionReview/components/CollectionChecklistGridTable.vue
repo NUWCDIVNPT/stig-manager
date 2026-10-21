@@ -46,6 +46,11 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  // Collection label filter active (distinct from the grid's own search/filters)
+  isLabelFiltered: {
+    type: Boolean,
+    default: false,
+  },
   visibleFields: {
     type: Set,
     required: true,
@@ -64,6 +69,17 @@ const props = defineProps({
 const emit = defineEmits(['update:selectedRow', 'refresh'])
 
 const dataTableRef = ref(null)
+
+const emptyMessage = computed(() => {
+  if (props.isFiltered && props.totalCount) {
+    return 'No rules match the current search and filters.'
+  }
+  // The checklist API returns no rules when no label-filtered Asset has this STIG
+  if (props.isLabelFiltered) {
+    return 'No Assets matching the label filter have this STIG. Change the filter or choose another STIG.'
+  }
+  return 'No checklist items found.'
+})
 
 function sumCounts(data) {
   const results = { fail: 0, pass: 0, notapplicable: 0, other: 0 }
@@ -248,7 +264,7 @@ const dataTablePt = {
 
     <template #empty>
       <div class="agg-grid-empty-state">
-        {{ isFiltered && totalCount ? 'No rules match the current search and filters.' : 'No checklist items found.' }}
+        {{ emptyMessage }}
       </div>
     </template>
 

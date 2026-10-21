@@ -71,6 +71,11 @@ describe('CollectionChecklistGridTable', () => {
       createWrapper({ gridData: [] })
       expect(screen.getByText('No checklist items found.')).toBeInTheDocument()
     })
+
+    it('explains an empty checklist under the collection label filter', () => {
+      createWrapper({ gridData: [], isLabelFiltered: true })
+      expect(screen.getByText(/No Assets matching the label filter have this STIG/)).toBeInTheDocument()
+    })
   })
 
   describe('footer Statistics & Metrics', () => {

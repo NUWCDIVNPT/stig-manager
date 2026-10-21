@@ -31,6 +31,11 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  // Hover text for the warning icon shown when modelValue isn't among the options
+  invalidTooltip: {
+    type: String,
+    default: '',
+  },
 })
 
 defineEmits(['update:modelValue'])
@@ -97,7 +102,7 @@ const selectPt = computed(() => {
   >
     <template #value>
       <div v-if="modelValue != null" class="breadcrumb-select-value" :class="{ 'is-invalid': !isValidSelection }">
-        <i v-if="!isValidSelection" class="pi pi-exclamation-triangle" style="margin-right: 0.35rem;" />
+        <i v-if="!isValidSelection" v-tooltip.bottom="invalidTooltip" class="pi pi-exclamation-triangle" style="margin-right: 0.35rem;" />
         <span>{{ displayLabel }}</span>
       </div>
       <span v-else>

@@ -24,6 +24,10 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  isLabelFiltered: {
+    type: Boolean,
+    default: false,
+  },
   // CSV export basename; the parent passes the benchmarkId (legacy convention).
   exportFilename: {
     type: String,
@@ -111,6 +115,7 @@ const { itemSize, gridStyle } = useGridDensity('collection-checklist')
       :is-loading="isLoading"
       :selected-row="selectedRow"
       :asset-count="assetCount"
+      :is-label-filtered="isLabelFiltered"
       :visible-fields="visibleFields"
       :item-size="itemSize"
       :export-filename="exportFilename"
