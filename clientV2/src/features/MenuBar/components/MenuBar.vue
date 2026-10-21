@@ -5,8 +5,8 @@ import Popover from 'primevue/popover'
 import { computed, inject, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import LabelFilterPills from '../../../components/common/LabelFilterPills.vue'
-import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import { formatDateTimeString } from '../../../shared/lib.js'
+import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import { useEnv } from '../../../shared/stores/useEnv.js'
 import CollectionFilterPills from '../../MetaCollectionView/components/CollectionFilterPills.vue'
 import { useAppBreadcrumb } from '../composables/useAppBreadcrumb.js'
@@ -23,10 +23,10 @@ const {
   collectionOptions,
   navigateToCollection,
   assetStigOptions,
-  isStigOptionsLoading,
+  isStigOptionsUnavailable,
   stigInvalidTooltip,
   stigRevisionOptions,
-  isRevisionOptionsLoading,
+  isRevisionOptionsUnavailable,
   navigateToStig,
   navigateToRevision,
 } = useAppBreadcrumb()
@@ -214,7 +214,7 @@ const pt = {
               option-value="benchmarkId"
               placeholder="STIG"
               :invalid-tooltip="stigInvalidTooltip"
-              :loading="isStigOptionsLoading"
+              :options-unavailable="isStigOptionsUnavailable"
               @update:model-value="navigateToStig"
             />
 
@@ -226,7 +226,7 @@ const pt = {
               option-label="revisionStr"
               option-value="revisionStr"
               :invalid-tooltip="TOOLTIPS.breadcrumb.revisionNotFound"
-              :loading="isRevisionOptionsLoading"
+              :options-unavailable="isRevisionOptionsUnavailable"
               placeholder="Revision"
               @update:model-value="navigateToRevision"
             />

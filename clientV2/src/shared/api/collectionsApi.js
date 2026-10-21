@@ -33,6 +33,14 @@ export function fetchCollectionStigs(collectionId, params = {}) {
   return apiCall('getStigsByCollection', { collectionId, ...params })
 }
 
+// Resolves null (204) when no Asset in the Collection has the STIG
+export function fetchCollectionStig(collectionId, benchmarkId) {
+  if (!collectionId || !benchmarkId) {
+    throw new Error('A collectionId and benchmarkId are required to fetch a collection STIG.')
+  }
+  return apiCall('getStigByCollection', { collectionId, benchmarkId })
+}
+
 export function updateCollection(collectionId, body, { elevate, projection } = {}) {
   if (!collectionId) {
     throw new Error('A collectionId is required to update a collection.')

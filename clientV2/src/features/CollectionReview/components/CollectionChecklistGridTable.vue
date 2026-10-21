@@ -15,7 +15,6 @@ import { severityMap } from '../../../shared/lib/checklistUtils.js'
 import { gridColumnPt } from '../../../shared/lib/dataTablePt.js'
 import { severitySortValue } from '../../../shared/lib/gridSorts.js'
 import { dashZero } from '../../../shared/lib/numberFormat.js'
-import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 
 const props = defineProps({
   // Rows after search and filters
@@ -47,10 +46,11 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
-  // Collection label filter active (distinct from the grid's own search/filters)
-  isLabelFiltered: {
-    type: Boolean,
-    default: false,
+  // Shown when the unfiltered checklist is empty; the parent knows why
+  // (label filter, load failure), the grid only knows that it is empty.
+  emptyMessage: {
+    type: String,
+    default: 'No checklist items found.',
   },
   visibleFields: {
     type: Set,
@@ -70,17 +70,6 @@ const props = defineProps({
 const emit = defineEmits(['update:selectedRow', 'refresh'])
 
 const dataTableRef = ref(null)
-
-const emptyMessage = computed(() => {
-  if (props.isFiltered && props.totalCount) {
-    return 'No rules match the current search and filters.'
-  }
-  // The checklist API returns no rules when no label-filtered Asset has this STIG
-  if (props.isLabelFiltered && !props.isLoading) {
-    return TOOLTIPS.collectionReview.stigNotInLabelFilter
-  }
-  return 'No checklist items found.'
-})
 
 function sumCounts(data) {
   const results = { fail: 0, pass: 0, notapplicable: 0, other: 0 }
@@ -265,7 +254,7 @@ const dataTablePt = {
 
     <template #empty>
       <div class="agg-grid-empty-state">
-        {{ emptyMessage }}
+        {{ isFiltered && totalCount ? 'No rules match the current search and filters.' : emptyMessage }}
       </div>
     </template>
 

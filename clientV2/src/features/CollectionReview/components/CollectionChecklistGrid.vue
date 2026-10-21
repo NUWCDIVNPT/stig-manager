@@ -24,9 +24,10 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
-  isLabelFiltered: {
-    type: Boolean,
-    default: false,
+  // Passed through to the table; see CollectionChecklistGridTable
+  emptyMessage: {
+    type: String,
+    default: undefined,
   },
   // CSV export basename; the parent passes the benchmarkId (legacy convention).
   exportFilename: {
@@ -115,7 +116,7 @@ const { itemSize, gridStyle } = useGridDensity('collection-checklist')
       :is-loading="isLoading"
       :selected-row="selectedRow"
       :asset-count="assetCount"
-      :is-label-filtered="isLabelFiltered"
+      :empty-message="emptyMessage"
       :visible-fields="visibleFields"
       :item-size="itemSize"
       :export-filename="exportFilename"

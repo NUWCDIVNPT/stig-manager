@@ -36,8 +36,9 @@ const props = defineProps({
     type: String,
     default: '',
   },
-  // Options are being fetched; suppresses the invalid-selection warning meanwhile
-  loading: {
+  // Options are loading or failed to load, so modelValue can't be judged
+  // against them; suppresses the invalid-selection warning meanwhile
+  optionsUnavailable: {
     type: Boolean,
     default: false,
   },
@@ -49,14 +50,14 @@ const selectedOption = computed(() =>
   props.options?.find(opt => String(opt[props.optionValue]) === String(props.modelValue)),
 )
 
-const isValidSelection = computed(() => props.modelValue == null || props.loading || !!selectedOption.value)
+const isValidSelection = computed(() => props.modelValue == null || props.optionsUnavailable || !!selectedOption.value)
 
 const displayLabel = computed(() => {
   if (props.modelValue == null) {
     return props.placeholder
   }
-  // No match while loading, or a value missing from the options: show the raw
-  // value; isValidSelection colors the latter as a mismatch.
+  // No match while options are unavailable, or a value missing from them: show
+  // the raw value; isValidSelection colors the latter as a mismatch.
   return selectedOption.value ? selectedOption.value[props.optionLabel] : props.modelValue
 })
 
@@ -107,7 +108,14 @@ const selectPt = computed(() => {
   >
     <template #value>
       <div v-if="modelValue != null" class="breadcrumb-select-value" :class="{ 'is-invalid': !isValidSelection }">
-        <i v-if="!isValidSelection" v-tooltip.bottom="invalidTooltip" class="pi pi-exclamation-triangle" style="margin-right: 0.35rem;" />
+        <i
+          v-if="!isValidSelection"
+          v-tooltip.bottom="invalidTooltip"
+          class="pi pi-exclamation-triangle"
+          role="img"
+          :aria-label="invalidTooltip"
+          style="margin-right: 0.35rem;"
+        />
         <span>{{ displayLabel }}</span>
       </div>
       <span v-else>

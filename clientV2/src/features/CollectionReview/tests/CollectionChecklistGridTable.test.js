@@ -72,14 +72,15 @@ describe('CollectionChecklistGridTable', () => {
       expect(screen.getByText('No checklist items found.')).toBeInTheDocument()
     })
 
-    it('explains an empty checklist under the collection label filter', () => {
-      createWrapper({ gridData: [], isLabelFiltered: true })
-      expect(screen.getByText(/No Assets matching the label filter have this STIG/)).toBeInTheDocument()
+    it('shows the parent-supplied empty message when the checklist is empty', () => {
+      createWrapper({ gridData: [], emptyMessage: 'Nothing here.' })
+      expect(screen.getByText('Nothing here.')).toBeInTheDocument()
     })
 
-    it('holds the label filter message while the checklist loads', () => {
-      createWrapper({ gridData: [], isLabelFiltered: true, isLoading: true })
-      expect(screen.queryByText(/No Assets matching the label filter have this STIG/)).not.toBeInTheDocument()
+    it('prefers the search/filter message over the parent-supplied one', () => {
+      createWrapper({ gridData: [], totalCount: 3, isFiltered: true, emptyMessage: 'Nothing here.' })
+      expect(screen.getByText('No rules match the current search and filters.')).toBeInTheDocument()
+      expect(screen.queryByText('Nothing here.')).not.toBeInTheDocument()
     })
   })
 
