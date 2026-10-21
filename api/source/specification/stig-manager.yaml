@@ -10536,6 +10536,7 @@ components:
       name: labelName
       in: query
       description: Selectes Assets by label name
+      allowReserved: true
       schema:
         type: array
         uniqueItems: true
