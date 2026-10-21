@@ -112,17 +112,34 @@ export function downloadCsv(content, filename) {
  * column with `export-value` but no `field` still exports.
  */
 export function exportDataTableCsv(dt) {
+  const csv = dataTableCsv(dt, dt?.processedData)
+  if (csv == null) {
+    return
+  }
+  // Legacy filename convention: `${basename}_${compact UTC timestamp}.csv`
+  downloadCsv(csv, `${dt.exportFilename || 'export'}_${filenameComponentFromDate()}.csv`)
+}
+
+/**
+ * Serializes `rows` to a CSV string (header line included) using the
+ * DataTable's column export rules described on exportDataTableCsv.
+ * Returns null when the table has no exportable columns or rows isn't an
+ * array.
+ */
+export function dataTableCsv(dt, rows) {
   const columns = dt?.columns
-  const rows = dt?.processedData
   // PrimeVue's `columns` is null (not []) when no Column is rendered, so a
   // table with nothing to export is a no-op rather than an empty file.
   if (!Array.isArray(columns) || !Array.isArray(rows)) {
-    return
+    return null
   }
 
   const exportable = columns.filter(col =>
     dt.columnProp(col, 'exportable') !== false && (dt.columnProp(col, 'field') || columnExportValue(col)),
   )
+  if (!exportable.length) {
+    return null
+  }
 
   const csvRows = [
     exportable
@@ -130,22 +147,28 @@ export function exportDataTableCsv(dt) {
       .join(','),
   ]
 
-  const tableExport = dt.exportFunction ?? exportDisplayValue
-  const cellSpecs = exportable.map(col => ({
-    field: dt.columnProp(col, 'field'),
-    exportValue: columnExportValue(col) ?? tableExport,
-  }))
-
   for (const record of rows) {
-    const cells = cellSpecs.map(({ field, exportValue }) => {
-      const data = field ? resolveFieldPath(record, field) : undefined
-      return escapeCsv(serializeCsvValue(exportValue({ data, field, record })))
-    })
-    csvRows.push(cells.join(','))
+    csvRows.push(exportable.map(col => escapeCsv(dataTableCellText(dt, col, record))).join(','))
   }
 
-  // Legacy filename convention: `${basename}_${compact UTC timestamp}.csv`
-  downloadCsv(csvRows.join('\n'), `${dt.exportFilename || 'export'}_${filenameComponentFromDate()}.csv`)
+  return csvRows.join('\n')
+}
+
+/**
+ * The export text of one cell, before CSV escaping: the column's export-value
+ * / table exportFunction / exportDisplayValue result run through
+ * serializeCsvValue. Returns null when the column has neither a `field` nor an
+ * `export-value`, i.e. when the cell has no exportable value at all.
+ */
+export function dataTableCellText(dt, col, record) {
+  const field = dt.columnProp(col, 'field')
+  const exportValue = columnExportValue(col)
+  if (!field && !exportValue) {
+    return null
+  }
+  const fn = exportValue ?? dt.exportFunction ?? exportDisplayValue
+  const data = field ? resolveFieldPath(record, field) : undefined
+  return serializeCsvValue(fn({ data, field, record }))
 }
 
 export const ASSET_FIELDS = [

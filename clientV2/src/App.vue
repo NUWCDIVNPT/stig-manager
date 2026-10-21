@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import ReauthPrompt from './auth/ReauthPrompt.vue'
 import { useOidcWorker } from './auth/useOidcWorker.js'
+import GridCopyMenu from './components/common/GridCopyMenu.vue'
 import GlobalBanner from './components/global/GlobalBanner.vue'
 import GlobalErrorModal from './components/global/GlobalErrorModal.vue'
 import GlobalNotifications from './components/global/GlobalNotifications.vue'
@@ -28,6 +29,7 @@ const whatsNewSettled = ref(false)
   <GlobalServiceOverlay />
   <WhatsNew @settled="whatsNewSettled = true" />
   <GlobalNotifications />
+  <GridCopyMenu />
   <HomePage />
   <TourHost v-if="whatsNewSettled" />
 </template>
