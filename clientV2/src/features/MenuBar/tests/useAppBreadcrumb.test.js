@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { ref } from 'vue'
+import { nextTick, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { fetchCollectionStigs } from '../../../shared/api/collectionsApi.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useAppBreadcrumb } from '../composables/useAppBreadcrumb.js'
 
@@ -78,5 +79,28 @@ describe('useAppBreadcrumb', () => {
       params: expect.objectContaining({ benchmarkId: 'bench-2' }),
       query: { labelName: ['label-a'] },
     }))
+  })
+
+  it('limits the Collection Review STIG list to the label filter', () => {
+    useAppBreadcrumb()
+
+    expect(fetchCollectionStigs).toHaveBeenCalledWith('coll-1', { labelName: ['label-a'] })
+  })
+
+  it('refetches the STIG list when the label filter changes', async () => {
+    const route = reactive({
+      name: 'collection-benchmark-review',
+      params: { collectionId: 'coll-1', benchmarkId: 'bench-1', revisionStr: 'V1R1' },
+      query: { labelName: 'label-a' },
+      matched: [],
+    })
+    useRoute.mockReturnValue(route)
+    useAppBreadcrumb()
+
+    route.query = { labelMatch: 'null' }
+    await nextTick()
+
+    expect(fetchCollectionStigs).toHaveBeenCalledTimes(2)
+    expect(fetchCollectionStigs).toHaveBeenLastCalledWith('coll-1', { labelMatch: 'null' })
   })
 })

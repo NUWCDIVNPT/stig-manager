@@ -5,6 +5,7 @@ import { fetchCollectionStigs } from '../../../shared/api/collectionsApi.js'
 import { fetchStigRevisions } from '../../../shared/api/stigsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
+import { useLabelFilterQuery } from '../../../shared/composables/useLabelFilterQuery.js'
 import { pickLabelFilterQuery } from '../../../shared/lib/labelFilters.js'
 
 /**
@@ -54,6 +55,7 @@ export function useAppBreadcrumb() {
   const collectionId = computed(() => route.params.collectionId)
   const assetId = computed(() => route.params.assetId)
   const benchmarkId = computed(() => route.params.benchmarkId)
+  const { selectedLabelNames, labelFilterParams } = useLabelFilterQuery()
 
   // The STIG picker only renders on the review routes. Gate the STIG-list fetch
   // on this so plain collection tab routes don't pull /stigs for a hidden dropdown.
@@ -67,7 +69,8 @@ export function useAppBreadcrumb() {
         return fetchAssetStigs(assetId.value)
       }
       if (collectionId.value) {
-        return fetchCollectionStigs(collectionId.value)
+        // Label-scoped so Collection Review only offers STIGs that filtered assets have
+        return fetchCollectionStigs(collectionId.value, labelFilterParams.value)
       }
       return []
     },
@@ -88,7 +91,8 @@ export function useAppBreadcrumb() {
   // Watching showsStigPicker (not benchmarkId) means switching STIGs within a
   // review route doesn't refetch the list, and entering a review from the same
   // collection still triggers the fetch even though collectionId is unchanged.
-  watch([assetId, collectionId, showsStigPicker], () => {
+  // selectedLabelNames only changes identity when the filter changes.
+  watch([assetId, collectionId, showsStigPicker, selectedLabelNames], () => {
     if (showsStigPicker.value) {
       // Clear first: options left over from a prior collection/asset would
       // render the current benchmarkId as an invalid selection while the fetch

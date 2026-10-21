@@ -44,22 +44,16 @@ const isValidSelection = computed(() => {
 const displayLabel = computed(() => {
   if (props.modelValue == null) { return props.placeholder }
 
-  if (props.options?.length === 0) {
-    return props.modelValue // Display raw value plain while loading
-  }
-
-  const match = props.options.find(opt => String(opt[props.optionValue]) === String(props.modelValue))
-  if (match) {
-    return match[props.optionLabel]
-  }
-
-  return `Unknown (${props.modelValue})`
+  // No match while loading, or a STIG excluded by the label filter: show the raw
+  // value; isValidSelection colors the latter as a mismatch.
+  const match = props.options?.find(opt => String(opt[props.optionValue]) === String(props.modelValue))
+  return match ? match[props.optionLabel] : props.modelValue
 })
 
 // Pass-through styles to override global PT inline styles
 const selectPt = computed(() => {
   const textColor = !isValidSelection.value
-    ? 'var(--color-danger)'
+    ? 'var(--color-text-error)'
     : props.isLink
       ? 'var(--color-primary-highlight)'
       : 'var(--color-text-primary)'
@@ -168,7 +162,7 @@ const selectPt = computed(() => {
 }
 
 .is-invalid {
-  color: var(--color-danger);
+  color: var(--color-text-error);
   font-weight: 600;
 }
 </style>
