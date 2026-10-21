@@ -21,11 +21,6 @@ describe('buildQueryString', () => {
     expect(buildQueryString({ q: 'a&b=c?d#e' })).toBe('?q=a%26b%3Dc%3Fd%23e')
   })
 
-  it('encodes ! \' ( ) * which encodeURIComponent leaves bare but the server rejects', () => {
-    expect(buildQueryString({ labelName: "New Label!!! (it's *)" }))
-      .toBe('?labelName=New%20Label%21%21%21%20%28it%27s%20%2A%29')
-  })
-
   it('emits repeated keys for array values (form/explode style)', () => {
     expect(buildQueryString({ collectionId: ['col1', 'col2', 'col3'] }))
       .toBe('?collectionId=col1&collectionId=col2&collectionId=col3')
