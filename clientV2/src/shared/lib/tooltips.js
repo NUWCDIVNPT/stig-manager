@@ -143,9 +143,16 @@ The claims presented by the authentication provider the last time this User auth
     import: `Replacing application data truncates and rewrites most database tables from the uploaded file. Migration-owned, reference, configuration, and service-job tables are not affected. The file is analyzed locally in your browser before anything is uploaded.`,
   }),
 
-  // Collection Review breadcrumb STIG picker, when the label filter excludes the current STIG.
+  // Collection Review breadcrumb STIG picker and empty checklist, when the label filter excludes the STIG.
   collectionReview: Object.freeze({
     stigNotInLabelFilter: `No Assets matching the label filter have this STIG. Change the filter or choose another STIG.`,
+  }),
+
+  // Breadcrumb STIG/revision pickers, when the current value isn't among the options.
+  breadcrumb: Object.freeze({
+    stigNotInCollection: `This STIG is not assigned to any Asset in this Collection. Choose another STIG.`,
+    stigNotOnAsset: `This STIG is not assigned to this Asset. Choose another STIG.`,
+    revisionNotFound: `This revision is not available for this STIG. Choose another revision.`,
   }),
 
   // App Management "Log Stream" page.

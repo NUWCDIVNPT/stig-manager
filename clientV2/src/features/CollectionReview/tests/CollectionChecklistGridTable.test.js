@@ -76,6 +76,11 @@ describe('CollectionChecklistGridTable', () => {
       createWrapper({ gridData: [], isLabelFiltered: true })
       expect(screen.getByText(/No Assets matching the label filter have this STIG/)).toBeInTheDocument()
     })
+
+    it('holds the label filter message while the checklist loads', () => {
+      createWrapper({ gridData: [], isLabelFiltered: true, isLoading: true })
+      expect(screen.queryByText(/No Assets matching the label filter have this STIG/)).not.toBeInTheDocument()
+    })
   })
 
   describe('footer Statistics & Metrics', () => {

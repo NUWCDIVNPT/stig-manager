@@ -15,6 +15,7 @@ import { severityMap } from '../../../shared/lib/checklistUtils.js'
 import { gridColumnPt } from '../../../shared/lib/dataTablePt.js'
 import { severitySortValue } from '../../../shared/lib/gridSorts.js'
 import { dashZero } from '../../../shared/lib/numberFormat.js'
+import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 
 const props = defineProps({
   // Rows after search and filters
@@ -75,8 +76,8 @@ const emptyMessage = computed(() => {
     return 'No rules match the current search and filters.'
   }
   // The checklist API returns no rules when no label-filtered Asset has this STIG
-  if (props.isLabelFiltered) {
-    return 'No Assets matching the label filter have this STIG. Change the filter or choose another STIG.'
+  if (props.isLabelFiltered && !props.isLoading) {
+    return TOOLTIPS.collectionReview.stigNotInLabelFilter
   }
   return 'No checklist items found.'
 })

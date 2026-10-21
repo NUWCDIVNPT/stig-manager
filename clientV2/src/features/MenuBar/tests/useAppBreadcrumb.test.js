@@ -3,6 +3,7 @@ import { nextTick, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { fetchCollectionStigs } from '../../../shared/api/collectionsApi.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
+import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import { useAppBreadcrumb } from '../composables/useAppBreadcrumb.js'
 
 vi.mock('vue-router', () => ({
@@ -102,5 +103,35 @@ describe('useAppBreadcrumb', () => {
 
     expect(fetchCollectionStigs).toHaveBeenCalledTimes(2)
     expect(fetchCollectionStigs).toHaveBeenLastCalledWith('coll-1', { labelMatch: 'null' })
+  })
+
+  it('explains a missing STIG by the label filter when one is active', () => {
+    const { stigInvalidTooltip } = useAppBreadcrumb()
+
+    expect(stigInvalidTooltip.value).toBe(TOOLTIPS.collectionReview.stigNotInLabelFilter)
+  })
+
+  it('explains a missing STIG by Collection assignment without a label filter', () => {
+    useRoute.mockReturnValue({
+      name: 'collection-benchmark-review',
+      params: { collectionId: 'coll-1', benchmarkId: 'bench-1', revisionStr: 'V1R1' },
+      query: {},
+      matched: [],
+    })
+    const { stigInvalidTooltip } = useAppBreadcrumb()
+
+    expect(stigInvalidTooltip.value).toBe(TOOLTIPS.breadcrumb.stigNotInCollection)
+  })
+
+  it('explains a missing STIG by Asset assignment on Asset Review', () => {
+    useRoute.mockReturnValue({
+      name: 'collection-asset-review',
+      params: { collectionId: 'coll-1', assetId: 'asset-1', benchmarkId: 'bench-1', revisionStr: 'V1R1' },
+      query: {},
+      matched: [],
+    })
+    const { stigInvalidTooltip } = useAppBreadcrumb()
+
+    expect(stigInvalidTooltip.value).toBe(TOOLTIPS.breadcrumb.stigNotOnAsset)
   })
 })

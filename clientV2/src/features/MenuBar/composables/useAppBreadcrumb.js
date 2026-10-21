@@ -7,6 +7,7 @@ import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useLabelFilterQuery } from '../../../shared/composables/useLabelFilterQuery.js'
 import { pickLabelFilterQuery } from '../../../shared/lib/labelFilters.js'
+import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 
 /**
  * Global breadcrumb composable. Watches the active route and builds
@@ -63,7 +64,7 @@ export function useAppBreadcrumb() {
     route.name === 'collection-benchmark-review' || route.name === 'collection-asset-review',
   )
 
-  const { state: assetStigOptions, execute: loadAssetStigs } = useAsyncState(
+  const { state: assetStigOptions, isLoading: isStigOptionsLoading, execute: loadAssetStigs } = useAsyncState(
     () => {
       if (assetId.value) {
         return fetchAssetStigs(assetId.value)
@@ -82,10 +83,20 @@ export function useAppBreadcrumb() {
     { initialState: null, immediate: false },
   )
 
-  const { state: stigRevisionOptions, execute: loadStigRevisions } = useAsyncState(
+  const { state: stigRevisionOptions, isLoading: isRevisionOptionsLoading, execute: loadStigRevisions } = useAsyncState(
     () => fetchStigRevisions(benchmarkId.value),
     { initialState: [], immediate: false },
   )
+
+  // Hover text for the warning on a current STIG missing from the STIG picker
+  const stigInvalidTooltip = computed(() => {
+    if (assetId.value) {
+      return TOOLTIPS.breadcrumb.stigNotOnAsset
+    }
+    return selectedLabelNames.value.length
+      ? TOOLTIPS.collectionReview.stigNotInLabelFilter
+      : TOOLTIPS.breadcrumb.stigNotInCollection
+  })
 
   // Load STIGs only when a route that shows the STIG picker becomes active.
   // Watching showsStigPicker (not benchmarkId) means switching STIGs within a
@@ -237,7 +248,10 @@ export function useAppBreadcrumb() {
     collectionOptions,
     navigateToCollection,
     assetStigOptions,
+    isStigOptionsLoading,
+    stigInvalidTooltip,
     stigRevisionOptions,
+    isRevisionOptionsLoading,
     navigateToStig,
     navigateToRevision,
   }

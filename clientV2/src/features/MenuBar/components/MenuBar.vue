@@ -3,7 +3,6 @@ import Menubar from 'primevue/menubar'
 import { computed, inject } from 'vue'
 import { useRoute } from 'vue-router'
 import LabelFilterPills from '../../../components/common/LabelFilterPills.vue'
-import { useLabelFilterQuery } from '../../../shared/composables/useLabelFilterQuery.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import { useEnv } from '../../../shared/stores/useEnv.js'
 import CollectionFilterPills from '../../MetaCollectionView/components/CollectionFilterPills.vue'
@@ -21,16 +20,13 @@ const {
   collectionOptions,
   navigateToCollection,
   assetStigOptions,
+  isStigOptionsLoading,
+  stigInvalidTooltip,
   stigRevisionOptions,
+  isRevisionOptionsLoading,
   navigateToStig,
   navigateToRevision,
 } = useAppBreadcrumb()
-
-// The STIG picker lists only label-filtered STIGs, so explain a current STIG missing from it
-const { selectedLabelNames } = useLabelFilterQuery()
-const stigInvalidTooltip = computed(() =>
-  route.meta.labelFilter && selectedLabelNames.value.length ? TOOLTIPS.collectionReview.stigNotInLabelFilter : '',
-)
 
 const tokenTooltip = computed(() => {
   try {
@@ -185,6 +181,7 @@ const pt = {
               option-value="benchmarkId"
               placeholder="STIG"
               :invalid-tooltip="stigInvalidTooltip"
+              :loading="isStigOptionsLoading"
               @update:model-value="navigateToStig"
             />
 
@@ -195,6 +192,8 @@ const pt = {
               :options="stigRevisionOptions"
               option-label="revisionStr"
               option-value="revisionStr"
+              :invalid-tooltip="TOOLTIPS.breadcrumb.revisionNotFound"
+              :loading="isRevisionOptionsLoading"
               placeholder="Revision"
               @update:model-value="navigateToRevision"
             />

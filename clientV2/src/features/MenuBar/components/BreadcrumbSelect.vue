@@ -36,20 +36,26 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  // Options are being fetched; suppresses the invalid-selection warning meanwhile
+  loading: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 defineEmits(['update:modelValue'])
 
 const isValidSelection = computed(() => {
-  if (props.modelValue == null) { return true }
-  if (props.options?.length === 0) { return true } // Assume valid while options are still loading
+  if (props.modelValue == null || props.loading) {
+    return true
+  }
   return props.options.some(opt => String(opt[props.optionValue]) === String(props.modelValue))
 })
 
 const displayLabel = computed(() => {
   if (props.modelValue == null) { return props.placeholder }
 
-  // No match while loading, or a STIG excluded by the label filter: show the raw
+  // No match while loading, or a value missing from the options: show the raw
   // value; isValidSelection colors the latter as a mismatch.
   const match = props.options?.find(opt => String(opt[props.optionValue]) === String(props.modelValue))
   return match ? match[props.optionLabel] : props.modelValue
