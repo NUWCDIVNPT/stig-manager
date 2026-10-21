@@ -272,7 +272,7 @@ const flexCellPt = {
         >
           <Column v-if="visibleColumns.has('cat')" field="severity" :sort-field="severitySortValue" header="CAT" sortable :style="{ width: '5rem', minWidth: '4.5rem' }" :pt="centerCellPt">
             <template #body="{ data }">
-              <CatBadge :category="severityMap[data.severity] ?? 2" variant="label" style="margin-inline: auto;" />
+              <CatBadge :category="severityMap[data.severity] ?? 2" variant="label" centered />
             </template>
           </Column>
           <Column v-if="visibleColumns.has('group')" field="groupId" header="Group" sortable :style="{ width: '8rem', minWidth: '6rem' }" :pt="cellPt">
