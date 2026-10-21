@@ -110,6 +110,9 @@ function cellStyle(widthRem) {
   return `width: ${widthRem}rem; min-width: ${widthRem}rem;`
 }
 
+const CENTER = 'text-align: center;'
+const LEFT_HEADER = { columnHeaderContent: { style: 'justify-content: flex-start;' } }
+
 const dataTableRef = ref(null)
 const selectedRow = ref(null)
 
@@ -164,57 +167,57 @@ const columns = computed(() => {
   const FINDINGS = 'Findings'
   const SEVERITY = 'By severity'
   const commonColumns = [
-    { field: 'checks', header: 'Checks', group: COUNTS, component: CountColumn, style: cellStyle(WIDTH.count) },
-    { field: 'assessedCnt', header: 'Assessed #', group: COUNTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.wideCount) },
-    { field: 'notReviewed', header: 'Not Reviewed', group: COUNTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.severity) },
-    { field: 'oldest', header: 'Oldest', group: AGE, component: DurationColumn, style: cellStyle(WIDTH.duration) },
-    { field: 'newest', header: 'Newest', group: AGE, component: DurationColumn, style: cellStyle(WIDTH.duration) },
-    { field: 'updated', header: 'Updated', group: AGE, component: DurationColumn, style: cellStyle(WIDTH.duration) },
-    { field: 'assessedPct', header: 'Assessed', group: PROGRESS, component: PercentageColumn, style: cellStyle(WIDTH.bar) },
-    { field: 'submittedPct', header: 'Submitted', group: PROGRESS, component: PercentageColumn, style: cellStyle(WIDTH.bar) },
-    { field: 'acceptedPct', header: 'Accepted', group: PROGRESS, component: PercentageColumn, style: cellStyle(WIDTH.bar) },
-    { field: 'rejectedPct', header: 'Rejected', group: PROGRESS, component: PercentageColumn, style: cellStyle(WIDTH.bar) },
-    { field: 'saved', header: 'Saved', group: COUNTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.count) },
-    { field: 'submitted', header: 'Submitted #', group: COUNTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.wideCount) },
-    { field: 'accepted', header: 'Accepted #', group: COUNTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.wideCount) },
-    { field: 'rejected', header: 'Rejected #', group: COUNTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.wideCount) },
-    { field: 'pass', header: 'Pass', group: RESULTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.count) },
-    { field: 'fail', header: 'Fail', group: RESULTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.count) },
-    { field: 'notapplicable', header: 'N/A', group: RESULTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.count) },
-    { field: 'other', header: 'Other', group: RESULTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.count) },
+    { field: 'checks', header: 'Checks', group: COUNTS, component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
+    { field: 'assessedCnt', header: 'Assessed #', group: COUNTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.wideCount), bodyStyle: CENTER },
+    { field: 'notReviewed', header: 'Not Reviewed', group: COUNTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.severity), bodyStyle: CENTER },
+    { field: 'oldest', header: 'Oldest', group: AGE, component: DurationColumn, style: cellStyle(WIDTH.duration), bodyStyle: CENTER },
+    { field: 'newest', header: 'Newest', group: AGE, component: DurationColumn, style: cellStyle(WIDTH.duration), bodyStyle: CENTER },
+    { field: 'updated', header: 'Updated', group: AGE, component: DurationColumn, style: cellStyle(WIDTH.duration), bodyStyle: CENTER },
+    { field: 'assessedPct', header: 'Assessed', group: PROGRESS, component: PercentageColumn, style: cellStyle(WIDTH.bar), pt: LEFT_HEADER },
+    { field: 'submittedPct', header: 'Submitted', group: PROGRESS, component: PercentageColumn, style: cellStyle(WIDTH.bar), pt: LEFT_HEADER },
+    { field: 'acceptedPct', header: 'Accepted', group: PROGRESS, component: PercentageColumn, style: cellStyle(WIDTH.bar), pt: LEFT_HEADER },
+    { field: 'rejectedPct', header: 'Rejected', group: PROGRESS, component: PercentageColumn, style: cellStyle(WIDTH.bar), pt: LEFT_HEADER },
+    { field: 'saved', header: 'Saved', group: COUNTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
+    { field: 'submitted', header: 'Submitted #', group: COUNTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.wideCount), bodyStyle: CENTER },
+    { field: 'accepted', header: 'Accepted #', group: COUNTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.wideCount), bodyStyle: CENTER },
+    { field: 'rejected', header: 'Rejected #', group: COUNTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.wideCount), bodyStyle: CENTER },
+    { field: 'pass', header: 'Pass', group: RESULTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
+    { field: 'fail', header: 'Fail', group: RESULTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
+    { field: 'notapplicable', header: 'N/A', group: RESULTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
+    { field: 'other', header: 'Other', group: RESULTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
     { field: 'cora', header: 'CORA', group: FINDINGS, component: CoraColumn, style: cellStyle(WIDTH.badge) },
     { field: 'cat3', header: 'CAT 3', group: FINDINGS, component: CatColumn, category: 3, style: cellStyle(WIDTH.badge) },
     { field: 'cat2', header: 'CAT 2', group: FINDINGS, component: CatColumn, category: 2, style: cellStyle(WIDTH.badge) },
     { field: 'cat1', header: 'CAT 1', group: FINDINGS, component: CatColumn, category: 1, style: cellStyle(WIDTH.badge) },
-    { field: 'checksCat3', header: 'CAT 3 Checks', group: SEVERITY, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.severity) },
-    { field: 'checksCat2', header: 'CAT 2 Checks', group: SEVERITY, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.severity) },
-    { field: 'checksCat1', header: 'CAT 1 Checks', group: SEVERITY, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.severity) },
-    { field: 'assessedCat3', header: 'CAT 3 Assessed', group: SEVERITY, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.severity) },
-    { field: 'assessedCat2', header: 'CAT 2 Assessed', group: SEVERITY, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.severity) },
-    { field: 'assessedCat1', header: 'CAT 1 Assessed', group: SEVERITY, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.severity) },
+    { field: 'checksCat3', header: 'CAT 3 Checks', group: SEVERITY, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.severity), bodyStyle: CENTER },
+    { field: 'checksCat2', header: 'CAT 2 Checks', group: SEVERITY, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.severity), bodyStyle: CENTER },
+    { field: 'checksCat1', header: 'CAT 1 Checks', group: SEVERITY, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.severity), bodyStyle: CENTER },
+    { field: 'assessedCat3', header: 'CAT 3 Assessed', group: SEVERITY, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.severity), bodyStyle: CENTER },
+    { field: 'assessedCat2', header: 'CAT 2 Assessed', group: SEVERITY, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.severity), bodyStyle: CENTER },
+    { field: 'assessedCat1', header: 'CAT 1 Assessed', group: SEVERITY, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.severity), bodyStyle: CENTER },
   ]
-  const benchmarkColumn = { field: 'benchmarkId', header: 'Benchmark', group: 'STIG', component: BenchmarkColumn, locked: true, searchable: true, showShield: props.showShield, onShieldClick, style: cellStyle(WIDTH.benchmark) }
-  const titleColumn = { field: 'title', header: 'Title', group: 'STIG', defaultHidden: true, component: TextColumn, searchable: true, style: cellStyle(WIDTH.title) }
-  const revisionColumn = { field: 'revisionStr', header: 'Revision', group: 'STIG', component: TextColumn, searchable: true, style: cellStyle(WIDTH.revision) }
-  const assetColumn = { field: 'assetName', header: 'Asset', group: 'Asset', component: AssetColumn, locked: true, searchable: true, showShield: props.showShield, onShieldClick, style: cellStyle(WIDTH.name) }
-  const labelsColumn = { field: 'labels', header: 'Labels', group: 'Asset', component: LabelsColumn, searchable: true, filterValues: r => r.labels, multiple: true, style: cellStyle(WIDTH.labels) }
+  const benchmarkColumn = { field: 'benchmarkId', header: 'Benchmark', group: 'STIG', component: BenchmarkColumn, locked: true, searchable: true, showShield: props.showShield, onShieldClick, style: cellStyle(WIDTH.benchmark), pt: LEFT_HEADER }
+  const titleColumn = { field: 'title', header: 'Title', group: 'STIG', defaultHidden: true, component: TextColumn, searchable: true, style: cellStyle(WIDTH.title), pt: LEFT_HEADER }
+  const revisionColumn = { field: 'revisionStr', header: 'Revision', group: 'STIG', component: TextColumn, searchable: true, style: cellStyle(WIDTH.revision), pt: LEFT_HEADER }
+  const assetColumn = { field: 'assetName', header: 'Asset', group: 'Asset', component: AssetColumn, locked: true, searchable: true, showShield: props.showShield, onShieldClick, style: cellStyle(WIDTH.name), pt: LEFT_HEADER }
+  const labelsColumn = { field: 'labels', header: 'Labels', group: 'Asset', component: LabelsColumn, searchable: true, filterValues: r => r.labels, multiple: true, style: cellStyle(WIDTH.labels), pt: LEFT_HEADER }
   switch (aggregationType.value) {
     case 'collection':
       return [
-        { field: 'collectionName', header: 'Collection', group: 'Collection', component: CollectionColumn, locked: true, searchable: true, showShield: props.showShield, onShieldClick, showCollectionIcon: props.showCollectionIcon, onCollectionIconClick, style: cellStyle(WIDTH.benchmark) },
-        { field: 'assetCnt', header: 'Assets', group: 'Collection', component: CountColumn, style: cellStyle(WIDTH.count) },
-        { field: 'stigCnt', header: 'STIGs', group: 'Collection', component: CountColumn, style: cellStyle(WIDTH.count) },
-        { field: 'checklistCnt', header: 'Checklists', group: 'Collection', component: CountColumn, style: cellStyle(WIDTH.checklists) },
+        { field: 'collectionName', header: 'Collection', group: 'Collection', component: CollectionColumn, locked: true, searchable: true, showShield: props.showShield, onShieldClick, showCollectionIcon: props.showCollectionIcon, onCollectionIconClick, style: cellStyle(WIDTH.benchmark), pt: LEFT_HEADER },
+        { field: 'assetCnt', header: 'Assets', group: 'Collection', component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
+        { field: 'stigCnt', header: 'STIGs', group: 'Collection', component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
+        { field: 'checklistCnt', header: 'Checklists', group: 'Collection', component: CountColumn, style: cellStyle(WIDTH.checklists), bodyStyle: CENTER },
         ...commonColumns,
       ]
     case 'asset':
       return [
         assetColumn,
         labelsColumn,
-        { field: 'stigCnt', header: 'STIGs', group: 'Asset', component: CountColumn, style: cellStyle(WIDTH.count) },
-        { field: 'fqdn', header: 'FQDN', group: 'Asset', defaultHidden: true, component: TextColumn, searchable: true, style: cellStyle(WIDTH.name) },
-        { field: 'ip', header: 'IP', group: 'Asset', defaultHidden: true, component: TextColumn, searchable: true, style: cellStyle(WIDTH.ip) },
-        { field: 'mac', header: 'MAC', group: 'Asset', defaultHidden: true, component: TextColumn, searchable: true, style: cellStyle(WIDTH.mac) },
+        { field: 'stigCnt', header: 'STIGs', group: 'Asset', component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
+        { field: 'fqdn', header: 'FQDN', group: 'Asset', defaultHidden: true, component: TextColumn, searchable: true, style: cellStyle(WIDTH.name), pt: LEFT_HEADER },
+        { field: 'ip', header: 'IP', group: 'Asset', defaultHidden: true, component: TextColumn, searchable: true, style: cellStyle(WIDTH.ip), pt: LEFT_HEADER },
+        { field: 'mac', header: 'MAC', group: 'Asset', defaultHidden: true, component: TextColumn, searchable: true, style: cellStyle(WIDTH.mac), pt: LEFT_HEADER },
         ...commonColumns,
       ]
     case 'stig':
@@ -222,14 +225,14 @@ const columns = computed(() => {
         benchmarkColumn,
         titleColumn,
         revisionColumn,
-        { field: 'ruleCount', header: 'Rules', group: 'STIG', defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.count) },
-        { field: 'assetCnt', header: 'Assets', group: 'STIG', component: CountColumn, style: cellStyle(WIDTH.count) },
+        { field: 'ruleCount', header: 'Rules', group: 'STIG', defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
+        { field: 'assetCnt', header: 'Assets', group: 'STIG', component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
         ...commonColumns,
       ]
     case 'label':
       return [
-        { field: 'label', header: 'Label', group: 'Label', component: LabelsColumn, locked: true, searchable: true, filterValues: r => r.label, style: cellStyle(WIDTH.label) },
-        { field: 'assetCnt', header: 'Assets', group: 'Label', component: CountColumn, style: cellStyle(WIDTH.count) },
+        { field: 'label', header: 'Label', group: 'Label', component: LabelsColumn, locked: true, searchable: true, filterValues: r => r.label, style: cellStyle(WIDTH.label), pt: LEFT_HEADER },
+        { field: 'assetCnt', header: 'Assets', group: 'Label', component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
         ...commonColumns,
       ]
     case 'unagg':

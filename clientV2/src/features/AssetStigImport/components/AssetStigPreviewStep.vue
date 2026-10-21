@@ -76,6 +76,8 @@ const {
   { field: 'newStatus', header: 'New Status', filterValues: r => capitalize(r.newStatus), quickSearch: false },
 ])
 const exportResult = ({ data }) => badgeFor(data) ?? ''
+
+const centerHeaderPt = { columnHeaderContent: { style: 'justify-content: center;' } }
 </script>
 
 <template>
@@ -132,13 +134,13 @@ const exportResult = ({ data }) => badgeFor(data) ?? ''
           </template>
         </Column>
         <Column field="severity" :sort-field="severitySortValue" header="Severity" style="width: 9rem" sortable />
-        <Column header="Current" field="currentResult" :export-value="exportResult" style="width: 7.25rem; text-align: center" :sort-field="r => r.currentResult ?? ''" sortable>
+        <Column header="Current" field="currentResult" :export-value="exportResult" style="width: 7.25rem; text-align: center" :pt="centerHeaderPt" :sort-field="r => r.currentResult ?? ''" sortable>
           <template #body="{ data }">
             <ResultBadge v-if="badgeFor(data.currentResult)" :status="badgeFor(data.currentResult)" />
             <span v-else>—</span>
           </template>
         </Column>
-        <Column header="New" field="newResult" :export-value="exportResult" style="width: 7.25rem; text-align: center" :sort-field="r => r.newResult ?? ''" sortable>
+        <Column header="New" field="newResult" :export-value="exportResult" style="width: 7.25rem; text-align: center" :pt="centerHeaderPt" :sort-field="r => r.newResult ?? ''" sortable>
           <template #body="{ data }">
             <ResultBadge v-if="badgeFor(data.newResult)" :status="badgeFor(data.newResult)" />
             <span v-else>—</span>

@@ -74,7 +74,7 @@ function onRowClick(event) {
   >
     <Column header="CAT" field="severity" :style="{ width: '6.5rem', minWidth: '6.5rem' }" :pt="paneColumnPt.center">
       <template #body="{ data }">
-        <CatBadge :category="severityMap[data.severity] ?? 3" variant="label" />
+        <CatBadge :category="severityMap[data.severity] ?? 3" variant="label" centered />
       </template>
     </Column>
     <Column header="STIG ID" field="version" sortable :style="{ width: '12rem', minWidth: '10rem' }" :pt="paneColumnPt.left">
