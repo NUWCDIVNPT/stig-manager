@@ -93,6 +93,7 @@ function getRiskClass(riskRating) {
 .cora-content {
   display: flex;
   gap: 12px;
+  justify-content: space-evenly;
   align-items: stretch;
   flex: 1;
   overflow: hidden;
@@ -102,7 +103,7 @@ function getRiskClass(riskRating) {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  flex: 1;
+  flex: none;
   justify-content: center;
 }
 
@@ -121,6 +122,8 @@ function getRiskClass(riskRating) {
   border: 1px solid var(--color-border-default);
   color: var(--color-text-dark);
   height: 22px;
+  min-width: 6rem;
+  max-width: 10rem;
 }
 
 .title-container {

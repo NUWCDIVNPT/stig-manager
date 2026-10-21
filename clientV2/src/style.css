@@ -68,6 +68,10 @@
   --text-display-xl: 5rem;
   --icon-xs: 0.75rem;
 
+  /* Nav rail header, dashboard sidebar header and view tab strip share this
+     height so their top edges line up. */
+  --panel-header-height: 3.25rem;
+
   /* CAT Rating Colors */
   --color-cat1: #c68c8c;
   --color-cat2: #d4b056;
@@ -433,6 +437,76 @@ textarea:focus {
 
 .p-datatable-tbody > tr:hover > .agg-grid-empty-cell {
   background: var(--color-background-dark) !important;
+}
+
+/* Grid cell with trailing action buttons: text ellipsizes, buttons keep size. */
+.sm-grid-cell-with-toolbar {
+  display: flex;
+  align-items: center;
+}
+
+.sm-info {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Icon button that navigates (shield, collection icon); always visible, dim
+   until hovered. */
+.shield-action {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+  opacity: 0.5;
+  transition: opacity 0.15s, transform 0.15s, background-color 0.15s;
+}
+
+.shield-action:hover {
+  opacity: 1;
+  transform: scale(1.2);
+  background-color: var(--color-button-hover-bg);
+}
+
+.shield-action img {
+  pointer-events: none;
+}
+
+/* Pencil button that opens the row's edit modal. Hidden until the row is
+   hovered or the button is focused. margin-left keeps it at the cell end when
+   the content is not flex: 1 (a label chip). */
+.row-edit-btn {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  color: var(--color-text-dim);
+  font-size: var(--icon-xs);
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+tr:hover .row-edit-btn,
+.row-edit-btn:focus-visible {
+  opacity: 1;
+}
+
+.row-edit-btn:hover {
+  color: var(--color-text-bright);
 }
 
 /* Grid search: a cell whose text matched the term, and the matched text. */

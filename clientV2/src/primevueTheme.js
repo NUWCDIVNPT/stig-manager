@@ -1,5 +1,6 @@
 import Material from '@primeuix/themes/material'
 import { definePreset } from '@primevue/themes'
+import { showGridCopyMenu } from './shared/lib/gridCopyMenu.js'
 
 export const BluePreset = definePreset(Material, {
   semantic: {
@@ -25,5 +26,12 @@ export const MyPrimeVuePT = {
     label: { style: 'padding: 6px 10px; font-size: var(--text-md); color: var(--color-text-primary)' },
     option: { style: 'color: var(--color-text-primary)' },
   },
-
+  DataTable: {
+    // Every body row opens the app-level GridCopyMenu on right-click. The
+    // BodyRow instance exposes its record and, two parents up, the DataTable
+    // (the same path PrimeVue's BodyRow uses internally).
+    bodyRow: ({ instance }) => ({
+      onContextmenu: event => showGridCopyMenu(event, instance.rowData, instance.$parentInstance?.$parentInstance),
+    }),
+  },
 }

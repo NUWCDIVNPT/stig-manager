@@ -12,6 +12,7 @@ import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import { useLabelFilterQuery } from '../../../shared/composables/useLabelFilterQuery.js'
+import { viewTabListPt, viewTabPt, viewTabsPt } from '../../../shared/lib/tabPt.js'
 import CollectionManage from '../../CollectionManage/components/CollectionManage.vue'
 import CollectionExportMetrics from '../../CollectionMetrics/components/CollectionExportMetrics.vue'
 import CollectionImportResults from '../../CollectionMetrics/components/CollectionImportResults.vue'
@@ -145,16 +146,6 @@ watch(() => props.collectionId, () => {
   visitedTabs.value = new Set([activeTab.value])
 })
 
-const tabsPt = {
-  root: {
-    style: {
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100%',
-    },
-  },
-}
-
 const tabPanelsPt = {
   root: {
     style: {
@@ -258,23 +249,23 @@ function toggleDashboardSidebar() {
       <!-- Right Panel: Tabs + Content -->
       <SplitterPanel :size="82">
         <div class="right-panel">
-          <Tabs v-model:value="activeTab" :pt="tabsPt">
-            <TabList>
-              <Tab value="stigs">
+          <Tabs v-model:value="activeTab" :pt="viewTabsPt">
+            <TabList :pt="viewTabListPt">
+              <Tab value="stigs" :pt="viewTabPt">
                 STIGs
               </Tab>
-              <Tab value="assets">
+              <Tab value="assets" :pt="viewTabPt">
                 Assets
               </Tab>
-              <Tab value="labels">
+              <Tab value="labels" :pt="viewTabPt">
                 Labels
               </Tab>
-              <Tab value="findings">
+              <Tab value="findings" :pt="viewTabPt">
                 Findings
               </Tab>
               <template v-if="canManage">
                 <div class="tab-separator" />
-                <Tab value="management">
+                <Tab value="management" :pt="viewTabPt">
                   <i class="pi pi-cog tab-icon" />
                   Management
                 </Tab>
@@ -350,7 +341,7 @@ function toggleDashboardSidebar() {
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: 3.25rem;
+  height: var(--panel-header-height);
   background: none;
   border: none;
   border-bottom: 1px solid var(--color-border-default);

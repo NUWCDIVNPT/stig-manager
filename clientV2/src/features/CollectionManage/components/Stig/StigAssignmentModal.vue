@@ -287,7 +287,7 @@ const selectPt = {
     <template #header>
       <div class="modal-header">
         <div class="modal-header-icon">
-          <i :class="isModify ? 'pi pi-sliders-h' : 'pi pi-plus-circle'" />
+          <i :class="isModify ? 'pi pi-pencil' : 'pi pi-plus-circle'" />
         </div>
         <div>
           <div class="modal-header-title">

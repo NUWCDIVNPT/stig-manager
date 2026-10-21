@@ -7,6 +7,7 @@ import TabPanel from 'primevue/tabpanel'
 import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
 import { onUnmounted, ref } from 'vue'
+import { viewTabListPt, viewTabPt, viewTabsPt } from '../../../shared/lib/tabPt.js'
 import MetaCollectionMetrics from '../../CollectionMetrics/components/MetaCollectionMetrics.vue'
 import MetaExportMetrics from '../../CollectionMetrics/components/MetaExportMetrics.vue'
 import { useMetaCollectionFilter } from '../composables/useMetaCollectionFilter.js'
@@ -35,16 +36,6 @@ function toggleDashboardSidebar() {
   catch {
     // localStorage unavailable
   }
-}
-
-const tabsPt = {
-  root: {
-    style: {
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100%',
-    },
-  },
 }
 
 const tabPanelsPt = {
@@ -80,7 +71,7 @@ const tabPanelPt = {
     >
       <!-- Dashboard Sidebar -->
       <SplitterPanel
-        :size="28"
+        :size="18"
         :min-size="4"
         :pt="{ root: { class: { 'sidebar-panel--collapsed': dashboardCollapsed, 'sidebar-panel--animating': isAnimating }, style: 'min-width: 380px; max-width: 460px;' } }"
       >
@@ -112,14 +103,14 @@ const tabPanelPt = {
       </SplitterPanel>
 
       <!-- Right Panel: Tabs + Content -->
-      <SplitterPanel :size="72">
+      <SplitterPanel :size="82">
         <div class="right-panel">
-          <Tabs v-model:value="activeTab" :pt="tabsPt">
-            <TabList>
-              <Tab value="collections">
+          <Tabs v-model:value="activeTab" :pt="viewTabsPt">
+            <TabList :pt="viewTabListPt">
+              <Tab value="collections" :pt="viewTabPt">
                 Collections
               </Tab>
-              <Tab value="stigs">
+              <Tab value="stigs" :pt="viewTabPt">
                 STIGs
               </Tab>
             </TabList>
@@ -141,8 +132,6 @@ const tabPanelPt = {
 
 <style scoped>
 .meta-collection-view {
-  --dashboard-sidebar-width: 33rem;
-  --dashboard-sidebar-collapsed-width: 2.5rem;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -175,7 +164,7 @@ const tabPanelPt = {
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: 3.25rem;
+  height: var(--panel-header-height);
   background: none;
   border: none;
   border-bottom: 1px solid var(--color-border-default);

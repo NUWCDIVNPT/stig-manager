@@ -37,9 +37,12 @@ const emit = defineEmits(['update:modelValue'])
 
 const NONE_SENTINEL = '__none__'
 
+// Compact, matching the 2rem search box in the toolbar; shrinks with ellipsis.
 const selectPt = {
-  label: { style: { fontSize: 'var(--text-lg)' } },
-  option: { style: { fontSize: 'var(--text-lg)' } },
+  root: { style: 'height: 2rem; min-width: 8rem; max-width: 13rem; align-items: center; background-color: var(--color-background-light); border-color: var(--color-border-default);' },
+  label: { style: 'padding: 0 0.5rem; font-size: var(--text-md); color: var(--color-text-primary);' },
+  dropdown: { style: 'width: 1.75rem;' },
+  option: { style: 'font-size: var(--text-md);' },
 }
 
 const selectOptions = computed(() => {
@@ -74,7 +77,6 @@ const selected = computed({
       option-label="label"
       option-value="value"
       :disabled="disabled"
-      class="revision-select__dropdown"
       :pt="selectPt"
     />
   </label>
@@ -85,17 +87,14 @@ const selected = computed({
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
+  min-width: 0;
 }
 
 .revision-select__label {
   font-size: var(--text-md);
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
   color: var(--color-text-dim);
-}
-
-.revision-select__dropdown {
-  min-width: 12rem;
+  white-space: nowrap;
 }
 </style>

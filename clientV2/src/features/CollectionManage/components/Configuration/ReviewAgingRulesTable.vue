@@ -36,6 +36,9 @@ const props = defineProps({
 
 const emit = defineEmits(['new', 'edit', 'move', 'delete'])
 
+// CSV export for the composite Rule column (title plus action summary).
+const exportRule = ({ record }) => `${ruleTitle(record)} - ${ruleSummary(record)}`
+
 const iconMap = {
   collection: collectionIcon,
   asset: targetIcon,
@@ -84,7 +87,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
       :pt="tablePt"
       @row-dblclick="emit('edit', $event.data)"
     >
-      <Column header="Rule" :pt="borderPt">
+      <Column header="Rule" :export-value="exportRule" :pt="borderPt">
         <template #body="{ data }">
           <div class="rule-cell">
             <div class="rule-title-line">
@@ -122,7 +125,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           </div>
         </template>
       </Column>
-      <Column v-if="canEdit" header="" style="width: 9rem;">
+      <Column v-if="canEdit" header="" :exportable="false" style="width: 9rem;">
         <template #body="{ data, index }">
           <div class="rule-actions">
             <Button
