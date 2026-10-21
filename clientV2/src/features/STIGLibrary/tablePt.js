@@ -44,14 +44,6 @@ function columnPt(align) {
         textAlign: isCenter ? 'center' : 'left',
       },
     },
-    bodyCellContent: {
-      style: {
-        display: 'flex',
-        justifyContent: isCenter ? 'center' : 'flex-start',
-        alignItems: 'flex-start',
-        width: '100%',
-      },
-    },
   }
 }
 

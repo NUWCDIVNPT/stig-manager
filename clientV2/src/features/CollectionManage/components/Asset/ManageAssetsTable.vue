@@ -60,6 +60,8 @@ const {
 } = useAssetTable(assets)
 
 const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-border-default)' } }
+// Percentage headers sit left, over the start of the bar and its percentage text
+const leftHeaderBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-content: flex-start;' } }
 const tablePt = { footer: { style: 'padding: 0; border: none;' } }
 
 const metricColumns = [
@@ -67,10 +69,10 @@ const metricColumns = [
   { field: 'checks', header: 'Rules', component: CountColumn, width: '2.75rem', pt: borderPt },
   { field: 'oldest', header: 'Oldest', component: DurationColumn, width: '2.75rem', pt: borderPt },
   { field: 'newest', header: 'Newest', component: DurationColumn, width: '2.75rem', pt: borderPt },
-  { field: 'assessedPct', header: 'Assessed', component: PercentageColumn, width: '5.5rem', pt: borderPt },
-  { field: 'submittedPct', header: 'Submitted', component: PercentageColumn, width: '5.5rem', pt: borderPt },
-  { field: 'acceptedPct', header: 'Accepted', component: PercentageColumn, width: '5.5rem', pt: borderPt },
-  { field: 'rejectedPct', header: 'Rejected', component: PercentageColumn, width: '5.5rem', pt: borderPt },
+  { field: 'assessedPct', header: 'Assessed', component: PercentageColumn, width: '5.5rem', pt: leftHeaderBorderPt },
+  { field: 'submittedPct', header: 'Submitted', component: PercentageColumn, width: '5.5rem', pt: leftHeaderBorderPt },
+  { field: 'acceptedPct', header: 'Accepted', component: PercentageColumn, width: '5.5rem', pt: leftHeaderBorderPt },
+  { field: 'rejectedPct', header: 'Rejected', component: PercentageColumn, width: '5.5rem', pt: leftHeaderBorderPt },
 ]
 
 const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibility([

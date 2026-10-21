@@ -134,12 +134,12 @@ const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-con
         <CountColumn v-if="visibleFields.has('statistics.userCount')" key="statistics.userCount" field="statistics.userCount" header="Users" sortable :pt="centerBorderPt" style="width: 13%" body-style="text-align: center;" />
         <CountColumn v-if="visibleFields.has('statistics.assetCount')" key="statistics.assetCount" field="statistics.assetCount" header="Assets" sortable :pt="centerBorderPt" style="width: 13%" body-style="text-align: center;" />
         <CountColumn v-if="visibleFields.has('statistics.checklistCount')" key="statistics.checklistCount" field="statistics.checklistCount" header="Checklists" sortable :pt="centerBorderPt" style="width: 13%" body-style="text-align: center;" />
-        <Column v-if="visibleFields.has('statistics.created')" field="statistics.created" header="Created" sortable :pt="borderPt" style="width: 20%">
+        <Column v-if="visibleFields.has('statistics.created')" field="statistics.created" header="Created" sortable :pt="borderPt" style="width: 17%">
           <template #body="{ data }">
             {{ formatDateTimeString(data.statistics?.created) || '-' }}
           </template>
         </Column>
-        <Column v-if="visibleFields.has('collectionId')" field="collectionId" header="ID" sortable :pt="centerBorderPt" style="width: 6%" body-style="text-align: center;">
+        <Column v-if="visibleFields.has('collectionId')" field="collectionId" header="ID" sortable :pt="centerBorderPt" style="width: 9%" body-style="text-align: center;">
           <template #body="{ data }">
             <HighlightText :text="data.collectionId" :term="highlightTerm('collectionId')" />
           </template>

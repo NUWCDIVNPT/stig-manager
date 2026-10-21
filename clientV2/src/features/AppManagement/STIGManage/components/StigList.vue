@@ -79,7 +79,7 @@ const tablePt = {
 }
 const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-border-default)' } }
 const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-content: center;' } }
-const wrappedBorderPt = { ...borderPt, columnHeaderContent: { style: 'flex-wrap: wrap;' } }
+const wrappedBorderPt = { ...borderPt, columnHeaderContent: { style: 'flex-wrap: wrap;' }, columnTitle: { style: 'white-space: normal; line-height: 1.1;' } }
 
 function formatEarlierRevisions(revs) {
   if (!revs || revs.length <= 1) {
@@ -278,14 +278,10 @@ function onRemoveAll() {
           v-if="visibleFields.has('lastRevisionStr')"
           field="lastRevisionStr" export-header="Latest Revision"
           sortable
+          header="Latest Revision"
           :pt="wrappedBorderPt"
           style="width: 7%;"
         >
-          <template #header>
-            <span style="display: inline-block; line-height: 1.1; white-space: normal; width: 100%;">
-              Latest Revision
-            </span>
-          </template>
           <template #body="{ data }">
             <HighlightText :text="data.lastRevisionStr || '—'" :term="highlightTerm('lastRevisionStr')" />
           </template>
@@ -295,14 +291,10 @@ function onRemoveAll() {
           v-if="visibleFields.has('lastRevisionDate')"
           field="lastRevisionDate" export-header="Revision Date"
           sortable
+          header="Revision Date"
           :pt="wrappedBorderPt"
           style="width: 8%;"
         >
-          <template #header>
-            <span style="display: inline-block; line-height: 1.1; white-space: normal; width: 100%;">
-              Revision Date
-            </span>
-          </template>
           <template #body="{ data }">
             <span :class="{ 'dim-value': !data.lastRevisionDate }">{{ data.lastRevisionDate || '—' }}</span>
           </template>
@@ -312,14 +304,10 @@ function onRemoveAll() {
           v-if="visibleFields.has('earlierRevisions')"
           field="earlierRevisions" export-header="Earlier Revisions"
           sortable
+          header="Earlier Revisions"
           :pt="wrappedBorderPt"
           style="width: 10%;"
         >
-          <template #header>
-            <span style="display: inline-block; line-height: 1.1; white-space: normal; width: 100%;">
-              Earlier Revisions
-            </span>
-          </template>
           <template #body="{ data }">
             <span :class="{ 'dim-value': !data.revisionStrs || data.revisionStrs.length <= 1 }">
               {{ formatEarlierRevisions(data.revisionStrs) }}
@@ -331,14 +319,10 @@ function onRemoveAll() {
           v-if="visibleFields.has('ruleCount')"
           field="ruleCount" export-header="Rules"
           sortable
+          header="Rules"
           :pt="centerBorderPt"
           style="width: 6%; text-align: center;"
         >
-          <template #header>
-            <span style="display: inline-block; text-align: center; width: 100%;">
-              Rules
-            </span>
-          </template>
           <template #body="{ data }">
             {{ dashZero(data.ruleCount) }}
           </template>
@@ -348,14 +332,10 @@ function onRemoveAll() {
           v-if="visibleFields.has('collectionCount')"
           field="collectionCount" export-header="Collections"
           sortable
+          header="Collections"
           :pt="centerBorderPt"
           style="width: 7%; text-align: center;"
         >
-          <template #header>
-            <span style="display: inline-block; text-align: center; width: 100%;">
-              Collections
-            </span>
-          </template>
           <template #body="{ data }">
             <span :class="{ 'dim-value': !data.collectionCount }">
               {{ dashZero(data.collectionCount) }}

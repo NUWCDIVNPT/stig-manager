@@ -1,15 +1,11 @@
 <script setup>
 import Column from 'primevue/column'
-import { computed } from 'vue'
 
-const props = defineProps({
+defineProps({
   field: String,
   header: String,
   pt: Object,
 })
-
-// Header sits left, over the start of the bar and its percentage text
-const columnPt = computed(() => ({ ...props.pt, columnHeaderContent: { style: 'justify-content: flex-start;' } }))
 
 function renderPct(v) {
   const pct = v > 0 && v <= 0.5 ? 1 : v >= 99.5 && v < 100 ? 99 : Math.round(v)
@@ -27,7 +23,7 @@ function renderPct(v) {
 </script>
 
 <template>
-  <Column :field="field" :header="header" :pt="columnPt">
+  <Column :field="field" :header="header" :pt="pt">
     <template #body="slotProps">
       <span v-html="renderPct(slotProps.data[slotProps.field])" />
     </template>
