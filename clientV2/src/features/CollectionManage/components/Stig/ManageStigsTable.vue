@@ -240,18 +240,6 @@ function openEditModal(stig) {
   cursor: pointer;
 }
 
-.sm-grid-cell-with-toolbar {
-  display: flex;
-  align-items: center;
-}
-
-.sm-info {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 :deep(th.metric-col .p-datatable-column-header-content) {
   justify-content: center;
 }

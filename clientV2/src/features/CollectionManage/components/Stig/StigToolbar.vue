@@ -3,7 +3,6 @@ import ActionButton from '../../../../components/common/ActionButton.vue'
 import ActionToolbar from '../../../../components/common/ActionToolbar.vue'
 import ExportByStigButton from '../../ExportResults/components/ExportByStigButton.vue'
 import AssignStigButton from './AssignStigButton.vue'
-import ModifyStig from './ModifyStig.vue'
 import UnassignStigButton from './UnassignStigButton.vue'
 
 const props = defineProps({
@@ -46,10 +45,9 @@ const emit = defineEmits(['clear-selection', 'stigs-changed', 'modify-stig'])
       @unassigned="emit('stigs-changed')"
     />
     <div class="toolbar-divider" />
-    <ModifyStig
-      :disabled="!singleSelection"
-      @modify-stig="emit('modify-stig')"
-    />
+    <ActionButton icon="pi pi-pencil icon-grey" :disabled="!singleSelection" @click="emit('modify-stig')">
+      Modify
+    </ActionButton>
     <div class="toolbar-divider" />
     <ExportByStigButton
       :collection-id="props.collectionId"

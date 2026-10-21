@@ -199,16 +199,10 @@ const dataTableRef = ref(null)
 }
 
 .sm-grid-cell-with-toolbar {
-  display: flex;
-  align-items: center;
   gap: 0.35rem;
 }
 
 .sm-info {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   color: var(--color-text-dim);
 }
 

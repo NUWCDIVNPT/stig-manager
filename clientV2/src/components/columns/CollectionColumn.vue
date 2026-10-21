@@ -52,7 +52,7 @@ function handleCollectionIconClick(rowData) {
         <button
           v-if="showCollectionIcon"
           type="button"
-          class="collection-icon-action"
+          class="shield-action"
           title="Go to Collection"
           @click.stop="handleCollectionIconClick(slotProps.data)"
         >
@@ -71,67 +71,3 @@ function handleCollectionIconClick(rowData) {
     </template>
   </Column>
 </template>
-
-<style scoped>
-.sm-grid-cell-with-toolbar {
-  display: flex;
-  align-items: center;
-}
-
-.sm-info {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.collection-icon-action {
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-left: auto;
-  flex-shrink: 0;
-  opacity: 0.5;
-  transition: opacity 0.15s, transform 0.15s, background-color 0.15s;
-}
-
-.collection-icon-action:hover {
-  opacity: 1;
-  transform: scale(1.2);
-  background-color: var(--color-button-hover-bg);
-}
-
-.collection-icon-action img {
-  pointer-events: none;
-}
-
-.shield-action {
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  opacity: 0.5;
-  transition: opacity 0.15s, transform 0.15s, background-color 0.15s;
-}
-
-.shield-action:hover {
-  opacity: 1;
-  transform: scale(1.2);
-  background-color: var(--color-button-hover-bg);
-}
-
-.shield-action img {
-  pointer-events: none;
-}
-</style>

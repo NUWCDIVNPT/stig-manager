@@ -282,13 +282,11 @@ const pt = {
         <a :href="href" v-bind="props.action" class="menu-item-link" @click="navigate">
           <span :class="item.icon" />
           <span>{{ item.label }}</span>
-          <i v-if="item.tooltip" class="pi pi-info-circle tooltip-icon" :title="item.tooltip" />
         </a>
       </router-link>
       <a v-else v-bind="props.action" class="menu-item-link">
         <span :class="item.icon" />
         <span>{{ item.label }}</span>
-        <i v-if="item.tooltip" class="pi pi-info-circle tooltip-icon" :title="item.tooltip" />
         <span v-if="hasSubmenu" class="pi pi-fw pi-angle-down" />
       </a>
     </template>
