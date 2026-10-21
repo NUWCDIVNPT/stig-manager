@@ -123,6 +123,8 @@ export function useAppBreadcrumb() {
   // Load revisions when benchmark changes
   watch(benchmarkId, (id) => {
     if (id) {
+      // Clear first so a failed fetch can't leave the previous STIG's revisions
+      stigRevisionOptions.value = []
       loadStigRevisions()
     }
   }, { immediate: true })

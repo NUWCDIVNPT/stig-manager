@@ -1,7 +1,9 @@
+import { flushPromises } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { fetchCollectionStigs } from '../../../shared/api/collectionsApi.js'
+import { fetchStigRevisions } from '../../../shared/api/stigsApi.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import { useAppBreadcrumb } from '../composables/useAppBreadcrumb.js'
@@ -103,6 +105,26 @@ describe('useAppBreadcrumb', () => {
 
     expect(fetchCollectionStigs).toHaveBeenCalledTimes(2)
     expect(fetchCollectionStigs).toHaveBeenLastCalledWith('coll-1', { labelMatch: 'null' })
+  })
+
+  it('clears the previous STIG\'s revisions when the STIG changes', async () => {
+    fetchStigRevisions.mockResolvedValueOnce([{ revisionStr: 'V1R1' }])
+    const route = reactive({
+      name: 'collection-benchmark-review',
+      params: { collectionId: 'coll-1', benchmarkId: 'bench-1', revisionStr: 'V1R1' },
+      query: {},
+      matched: [],
+    })
+    useRoute.mockReturnValue(route)
+    const { stigRevisionOptions } = useAppBreadcrumb()
+    await flushPromises()
+    expect(stigRevisionOptions.value).toEqual([{ revisionStr: 'V1R1' }])
+
+    fetchStigRevisions.mockRejectedValueOnce(new Error('fail'))
+    route.params = { ...route.params, benchmarkId: 'bench-2' }
+    await flushPromises()
+
+    expect(stigRevisionOptions.value).toEqual([])
   })
 
   it('explains a missing STIG by the label filter when one is active', () => {

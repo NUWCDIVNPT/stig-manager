@@ -45,20 +45,19 @@ const props = defineProps({
 
 defineEmits(['update:modelValue'])
 
-const isValidSelection = computed(() => {
-  if (props.modelValue == null || props.loading) {
-    return true
-  }
-  return props.options.some(opt => String(opt[props.optionValue]) === String(props.modelValue))
-})
+const selectedOption = computed(() =>
+  props.options?.find(opt => String(opt[props.optionValue]) === String(props.modelValue)),
+)
+
+const isValidSelection = computed(() => props.modelValue == null || props.loading || !!selectedOption.value)
 
 const displayLabel = computed(() => {
-  if (props.modelValue == null) { return props.placeholder }
-
+  if (props.modelValue == null) {
+    return props.placeholder
+  }
   // No match while loading, or a value missing from the options: show the raw
   // value; isValidSelection colors the latter as a mismatch.
-  const match = props.options?.find(opt => String(opt[props.optionValue]) === String(props.modelValue))
-  return match ? match[props.optionLabel] : props.modelValue
+  return selectedOption.value ? selectedOption.value[props.optionLabel] : props.modelValue
 })
 
 // Pass-through styles to override global PT inline styles
