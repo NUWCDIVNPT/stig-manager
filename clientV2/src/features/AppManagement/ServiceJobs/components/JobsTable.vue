@@ -5,7 +5,6 @@ import { computed, ref } from 'vue'
 import ActionButton from '../../../../components/common/ActionButton.vue'
 import ActionToolbar from '../../../../components/common/ActionToolbar.vue'
 import ColumnToggle from '../../../../components/common/ColumnToggle.vue'
-import GridCopyMenu from '../../../../components/common/GridCopyMenu.vue'
 import GridSearch from '../../../../components/common/GridSearch.vue'
 import HighlightText from '../../../../components/common/HighlightText.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
@@ -29,7 +28,6 @@ const exportTasks = ({ data }) => (data ?? []).map(t => t.name).join(', ')
 const exportSchedule = ({ data }) => (data ? `${scheduleSummary(data)}${data.enabled === false ? ' (disabled)' : ''}` : 'Not scheduled')
 
 const dataTableRef = ref(null)
-const copyMenuRef = ref(null)
 
 const selectedJob = computed({
   get: () => props.selection,
@@ -116,7 +114,6 @@ const tablePt = {
         :table-style="{ 'min-width': '60rem' }"
         :row-class="row => row.lastRun?.state === 'failed' ? 'row-error' : ''"
         :pt="tablePt"
-        @row-contextmenu="copyMenuRef.show($event, dataTableRef)"
       >
         <template #empty>
           {{ isFiltered && jobs.length ? 'No jobs match the search.' : 'No jobs found.' }}
@@ -186,7 +183,6 @@ const tablePt = {
           />
         </template>
       </DataTable>
-      <GridCopyMenu ref="copyMenuRef" />
     </div>
   </div>
 </template>

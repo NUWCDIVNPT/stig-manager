@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { sourceFileContents } from '../../testUtils/sourceFiles.js'
 
-// Every DataTable wired to the footer CSV export (`:dt=`) must declare an
+// Every DataTable serializes rows through dataTableCsv (the footer CSV export
+// and the row context menu's "Copy row as CSV"), so each must declare an
 // export title for columns whose visible header is a slot, and must give each
 // column a `field` or `:export-value`, or opt it out with `:exportable="false"`.
-// exportDataTableCsv reads only those props, so a slot-only header exports as
-// the dotted field path and a column without field/export-value silently
-// disappears from the file.
+// dataTableCsv reads only those props, so a slot-only header exports as the
+// dotted field path and a column without field/export-value silently
+// disappears from the output.
 
 // Quote-aware scan for the end of an opening tag (attribute values such as
 // `:sort-field="r => r.x"` contain `>`).
@@ -48,7 +49,7 @@ function columnsOf(src) {
 }
 
 const exportingFiles = sourceFileContents(['.vue'])
-  .filter(f => f.src.includes('<Column') && /:dt="/.test(f.src))
+  .filter(f => f.src.includes('<Column') && /<DataTable\b/.test(f.src))
 
 describe('dataTable CSV export conventions', () => {
   it('scans the exporting tables', () => {

@@ -17,7 +17,6 @@ import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 import { compactTablePt } from '../../../shared/lib/dataTablePt.js'
 import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 import DeleteModal from '../DeleteModal.vue'
-import GridCopyMenu from '../GridCopyMenu.vue'
 import GridFilterButton from '../GridFilterButton.vue'
 import StatusFooter from '../StatusFooter.vue'
 import EditGrantModal from './EditGrantModal.vue'
@@ -71,7 +70,6 @@ const { state: grants, isLoading: grantsLoading, execute: loadGrants } = useAsyn
 watch(() => props.collectionId, id => id && loadGrants(), { immediate: true })
 
 const grantsDt = ref()
-const copyMenuRef = ref(null)
 
 async function fetchSystemGrantees() {
   const [users, groups] = await Promise.all([
@@ -259,7 +257,6 @@ const tablePt = {
         scroll-height="flex"
         :virtual-scroller-options="{ itemSize: ROW_HEIGHT, delay: 0 }"
         :pt="tablePt"
-        @row-contextmenu="copyMenuRef.show($event, grantsDt)"
       >
         <template #empty>
           {{ isFiltered && grants?.length ? 'No grants match the filters.' : 'No grants.' }}
@@ -342,7 +339,6 @@ const tablePt = {
           />
         </template>
       </DataTable>
-      <GridCopyMenu ref="copyMenuRef" />
     </div>
 
     <DeleteModal

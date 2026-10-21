@@ -8,7 +8,6 @@ import assessmentIcon from '../../../assets/assessment.svg'
 import readOnlyIcon from '../../../assets/read-only.svg'
 import LabelsRow from '../../../components/columns/LabelsRow.vue'
 import EngineBadge from '../../../components/common/EngineBadge.vue'
-import GridCopyMenu from '../../../components/common/GridCopyMenu.vue'
 import HighlightText from '../../../components/common/HighlightText.vue'
 import ManualBadge from '../../../components/common/ManualBadge.vue'
 import OverrideBadge from '../../../components/common/OverrideBadge.vue'
@@ -80,7 +79,6 @@ const props = defineProps({
 const emit = defineEmits(['review-saved', 'update:selection'])
 
 const dataTableRef = ref(null)
-const copyMenuRef = ref(null)
 
 const { itemSize } = useGridDensity('collection-rule-table')
 
@@ -352,7 +350,6 @@ const dataTablePt = {
     @scroll.capture="onGridScroll"
     @wheel.capture="onGridWheel"
     @pointerdown.stop
-    @row-contextmenu="copyMenuRef.show($event, dataTableRef)"
   >
     <!-- Selection -->
     <Column :exportable="false" header-style="width: 3rem; min-width: 3rem" :pt="selectionColumnPt">
@@ -498,7 +495,6 @@ const dataTablePt = {
       </StatusFooter>
     </template>
   </DataTable>
-  <GridCopyMenu ref="copyMenuRef" />
 
   <ReviewEditPopover
     ref="reviewEditPopover"

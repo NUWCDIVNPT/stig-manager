@@ -484,11 +484,6 @@ mark.search-highlight {
   background: var(--p-checkbox-icon-color);
 }
 
-/* PrimeVue DataTable: cell text isn't selectable; copy via the row context menu. */
-.p-datatable-tbody {
-  user-select: none;
-}
-
 /* PrimeVue DataTable: show the sort indicator only on the sorted column. */
 th.p-datatable-sortable-column:not(.p-datatable-column-sorted) [data-pc-section="sort"] {
   display: none;

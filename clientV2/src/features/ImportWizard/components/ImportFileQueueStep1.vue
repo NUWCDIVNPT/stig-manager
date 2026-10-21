@@ -2,7 +2,6 @@
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref } from 'vue'
-import GridCopyMenu from '../../../components/common/GridCopyMenu.vue'
 import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
@@ -29,8 +28,6 @@ const emit = defineEmits([
 ])
 
 const fileInputRef = ref(null)
-const dataTableRef = ref(null)
-const copyMenuRef = ref(null)
 
 const selectedRowsModel = computed({
   get: () => props.selectedRows,
@@ -120,7 +117,6 @@ const centerPt = { columnHeaderContent: { style: 'justify-content: center;' }, b
 
     <div class="queue-table-flex">
       <DataTable
-        ref="dataTableRef"
         v-model:selection="selectedRowsModel"
         :value="filteredRows"
         data-key="_queueId"
@@ -130,7 +126,6 @@ const centerPt = { columnHeaderContent: { style: 'justify-content: center;' }, b
         striped-rows
         selection-mode="multiple"
         class="queue-table clickable-rows"
-        @row-contextmenu="copyMenuRef.show($event, dataTableRef)"
       >
         <Column selection-mode="multiple" style="width: 3rem; flex-shrink: 0" />
         <Column field="name" header="Filename" sortable>
@@ -152,7 +147,6 @@ const centerPt = { columnHeaderContent: { style: 'justify-content: center;' }, b
           <span class="queue-empty-hint">{{ emptyHint }}</span>
         </template>
       </DataTable>
-      <GridCopyMenu ref="copyMenuRef" />
     </div>
 
     <StatusFooter

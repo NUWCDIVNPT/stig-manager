@@ -1,8 +1,7 @@
 <script setup>
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import { computed, ref } from 'vue'
-import GridCopyMenu from './GridCopyMenu.vue'
+import { computed } from 'vue'
 import PickListLayout from './PickListLayout.vue'
 import PickListPane from './PickListPane.vue'
 import StatusFooter from './StatusFooter.vue'
@@ -134,10 +133,6 @@ const {
   onMoveAllRight,
   onMoveAllLeft,
 } = usePickListModel(props, emit)
-
-const sourceDtRef = ref(null)
-const targetDtRef = ref(null)
-const copyMenuRef = ref(null)
 </script>
 
 <template>
@@ -163,7 +158,6 @@ const copyMenuRef = ref(null)
           </template>
 
           <DataTable
-            ref="sourceDtRef"
             v-model:selection="selectionSource"
             :value="filteredSource"
             :data-key="dataKey"
@@ -174,7 +168,6 @@ const copyMenuRef = ref(null)
             class="flex-fill"
             :table-style="{ 'table-layout': 'fixed' }"
             :pt="mergedPt"
-            @row-contextmenu="copyMenuRef.show($event, sourceDtRef)"
           >
             <Column selection-mode="multiple" style="width: 2.7rem;" />
             <slot name="columns">
@@ -209,7 +202,6 @@ const copyMenuRef = ref(null)
           </template>
 
           <DataTable
-            ref="targetDtRef"
             v-model:selection="selectionTarget"
             :value="filteredTarget"
             :data-key="dataKey"
@@ -220,7 +212,6 @@ const copyMenuRef = ref(null)
             class="flex-fill"
             :table-style="{ 'table-layout': 'fixed' }"
             :pt="mergedPt"
-            @row-contextmenu="copyMenuRef.show($event, targetDtRef)"
           >
             <Column selection-mode="multiple" style="width: 2.7rem;" />
             <slot name="columns">
@@ -242,7 +233,6 @@ const copyMenuRef = ref(null)
         </PickListPane>
       </template>
     </PickListLayout>
-    <GridCopyMenu ref="copyMenuRef" />
   </div>
 </template>
 

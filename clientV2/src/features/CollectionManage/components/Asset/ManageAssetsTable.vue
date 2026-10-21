@@ -9,7 +9,6 @@ import LabelsRow from '../../../../components/columns/LabelsRow.vue'
 import PercentageColumn from '../../../../components/columns/PercentageColumn.vue'
 import ColumnToggle from '../../../../components/common/ColumnToggle.vue'
 import DeleteModal from '../../../../components/common/DeleteModal.vue'
-import GridCopyMenu from '../../../../components/common/GridCopyMenu.vue'
 import GridFilterButton from '../../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../../components/common/GridSearch.vue'
 import GridToolbar from '../../../../components/common/GridToolbar.vue'
@@ -37,7 +36,6 @@ const props = defineProps({
 const ROW_HEIGHT = rowHeightPx('dense')
 
 const dataTableRef = ref(null)
-const copyMenuRef = ref(null)
 
 const { triggerError } = useGlobalError()
 const { getCollectionGrant } = useCurrentUser()
@@ -191,7 +189,6 @@ async function onDeleteConfirmed() {
         class="flex-fill clickable-rows"
         :table-style="{ 'table-layout': 'fixed' }"
         :pt="tablePt"
-        @row-contextmenu="copyMenuRef.show($event, dataTableRef)"
       >
         <Column selection-mode="multiple" style="width: 1rem; height: var(--item-size); padding: 0 0.5rem;" />
 
@@ -240,7 +237,6 @@ async function onDeleteConfirmed() {
           />
         </template>
       </DataTable>
-      <GridCopyMenu ref="copyMenuRef" />
     </div>
   </div>
 </template>

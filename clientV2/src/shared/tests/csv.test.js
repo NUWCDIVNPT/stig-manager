@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
   ASSET_FIELDS,
+  dataTableCellText,
+  dataTableCsv,
   escapeCsv,
   exportDataTableCsv,
   formatAssetsForCsv,
@@ -400,5 +402,35 @@ describe('exportDataTableCsv', () => {
     exportDataTableCsv({})
     exportDataTableCsv(fakeDt({ columns: null }))
     expect(saveAs).not.toHaveBeenCalled()
+  })
+
+  describe('dataTableCsv', () => {
+    it('serializes the given rows (not processedData) with a header line', () => {
+      const dt = fakeDt()
+      const csv = dataTableCsv(dt, [dt.processedData[0]])
+      expect(csv).toBe('Name,Count,Tasks\nrow1,3,"{""name"":""t1""}"')
+    })
+
+    it('returns null when no column is exportable', () => {
+      const dt = fakeDt({ columns: [{ header: 'Rule' }, { header: '' }] })
+      expect(dataTableCsv(dt, dt.processedData)).toBeNull()
+    })
+
+    it('returns null when rows is not an array', () => {
+      expect(dataTableCsv(fakeDt(), undefined)).toBeNull()
+    })
+  })
+
+  describe('dataTableCellText', () => {
+    it('serializes one cell without CSV escaping', () => {
+      const dt = fakeDt()
+      expect(dataTableCellText(dt, dt.columns[0], { name: 'a,b' })).toBe('a,b')
+      expect(dataTableCellText(dt, dt.columns[1], { stats: { count: 3 } })).toBe('3')
+    })
+
+    it('returns null for a column with neither field nor export-value', () => {
+      const dt = fakeDt()
+      expect(dataTableCellText(dt, { header: 'Actions' }, {})).toBeNull()
+    })
   })
 })

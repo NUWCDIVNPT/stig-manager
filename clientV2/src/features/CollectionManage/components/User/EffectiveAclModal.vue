@@ -6,7 +6,6 @@ import Dialog from 'primevue/dialog'
 import { computed, ref, watch } from 'vue'
 import AclStateIcon from '../../../../components/common/AclStateIcon.vue'
 import { granteeLabel } from '../../../../components/common/grants/granteeDisplay.js'
-import GridCopyMenu from '../../../../components/common/GridCopyMenu.vue'
 import GridFilterButton from '../../../../components/common/GridFilterButton.vue'
 import PanelTitle from '../../../../components/common/PanelTitle.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
@@ -47,7 +46,6 @@ const { state: acl, isLoading, error, execute } = useAsyncState(
 )
 
 const aclDt = ref()
-const copyMenuRef = ref(null)
 
 // get the default access for a user based on their role
 const defaultAccess = computed(() => getDefaultAccessForRole(props.roleId))
@@ -127,7 +125,6 @@ watch([visible, () => props.user?.userId], ([isVisible, userId]) => {
           export-filename="EffectiveGrants"
           class="acl-table"
           :pt="tablePt"
-          @row-contextmenu="copyMenuRef.show($event, aclDt)"
         >
           <template #empty>
             {{ isFiltered && displayAcl.length ? 'No rows match the filters.' : 'No effective access.' }}
@@ -151,7 +148,6 @@ watch([visible, () => props.user?.userId], ([isVisible, userId]) => {
             />
           </template>
         </DataTable>
-        <GridCopyMenu ref="copyMenuRef" />
       </div>
     </div>
 

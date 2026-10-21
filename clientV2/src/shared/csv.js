@@ -123,7 +123,8 @@ export function exportDataTableCsv(dt) {
 /**
  * Serializes `rows` to a CSV string (header line included) using the
  * DataTable's column export rules described on exportDataTableCsv.
- * Returns null when the table renders no columns or rows isn't an array.
+ * Returns null when the table has no exportable columns or rows isn't an
+ * array.
  */
 export function dataTableCsv(dt, rows) {
   const columns = dt?.columns
@@ -136,6 +137,9 @@ export function dataTableCsv(dt, rows) {
   const exportable = columns.filter(col =>
     dt.columnProp(col, 'exportable') !== false && (dt.columnProp(col, 'field') || columnExportValue(col)),
   )
+  if (!exportable.length) {
+    return null
+  }
 
   const csvRows = [
     exportable
@@ -143,21 +147,28 @@ export function dataTableCsv(dt, rows) {
       .join(','),
   ]
 
-  const tableExport = dt.exportFunction ?? exportDisplayValue
-  const cellSpecs = exportable.map(col => ({
-    field: dt.columnProp(col, 'field'),
-    exportValue: columnExportValue(col) ?? tableExport,
-  }))
-
   for (const record of rows) {
-    const cells = cellSpecs.map(({ field, exportValue }) => {
-      const data = field ? resolveFieldPath(record, field) : undefined
-      return escapeCsv(serializeCsvValue(exportValue({ data, field, record })))
-    })
-    csvRows.push(cells.join(','))
+    csvRows.push(exportable.map(col => escapeCsv(dataTableCellText(dt, col, record))).join(','))
   }
 
   return csvRows.join('\n')
+}
+
+/**
+ * The export text of one cell, before CSV escaping: the column's export-value
+ * / table exportFunction / exportDisplayValue result run through
+ * serializeCsvValue. Returns null when the column has neither a `field` nor an
+ * `export-value`, i.e. when the cell has no exportable value at all.
+ */
+export function dataTableCellText(dt, col, record) {
+  const field = dt.columnProp(col, 'field')
+  const exportValue = columnExportValue(col)
+  if (!field && !exportValue) {
+    return null
+  }
+  const fn = exportValue ?? dt.exportFunction ?? exportDisplayValue
+  const data = field ? resolveFieldPath(record, field) : undefined
+  return serializeCsvValue(fn({ data, field, record }))
 }
 
 export const ASSET_FIELDS = [

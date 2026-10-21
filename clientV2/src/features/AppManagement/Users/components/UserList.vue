@@ -6,7 +6,6 @@ import CountColumn from '../../../../components/columns/CountColumn.vue'
 import ActionButton from '../../../../components/common/ActionButton.vue'
 import ActionToolbar from '../../../../components/common/ActionToolbar.vue'
 import ColumnToggle from '../../../../components/common/ColumnToggle.vue'
-import GridCopyMenu from '../../../../components/common/GridCopyMenu.vue'
 import GridFilterButton from '../../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../../components/common/GridSearch.vue'
 import HighlightText from '../../../../components/common/HighlightText.vue'
@@ -40,7 +39,6 @@ const emit = defineEmits(['update:selection', 'preregister', 'unregister', 'set-
 const exportLastAccess = ({ data }) => (data ? formatLastAccess(data) : '')
 
 const dataTableRef = ref(null)
-const copyMenuRef = ref(null)
 
 const selectedUser = computed({
   get: () => props.selection,
@@ -170,7 +168,6 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
         class="flex-fill"
         :table-style="{ 'min-width': '60rem' }"
         :pt="tablePt"
-        @row-contextmenu="copyMenuRef.show($event, dataTableRef)"
       >
         <template #empty>
           {{ isFiltered && users.length ? 'No users match the search.' : 'No users found.' }}
@@ -256,7 +253,6 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           />
         </template>
       </DataTable>
-      <GridCopyMenu ref="copyMenuRef" />
     </div>
   </div>
 </template>

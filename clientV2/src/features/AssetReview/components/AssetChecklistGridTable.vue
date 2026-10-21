@@ -5,7 +5,6 @@ import { computed, nextTick, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import CatBadge from '../../../components/common/CatBadge.vue'
 import EngineBadge from '../../../components/common/EngineBadge.vue'
-import GridCopyMenu from '../../../components/common/GridCopyMenu.vue'
 import HighlightText from '../../../components/common/HighlightText.vue'
 import ManualBadge from '../../../components/common/ManualBadge.vue'
 import OverrideBadge from '../../../components/common/OverrideBadge.vue'
@@ -81,7 +80,6 @@ const processedGridData = computed(() => {
 })
 
 const dataTableRef = ref(null)
-const copyMenuRef = ref(null)
 const route = useRoute()
 
 // Scroll a rule into view. Skip if it already sits in the upper half of the
@@ -181,7 +179,6 @@ const dataTablePt = {
     :virtual-scroller-options="{ itemSize }" resizable-columns striped-rows :sort-field="defaultSortField"
     :sort-order="1" class="checklist-grid__table" :pt="dataTablePt" @update:selection="(val) => $emit('update:selectedRow', val)"
     @row-click="$emit('row-click', $event)" @pointerdown.stop
-    @row-contextmenu="copyMenuRef.show($event, dataTableRef)"
   >
     <Column v-if="visibleFields.has('severity')" field="severity" header="CAT" :sort-field="severitySortValue" sortable :style="{ width: '6.5rem', minWidth: '6.5rem' }" :pt="columnPt.center">
       <template #body="{ data }">
@@ -333,7 +330,6 @@ const dataTablePt = {
           <StatusBadge status="rejected" :count="stats.statuses.rejected" />
         </template>
       </StatusFooter>
-      <GridCopyMenu ref="copyMenuRef" />
     </template>
   </DataTable>
 </template>

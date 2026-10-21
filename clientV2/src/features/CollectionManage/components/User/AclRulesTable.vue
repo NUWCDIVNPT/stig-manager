@@ -4,7 +4,6 @@ import DataTable from 'primevue/datatable'
 import Select from 'primevue/select'
 import { ref } from 'vue'
 import AclStateIcon from '../../../../components/common/AclStateIcon.vue'
-import GridCopyMenu from '../../../../components/common/GridCopyMenu.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
@@ -47,7 +46,6 @@ const exportAccess = ({ data }) => props.accessOptions.find(o => o.value === dat
 const selectedRules = defineModel('selection', { type: Array, default: () => [] })
 
 const rulesDt = ref()
-const copyMenuRef = ref(null)
 const tablePt = compactTablePt({ footer: 'divider' })
 </script>
 
@@ -68,7 +66,6 @@ const tablePt = compactTablePt({ footer: 'divider' })
     :virtual-scroller-options="{ itemSize: ROW_HEIGHT, delay: 0 }"
     class="rules-table"
     :pt="tablePt"
-    @row-contextmenu="copyMenuRef.show($event, rulesDt)"
   >
     <template #empty>
       {{ filtered ? 'No rules match the filters.' : 'No ACL rules.' }}
@@ -107,7 +104,6 @@ const tablePt = compactTablePt({ footer: 'divider' })
         :filtered-count="filtered ? rules.length : null"
         total-label="rules"
       />
-      <GridCopyMenu ref="copyMenuRef" />
     </template>
   </DataTable>
 </template>

@@ -3,7 +3,6 @@ import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import ColumnToggle from '../../../../components/common/ColumnToggle.vue'
-import GridCopyMenu from '../../../../components/common/GridCopyMenu.vue'
 import GridFilterButton from '../../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../../components/common/GridSearch.vue'
 import HighlightText from '../../../../components/common/HighlightText.vue'
@@ -25,7 +24,6 @@ const props = defineProps({
 const emit = defineEmits(['update:selection', 'row-click', 'row-dblclick'])
 
 const dataTableRef = ref(null)
-const copyMenuRef = ref(null)
 
 const selectedRow = computed({
   get: () => props.selection,
@@ -152,7 +150,6 @@ const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-con
       :pt="tablePt"
       @row-click="onRowClick"
       @row-dblclick="onRowDblClick"
-      @row-contextmenu="copyMenuRef.show($event, dataTableRef)"
     >
       <template #empty>
         {{ isFiltered && transactions.length ? 'No transactions match the search.' : 'No transactions to display.' }}
@@ -207,7 +204,6 @@ const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-con
         />
       </template>
     </DataTable>
-    <GridCopyMenu ref="copyMenuRef" />
   </div>
 </template>
 

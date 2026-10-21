@@ -6,7 +6,6 @@ import { computed, ref, watch } from 'vue'
 import targetSvg from '../../../../assets/target.svg'
 import { roleMap } from '../../../../components/common/grants/roleOptions.js'
 import RolePopover from '../../../../components/common/grants/RolePopover.vue'
-import GridCopyMenu from '../../../../components/common/GridCopyMenu.vue'
 import GridFilterButton from '../../../../components/common/GridFilterButton.vue'
 import PanelTitle from '../../../../components/common/PanelTitle.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
@@ -36,7 +35,6 @@ watch(() => props.collectionId, id => id && reload(), { immediate: true })
 
 // data table ref for footer actions
 const usersDt = ref()
-const copyMenuRef = ref(null)
 
 // mapping users for the data table for ui display
 const displayUsers = computed(() => (users.value ?? []).map((row) => {
@@ -98,7 +96,6 @@ defineExpose({ reload })
         :virtual-scroller-options="{ itemSize: ROW_HEIGHT, delay: 0 }"
         export-filename="CollectionUsers"
         :pt="tablePt"
-        @row-contextmenu="copyMenuRef.show($event, usersDt)"
       >
         <template #empty>
           {{ isFiltered && displayUsers.length ? 'No users match the filters.' : 'No effective users.' }}
@@ -166,7 +163,6 @@ defineExpose({ reload })
           />
         </template>
       </DataTable>
-      <GridCopyMenu ref="copyMenuRef" />
     </div>
 
     <EffectiveAclModal

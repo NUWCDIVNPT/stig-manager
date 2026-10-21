@@ -10,7 +10,6 @@ import ColumnToggle from '../../../components/common/ColumnToggle.vue'
 import DensityControls from '../../../components/common/DensityControls.vue'
 import EngineBadge from '../../../components/common/EngineBadge.vue'
 import EngineIconCell from '../../../components/common/EngineIconCell.vue'
-import GridCopyMenu from '../../../components/common/GridCopyMenu.vue'
 import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../components/common/GridSearch.vue'
 import GridToolbar from '../../../components/common/GridToolbar.vue'
@@ -53,7 +52,6 @@ const emit = defineEmits(['retry'])
 const router = useRouter()
 
 const dataTableRef = ref(null)
-const copyMenuRef = ref(null)
 
 // Row geometry lives in useGridDensity's table (same model as
 // AggregatedFindingsGrid). lineClamp both sets the row height and drives the
@@ -227,7 +225,6 @@ const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-con
           striped-rows
           class="ind-grid-panel__table"
           :pt="tablePt"
-          @row-contextmenu="copyMenuRef.show($event, dataTableRef)"
         >
           <Column field="assetName" header="Asset" sortable :style="{ width: '18rem', minWidth: '12rem' }" :pt="borderPt">
             <template #body="{ data }">
@@ -331,7 +328,6 @@ const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-con
             </StatusFooter>
           </template>
         </DataTable>
-        <GridCopyMenu ref="copyMenuRef" />
       </div>
     </div>
   </div>

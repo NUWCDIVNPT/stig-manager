@@ -4,7 +4,6 @@ import DataTable from 'primevue/datatable'
 import { computed, ref } from 'vue'
 
 import ColumnToggle from '../../../../components/common/ColumnToggle.vue'
-import GridCopyMenu from '../../../../components/common/GridCopyMenu.vue'
 import GridFilterButton from '../../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../../components/common/GridSearch.vue'
 import GridToolbar from '../../../../components/common/GridToolbar.vue'
@@ -74,7 +73,6 @@ const tablePt = {
 }
 
 const dataTableRef = ref(null)
-const copyMenuRef = ref(null)
 </script>
 
 <template>
@@ -101,7 +99,6 @@ const copyMenuRef = ref(null)
       class="flex-fill"
       :table-style="{ 'table-layout': 'fixed' }"
       :pt="tablePt"
-      @row-contextmenu="copyMenuRef.show($event, dataTableRef)"
     >
       <Column selection-mode="multiple" style="width: 2.7rem; height: 32px; padding: 0 0.5rem;" />
 
@@ -178,7 +175,6 @@ const copyMenuRef = ref(null)
         />
       </template>
     </DataTable>
-    <GridCopyMenu ref="copyMenuRef" />
   </div>
 </template>
 

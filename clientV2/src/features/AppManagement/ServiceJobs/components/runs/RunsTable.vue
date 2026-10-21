@@ -3,7 +3,6 @@ import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { ref, watch } from 'vue'
 import ActionButton from '../../../../../components/common/ActionButton.vue'
-import GridCopyMenu from '../../../../../components/common/GridCopyMenu.vue'
 import StatusFooter from '../../../../../components/common/StatusFooter.vue'
 import { compactTablePt } from '../../../../../shared/lib/dataTablePt.js'
 import { formatDateTime, formatDuration, runDuration } from '../../lib/serviceJobsFormat.js'
@@ -20,7 +19,6 @@ const emit = defineEmits(['select', 'delete-run'])
 const exportDuration = ({ record }) => formatDuration(runDuration(record))
 
 const dataTableRef = ref(null)
-const copyMenuRef = ref(null)
 const selectedRun = ref(null)
 
 // Mirror the legacy grid, which auto-selected the newest run on every load so
@@ -61,7 +59,6 @@ const tablePt = {
         class="flex-fill"
         :pt="tablePt"
         @row-select="emit('select', selectedRun)"
-        @row-contextmenu="copyMenuRef.show($event, dataTableRef)"
       >
         <template #empty>
           No runs found.
@@ -111,7 +108,6 @@ const tablePt = {
           />
         </template>
       </DataTable>
-      <GridCopyMenu ref="copyMenuRef" />
     </div>
   </div>
 </template>

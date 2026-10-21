@@ -5,7 +5,6 @@ import DataTable from 'primevue/datatable'
 import { computed, ref } from 'vue'
 import ActionToolbar from '../../../components/common/ActionToolbar.vue'
 import DensityControls from '../../../components/common/DensityControls.vue'
-import GridCopyMenu from '../../../components/common/GridCopyMenu.vue'
 import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../components/common/GridSearch.vue'
 import HighlightText from '../../../components/common/HighlightText.vue'
@@ -52,7 +51,6 @@ const previewRows = computed(() =>
 )
 
 const dtRef = ref()
-const copyMenuRef = ref(null)
 
 function badgeFor(result) {
   return result ? RESULT_TO_STATUS[result] ?? 'NR' : null
@@ -119,7 +117,6 @@ const centerHeaderPt = { columnHeaderContent: { style: 'justify-content: center;
         striped-rows
         :virtual-scroller-options="{ itemSize }"
         :pt="{ table: { style: 'table-layout: fixed; width: 100%' } }"
-        @row-contextmenu="copyMenuRef.show($event, dtRef)"
       >
         <Column field="ruleId" header="Rule" style="min-width: 11.75rem" sortable>
           <template #body="{ data }">
@@ -172,7 +169,6 @@ const centerHeaderPt = { columnHeaderContent: { style: 'justify-content: center;
           </div>
         </template>
       </DataTable>
-      <GridCopyMenu ref="copyMenuRef" />
       <StatusFooter
         :total-count="previewRows.length"
         :filtered-count="isFiltered ? filteredRows.length : null"

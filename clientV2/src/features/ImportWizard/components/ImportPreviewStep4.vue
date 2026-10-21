@@ -2,7 +2,6 @@
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { ref } from 'vue'
-import GridCopyMenu from '../../../components/common/GridCopyMenu.vue'
 import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import PanelTitle from '../../../components/common/PanelTitle.vue'
 import ResultBadge from '../../../components/common/ResultBadge.vue'
@@ -29,7 +28,6 @@ const { filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOpti
 const ROW_HEIGHT = rowHeightPx('spacious')
 
 const dtRef = ref()
-const copyMenuRef = ref(null)
 
 const centerHeaderPt = { columnHeaderContent: { style: 'justify-content: center;' } }
 </script>
@@ -58,7 +56,6 @@ const centerHeaderPt = { columnHeaderContent: { style: 'justify-content: center;
         striped-rows
         :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
         :pt="{ table: { style: 'table-layout: fixed; width: 100%' }, tableContainer: { style: 'overflow-x: hidden' } }"
-        @row-contextmenu="copyMenuRef.show($event, dtRef)"
       >
         <template #empty>
           {{ isFiltered && rows.length ? 'No results match the filters.' : 'Nothing to import.' }}
@@ -128,7 +125,6 @@ const centerHeaderPt = { columnHeaderContent: { style: 'justify-content: center;
           </template>
         </Column>
       </DataTable>
-      <GridCopyMenu ref="copyMenuRef" />
 
       <StatusFooter
         :total-count="rows.length"
