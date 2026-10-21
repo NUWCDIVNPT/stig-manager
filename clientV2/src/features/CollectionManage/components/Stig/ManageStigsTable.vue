@@ -18,6 +18,7 @@ import { useColumnVisibility } from '../../../../shared/composables/useColumnVis
 import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
 import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import { useStigTable } from '../../composables/useStigTable.js'
+import StigAssignmentModal from './StigAssignmentModal.vue'
 import StigToolbar from './StigToolbar.vue'
 
 const props = defineProps({
@@ -92,6 +93,14 @@ function onStigsChanged() {
   clearSelection()
   loadStigs()
 }
+
+const editStig = ref(null)
+const editModalVisible = ref(false)
+
+function openEditModal(stig) {
+  editStig.value = stig
+  editModalVisible.value = true
+}
 </script>
 
 <template>
@@ -102,6 +111,16 @@ function onStigsChanged() {
       :has-selection="hasSelection"
       :single-selection="singleSelection"
       @clear-selection="clearSelection"
+      @stigs-changed="onStigsChanged"
+      @modify-stig="openEditModal(selectedStigs[0])"
+    />
+
+    <StigAssignmentModal
+      v-if="editStig"
+      v-model:visible="editModalVisible"
+      mode="modify"
+      :collection-id="props.collectionId"
+      :selected-stig="editStig"
       @stigs-changed="onStigsChanged"
     />
 
@@ -150,6 +169,14 @@ function onStigsChanged() {
               <div class="sm-info" :title="data.title || data.benchmarkId">
                 <HighlightText :text="data.benchmarkId" :term="highlightTerm('benchmarkId')" />
               </div>
+              <button
+                type="button"
+                class="row-edit-btn"
+                title="Modify STIG assignment"
+                @click.stop="openEditModal(data)"
+              >
+                <i class="pi pi-pencil" />
+              </button>
             </div>
           </template>
         </Column>
@@ -213,18 +240,6 @@ function onStigsChanged() {
 /* Whole row toggles selection via @row-click. */
 .clickable-rows :deep(.p-datatable-tbody > tr) {
   cursor: pointer;
-}
-
-.sm-grid-cell-with-toolbar {
-  display: flex;
-  align-items: center;
-}
-
-.sm-info {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 :deep(th.metric-col .p-datatable-column-header-content) {

@@ -1,8 +1,11 @@
 <script setup>
+import Button from 'primevue/button'
 import Menubar from 'primevue/menubar'
-import { computed, inject } from 'vue'
+import Popover from 'primevue/popover'
+import { computed, inject, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import LabelFilterPills from '../../../components/common/LabelFilterPills.vue'
+import { formatDateTimeString } from '../../../shared/lib.js'
 import { useEnv } from '../../../shared/stores/useEnv.js'
 import CollectionFilterPills from '../../MetaCollectionView/components/CollectionFilterPills.vue'
 import { useAppBreadcrumb } from '../composables/useAppBreadcrumb.js'
@@ -24,14 +27,44 @@ const {
   navigateToRevision,
 } = useAppBreadcrumb()
 
-const tokenTooltip = computed(() => {
+// Epoch-second claims also get a readable date, as in the legacy client.
+const TOKEN_DATE_CLAIMS = ['exp', 'iat', 'auth_time', 'nbf']
+
+const tokenPopover = ref(null)
+const tokenText = ref('')
+
+// Built on open, not cached, so a refreshed token shows its current claims.
+function tokenPayloadText() {
   try {
-    return JSON.stringify(oidcWorker.tokenParsed, null, 2)
+    const payload = { ...oidcWorker.tokenParsed }
+    for (const claim of TOKEN_DATE_CLAIMS) {
+      if (typeof payload[claim] === 'number') {
+        payload[claim] = `${payload[claim]} (${formatDateTimeString(payload[claim] * 1000)})`
+      }
+    }
+    return JSON.stringify(payload, null, 2)
   }
   catch {
     return ''
   }
-})
+}
+
+function showTokenPayload(event) {
+  tokenText.value = tokenPayloadText()
+  tokenPopover.value.show(event)
+}
+
+// navigator.clipboard is undefined on insecure origins; keep the popover open
+// so the text stays selectable when the copy fails.
+async function copyToken() {
+  try {
+    await navigator.clipboard.writeText(tokenText.value)
+    tokenPopover.value.hide()
+  }
+  catch {
+    // leave popover open
+  }
+}
 
 function handleLogout() {
   oidcWorker.logout()
@@ -54,7 +87,7 @@ const items = computed(() => {
           label: oidcWorker.tokenParsed.preferred_username,
           subLabel: name,
           class: 'profile-header-item',
-          tooltip: tokenTooltip.value,
+          showToken: true,
         },
         {
           separator: true,
@@ -212,6 +245,11 @@ const pt = {
           <LabelFilterPills v-if="route.meta.labelFilter" />
           <CollectionFilterPills v-else />
         </div>
+        <!-- Inside a slot so MenuBar keeps one root; the popover teleports to body -->
+        <Popover ref="tokenPopover">
+          <Button label="Copy" icon="pi pi-copy" size="small" text @click="copyToken" />
+          <pre class="token-payload">{{ tokenText }}</pre>
+        </Popover>
       </div>
     </template>
 
@@ -228,20 +266,27 @@ const pt = {
             {{ item.subLabel }}
           </div>
         </div>
-        <i v-if="item.tooltip" class="pi pi-info-circle tooltip-icon" :title="item.tooltip" />
+        <button
+          v-if="item.showToken"
+          type="button"
+          class="token-info-btn"
+          title="Show token payload"
+          aria-label="Show token payload"
+          @click.stop="showTokenPayload"
+        >
+          <i class="pi pi-info-circle tooltip-icon" />
+        </button>
       </div>
 
       <router-link v-else-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
         <a :href="href" v-bind="props.action" class="menu-item-link" @click="navigate">
           <span :class="item.icon" />
           <span>{{ item.label }}</span>
-          <i v-if="item.tooltip" class="pi pi-info-circle tooltip-icon" :title="item.tooltip" />
         </a>
       </router-link>
       <a v-else v-bind="props.action" class="menu-item-link">
         <span :class="item.icon" />
         <span>{{ item.label }}</span>
-        <i v-if="item.tooltip" class="pi pi-info-circle tooltip-icon" :title="item.tooltip" />
         <span v-if="hasSubmenu" class="pi pi-fw pi-angle-down" />
       </a>
     </template>
@@ -360,6 +405,24 @@ const pt = {
   gap: 0.75rem;
   border-bottom: 1px solid var(--color-border-default);
   cursor: default;
+}
+
+.token-info-btn {
+  display: flex;
+  align-items: center;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.token-payload {
+  margin: 0;
+  max-height: 24rem;
+  overflow: auto;
+  font-family: var(--font-mono);
+  user-select: text;
 }
 
 .profile-avatar {

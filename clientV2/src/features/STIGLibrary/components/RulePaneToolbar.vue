@@ -54,9 +54,9 @@ function onChangeCompareRev(rev) {
 </script>
 
 <template>
-  <div class="stiglib-subbar">
+  <div class="stiglib-subbar rule-pane-toolbar">
     <RevisionSelect
-      label="Viewing:"
+      label="View"
       :options="revisions"
       :model-value="viewRev"
       :exclude-value="compareRev"
@@ -65,23 +65,22 @@ function onChangeCompareRev(rev) {
     />
     <template v-if="hasOtherRevisions">
       <RevisionSelect
-        label="Compare with:"
+        label="Compare with"
         :options="revisions"
         :model-value="compareRev"
         :exclude-value="viewRev"
         allow-none
-        none-label="— None (view mode) —"
+        none-label="None"
         :disabled="revisionsLoading"
         @update:model-value="onChangeCompareRev"
       />
       <ActionButton
         v-if="diffMode"
         icon="pi pi-times icon-grey"
-        title="Return to single-revision view"
+        title="Exit diff"
+        aria-label="Exit diff"
         @click="onChangeCompareRev(null)"
-      >
-        Exit diff
-      </ActionButton>
+      />
     </template>
     <div class="stiglib-panel__spacer" />
     <div class="rule-pane-toolbar__search">
@@ -93,13 +92,20 @@ function onChangeCompareRev(rev) {
 </template>
 
 <style scoped>
+.rule-pane-toolbar {
+  gap: 0.5rem;
+}
+
+/* Flex wraps on basis, not on shrunk size, so the search keeps a small basis
+   and grows into free space ahead of the spacer, up to 32rem. .stiglib-subbar
+   then wraps only when the pane is narrower than the controls' minimums. */
 .rule-pane-toolbar__search {
   --checklist-control-height: 2rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  flex: 0 1 32rem;
-  min-width: 18rem;
+  flex: 100 1 10rem;
+  max-width: 32rem;
 }
 
 .rule-pane-toolbar__input {

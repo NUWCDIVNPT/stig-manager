@@ -199,42 +199,11 @@ const dataTableRef = ref(null)
 }
 
 .sm-grid-cell-with-toolbar {
-  display: flex;
-  align-items: center;
   gap: 0.35rem;
 }
 
 .sm-info {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   color: var(--color-text-dim);
-}
-
-.row-edit-btn {
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-  color: var(--color-text-dim);
-  font-size: var(--icon-xs);
-  opacity: 0;
-  transition: opacity 0.15s, color 0.15s, background 0.15s;
-  flex-shrink: 0;
-}
-
-:deep(tr:hover) .row-edit-btn {
-  opacity: 1;
-}
-
-.row-edit-btn:hover {
-  color: var(--color-text-bright);
 }
 
 .uses-header {
