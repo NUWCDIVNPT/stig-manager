@@ -92,19 +92,20 @@ function onChangeCompareRev(rev) {
 </template>
 
 <style scoped>
-/* One line only: selects and search shrink instead of wrapping. */
 .rule-pane-toolbar {
-  flex-wrap: nowrap;
   gap: 0.5rem;
 }
 
+/* Flex wraps on basis, not on shrunk size, so the search keeps a small basis
+   and grows into free space ahead of the spacer, up to 32rem. .stiglib-subbar
+   then wraps only when the pane is narrower than the controls' minimums. */
 .rule-pane-toolbar__search {
   --checklist-control-height: 2rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  flex: 0 1 32rem;
-  min-width: 10rem;
+  flex: 100 1 10rem;
+  max-width: 32rem;
 }
 
 .rule-pane-toolbar__input {

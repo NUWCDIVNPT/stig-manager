@@ -435,6 +435,35 @@ textarea:focus {
   background: var(--color-background-dark) !important;
 }
 
+/* Pencil button inside a grid cell (.sm-grid-cell-with-toolbar) that opens the
+   row's edit modal. Hidden until the row is hovered or the button is focused. */
+.row-edit-btn {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  color: var(--color-text-dim);
+  font-size: var(--icon-xs);
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+tr:hover .row-edit-btn,
+.row-edit-btn:focus-visible {
+  opacity: 1;
+}
+
+.row-edit-btn:hover {
+  color: var(--color-text-bright);
+}
+
 /* Grid search: a cell whose text matched the term, and the matched text. */
 .cell--match {
   background-color: color-mix(in srgb, var(--color-warning-yellow) 8%, transparent);

@@ -12,6 +12,7 @@ import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import { useLabelFilterQuery } from '../../../shared/composables/useLabelFilterQuery.js'
+import { tabListPt, tabPt } from '../../../shared/lib/tabPt.js'
 import CollectionManage from '../../CollectionManage/components/CollectionManage.vue'
 import CollectionExportMetrics from '../../CollectionMetrics/components/CollectionExportMetrics.vue'
 import CollectionImportResults from '../../CollectionMetrics/components/CollectionImportResults.vue'
@@ -166,10 +167,6 @@ const tabPanelsPt = {
     },
   },
 }
-
-// Tab strip matches the 3.25rem sidebar and nav rail headers.
-const tabListPt = { tabList: { style: 'height: 3.25rem;' } }
-const tabPt = { root: { style: 'display: flex; align-items: center; padding-top: 0; padding-bottom: 0;' } }
 
 const tabPanelPt = {
   root: {

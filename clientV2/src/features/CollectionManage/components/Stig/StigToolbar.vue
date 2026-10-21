@@ -29,7 +29,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['clear-selection', 'stigs-changed'])
+const emit = defineEmits(['clear-selection', 'stigs-changed', 'modify-stig'])
 </script>
 
 <template>
@@ -47,10 +47,8 @@ const emit = defineEmits(['clear-selection', 'stigs-changed'])
     />
     <div class="toolbar-divider" />
     <ModifyStig
-      :collection-id="props.collectionId"
-      :selected-stigs="props.selectedStigs"
       :disabled="!singleSelection"
-      @stigs-changed="emit('stigs-changed')"
+      @modify-stig="emit('modify-stig')"
     />
     <div class="toolbar-divider" />
     <ExportByStigButton

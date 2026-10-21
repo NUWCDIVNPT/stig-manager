@@ -54,9 +54,16 @@ function showTokenPayload(event) {
   tokenPopover.value.show(event)
 }
 
-function copyToken() {
-  navigator.clipboard.writeText(tokenText.value)
-  tokenPopover.value.hide()
+// navigator.clipboard is undefined on insecure origins; keep the popover open
+// so the text stays selectable when the copy fails.
+async function copyToken() {
+  try {
+    await navigator.clipboard.writeText(tokenText.value)
+    tokenPopover.value.hide()
+  }
+  catch {
+    // leave popover open
+  }
 }
 
 function handleLogout() {
@@ -259,12 +266,16 @@ const pt = {
             {{ item.subLabel }}
           </div>
         </div>
-        <i
+        <button
           v-if="item.showToken"
-          class="pi pi-info-circle tooltip-icon"
+          type="button"
+          class="token-info-btn"
           title="Show token payload"
+          aria-label="Show token payload"
           @click.stop="showTokenPayload"
-        />
+        >
+          <i class="pi pi-info-circle tooltip-icon" />
+        </button>
       </div>
 
       <router-link v-else-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
@@ -398,7 +409,13 @@ const pt = {
   cursor: default;
 }
 
-.menu-profile-header .tooltip-icon {
+.token-info-btn {
+  display: flex;
+  align-items: center;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: inherit;
   cursor: pointer;
 }
 

@@ -7,6 +7,7 @@ import TabPanel from 'primevue/tabpanel'
 import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
 import { onUnmounted, ref } from 'vue'
+import { tabListPt, tabPt } from '../../../shared/lib/tabPt.js'
 import MetaCollectionMetrics from '../../CollectionMetrics/components/MetaCollectionMetrics.vue'
 import MetaExportMetrics from '../../CollectionMetrics/components/MetaExportMetrics.vue'
 import { useMetaCollectionFilter } from '../composables/useMetaCollectionFilter.js'
@@ -58,10 +59,6 @@ const tabPanelsPt = {
     },
   },
 }
-
-// Tab strip matches the 3.25rem sidebar and nav rail headers.
-const tabListPt = { tabList: { style: 'height: 3.25rem;' } }
-const tabPt = { root: { style: 'display: flex; align-items: center; padding-top: 0; padding-bottom: 0;' } }
 
 const tabPanelPt = {
   root: {

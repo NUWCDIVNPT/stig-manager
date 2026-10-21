@@ -77,7 +77,6 @@ const selected = computed({
       option-label="label"
       option-value="value"
       :disabled="disabled"
-      class="revision-select__dropdown"
       :pt="selectPt"
     />
   </label>
@@ -92,7 +91,7 @@ const selected = computed({
 }
 
 .revision-select__label {
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   font-weight: 600;
   text-transform: uppercase;
   color: var(--color-text-dim);
