@@ -71,7 +71,7 @@ const tabPanelPt = {
     >
       <!-- Dashboard Sidebar -->
       <SplitterPanel
-        :size="28"
+        :size="18"
         :min-size="4"
         :pt="{ root: { class: { 'sidebar-panel--collapsed': dashboardCollapsed, 'sidebar-panel--animating': isAnimating }, style: 'min-width: 380px; max-width: 460px;' } }"
       >
@@ -103,7 +103,7 @@ const tabPanelPt = {
       </SplitterPanel>
 
       <!-- Right Panel: Tabs + Content -->
-      <SplitterPanel :size="72">
+      <SplitterPanel :size="82">
         <div class="right-panel">
           <Tabs v-model:value="activeTab" :pt="viewTabsPt">
             <TabList :pt="viewTabListPt">
@@ -132,8 +132,6 @@ const tabPanelPt = {
 
 <style scoped>
 .meta-collection-view {
-  --dashboard-sidebar-width: 33rem;
-  --dashboard-sidebar-collapsed-width: 2.5rem;
   display: flex;
   flex-direction: column;
   height: 100%;
