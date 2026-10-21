@@ -10,6 +10,7 @@ import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useLabelFilterQuery } from '../../../shared/composables/useLabelFilterQuery.js'
 import { defaultFieldSettings, statusPayloadForAction } from '../../../shared/lib/reviewFormUtils.js'
+import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 import { fetchAssetsByCollectionStig, fetchCollectionChecklist, fetchReviewsByRule, fetchRule, postReviewBatch } from '../api/collectionReviewApi.js'
 import { useReviewActionAvailability } from '../composables/useReviewActionAvailability.js'
@@ -68,6 +69,14 @@ const { state: assets, execute: loadAssets } = useAsyncState(
 )
 
 const assetCount = computed(() => assets.value?.length ?? 0)
+
+// Explains an empty checklist by the label filter; undefined leaves the grid's
+// default. A failed fetch is already reported by the global error modal.
+const checklistEmptyMessage = computed(() =>
+  !checklistError.value && !isChecklistLoading.value && selectedLabelNames.value.length
+    ? TOOLTIPS.collectionReview.stigNotInLabelFilter
+    : undefined,
+)
 
 const selectedRuleId = ref(null)
 
@@ -327,6 +336,7 @@ async function onBatchEditConfirm(payload) {
                 :is-loading="isChecklistLoading"
                 :selected-rule-id="selectedRuleId"
                 :asset-count="assetCount"
+                :empty-message="checklistEmptyMessage"
                 :export-filename="benchmarkId"
                 @select-rule="onSelectRule"
                 @refresh="loadChecklist"

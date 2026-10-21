@@ -49,9 +49,9 @@ vi.mock('vue-router', () => ({
 vi.mock('../components/CollectionChecklistGrid.vue', () => ({
   default: {
     name: 'CollectionChecklistGrid',
-    props: ['gridData', 'isLoading', 'selectedRuleId', 'assetCount'],
+    props: ['gridData', 'isLoading', 'selectedRuleId', 'assetCount', 'emptyMessage'],
     template: `
-      <div data-testid="mock-checklist-grid">
+      <div data-testid="mock-checklist-grid" :data-empty-message="emptyMessage">
         <button data-testid="emit-select-rule" @click="$emit('select-rule', 'V-456')">Select Rule</button>
         <button data-testid="emit-refresh" @click="$emit('refresh')">Refresh</button>
       </div>
@@ -273,6 +273,25 @@ describe('collectionReview.vue', () => {
       await flushPromises()
 
       expect(mockRemoveView).toHaveBeenCalled()
+    })
+
+    it('explains an empty checklist by the label filter', async () => {
+      routeState.query = { labelName: 'web' }
+      fetchCollectionChecklist.mockResolvedValue([])
+      createWrapper()
+      await flushPromises()
+
+      expect(screen.getByTestId('mock-checklist-grid').dataset.emptyMessage)
+        .toMatch(/No Assets matching the label filter have this STIG/)
+    })
+
+    it('does not blame the label filter when the checklist load fails', async () => {
+      routeState.query = { labelName: 'web' }
+      fetchCollectionChecklist.mockRejectedValue(new Error('Bad params'))
+      createWrapper()
+      await flushPromises()
+
+      expect(screen.getByTestId('mock-checklist-grid').dataset.emptyMessage).toBeUndefined()
     })
   })
 

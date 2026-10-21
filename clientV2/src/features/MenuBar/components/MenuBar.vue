@@ -6,6 +6,7 @@ import { computed, inject, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import LabelFilterPills from '../../../components/common/LabelFilterPills.vue'
 import { formatDateTimeString } from '../../../shared/lib.js'
+import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import { useEnv } from '../../../shared/stores/useEnv.js'
 import CollectionFilterPills from '../../MetaCollectionView/components/CollectionFilterPills.vue'
 import { useAppBreadcrumb } from '../composables/useAppBreadcrumb.js'
@@ -22,7 +23,10 @@ const {
   collectionOptions,
   navigateToCollection,
   assetStigOptions,
+  isStigOptionsUnavailable,
+  stigInvalidTooltip,
   stigRevisionOptions,
+  isRevisionOptionsUnavailable,
   navigateToStig,
   navigateToRevision,
 } = useAppBreadcrumb()
@@ -209,6 +213,8 @@ const pt = {
               option-label="benchmarkId"
               option-value="benchmarkId"
               placeholder="STIG"
+              :invalid-tooltip="stigInvalidTooltip"
+              :options-unavailable="isStigOptionsUnavailable"
               @update:model-value="navigateToStig"
             />
 
@@ -219,6 +225,8 @@ const pt = {
               :options="stigRevisionOptions"
               option-label="revisionStr"
               option-value="revisionStr"
+              :invalid-tooltip="TOOLTIPS.breadcrumb.revisionNotFound"
+              :options-unavailable="isRevisionOptionsUnavailable"
               placeholder="Revision"
               @update:model-value="navigateToRevision"
             />

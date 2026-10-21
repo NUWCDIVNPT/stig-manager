@@ -31,35 +31,40 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  // Hover text for the warning icon shown when modelValue isn't among the options
+  invalidTooltip: {
+    type: String,
+    default: '',
+  },
+  // Options are loading or failed to load, so modelValue can't be judged
+  // against them; suppresses the invalid-selection warning meanwhile
+  optionsUnavailable: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 defineEmits(['update:modelValue'])
 
-const isValidSelection = computed(() => {
-  if (props.modelValue == null) { return true }
-  if (props.options?.length === 0) { return true } // Assume valid while options are still loading
-  return props.options.some(opt => String(opt[props.optionValue]) === String(props.modelValue))
-})
+const selectedOption = computed(() =>
+  props.options?.find(opt => String(opt[props.optionValue]) === String(props.modelValue)),
+)
+
+const isValidSelection = computed(() => props.modelValue == null || props.optionsUnavailable || !!selectedOption.value)
 
 const displayLabel = computed(() => {
-  if (props.modelValue == null) { return props.placeholder }
-
-  if (props.options?.length === 0) {
-    return props.modelValue // Display raw value plain while loading
+  if (props.modelValue == null) {
+    return props.placeholder
   }
-
-  const match = props.options.find(opt => String(opt[props.optionValue]) === String(props.modelValue))
-  if (match) {
-    return match[props.optionLabel]
-  }
-
-  return `Unknown (${props.modelValue})`
+  // No match while options are unavailable, or a value missing from them: show
+  // the raw value; isValidSelection colors the latter as a mismatch.
+  return selectedOption.value ? selectedOption.value[props.optionLabel] : props.modelValue
 })
 
 // Pass-through styles to override global PT inline styles
 const selectPt = computed(() => {
   const textColor = !isValidSelection.value
-    ? 'var(--color-danger)'
+    ? 'var(--color-text-error)'
     : props.isLink
       ? 'var(--color-primary-highlight)'
       : 'var(--color-text-primary)'
@@ -103,7 +108,14 @@ const selectPt = computed(() => {
   >
     <template #value>
       <div v-if="modelValue != null" class="breadcrumb-select-value" :class="{ 'is-invalid': !isValidSelection }">
-        <i v-if="!isValidSelection" class="pi pi-exclamation-triangle" style="margin-right: 0.35rem;" />
+        <i
+          v-if="!isValidSelection"
+          v-tooltip.bottom="invalidTooltip"
+          class="pi pi-exclamation-triangle"
+          role="img"
+          :aria-label="invalidTooltip"
+          style="margin-right: 0.35rem;"
+        />
         <span>{{ displayLabel }}</span>
       </div>
       <span v-else>
@@ -168,7 +180,7 @@ const selectPt = computed(() => {
 }
 
 .is-invalid {
-  color: var(--color-danger);
+  color: var(--color-text-error);
   font-weight: 600;
 }
 </style>

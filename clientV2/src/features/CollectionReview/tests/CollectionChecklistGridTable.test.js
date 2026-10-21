@@ -71,6 +71,17 @@ describe('CollectionChecklistGridTable', () => {
       createWrapper({ gridData: [] })
       expect(screen.getByText('No checklist items found.')).toBeInTheDocument()
     })
+
+    it('shows the parent-supplied empty message when the checklist is empty', () => {
+      createWrapper({ gridData: [], emptyMessage: 'Nothing here.' })
+      expect(screen.getByText('Nothing here.')).toBeInTheDocument()
+    })
+
+    it('prefers the search/filter message over the parent-supplied one', () => {
+      createWrapper({ gridData: [], totalCount: 3, isFiltered: true, emptyMessage: 'Nothing here.' })
+      expect(screen.getByText('No rules match the current search and filters.')).toBeInTheDocument()
+      expect(screen.queryByText('Nothing here.')).not.toBeInTheDocument()
+    })
   })
 
   describe('footer Statistics & Metrics', () => {

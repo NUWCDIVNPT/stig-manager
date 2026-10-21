@@ -1,11 +1,13 @@
 import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { fetchAsset, fetchAssetStigs } from '../../../shared/api/assetsApi.js'
-import { fetchCollectionStigs } from '../../../shared/api/collectionsApi.js'
+import { fetchCollectionStig, fetchCollectionStigs } from '../../../shared/api/collectionsApi.js'
 import { fetchStigRevisions } from '../../../shared/api/stigsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
+import { useLabelFilterQuery } from '../../../shared/composables/useLabelFilterQuery.js'
 import { pickLabelFilterQuery } from '../../../shared/lib/labelFilters.js'
+import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 
 /**
  * Global breadcrumb composable. Watches the active route and builds
@@ -54,6 +56,7 @@ export function useAppBreadcrumb() {
   const collectionId = computed(() => route.params.collectionId)
   const assetId = computed(() => route.params.assetId)
   const benchmarkId = computed(() => route.params.benchmarkId)
+  const { selectedLabelNames, labelFilterParams } = useLabelFilterQuery()
 
   // The STIG picker only renders on the review routes. Gate the STIG-list fetch
   // on this so plain collection tab routes don't pull /stigs for a hidden dropdown.
@@ -61,13 +64,14 @@ export function useAppBreadcrumb() {
     route.name === 'collection-benchmark-review' || route.name === 'collection-asset-review',
   )
 
-  const { state: assetStigOptions, execute: loadAssetStigs } = useAsyncState(
+  const { state: assetStigOptions, isLoading: isStigOptionsLoading, error: stigOptionsError, execute: loadAssetStigs } = useAsyncState(
     () => {
       if (assetId.value) {
         return fetchAssetStigs(assetId.value)
       }
       if (collectionId.value) {
-        return fetchCollectionStigs(collectionId.value)
+        // Label-scoped so Collection Review only offers STIGs that filtered assets have
+        return fetchCollectionStigs(collectionId.value, labelFilterParams.value)
       }
       return []
     },
@@ -79,22 +83,75 @@ export function useAppBreadcrumb() {
     { initialState: null, immediate: false },
   )
 
-  const { state: stigRevisionOptions, execute: loadStigRevisions } = useAsyncState(
+  const { state: stigRevisionOptions, isLoading: isRevisionOptionsLoading, error: revisionOptionsError, execute: loadStigRevisions } = useAsyncState(
     () => fetchStigRevisions(benchmarkId.value),
     { initialState: [], immediate: false },
   )
+
+  // While a picker's options are loading, or failed to load, the current value
+  // can't be judged against them, so the pickers suppress their warning.
+  const isStigOptionsUnavailable = computed(() => isStigOptionsLoading.value || !!stigOptionsError.value)
+  const isRevisionOptionsUnavailable = computed(() => isRevisionOptionsLoading.value || !!revisionOptionsError.value)
+
+  const isStigInOptions = computed(() =>
+    assetStigOptions.value.some(s => s.benchmarkId === benchmarkId.value),
+  )
+
+  // Whether the Collection has the current STIG at all, probed only when the
+  // label-scoped list lacks it, to tell "excluded by the filter" from "not in
+  // the Collection". null until known; cached per Collection and STIG.
+  const { state: stigInCollection, execute: probeStigInCollection } = useAsyncState(
+    async () => (await fetchCollectionStig(collectionId.value, benchmarkId.value)) !== null,
+    { initialState: null, immediate: false, onError: null },
+  )
+
+  const needsStigInCollection = computed(() =>
+    showsStigPicker.value
+    && !assetId.value
+    && selectedLabelNames.value.length > 0
+    && !isStigOptionsUnavailable.value
+    && !isStigInOptions.value,
+  )
+
+  // Hover text for the warning on a current STIG missing from the STIG picker
+  const stigInvalidTooltip = computed(() => {
+    if (assetId.value) {
+      return TOOLTIPS.breadcrumb.stigNotOnAsset
+    }
+    if (!selectedLabelNames.value.length) {
+      return TOOLTIPS.breadcrumb.stigNotInCollection
+    }
+    // Until the probe settles, assume the filter is the cause
+    return stigInCollection.value === false
+      ? TOOLTIPS.breadcrumb.stigNotInCollection
+      : TOOLTIPS.collectionReview.stigNotInLabelFilter
+  })
 
   // Load STIGs only when a route that shows the STIG picker becomes active.
   // Watching showsStigPicker (not benchmarkId) means switching STIGs within a
   // review route doesn't refetch the list, and entering a review from the same
   // collection still triggers the fetch even though collectionId is unchanged.
-  watch([assetId, collectionId, showsStigPicker], () => {
+  // selectedLabelNames only changes identity when the filter changes.
+  watch([assetId, collectionId, showsStigPicker, selectedLabelNames], () => {
     if (showsStigPicker.value) {
-      // Clear first: options left over from a prior collection/asset would
-      // render the current benchmarkId as an invalid selection while the fetch
-      // is in flight, whereas empty options get the loading fallback.
+      // Clear first so the dropdown doesn't list a prior collection's/asset's
+      // STIGs while the fetch is in flight (the `loading` state, not the empty
+      // list, is what keeps the picker from flagging the current STIG meanwhile).
       assetStigOptions.value = []
       loadAssetStigs()
+    }
+  }, { immediate: true })
+
+  watch([collectionId, benchmarkId], () => {
+    stigInCollection.value = null
+  })
+
+  // Declared after the STIG-list watch so its immediate run sees that fetch
+  // already in flight rather than an empty, not-yet-loading list. A probe
+  // superseded by a STIG change is discarded by useAsyncState.
+  watch([needsStigInCollection, collectionId, benchmarkId], () => {
+    if (needsStigInCollection.value && stigInCollection.value === null) {
+      probeStigInCollection()
     }
   }, { immediate: true })
 
@@ -108,6 +165,8 @@ export function useAppBreadcrumb() {
   // Load revisions when benchmark changes
   watch(benchmarkId, (id) => {
     if (id) {
+      // Clear first so a failed fetch can't leave the previous STIG's revisions
+      stigRevisionOptions.value = []
       loadStigRevisions()
     }
   }, { immediate: true })
@@ -233,7 +292,10 @@ export function useAppBreadcrumb() {
     collectionOptions,
     navigateToCollection,
     assetStigOptions,
+    isStigOptionsUnavailable,
+    stigInvalidTooltip,
     stigRevisionOptions,
+    isRevisionOptionsUnavailable,
     navigateToStig,
     navigateToRevision,
   }

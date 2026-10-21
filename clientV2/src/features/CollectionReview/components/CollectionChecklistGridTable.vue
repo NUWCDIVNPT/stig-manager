@@ -46,6 +46,12 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  // Shown when the unfiltered checklist is empty; the parent knows why
+  // (label filter, load failure), the grid only knows that it is empty.
+  emptyMessage: {
+    type: String,
+    default: 'No checklist items found.',
+  },
   visibleFields: {
     type: Set,
     required: true,
@@ -248,7 +254,7 @@ const dataTablePt = {
 
     <template #empty>
       <div class="agg-grid-empty-state">
-        {{ isFiltered && totalCount ? 'No rules match the current search and filters.' : 'No checklist items found.' }}
+        {{ isFiltered && totalCount ? 'No rules match the current search and filters.' : emptyMessage }}
       </div>
     </template>
 
