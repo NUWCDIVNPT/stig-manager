@@ -105,13 +105,19 @@ const bodyState = computed(() => {
 
 const bodyError = computed(() => (diffMode.value ? props.diffError : props.rulesError))
 
-// One search for whichever table is showing; rules on a column the other mode lacks are dropped
+// One search for whichever table is showing; rules on a column the other mode lacks are dropped.
+// The rules arrive with the detail, check, fix and ccis projections, so the view-mode search
+// also reads the rule content that only the detail pane renders.
 const viewColumns = [
   { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false },
   { field: 'version', header: 'STIG ID' },
   { field: 'groupId', header: 'Group' },
   { field: 'ruleId', header: 'Rule Id' },
   { field: 'title', header: 'Rule Title' },
+  { field: 'discussion', header: 'Discussion', searchText: r => r.detail?.vulnDiscussion },
+  { field: 'check', header: 'Check', searchText: r => r.check?.content },
+  { field: 'fix', header: 'Fix', searchText: r => r.fix?.text },
+  { field: 'ccis', header: 'CCIs', searchText: r => (r.ccis ?? []).map(c => c.cci).join(' ') },
 ]
 const diffColumns = computed(() => [
   { field: 'stigId', header: 'STIG ID' },

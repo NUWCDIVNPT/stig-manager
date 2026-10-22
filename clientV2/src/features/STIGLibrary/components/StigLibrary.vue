@@ -10,7 +10,6 @@ import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useBenchmarkList } from '../composables/useBenchmarkList.js'
 import { useRevisionDiff } from '../composables/useRevisionDiff.js'
 import { useRevisionRules } from '../composables/useRevisionRules.js'
-import { useRuleSelection } from '../composables/useRuleSelection.js'
 import { setLastStigLibraryUrl } from '../lastVisited.js'
 import BenchmarkListTable from './BenchmarkListTable.vue'
 import BenchmarksTable from './BenchmarksTable.vue'
@@ -104,16 +103,11 @@ const {
   getRulesForRev,
 })
 
-const {
-  ruleContent,
-  isRuleLoading,
-  ruleContentError,
-  retry: retryRule,
-} = useRuleSelection({
-  benchmarkId: benchmarkIdParam,
-  viewRev: effectiveViewRev,
-  selectedRuleId,
-})
+// The revision fetch already carries every rule in full, so the detail pane reads
+// from it instead of fetching the rule again
+const ruleContent = computed(() =>
+  selectedRuleId.value ? revState.rules.find(r => r.ruleId === selectedRuleId.value) ?? null : null,
+)
 
 const selectedDiffRow = computed(() =>
   selectedDiffRowKey.value ? rowByKey(selectedDiffRowKey.value) : null,
@@ -338,11 +332,11 @@ function onRetryDiff() {
           <RuleInfo
             v-if="!diffMode"
             :rule-content="ruleContent"
-            :is-loading="isRuleLoading"
-            :rule-content-error="ruleContentError"
+            :is-loading="!!selectedRuleId && revState.isLoading"
+            :rule-content-error="selectedRuleId ? revState.error : null"
             empty-text="Select a rule to view its content."
             compact
-            @retry="retryRule"
+            @retry="onRetryRules"
           />
           <DiffDetailPanel
             v-else
