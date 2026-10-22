@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 import { catLabel } from '../../../shared/lib/exportCells.js'
 import DiffRuleTable from './DiffRuleTable.vue'
@@ -74,6 +74,7 @@ const emit = defineEmits([
   'close',
   'retry-rules',
   'retry-diff',
+  'update:highlight',
 ])
 
 const diffMode = computed(() => !!props.compareRev)
@@ -137,6 +138,13 @@ const {
   valueOptions,
   highlightTerm,
 } = useGridSearch(tableRows, () => (diffMode.value ? diffColumns.value : viewColumns))
+
+// Per-field terms for the detail pane, so a match that only lives in the rule content is still visible
+const DETAIL_FIELDS = ['ruleId', 'version', 'title', 'discussion', 'check', 'fix', 'ccis']
+const detailHighlight = computed(() => diffMode.value
+  ? {}
+  : Object.fromEntries(DETAIL_FIELDS.map(f => [f, highlightTerm(f)]).filter(([, term]) => term)))
+watch(detailHighlight, v => emit('update:highlight', v), { immediate: true })
 </script>
 
 <template>

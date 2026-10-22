@@ -1,7 +1,7 @@
 <script setup>
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
-import { computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import RuleInfo from '../../../components/common/RuleInfo.vue'
 import { getHttpStatus } from '../../../shared/api/apiClient.js'
@@ -102,6 +102,9 @@ const {
   compareRev,
   getRulesForRev,
 })
+
+// Search terms from the rule pane, so the detail pane can show why the selected rule matched
+const ruleHighlight = ref({})
 
 // The revision fetch already carries every rule in full, so the detail pane reads
 // from it instead of fetching the rule again
@@ -325,6 +328,7 @@ function onRetryDiff() {
           @close="goToList"
           @retry-rules="onRetryRules"
           @retry-diff="onRetryDiff"
+          @update:highlight="v => ruleHighlight = v"
         />
       </SplitterPanel>
       <SplitterPanel :size="35" :min-size="18">
@@ -332,6 +336,7 @@ function onRetryDiff() {
           <RuleInfo
             v-if="!diffMode"
             :rule-content="ruleContent"
+            :highlight="ruleHighlight"
             :is-loading="!!selectedRuleId && revState.isLoading"
             :rule-content-error="selectedRuleId ? revState.error : null"
             empty-text="Select a rule to view its content."

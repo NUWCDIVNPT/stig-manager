@@ -52,6 +52,16 @@ describe('rule pane search', () => {
     expect(rowKeys(container)).toEqual(['SV-2r1_rule'])
   })
 
+  it('tells the detail pane which fields the search term is in', async () => {
+    const { emitted } = renderWithProviders(RulePane, { props: { rules } })
+    expect(emitted()['update:highlight'].at(-1)).toEqual([{}])
+
+    await search('audit')
+    const fields = Object.keys(emitted()['update:highlight'].at(-1)[0]).sort()
+    expect(fields).toEqual(['ccis', 'check', 'discussion', 'fix', 'ruleId', 'title', 'version'])
+    expect(emitted()['update:highlight'].at(-1)[0].check).toBe('audit')
+  })
+
   it('searches the changed rules in diff mode, including changed properties', async () => {
     const diffRows = [
       { key: 'a', stigId: 'RHEL-09-000001', leftRule: 'SV-1r1_rule', rightRule: 'SV-1r2_rule', cat: 'high', changed: ['check'] },
