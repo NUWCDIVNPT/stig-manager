@@ -13,7 +13,7 @@ import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { dashZero } from '../../../../shared/lib/numberFormat.js'
 import { pickListVirtualScrollerOptions } from '../../../../shared/lib/pickListPt.js'
-import { TOOLTIPS } from '../../../../shared/lib/tooltips.js'
+import { LIST_TOOLTIP_PT, TOOLTIPS } from '../../../../shared/lib/tooltips.js'
 import {
   fetchAssetsByCollectionStig,
   fetchCollectionAssetsWithStigs,
@@ -339,8 +339,8 @@ const selectPt = {
           :show-source-filter="true"
           :show-target-filter="true"
           filter-by="name"
-          source-filter-placeholder="Search available assets and labels..."
-          target-filter-placeholder="Search assigned assets and labels..."
+          source-filter-placeholder="Search available assets, labels, and STIGs..."
+          target-filter-placeholder="Search assigned assets, labels, and STIGs..."
           :virtual-scroller-options="VIRTUAL_SCROLLER_OPTIONS"
           :text-filter-fn="assetTextFilter"
           @update:model-value="onPickerUpdate"
@@ -361,7 +361,7 @@ const selectPt = {
             <div class="asset-row">
               <span class="asset-name">{{ item.name }}</span>
               <LabelsRow class="asset-labels" :labels="item.labels" compact />
-              <span class="asset-stig-count" :title="item.benchmarkIds.join(', ')">
+              <span v-tooltip.top="{ value: item.benchmarkIds.join('\n'), pt: LIST_TOOLTIP_PT }" class="asset-stig-count">
                 <img :src="shieldIcon" class="asset-stig-icon" alt="">
                 {{ dashZero(item.benchmarkIds.length) }}
               </span>

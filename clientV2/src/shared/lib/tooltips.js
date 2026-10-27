@@ -17,6 +17,12 @@ export const TOOLTIP_OPTS = Object.freeze({
   pt: { root: { style: { maxWidth: '40rem' } } },
 })
 
+// v-tooltip pt for a newline-joined list (e.g. STIG names): one item per line, never wrapped.
+export const LIST_TOOLTIP_PT = Object.freeze({
+  root: { style: { maxWidth: 'none' } },
+  text: { style: { whiteSpace: 'pre' } },
+})
+
 export const TOOLTIPS = Object.freeze({
   // Grant role explanations shown next to the role picker (HelpIcon / RolePopover).
   roles: Object.freeze({

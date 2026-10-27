@@ -214,7 +214,7 @@ const columns = computed(() => {
       return [
         assetColumn,
         labelsColumn,
-        { field: 'stigCnt', header: 'STIGs', group: 'Asset', component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
+        { field: 'stigCnt', header: 'STIGs', group: 'Asset', component: CountColumn, tooltipValues: r => r.stigs, searchable: true, filterValues: r => r.stigs, multiple: true, quickSearch: false, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
         { field: 'fqdn', header: 'FQDN', group: 'Asset', defaultHidden: true, component: TextColumn, searchable: true, style: cellStyle(WIDTH.name), pt: LEFT_HEADER },
         { field: 'ip', header: 'IP', group: 'Asset', defaultHidden: true, component: TextColumn, searchable: true, style: cellStyle(WIDTH.ip), pt: LEFT_HEADER },
         { field: 'mac', header: 'MAC', group: 'Asset', defaultHidden: true, component: TextColumn, searchable: true, style: cellStyle(WIDTH.mac), pt: LEFT_HEADER },
