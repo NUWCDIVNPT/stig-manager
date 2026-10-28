@@ -99,12 +99,19 @@ SM.CollectionClone.CloneFormPanel = Ext.extend(Ext.form.FormPanel, {
       checked: true,
       helpText: SM.TipContent.CloneOptions.Grants
     })
+    const routinesCb = new SM.Global.HelperCheckbox({
+      boxLabel: 'Routines',
+      name: 'routines',
+      checked: true,
+      helpText: SM.TipContent.CloneOptions.Routines
+    })
     const cbGroup = new Ext.form.CheckboxGroup({
       fieldLabel: 'Include',
       name: 'include',
       columns: 1,
       items: [
-        grantsCb
+        grantsCb,
+        routinesCb
       ]
     })
     const stigMappingsComboBox = new SM.CollectionClone.ComboBox({
@@ -139,6 +146,7 @@ SM.CollectionClone.CloneFormPanel = Ext.extend(Ext.form.FormPanel, {
         description: descriptionField.getValue(),
         options: {
           grants: grantsCb.getValue(),
+          routines: routinesCb.getValue(),
           stigMappings: stigMappingsComboBox.getValue(),
           pinRevisions: pinRevisionsComboBox.getValue()
         }

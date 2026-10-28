@@ -19,6 +19,10 @@ SM.ColumnFilters.extend = function extend (extended, ex) {
       if (target.classList[0] !== 'x-grid3-hd-inner' && target.parentElement.classList[0] !== 'x-grid3-hd-inner') {
         return
       }
+      // A column without a menu, such as the checkbox selection column, keeps its own header click.
+      if (this.cm.isMenuDisabled(this.getCellIndex(this.findHeaderCell(target)))) {
+        return
+      }
       e.stopEvent()
       if (!this.lastHide || this.lastHide.getElapsed() > 100) {
         var colModel  = this.cm,

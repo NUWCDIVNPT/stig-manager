@@ -2,6 +2,7 @@
 const dbUtils = require('./utils')
 const config = require('../utils/config.js')
 const MyController = require('../controllers/Collection')
+const RoutineService = require('./RoutineService')
 const SmError = require('../utils/error.js')
 
 const _this = this
@@ -1843,6 +1844,11 @@ exports.cloneCollection = async function ({collectionId, userObject, name, descr
         startText: 'Creating Labels',
         finishText: 'Created Labels'
       },
+      cloneRoutines: {
+        query: RoutineService.sqlCopyRoutinesForClone,
+        startText: 'Creating Routines',
+        finishText: 'Created Routines'
+      },
       cloneAssets: {
         query: `INSERT INTO asset (name, fqdn, collectionId, ip, mac, description, noncomputing, metadata) SELECT name,fqdn,@destCollectionId,ip,mac,description,noncomputing,metadata from enabled_asset where collectionId = @srcCollectionId`,
         startText: 'Creating Assets',
@@ -1970,6 +1976,9 @@ exports.cloneCollection = async function ({collectionId, userObject, name, descr
       'dropLabelMap', 'createLabelMap', 'cloneAssetLabels',
       options.stigMappings === 'withReviews' ? 'cloneStigMappingsWithReviews' : 'cloneStigMappingsWithoutReviews'
     )
+    if (options.routines) {
+      collectionQueries.push('cloneRoutines')
+    }
     if (options.grants) {
       // cloneGrantAcls joins t_assetid_map and t_clid_map, so it must follow createAssetMap and createLabelMap
       collectionQueries.push('cloneGrantAcls')
@@ -2353,7 +2362,8 @@ exports.exportToCollection = async function ({srcCollectionId, dstCollectionId, 
             statusTs,
             statusId,
             touchTs,
-            resultEngine)
+            resultEngine,
+            routineId)
           SELECT 
             r.reviewId,
             r.ruleId,
@@ -2368,7 +2378,8 @@ exports.exportToCollection = async function ({srcCollectionId, dstCollectionId, 
             r.statusTs,
             r.statusId,
             r.touchTs,
-            r.resultEngine
+            r.resultEngine,
+            r.routineId
           FROM
             review r
             inner join t_incoming_review using (reviewId)`,
@@ -2390,7 +2401,8 @@ exports.exportToCollection = async function ({srcCollectionId, dstCollectionId, 
           statusUserId = r.statusUserId,
           statusTs = r.statusTs,
           metadata = r.metadata,
-          resultEngine = r.resultEngine`
+          resultEngine = r.resultEngine,
+          routineId = NULL`
       }
     }
     connection = await dbUtils.pool.getConnection()

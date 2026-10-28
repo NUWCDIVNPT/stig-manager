@@ -1280,8 +1280,9 @@ async function addCollectionReview ( params ) {
       }
     }
 
+		const collectionGrant = curUser.collectionGrants.find(i => i.collection.collectionId === leaf.collectionId).roleId
+
 		function showAcceptBtn () {
-			const collectionGrant = curUser.collectionGrants.find(i => i.collection.collectionId === leaf.collectionId).roleId
 			const grantCondition =  collectionGrant >= apiStatusSettings.minAcceptGrant
 			const settingsCondition = apiStatusSettings.canAccept
 			return grantCondition && settingsCondition 
@@ -1304,6 +1305,61 @@ async function addCollectionReview ( params ) {
 				handleBatchEdit(btn.findParentByType('grid'))
 			}
 		})
+
+		const routineBtnLooks = {
+			create: { text: 'Create Routine...', iconCls: 'icon-add' },
+			edit: { text: 'Edit Routine...', iconCls: 'icon-edit' },
+			details: { text: 'Routine Details...', iconCls: 'icon-edit' }
+		}
+		// Until a review is selected, routineBtn reads as what it does for one without a routine, or else with one.
+		const routineBtnMode = SM.Routines.routineButtonMode({}, collectionGrant) ?? SM.Routines.routineButtonMode({ routine: {} }, collectionGrant)
+		const routineBtn = new Ext.Button({
+			disabled: true,
+			hidden: !routineBtnMode,
+			...routineBtnLooks[routineBtnMode]
+		})
+
+		async function setRoutineBtn(record) {
+			try {
+				const { assetId, ruleId } = record.data
+				const review = await Ext.Ajax.requestPromise({
+					responseType: 'json',
+					url: `${STIGMAN.Env.apiBase}/collections/${leaf.collectionId}/reviews/${assetId}/${ruleId}`,
+					method: 'GET',
+					params: { projection: ['routine', 'routineSource'] }
+				})
+				const sm = reviewsGrid.getSelectionModel()
+				if (sm.getCount() !== 1 || sm.getSelected() !== record) return
+				const mode = SM.Routines.routineButtonMode(review, collectionGrant)
+				if (mode) {
+					routineBtn.setText(routineBtnLooks[mode].text)
+					routineBtn.setIconClass(routineBtnLooks[mode].iconCls)
+				}
+				if (mode === 'edit' || mode === 'details') {
+					routineBtn.setHandler(() => SM.Routines.showRoutineWindow({
+						collectionId: leaf.collectionId,
+						routineId: review.routine.routineId,
+						readOnly: mode === 'details'
+					}))
+				}
+				else if (mode === 'create') {
+					routineBtn.setHandler(() => SM.Routines.showRoutineWindow({
+						collectionId: leaf.collectionId,
+						ruleId,
+						routineSource: review.routineSource,
+						action: {
+							result: review.result,
+							comment: review.comment,
+							status: review.status.label === 'saved' ? 'saved' : 'submitted'
+						}
+					}))
+				}
+				routineBtn.setDisabled(!mode)
+			}
+			catch (e) {
+				SM.Error.handleError(e)
+			}
+		}
 
 		const lineIncrementBtn = new Ext.Button({
 			iconCls: 'sm-line-height-up',
@@ -1562,6 +1618,7 @@ async function addCollectionReview ( params ) {
 					},
 					'-',
 					batchEditBtn,
+					routineBtn,
 					'->',
 					lineDecrementBtn,
 					{xtype: 'tbspacer', width: 10},
@@ -1788,6 +1845,8 @@ async function addCollectionReview ( params ) {
 			rejectBtn.setDisabled(!rejectBtnEnabled)
 			submitBtn.setDisabled(!submitBtnEnabled)
 			unsubmitBtn.setDisabled(!unsubmitBtnEnabled)
+			routineBtn.disable()
+			if (selLength === 1 && selections[0].data.status && !routineBtn.hidden) setRoutineBtn(selections[0])
 		}
 
 		async function handleBatchEdit(grid) {

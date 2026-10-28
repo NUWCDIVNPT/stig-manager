@@ -128,6 +128,39 @@ const loadAppData = async (appdataFileName = 'appdata.jsonl') => {
 }
 
 
+// Reads state the API does not expose; visit(table, row) gets each column-keyed row and may edit it in place.
+const exportAppData = async (visit) => {
+  const exported = await fetch(`${baseUrl}/op/appdata?format=jsonl&elevate=true`, {
+    headers: { Authorization: `Bearer ${adminToken}` }
+  })
+  let table, columns
+  const lines = (await exported.text()).split('\n').map(line => {
+    const record = line && JSON.parse(line)
+    if (!Array.isArray(record)) {
+      ({ table, columns } = record || {})
+      return line
+    }
+    const names = columns.replaceAll('`', '').split(',')
+    const row = Object.fromEntries(names.map((name, i) => [name, record[i]]))
+    visit(table, row)
+    return JSON.stringify(names.map(name => row[name]))
+  })
+  return lines.join('\n')
+}
+
+// Round-trips appdata to reach state the API never writes directly; edit(table, row) mutates rows in place.
+const editAppData = async (edit) => {
+  const res = await fetch(`${baseUrl}/op/appdata?elevate=true`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${adminToken}`, 'Content-Type': 'application/jsonl' },
+    body: await exportAppData(edit)
+  })
+  if (!res.ok) {
+    throw new Error(`HTTP error, Status: ${res.status}`)
+  }
+  await res.text()
+}
+
 const createTempCollection = async (collectionPost) => {
   // if no collecitonPost is passed in, use the default
   if (!collectionPost) {
@@ -727,6 +760,25 @@ const deleteReview = async (collectionId, assetId, ruleId) => {
 
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
+// Job runs are created and advanced asynchronously by the MySQL event scheduler.
+const pollUntil = async (url, done, timeoutSeconds = 30) => {
+  const deadline = Date.now() + timeoutSeconds * 1000
+  for (;;) {
+    const res = await executeRequest(url, 'GET', adminToken)
+    if (done(res)) return res
+    if (Date.now() >= deadline) {
+      throw new Error(`Timed out after ${timeoutSeconds}s polling ${url}; last response ${res.status} ${JSON.stringify(res.body)}`)
+    }
+    await wait(1000)
+  }
+}
+
+const waitForRunFinish = async (runId, timeoutSeconds = 30) => {
+  const isFinished = res => res.status === 200 && ['completed', 'failed'].includes(res.body.state)
+  const runRes = await pollUntil(`${baseUrl}/jobs/runs/${runId}?elevate=true`, isFinished, timeoutSeconds)
+  return runRes.body.state
+}
+
 export {
   deleteReview,
   createCollectionLabel,
@@ -738,6 +790,8 @@ export {
   resetScrapAsset,
   setRestrictedUsers,
   loadAppData,
+  exportAppData,
+  editAppData,
   deleteCollection,
   deleteAsset,
   putAsset,
@@ -760,4 +814,6 @@ export {
   executeRequest,
   outputMetricsToJSON,
   wait,
+  pollUntil,
+  waitForRunFinish,
 }

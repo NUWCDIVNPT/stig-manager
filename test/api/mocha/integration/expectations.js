@@ -1,4 +1,3 @@
-// only used in revision pinning 
 export const expectations = {
   stigmanadmin: {
     user: 'admin',
@@ -10,7 +9,9 @@ export const expectations = {
     pinnedState: true,
     canCreateCollection: true,
     canDeleteCollection: true,
-    canModifyCollection: true
+    canModifyCollection: true,
+    canReadRoutines: true,
+    canManageRoutines: true
   },
   lvl1: {
     user: 'lvl1',
@@ -22,7 +23,9 @@ export const expectations = {
     pinnedState: false,
     canCreateCollection: false,
     canDeleteCollection: false,
-    canModifyCollection: false
+    canModifyCollection: false,
+    canReadRoutines: false,
+    canManageRoutines: false
   },
   lvl2: {
     user: 'lvl2',
@@ -34,7 +37,9 @@ export const expectations = {
     pinnedState: false,
     canCreateCollection: false,
     canDeleteCollection: false,
-    canModifyCollection: false
+    canModifyCollection: false,
+    canReadRoutines: true,
+    canManageRoutines: false
   },
   lvl3: {
     user: 'lvl3',
@@ -46,7 +51,9 @@ export const expectations = {
     pinnedState: true,
     canCreateCollection: false,
     canDeleteCollection: false,
-    canModifyCollection: true
+    canModifyCollection: true,
+    canReadRoutines: true,
+    canManageRoutines: true
   },
   lvl4: {
     user: 'lvl4',
@@ -57,7 +64,9 @@ export const expectations = {
     pinnedState: true,
     canCreateCollection: false,
     canDeleteCollection: true,
-    canModifyCollection: true
+    canModifyCollection: true,
+    canReadRoutines: true,
+    canManageRoutines: true
   },
   collectioncreator: {
     user: 'collectioncreator',
@@ -66,6 +75,8 @@ export const expectations = {
     validStigs: [],
     canCreateCollection: true,
     canDeleteCollection: false,
-    canModifyCollection: false
+    canModifyCollection: false,
+    canReadRoutines: false,
+    canManageRoutines: false
   }
 }

@@ -1151,7 +1151,8 @@ describe('POST - Review', () => {
             rejected: [],
             affected: {
                 inserted: 1,
-                updated: 0
+                updated: 0,
+                routineApplied: 0
             }
           }
           expect(res.status).to.eql(200)
@@ -1199,7 +1200,8 @@ describe('POST - Review', () => {
             rejected: [],
             affected: {
                 inserted: 0,
-                updated: 1
+                updated: 1,
+                routineApplied: 0
             }
           }
           expect(res.status).to.eql(200)

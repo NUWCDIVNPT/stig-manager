@@ -1447,7 +1447,7 @@ async function addReview( params ) {
         historyData.store.loadData(reviewProjected.history)
       }
       // Feedback
-      resourcesPanel.statusTextPanel.update(reviewProjected.status?.text)
+      resourcesPanel.statusTextPanel.update(SM.he(reviewProjected.status?.text))
   
       // Attachments
       attachmentsGrid.ruleId = groupGridRecord.data.ruleId
@@ -1647,7 +1647,7 @@ async function addReview( params ) {
       reviewForm.loadValues(reviewFromApi)
 
       // Update statusText
-      resourcesPanel.statusTextPanel.update(reviewFromApi.status?.text)
+      resourcesPanel.statusTextPanel.update(SM.he(reviewFromApi.status?.text))
 
       // Update history
       // append current state of review to history grid

@@ -175,7 +175,8 @@ describe('PATCH - patchReviewByAssetRule - /collections/{collectionId}/reviews/{
                       rejected: [],
                       affected: {
                           inserted: 1,
-                          updated: 1
+                          updated: 1,
+                          routineApplied: 0
                       }
                     }
                     if(user.name === 'collectioncreator') {

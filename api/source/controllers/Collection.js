@@ -4,6 +4,7 @@ const writer = require('../utils/writer')
 const config = require('../utils/config')
 const escape = require('../utils/escape')
 const CollectionService = require(`../service/CollectionService`)
+const RoutineService = require(`../service/RoutineService`)
 const AssetService = require(`../service/AssetService`)
 const STIGService = require(`../service/STIGService`)
 const UserService = require(`../service/UserService`)
@@ -643,6 +644,70 @@ module.exports.deleteCollectionLabelById = async function (req, res, next) {
   }
 }
 
+module.exports.getCollectionRoutines = async function (req, res, next) {
+  try {
+    const { collectionId } = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Full)
+    res.json(await RoutineService.getRoutines(collectionId))
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.createCollectionRoutine = async function (req, res, next) {
+  try {
+    const { collectionId } = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Manage)
+    const routineId = await RoutineService.createRoutine({ collectionId, routine: req.body, userId: req.userObject.userId })
+    res.status(201).json(await RoutineService.getRoutineById(collectionId, routineId))
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.getCollectionRoutineById = async function (req, res, next) {
+  try {
+    const { collectionId } = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Full)
+    const response = await RoutineService.getRoutineById(collectionId, req.params.routineId, req.query.projection)
+    if (!response) {
+      throw new SmError.NotFoundError()
+    }
+    res.json(response)
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.patchCollectionRoutineById = async function (req, res, next) {
+  try {
+    const { collectionId } = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Manage)
+    const routineId = req.params.routineId
+    const affectedRows = await RoutineService.patchRoutine({ collectionId, routineId, patch: req.body, userId: req.userObject.userId })
+    if (affectedRows === 0) {
+      throw new SmError.NotFoundError()
+    }
+    res.json(await RoutineService.getRoutineById(collectionId, routineId))
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+module.exports.deleteCollectionRoutineById = async function (req, res, next) {
+  try {
+    const { collectionId } = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Manage)
+    const affectedRows = await RoutineService.deleteRoutine(collectionId, req.params.routineId)
+    if (affectedRows === 0) {
+      throw new SmError.NotFoundError()
+    }
+    res.status(204).end()
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
 module.exports.getAssetsByCollectionLabelId = async function (req, res, next) {
   try {
     const {collectionId, grant} = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Restricted)
@@ -1063,6 +1128,7 @@ module.exports.cloneCollection = async function (req, res, next) {
       const { collectionId } = await getCollectionInfoAndCheckPermission(req, Security.ROLES.Manage)
       const options = {
         grants: true,
+        routines: true,
         stigMappings: 'withReviews',
         pinRevisions: 'matchSource',
         ...req.body.options

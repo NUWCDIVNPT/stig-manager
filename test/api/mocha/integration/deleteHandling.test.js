@@ -125,7 +125,8 @@ describe('DELETE - deleteAsset - /assets/{assetId} - DELETE - deleteCollection -
                 rejected: [],
                 affected: {
                     updated: 0,
-                    inserted: 1
+                    inserted: 1,
+                    routineApplied: 0
                 }
             }
             

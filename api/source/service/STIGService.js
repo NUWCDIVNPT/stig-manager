@@ -2,6 +2,9 @@
 const dbUtils = require('./utils')
 const {createHash} = require('node:crypto')
 
+// Routines keep the check text they were approved against, for re-approval and the diff view
+const sqlDeleteOrphanCheckContent = "DELETE FROM check_content WHERE digest NOT IN (select checkDigest from rev_group_rule_map) AND digest NOT IN (select checkDigest from collection_routine)"
+
 const _this = this
 
 function cteStigCollection ({elevate = false, unrestrictedCollectionIds = [], hasRestrictions = true}) {
@@ -521,7 +524,7 @@ exports.insertManualBenchmark = async function (b, clobber, svcStatus = {}) {
         hrstart = process.hrtime()
         await connection.query('DELETE FROM revision WHERE revId = ?', [gExistingRevision])
         const cleanupDml = [
-          "DELETE FROM check_content WHERE digest NOT IN (select checkDigest from rev_group_rule_map)",
+          sqlDeleteOrphanCheckContent,
           "DELETE FROM fix_text WHERE digest NOT IN (select digest from rev_group_rule_map)"
         ]
         for (const query of cleanupDml) {
@@ -876,7 +879,7 @@ exports.deleteRevisionByString = async function(benchmarkId, revisionStr, svcSta
   let dmls = [
     "DELETE from collection_rev_map where revId = (SELECT revId FROM revision WHERE benchmarkId = :benchmarkId and `version` = :version and `release` = :release)",
     "DELETE FROM revision WHERE benchmarkId = :benchmarkId and `version` = :version and `release` = :release",
-    "DELETE FROM check_content WHERE digest NOT IN (select checkDigest from rev_group_rule_map)",
+    sqlDeleteOrphanCheckContent,
     "DELETE FROM fix_text WHERE digest NOT IN (select fixDigest from rev_group_rule_map)",
     "DELETE FROM rule_version_check_digest WHERE ruleId NOT IN (select DISTINCT ruleId from rev_group_rule_map)"
 ]
@@ -995,7 +998,7 @@ exports.deleteStigById = async function(benchmarkId, userObject, svcStatus = {})
     "DELETE from current_rev where benchmarkId = :benchmarkId",
     "DELETE from collection_rev_map where benchmarkId = :benchmarkId",
     "DELETE from default_rev where benchmarkId = :benchmarkId",
-    "DELETE FROM check_content WHERE digest NOT IN (select checkDigest from rev_group_rule_map)",
+    sqlDeleteOrphanCheckContent,
     "DELETE FROM fix_text WHERE digest NOT IN (select fixDigest from rev_group_rule_map)",
     "DELETE FROM rule_version_check_digest WHERE ruleId NOT IN (select DISTINCT ruleId from rev_group_rule_map)"
   ]

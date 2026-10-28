@@ -684,6 +684,16 @@ SM.Library.DiffContentPanel = Ext.extend(Ext.Panel, {
   }
 })
 
+// How the revision diff and SM.renderTextDiff make patches (each whole text in context) and render them.
+SM.Library.diffOptions = { context: 999, newlineIsToken: true, ignoreWhitespace: false }
+SM.Library.diff2HtmlConfig = { drawFileList: false, matching: 'lines', diffStyle: 'word' }
+
+SM.renderTextDiff = function (lhs, rhs, { name, outputFormat }) {
+  const patch = Diff.createPatch(name, lhs, rhs, undefined, undefined, SM.Library.diffOptions)
+  if (!patch) return '<div class="x-grid-empty">The text is unchanged</div>'
+  return Diff2Html.html(patch, { ...SM.Library.diff2HtmlConfig, outputFormat })
+}
+
 SM.Library.GenerateDiffData = function (lhs, rhs) {
   const obj = {}
   const data = []
@@ -722,11 +732,6 @@ SM.Library.GenerateDiffData = function (lhs, rhs) {
 
   for (const [key, value] of Object.entries(obj)) {
     let thisUnified
-    const diffOptions = {
-      context: 999,
-      newlineIsToken: true,
-      ignoreWhitespace: false
-    }
     let fullUnified = ''
 
     const dataItem = {
@@ -748,7 +753,7 @@ SM.Library.GenerateDiffData = function (lhs, rhs) {
     for (const prop of ruleProps) {
       lhsStr = value.lhs?.[prop] ?? ''
       rhsStr = value.rhs?.[prop] ?? ''
-      thisUnified = Diff.createPatch(prop, lhsStr, rhsStr, undefined, undefined, diffOptions)
+      thisUnified = Diff.createPatch(prop, lhsStr, rhsStr, undefined, undefined, SM.Library.diffOptions)
       if (thisUnified) {
         dataItem.updates.push(prop)
         fullUnified += thisUnified
@@ -758,7 +763,7 @@ SM.Library.GenerateDiffData = function (lhs, rhs) {
     for (const prop of detailProps) {
       lhsStr = value.lhs?.detail[prop] ?? ''
       rhsStr = value.rhs?.detail[prop] ?? ''
-      thisUnified = Diff.createPatch(prop, lhsStr, rhsStr, undefined, undefined, diffOptions)
+      thisUnified = Diff.createPatch(prop, lhsStr, rhsStr, undefined, undefined, SM.Library.diffOptions)
       if (thisUnified) {
         dataItem.updates.push(prop)
         fullUnified += thisUnified
@@ -768,7 +773,7 @@ SM.Library.GenerateDiffData = function (lhs, rhs) {
     // check
     lhsStr = value.lhs?.check?.content ?? ''
     rhsStr = value.rhs?.check?.content ?? ''
-    thisUnified = Diff.createPatch('check', lhsStr, rhsStr, undefined, undefined, diffOptions)
+    thisUnified = Diff.createPatch('check', lhsStr, rhsStr, undefined, undefined, SM.Library.diffOptions)
     if (thisUnified) {
       dataItem.updates.push('check')
       fullUnified += thisUnified
@@ -777,7 +782,7 @@ SM.Library.GenerateDiffData = function (lhs, rhs) {
     // fix
     lhsStr = value.lhs?.fix?.text ?? ''
     rhsStr = value.rhs?.fix?.text ?? ''
-    thisUnified = Diff.createPatch('fix', lhsStr, rhsStr, undefined, undefined, diffOptions)
+    thisUnified = Diff.createPatch('fix', lhsStr, rhsStr, undefined, undefined, SM.Library.diffOptions)
     if (thisUnified) {
       dataItem.updates.push('fix')
       fullUnified += thisUnified
@@ -786,7 +791,7 @@ SM.Library.GenerateDiffData = function (lhs, rhs) {
     // ccis
     const lCcis = value.lhs?.ccis.map(i=>i.cci).sort((a,b)=>a.localeCompare(b)) ?? []
     const rCcis = value.rhs?.ccis.map(i=>i.cci).sort((a,b)=>a.localeCompare(b)) ?? []
-    thisUnified = Diff.createPatch('cci', JSON.stringify(lCcis), JSON.stringify(rCcis), undefined, undefined, diffOptions)
+    thisUnified = Diff.createPatch('cci', JSON.stringify(lCcis), JSON.stringify(rCcis), undefined, undefined, SM.Library.diffOptions)
     if (thisUnified) {
       dataItem.updates.push('cci')
       fullUnified += thisUnified
@@ -861,12 +866,7 @@ SM.Library.DiffPanel = Ext.extend(Ext.Panel, {
     }
 
     const onRowSelect = function (sm, index, record) {
-      const configuration = {
-        drawFileList: false,
-        matching: 'lines',
-        diffStyle: 'word'
-      }
-      const html = record.data.unified ? Diff2Html.html(record.data.unified, configuration) : `<div class="x-grid-empty">No tracked properties were changed</div>`
+      const html = record.data.unified ? Diff2Html.html(record.data.unified, SM.Library.diff2HtmlConfig) : `<div class="x-grid-empty">No tracked properties were changed</div>`
       diffContentPanel.update(html)
     }
 
