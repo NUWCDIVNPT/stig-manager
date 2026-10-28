@@ -295,7 +295,7 @@ exports.getOutputByRun = async (runId, {filters}) => {
   const columns = [
     'Output.seq',
     'Output.ts',
-    'Output.taskId',
+    'CAST(Output.taskId AS CHAR) AS taskId',
     'Output.task',
     'Output.type',
     'Output.message'
