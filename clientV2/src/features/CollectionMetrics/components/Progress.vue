@@ -8,7 +8,16 @@ const props = defineProps({
     required: false,
     default: null,
   },
+  // True until the first metrics response: the card keeps its layout but shows
+  // placeholders instead of percentages computed from zeroed input.
+  pending: {
+    type: Boolean,
+    default: false,
+  },
 })
+
+const PLACEHOLDER = '\u2014'
+const show = v => (props.pending ? PLACEHOLDER : v)
 
 const colors = {
   unassessed: 'var(--metrics-status-chart-unassessed)',
@@ -126,16 +135,16 @@ const chartOptions = {
 
       <div class="summary">
         <div class="overall-pct">
-          {{ stats.formatted.overall }}% Assessed
+          {{ pending ? PLACEHOLDER : `${stats.formatted.overall}%` }} Assessed
         </div>
         <div class="legend-list">
           <div v-for="row in legendRows" :key="row.label" class="legend-item">
             <span class="legend-chip" :style="{ backgroundColor: row.color }">{{ row.label }}</span>
-            <span class="count">{{ row.value }}</span>
+            <span class="count">{{ show(row.value) }}</span>
           </div>
           <div class="legend-item legend-item--total">
             <span class="legend-chip legend-chip--total">Total Checks</span>
-            <span class="count">{{ stats.counts.total }}</span>
+            <span class="count">{{ show(stats.counts.total) }}</span>
           </div>
         </div>
       </div>
@@ -152,7 +161,7 @@ const chartOptions = {
             :style="{ width: `${getPct(row.value)}%`, backgroundColor: row.color }"
           />
           <div class="stat-value">
-            {{ row.formatted }}
+            {{ show(row.formatted) }}
           </div>
         </div>
       </div>

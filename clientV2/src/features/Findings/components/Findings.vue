@@ -16,9 +16,13 @@ import IndividualFindingsGrid from './IndividualFindingsGrid.vue'
 const props = defineProps({
   collectionId: { type: [String, Number], required: true },
   selectedLabelNames: { type: Array, default: () => [] },
+  // False while the parent has not yet confirmed the collection is accessible;
+  // fetching waits so an inaccessible collection surfaces a single error path.
+  ready: { type: Boolean, default: true },
 })
 
-const collectionId = toRef(props, 'collectionId')
+// Null until ready: every fetch composable below skips a null collection id
+const collectionId = computed(() => (props.ready ? props.collectionId : null))
 const labelNames = toRef(props, 'selectedLabelNames')
 
 const route = useRoute()
@@ -177,7 +181,7 @@ function onSelectFinding(row) {
     >
       <SplitterPanel :size="40" :min-size="30" class="findings__panel">
         <AggregatedFindingsGrid
-          :collection-id="collectionId"
+          :collection-id="props.collectionId"
           :rows="findings ?? []"
           :visible-columns="visibleColumns"
           :is-loading="isFindingsLoading"
@@ -206,7 +210,7 @@ function onSelectFinding(row) {
           :selected-aggregated="selectedFinding"
           :status-counts="statusCounts"
           :label-map="labelMap"
-          :collection-id="collectionId"
+          :collection-id="props.collectionId"
           :selected-benchmark-id="selectedBenchmarkId"
           @retry="retryReviews"
         />

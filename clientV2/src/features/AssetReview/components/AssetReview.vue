@@ -55,6 +55,8 @@ const { state: collection, execute: loadCollection } = useAsyncState(
 
 watch(assetId, () => {
   if (assetId.value) {
+    // Clear first so the header does not show the previous asset while this one loads
+    asset.value = null
     loadAsset()
   }
 }, { immediate: true })

@@ -21,6 +21,12 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  // False while the parent has not yet confirmed the collection is accessible;
+  // fetching waits so an inaccessible collection surfaces a single error path.
+  ready: {
+    type: Boolean,
+    default: true,
+  },
 })
 
 const router = useRouter()
@@ -55,7 +61,10 @@ const { state: checklistAssets, isLoading: checklistAssetsLoading, execute: load
 )
 
 // Initial Load
-watch([() => props.collectionId, () => props.selectedLabelNames, () => props.refreshKey], () => {
+watch([() => props.ready, () => props.collectionId, () => props.selectedLabelNames, () => props.refreshKey], () => {
+  if (!props.ready) {
+    return
+  }
   loadStigs()
   selectedBenchmarkId.value = null
 }, { immediate: true, deep: true })

@@ -18,6 +18,12 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  // False while the parent has not yet confirmed the collection is accessible;
+  // fetching waits so an inaccessible collection surfaces a single error path.
+  ready: {
+    type: Boolean,
+    default: true,
+  },
 })
 
 const { state: labels, isLoading: labelsLoading, execute: loadLabels } = useAsyncState(
@@ -59,7 +65,10 @@ const { state: assetStigs, isLoading: assetStigsLoading, execute: loadAssetStigs
 )
 
 // first load
-watch([() => props.collectionId, () => props.selectedLabelNames], () => {
+watch([() => props.ready, () => props.collectionId, () => props.selectedLabelNames], () => {
+  if (!props.ready) {
+    return
+  }
   loadLabels()
   selectedLabelId.value = null
   isLabelSelected.value = false

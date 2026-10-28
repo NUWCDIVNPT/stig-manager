@@ -1,7 +1,10 @@
 import { screen } from '@testing-library/vue'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '../../../testUtils/utils'
 import Progress from '../components/Progress.vue'
+
+// jsdom has no canvas; Chart.js rejects asynchronously when it mounts against one
+vi.mock('primevue/chart', () => ({ default: { name: 'Chart', template: '<div class="chart" />' } }))
 
 describe('progress', () => {
   const mockStatsData = {
@@ -72,5 +75,16 @@ describe('progress', () => {
 
     expect(screen.getByText('Total Checks')).toBeInTheDocument()
     expect(screen.getByText('1104')).toBeInTheDocument()
+  })
+
+  it('keeps the layout but shows placeholders while pending', () => {
+    const { container } = renderWithProviders(Progress, {
+      props: { stats: mockStatsData, pending: true },
+    })
+    expect(container.querySelector('.main-content')).toBeInTheDocument()
+    expect(screen.getByText('\u2014 Assessed')).toBeInTheDocument()
+    expect(screen.queryByText('1.5% Assessed')).not.toBeInTheDocument()
+    expect(screen.queryByText('1087')).not.toBeInTheDocument()
+    expect(screen.queryByText('<1%')).not.toBeInTheDocument()
   })
 })

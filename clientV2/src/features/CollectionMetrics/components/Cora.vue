@@ -9,9 +9,18 @@ const props = defineProps({
     required: false,
     default: null,
   },
+  // True until the first metrics response: the card keeps its layout but shows
+  // placeholders instead of a rating computed from zeroed input.
+  pending: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const { coraData } = toRefs(props)
+
+const PLACEHOLDER = '\u2014'
+const count = n => (props.pending ? PLACEHOLDER : n.toFixed(0))
 
 function getRiskClass(riskRating) {
   switch (riskRating) {
@@ -51,32 +60,32 @@ function getRiskClass(riskRating) {
         <div class="cora-row sm-cat1-row">
           <div class="row-content">
             <span class="cora-cat-label">CAT 1</span>
-            <span class="cora-cat-count">{{ coraData.catI.toFixed(0) }}</span>
+            <span class="cora-cat-count">{{ count(coraData.catI) }}</span>
           </div>
         </div>
         <div class="cora-row sm-cat2-row">
           <div class="row-content">
             <span class="cora-cat-label">CAT 2</span>
-            <span class="cora-cat-count">{{ coraData.catII.toFixed(0) }}</span>
+            <span class="cora-cat-count">{{ count(coraData.catII) }}</span>
           </div>
         </div>
         <div class="cora-row sm-cat3-row">
           <div class="row-content">
             <span class="cora-cat-label">CAT 3</span>
-            <span class="cora-cat-count">{{ coraData.catIII.toFixed(0) }}</span>
+            <span class="cora-cat-count">{{ count(coraData.catIII) }}</span>
           </div>
         </div>
       </div>
 
-      <div class="cora-risk-card" :class="getRiskClass(coraData.riskRating)">
+      <div class="cora-risk-card" :class="pending ? '' : getRiskClass(coraData.riskRating)">
         <div class="risk-label">
           CORA RISK
         </div>
         <div class="risk-score">
-          {{ coraData.weightedAvg.toFixed(1) }}%
+          {{ pending ? PLACEHOLDER : `${coraData.weightedAvg.toFixed(1)}%` }}
         </div>
         <div class="risk-rating">
-          {{ coraData.riskRating.toUpperCase() }}
+          {{ pending ? PLACEHOLDER : coraData.riskRating.toUpperCase() }}
         </div>
       </div>
     </div>
