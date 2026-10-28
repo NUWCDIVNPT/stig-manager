@@ -62,4 +62,14 @@ describe('collectionStigsTab.vue', () => {
 
     expect(mockPush).toHaveBeenCalledWith(expect.objectContaining({ name: 'collection-benchmark-review', query: {} }))
   })
+
+  it('holds the STIG fetch until ready', async () => {
+    const { rerender } = renderWithProviders(CollectionStigsTab, { props: { collectionId: 'coll-1', ready: false } })
+    await flushPromises()
+    expect(fetchCollectionStigSummary).not.toHaveBeenCalled()
+
+    await rerender({ ready: true })
+    await flushPromises()
+    expect(fetchCollectionStigSummary).toHaveBeenCalledTimes(1)
+  })
 })

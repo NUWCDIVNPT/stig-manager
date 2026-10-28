@@ -3,16 +3,9 @@ import { ref, watch } from 'vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { buildLabelFilterParams } from '../../../shared/lib/labelFilters.js'
 import { fetchCollectionMetricsSummary } from '../api/metricsApi.js'
-import { useCollectionCora } from '../composables/useCollectionCora.js'
-import { useCollectionProgress } from '../composables/useCollectionProgress.js'
-import { useCollectionStats } from '../composables/useCollectionStats.js'
 import CollectionExportMetrics from './CollectionExportMetrics.vue'
-import Cora from './Cora.vue'
 import ExportMetricsModal from './ExportMetricsModal.vue'
-import FindingsStats from './FindingsStats.vue'
-import InventoryStats from './InventoryStats.vue'
-import Progress from './Progress.vue'
-import ReviewAgesStats from './ReviewAgesStats.vue'
+import MetricsPanels from './MetricsPanels.vue'
 
 const props = defineProps({
   collectionId: {
@@ -35,6 +28,11 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  // Gated by CollectionView.collectionReady
+  ready: {
+    type: Boolean,
+    default: true,
+  },
 })
 
 const fetchMetrics = () => {
@@ -49,59 +47,19 @@ const { state: metrics, isLoading, error: errorMessage, execute: loadMetrics } =
   { immediate: false },
 )
 
-watch([() => props.collectionId, () => props.selectedLabelNames, () => props.refreshKey], loadMetrics, { immediate: true, deep: true })
+watch([() => props.ready, () => props.collectionId, () => props.selectedLabelNames, () => props.refreshKey], () => {
+  if (!props.ready) {
+    return
+  }
+  loadMetrics()
+}, { immediate: true, deep: true })
 
-// hint metrics is reactive cuz it's from a query
-const { stats: progressStats } = useCollectionProgress(metrics)
-const { coraData } = useCollectionCora(metrics)
-const { inventory, findings, ages } = useCollectionStats(metrics)
 const showExportModal = ref(false)
 </script>
 
 <template>
-  <div>
-    <div v-if="isLoading">
-      Loading metrics...
-    </div>
-    <div v-else-if="errorMessage">
-      {{ errorMessage }}
-    </div>
-    <div v-else class="metrics-container" :class="{ 'metrics-container--vertical': vertical }">
-      <Progress :stats="progressStats" />
-      <Cora :cora-data="coraData" />
-      <div class="stats-column">
-        <InventoryStats :inventory="inventory" @export="showExportModal = true" />
-        <FindingsStats :findings="findings" />
-        <ReviewAgesStats :ages="ages" />
-      </div>
-      <CollectionExportMetrics v-if="!vertical" :collection-id="props.collectionId" :collection-name="props.collectionName" />
-      <ExportMetricsModal v-model:visible="showExportModal" :collection-id="props.collectionId" :collection-name="props.collectionName" />
-    </div>
-  </div>
+  <MetricsPanels :metrics="metrics" :is-loading="isLoading" :error="errorMessage" :vertical="vertical" @export="showExportModal = true">
+    <CollectionExportMetrics v-if="!vertical" :collection-id="props.collectionId" :collection-name="props.collectionName" />
+    <ExportMetricsModal v-model:visible="showExportModal" :collection-id="props.collectionId" :collection-name="props.collectionName" />
+  </MetricsPanels>
 </template>
-
-<style scoped>
-.metrics-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  padding: 20px;
-}
-
-.metrics-container--vertical {
-  flex-direction: column;
-  flex-wrap: nowrap;
-  gap: 12px;
-  padding: 12px;
-}
-
-.stats-column {
-  flex-direction: column;
-  max-width: 400px;
-  width: 100%;
-}
-
-.metrics-container--vertical .stats-column {
-  max-width: none;
-}
-</style>

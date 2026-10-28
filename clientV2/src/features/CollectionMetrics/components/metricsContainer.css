@@ -1,0 +1,38 @@
+/* Shared layout for the CollectionMetrics and MetaCollectionMetrics panels */
+.metrics-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 20px;
+}
+
+.metrics-container > :is(.metric-card, .stats-column) {
+  transition: filter 0.2s ease, opacity 0.2s ease;
+}
+
+.metrics-container--loading > :is(.metric-card, .stats-column) {
+  filter: blur(2px);
+  opacity: 0.6;
+}
+
+.metrics-container--vertical {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 12px;
+  padding: 12px;
+}
+
+.metrics-error {
+  width: 100%;
+  color: var(--color-text-error);
+}
+
+.stats-column {
+  flex-direction: column;
+  max-width: 400px;
+  width: 100%;
+}
+
+.metrics-container--vertical .stats-column {
+  max-width: none;
+}
