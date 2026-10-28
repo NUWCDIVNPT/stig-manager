@@ -3,14 +3,9 @@ import { ref, watch } from 'vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { buildLabelFilterParams } from '../../../shared/lib/labelFilters.js'
 import { fetchCollectionMetricsSummary } from '../api/metricsApi.js'
-import { useMetricsPanels } from '../composables/useMetricsPanels.js'
 import CollectionExportMetrics from './CollectionExportMetrics.vue'
-import Cora from './Cora.vue'
 import ExportMetricsModal from './ExportMetricsModal.vue'
-import FindingsStats from './FindingsStats.vue'
-import InventoryStats from './InventoryStats.vue'
-import Progress from './Progress.vue'
-import ReviewAgesStats from './ReviewAgesStats.vue'
+import MetricsPanels from './MetricsPanels.vue'
 
 const props = defineProps({
   collectionId: {
@@ -33,8 +28,7 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
-  // False while the parent has not yet confirmed the collection is accessible;
-  // fetching waits so an inaccessible collection surfaces a single error path.
+  // Gated by CollectionView.collectionReady
   ready: {
     type: Boolean,
     default: true,
@@ -54,38 +48,18 @@ const { state: metrics, isLoading, error: errorMessage, execute: loadMetrics } =
 )
 
 watch([() => props.ready, () => props.collectionId, () => props.selectedLabelNames, () => props.refreshKey], () => {
-  if (props.ready) {
-    loadMetrics()
+  if (!props.ready) {
+    return
   }
+  loadMetrics()
 }, { immediate: true, deep: true })
 
-const { pending, progressStats, coraData, inventory, findings, ages } = useMetricsPanels(metrics)
 const showExportModal = ref(false)
 </script>
 
 <template>
-  <div>
-    <!-- A failed refetch keeps the last good values on screen; only a failed first load has nothing to show -->
-    <div v-if="errorMessage && pending" class="metrics-error">
-      {{ errorMessage.message }}
-    </div>
-    <div v-else class="metrics-container" :class="{ 'metrics-container--vertical': vertical, 'metrics-container--loading': isLoading }" :aria-busy="isLoading">
-      <div v-if="errorMessage" class="metrics-error">
-        {{ errorMessage.message }}
-      </div>
-      <Progress :stats="progressStats" :pending="pending" />
-      <Cora :cora-data="coraData" :pending="pending" />
-      <div class="stats-column">
-        <InventoryStats :inventory="inventory" @export="showExportModal = true" />
-        <FindingsStats :findings="findings" />
-        <ReviewAgesStats :ages="ages" />
-      </div>
-      <CollectionExportMetrics v-if="!vertical" :collection-id="props.collectionId" :collection-name="props.collectionName" />
-      <ExportMetricsModal v-model:visible="showExportModal" :collection-id="props.collectionId" :collection-name="props.collectionName" />
-    </div>
-  </div>
+  <MetricsPanels :metrics="metrics" :is-loading="isLoading" :error="errorMessage" :vertical="vertical" @export="showExportModal = true">
+    <CollectionExportMetrics v-if="!vertical" :collection-id="props.collectionId" :collection-name="props.collectionName" />
+    <ExportMetricsModal v-model:visible="showExportModal" :collection-id="props.collectionId" :collection-name="props.collectionName" />
+  </MetricsPanels>
 </template>
-
-<style scoped>
-@import './metricsContainer.css';
-</style>

@@ -1,6 +1,7 @@
 <script setup>
 import Chart from 'primevue/chart'
 import { computed } from 'vue'
+import { PENDING_PLACEHOLDER } from '../emptyMetrics.js'
 
 const props = defineProps({
   stats: {
@@ -16,8 +17,7 @@ const props = defineProps({
   },
 })
 
-const PLACEHOLDER = '\u2014'
-const show = v => (props.pending ? PLACEHOLDER : v)
+const show = v => (props.pending ? PENDING_PLACEHOLDER : v)
 
 const colors = {
   unassessed: 'var(--metrics-status-chart-unassessed)',
@@ -135,7 +135,7 @@ const chartOptions = {
 
       <div class="summary">
         <div class="overall-pct">
-          {{ pending ? PLACEHOLDER : `${stats.formatted.overall}%` }} Assessed
+          {{ show(`${stats.formatted.overall}%`) }} Assessed
         </div>
         <div class="legend-list">
           <div v-for="row in legendRows" :key="row.label" class="legend-item">

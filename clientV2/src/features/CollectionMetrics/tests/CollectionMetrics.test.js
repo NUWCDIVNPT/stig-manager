@@ -110,7 +110,6 @@ describe('collectionMetrics', () => {
     expect(fetchCollectionMetricsSummaryMock).not.toHaveBeenCalled()
 
     await rerender({ ready: true })
-    await nextTick()
     expect(fetchCollectionMetricsSummaryMock).toHaveBeenCalledTimes(1)
   })
 
@@ -140,7 +139,6 @@ describe('collectionMetrics', () => {
 
     fetchCollectionMetricsSummaryMock.mockReturnValueOnce(new Promise(() => {}))
     await rerender({ refreshKey: 1 })
-    await nextTick()
 
     const metricsContainer = container.querySelector('.metrics-container')
     expect(metricsContainer).toHaveAttribute('aria-busy', 'true')
@@ -167,12 +165,12 @@ describe('collectionMetrics', () => {
   it('shows only the error when the first load fails', async () => {
     fetchCollectionMetricsSummaryMock.mockRejectedValueOnce(new Error('boom'))
 
-    const { container } = render(CollectionMetrics, {
+    render(CollectionMetrics, {
       props: { collectionId: '1', collectionName: 'Test Collection' },
     })
     await flushPromises()
 
-    expect(container.querySelector('.metrics-container')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('cora')).not.toBeInTheDocument()
     expect(screen.getByText('boom')).toBeInTheDocument()
   })
 })

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { calculateCora } from '../../../shared/lib.js'
 import { renderWithProviders } from '../../../testUtils/utils'
 import Cora from '../components/Cora.vue'
-import { EMPTY_METRICS } from '../emptyMetrics.js'
+import { EMPTY_METRICS, PENDING_PLACEHOLDER } from '../emptyMetrics.js'
 
 describe('cora component', () => {
   const mockCoraData = {
@@ -96,6 +96,6 @@ describe('cora component', () => {
     expect(screen.queryByText('VERY LOW')).not.toBeInTheDocument()
     expect(screen.queryByText('0.0%')).not.toBeInTheDocument()
     expect(container.querySelector('.cora-risk-card').className).toBe('cora-risk-card')
-    expect(screen.getAllByText('\u2014').length).toBeGreaterThanOrEqual(5)
+    expect(screen.getAllByText(PENDING_PLACEHOLDER).length).toBeGreaterThanOrEqual(5)
   })
 })

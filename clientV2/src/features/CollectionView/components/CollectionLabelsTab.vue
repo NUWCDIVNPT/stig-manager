@@ -18,8 +18,7 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-  // False while the parent has not yet confirmed the collection is accessible;
-  // fetching waits so an inaccessible collection surfaces a single error path.
+  // Gated by CollectionView.collectionReady
   ready: {
     type: Boolean,
     default: true,

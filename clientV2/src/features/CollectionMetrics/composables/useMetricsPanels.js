@@ -1,4 +1,4 @@
-import { computed, unref } from 'vue'
+import { computed, toValue } from 'vue'
 import { EMPTY_METRICS } from '../emptyMetrics.js'
 import { useCollectionCora } from './useCollectionCora.js'
 import { useCollectionProgress } from './useCollectionProgress.js'
@@ -12,11 +12,11 @@ import { useCollectionStats } from './useCollectionStats.js'
  * placeholders instead of the zeros. During refetches the previous response
  * stays in place so the panels never collapse.
  *
- * @param {import('vue').Ref<object|null>} metrics - /metrics/summary response, null until loaded
+ * @param {import('vue').MaybeRefOrGetter<object|null>} metrics - /metrics/summary response, null until loaded
  */
 export function useMetricsPanels(metrics) {
-  const pending = computed(() => unref(metrics) == null)
-  const displayMetrics = computed(() => unref(metrics) ?? EMPTY_METRICS)
+  const pending = computed(() => toValue(metrics) == null)
+  const displayMetrics = computed(() => toValue(metrics) ?? EMPTY_METRICS)
   const { stats: progressStats } = useCollectionProgress(displayMetrics)
   const { coraData } = useCollectionCora(displayMetrics)
   const { inventory, findings, ages } = useCollectionStats(displayMetrics)

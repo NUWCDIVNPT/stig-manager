@@ -1,4 +1,7 @@
 // Zeroed metrics summary so panels render their layout before the first response lands.
+// Value-bearing cards show this glyph in place of the zeros until then.
+export const PENDING_PLACEHOLDER = '\u2014'
+
 const zeroSeverity = () => ({ low: 0, medium: 0, high: 0 })
 
 export const EMPTY_METRICS = Object.freeze({

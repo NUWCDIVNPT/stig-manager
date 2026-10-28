@@ -2,6 +2,7 @@
 import { toRefs } from 'vue'
 import HelpIcon from '../../../components/common/HelpIcon.vue'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
+import { PENDING_PLACEHOLDER } from '../emptyMetrics.js'
 
 const props = defineProps({
   coraData: {
@@ -19,8 +20,7 @@ const props = defineProps({
 
 const { coraData } = toRefs(props)
 
-const PLACEHOLDER = '\u2014'
-const count = n => (props.pending ? PLACEHOLDER : n.toFixed(0))
+const show = v => (props.pending ? PENDING_PLACEHOLDER : v)
 
 function getRiskClass(riskRating) {
   switch (riskRating) {
@@ -60,19 +60,19 @@ function getRiskClass(riskRating) {
         <div class="cora-row sm-cat1-row">
           <div class="row-content">
             <span class="cora-cat-label">CAT 1</span>
-            <span class="cora-cat-count">{{ count(coraData.catI) }}</span>
+            <span class="cora-cat-count">{{ show(coraData.catI.toFixed(0)) }}</span>
           </div>
         </div>
         <div class="cora-row sm-cat2-row">
           <div class="row-content">
             <span class="cora-cat-label">CAT 2</span>
-            <span class="cora-cat-count">{{ count(coraData.catII) }}</span>
+            <span class="cora-cat-count">{{ show(coraData.catII.toFixed(0)) }}</span>
           </div>
         </div>
         <div class="cora-row sm-cat3-row">
           <div class="row-content">
             <span class="cora-cat-label">CAT 3</span>
-            <span class="cora-cat-count">{{ count(coraData.catIII) }}</span>
+            <span class="cora-cat-count">{{ show(coraData.catIII.toFixed(0)) }}</span>
           </div>
         </div>
       </div>
@@ -82,10 +82,10 @@ function getRiskClass(riskRating) {
           CORA RISK
         </div>
         <div class="risk-score">
-          {{ pending ? PLACEHOLDER : `${coraData.weightedAvg.toFixed(1)}%` }}
+          {{ show(`${coraData.weightedAvg.toFixed(1)}%`) }}
         </div>
         <div class="risk-rating">
-          {{ pending ? PLACEHOLDER : coraData.riskRating.toUpperCase() }}
+          {{ show(coraData.riskRating.toUpperCase()) }}
         </div>
       </div>
     </div>
