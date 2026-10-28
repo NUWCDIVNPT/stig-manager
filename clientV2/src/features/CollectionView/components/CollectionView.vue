@@ -214,7 +214,7 @@ function toggleDashboardSidebar() {
       <SplitterPanel
         :size="18"
         :min-size="4"
-        :pt="{ root: { class: { 'sidebar-panel--collapsed': dashboardCollapsed, 'sidebar-panel--animating': isAnimating || sidebarTransitioning, 'sidebar-panel--hidden': isManagement }, style: isManagement ? '' : 'min-width: 380px; max-width: 460px;' } }"
+        :pt="{ root: { class: { 'sidebar-panel--collapsed': dashboardCollapsed, 'sidebar-panel--animating': isAnimating || sidebarTransitioning, 'sidebar-panel--hidden': isManagement }, style: isManagement ? '' : 'min-width: 320px; max-width: 460px;' } }"
       >
         <aside class="dashboard-sidebar">
           <button

@@ -75,8 +75,8 @@ const { inventory, findings, ages } = useCollectionStats(metrics)
 .metrics-container--vertical {
   flex-direction: column;
   flex-wrap: nowrap;
-  gap: 12px;
-  padding: 12px;
+  gap: 10px;
+  padding: 10px;
 }
 
 .stats-column {

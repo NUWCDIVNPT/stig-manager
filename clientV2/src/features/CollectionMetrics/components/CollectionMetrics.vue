@@ -91,8 +91,8 @@ const showExportModal = ref(false)
 .metrics-container--vertical {
   flex-direction: column;
   flex-wrap: nowrap;
-  gap: 12px;
-  padding: 12px;
+  gap: 10px;
+  padding: 10px;
 }
 
 .stats-column {

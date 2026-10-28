@@ -181,9 +181,10 @@ const chartOptions = {
   margin-bottom: 10px;
 }
 
+/* Shrinks with a narrow sidebar, up to its full 160px */
 .chart-container {
-  width: 160px;
-  height: 160px;
+  width: clamp(110px, 40%, 160px);
+  aspect-ratio: 1;
   flex-shrink: 0;
 }
 
@@ -249,6 +250,9 @@ const chartOptions = {
 }
 
 .stat-item {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 5.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -256,13 +260,17 @@ const chartOptions = {
 }
 
 .stat-label {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: var(--text-sm);
   font-weight: 600;
   text-transform: uppercase;
 }
 
 .stat-box {
-  width: 5.5rem;
+  width: 100%;
   height: 1.6rem;
   border: 1px solid var(--color-border-default);
   border-radius: 3px;

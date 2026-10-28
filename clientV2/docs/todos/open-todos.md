@@ -22,11 +22,6 @@ linked source doc.
 - [ ] **Pills-picker style near-duplicates.** Overlay width 250px (`pillsPicker.js`) vs 280px
   (`GridFilterButton.vue`); `.trigger-pills__chip--neutral` restates chip tokens; chevron
   copies `BreadcrumbSelect`. ([common.md](common.md))
-- [ ] **Dashboards: tighten spacing and make responsive.** Fixed dims now sidebar
-  `min-width: 380px`, `.stats-column max-width: 400px`, Progress label `160px`.
-  ([dashboards.md](dashboards.md))
-- [ ] **Progress panel width parity** — CSS now matches in both dashes; confirm visually,
-  then close. ([dashboards.md](dashboards.md))
 
 ## Tests
 
