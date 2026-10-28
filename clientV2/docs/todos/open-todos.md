@@ -3,30 +3,22 @@
 Consolidated list of items still open as of 2026-10-28. Details for each live in the
 linked source doc.
 
-## Correctness
+## CSV export — [csv-export.md](csv-export.md)
 
-- [ ] **CSV export fidelity audit** against the legacy client, grid by grid. ([common.md](common.md))
-- [ ] **CSV exports omit the classification "Marking" column.** Product decision, then one fix
-  in `shared/csv.js`. ([common.md](common.md))
+- [ ] **Classification "Marking" column is missing.** Product decision, then one fix
+  in `shared/csv.js`. Own PR.
+- [ ] **Fidelity audit** against the legacy client, grid by grid.
 
-## Hardening
+## `useAsyncState` — [use-async-state.md](use-async-state.md)
 
-- [ ] **`useAsyncState` has no `reset()`.** Manual state clears bypass the race guard.
-  ([common.md](common.md))
-- [ ] **`useAsyncState` abort signal is positional.** Three factories still destructure
-  `({ signal } = {})`; stale `NOTE ... TBD` comment remains.
-  ([async-state-abort-signal.md](async-state-abort-signal.md))
+- [ ] **No `reset()`.** Manual state clears bypass the race guard.
+- [ ] **Abort signal is positional.** Three factories destructure `({ signal } = {})`;
+  stale `NOTE ... TBD` comment remains.
 
-## Polish / Layout
+## URL state — [url-state.md](url-state.md)
 
-- [ ] **Pills-picker style near-duplicates.** Overlay width 250px (`pillsPicker.js`) vs 280px
-  (`GridFilterButton.vue`); `.trigger-pills__chip--neutral` restates chip tokens; chevron
-  copies `BreadcrumbSelect`. ([common.md](common.md))
-
-## Tests
-
-- [ ] **Manage Labels coverage.** No test for `TagAssetsModal.onSave` → `replaceLabelAssets`;
-  `ManageLabels` optimistic updates untested. ([collection-manage.md](collection-manage.md))
+- [ ] App-wide URL state effort: tab query save/restore (prototype stashed), STIGs tab
+  URL state, label filter carry. Own PR.
 
 ## API (server-side, blocked)
 
