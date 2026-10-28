@@ -2,7 +2,7 @@
 import Column from 'primevue/column'
 import { computed, getCurrentInstance } from 'vue'
 import { dashZero } from '../../shared/lib/numberFormat.js'
-import { LIST_TOOLTIP_PT } from '../../shared/lib/tooltips.js'
+import { listTooltip } from '../../shared/lib/tooltips.js'
 
 const props = defineProps({
   field: String,
@@ -28,12 +28,16 @@ if (import.meta.env.DEV && getCurrentInstance()?.vnode.key == null) {
 <template>
   <Column :field="field" :header="header">
     <template #body="{ data }">
-      <span v-if="tooltipValues" v-tooltip.top="{ value: (tooltipValues(data) ?? []).join('\n'), pt: LIST_TOOLTIP_PT }">
+      <span v-tooltip.top="listTooltip(tooltipValues?.(data))" class="count-cell">
         {{ dashZero(valueOf(data)) }}
       </span>
-      <template v-else>
-        {{ dashZero(valueOf(data)) }}
-      </template>
     </template>
   </Column>
 </template>
+
+<style scoped>
+/* block so the whole cell, not just the digits, is the tooltip hover target */
+.count-cell {
+  display: block;
+}
+</style>

@@ -41,11 +41,7 @@ export function partitionAssets(allAssets, taggedAssets, labelMap) {
 // of any label applied to it, or any assigned STIG benchmarkId.
 export function assetTextFilter(item, text) {
   const lower = text.toLowerCase()
-  if (item.name && item.name.toLowerCase().includes(lower)) {
-    return true
-  }
-  if (item.labels.some(l => l.name.toLowerCase().includes(lower))) {
-    return true
-  }
-  return (item.benchmarkIds ?? []).some(id => id.toLowerCase().includes(lower))
+  return Boolean(item.name?.toLowerCase().includes(lower))
+    || item.labels.some(l => l.name.toLowerCase().includes(lower))
+    || item.benchmarkIds.some(id => id.toLowerCase().includes(lower))
 }
