@@ -338,6 +338,8 @@ const data = computed(() => {
       case 'stig':
         return {
           benchmarkId: r.benchmarkId,
+          // Unique row key where one STIG appears at several revisions (meta-dash)
+          revisionKey: `${r.benchmarkId}-${r.revisionStr}`,
           title: r.title,
           revisionStr: r.revisionStr,
           revision: {
@@ -398,6 +400,7 @@ const {
 const EXPORT_BASENAME_BY_KEY = {
   assetId: 'Assets',
   benchmarkId: 'STIGs',
+  revisionKey: 'STIGs',
   labelId: 'Labels',
   collectionId: 'Collections',
 }
