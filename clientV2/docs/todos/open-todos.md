@@ -19,8 +19,6 @@ linked source doc.
 
 ## Polish / Layout
 
-- [ ] **Import preview Severity shows raw text.** `AssetStigPreviewStep.vue` — CatBadge with
-  a dash fallback for empty severity. ([asset-stig-import.md](asset-stig-import.md))
 - [ ] **Pills-picker style near-duplicates.** Overlay width 250px (`pillsPicker.js`) vs 280px
   (`GridFilterButton.vue`); `.trigger-pills__chip--neutral` restates chip tokens; chevron
   copies `BreadcrumbSelect`. ([common.md](common.md))
