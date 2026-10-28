@@ -41,27 +41,4 @@ Most originated from the Findings feature review (2026-06-10).
 
 ## Behavior / UX
 
-- [ ] **Dashboard tab switches wipe per-tab URL state — fix at the CollectionView
-  level.** Tab switching is route navigation (`CollectionView.vue` activeTab setter:
-  `router.push({ name, params })` with no query), so leaving Findings for STIGs and
-  returning drops `?agg/stig/sel` while the kept-alive component retains its state —
-  URL and state desync, and the next navigation away snapshots the bare URL, so
-  back-nav lands on the default view. Affects every dashboard tab; STIGs is worse —
-  it predates URL state mirroring and keeps nothing, so any back-nav resets it
-  entirely. Proposed fix (dash level, one place): CollectionView remembers each tab's
-  last `route.query` (save on leave, re-attach on the tab's `router.push`) — safe
-  because hidden tabs are inert, so the saved query cannot go stale. Separable
-  follow-up: give the STIGs tab Findings-style state→query mirroring so it has
-  restorable state at all.
-
-- [ ] **Label filter is lost on any round trip through Asset Review.** Carry is
-  per-site today (`grep -rn "pickLabelFilterQuery\|labelFilterParams.value" src`), and
-  the links into `collection-asset-review` (`grep -rn "collection-asset-review" src`)
-  plus the asset-review crumb back do not spread it. If the filter should survive
-  that drill-down, replace the per-site spreads with one `router.beforeEach` that
-  copies the label keys when `to.params.collectionId === from.params.collectionId`
-  and `to.query` has none, skipping routes with `meta.labelFilter: false` (Management
-  drops the filter on purpose; see the tab setter in `CollectionView.vue`). Costs: keys
-  ride along on Asset Review URLs and recent-view entries; the nav-rail link to the
-  current collection would keep the filter instead of resetting. Pairs with the tab-URL-state item above (same
-  mechanism could restore both).
+URL / navigation state items moved to [url-state.md](url-state.md).

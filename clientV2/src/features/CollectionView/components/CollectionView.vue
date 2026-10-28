@@ -142,6 +142,13 @@ watch(isManagement, () => {
 // (and fetch) unvisited in the new one.
 const visitedTabs = ref(new Set([activeTab.value]))
 watch(activeTab, tab => visitedTabs.value.add(tab))
+
+// Hidden tabs keep the label filter they last saw, so a filter change refetches only
+// the visible tab; the others pick it up (and refetch) when next activated.
+const tabLabelNames = ref({})
+watch([activeTab, selectedLabelNames], ([tab, names]) => {
+  tabLabelNames.value[tab] = names
+}, { immediate: true })
 watch(() => props.collectionId, () => {
   visitedTabs.value = new Set([activeTab.value])
 })
@@ -274,16 +281,16 @@ function toggleDashboardSidebar() {
 
             <TabPanels :pt="tabPanelsPt">
               <TabPanel value="stigs" :pt="tabPanelPt">
-                <CollectionStigsTab v-if="visitedTabs.has('stigs')" :collection-id="collectionId" :selected-label-names="selectedLabelNames" :refresh-key="refreshKey" />
+                <CollectionStigsTab v-if="visitedTabs.has('stigs')" :collection-id="collectionId" :selected-label-names="tabLabelNames.stigs" :refresh-key="refreshKey" />
               </TabPanel>
               <TabPanel value="assets" :pt="tabPanelPt">
-                <CollectionAssetsTab v-if="visitedTabs.has('assets')" :collection-id="collectionId" :selected-label-names="selectedLabelNames" :refresh-key="refreshKey" />
+                <CollectionAssetsTab v-if="visitedTabs.has('assets')" :collection-id="collectionId" :selected-label-names="tabLabelNames.assets" :refresh-key="refreshKey" />
               </TabPanel>
               <TabPanel value="labels" :pt="tabPanelPt">
-                <CollectionLabelsTab v-if="visitedTabs.has('labels')" :collection-id="collectionId" :selected-label-names="selectedLabelNames" />
+                <CollectionLabelsTab v-if="visitedTabs.has('labels')" :collection-id="collectionId" :selected-label-names="tabLabelNames.labels" />
               </TabPanel>
               <TabPanel value="findings" :pt="tabPanelPt">
-                <Findings v-if="visitedTabs.has('findings')" :collection-id="collectionId" :selected-label-names="selectedLabelNames" />
+                <Findings v-if="visitedTabs.has('findings')" :collection-id="collectionId" :selected-label-names="tabLabelNames.findings" />
               </TabPanel>
               <TabPanel v-if="canManage" value="management" :pt="tabPanelPt">
                 <Transition name="management-fade">

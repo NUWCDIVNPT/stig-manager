@@ -16,18 +16,6 @@ linked source doc.
 - [ ] **`useAsyncState` abort signal is positional.** Three factories still destructure
   `({ signal } = {})`; stale `NOTE ... TBD` comment remains.
   ([async-state-abort-signal.md](async-state-abort-signal.md))
-- [ ] **Label mutation handlers manage `saving` by hand.** `LabelFormModal.onSave`,
-  `ManageLabels.onDeleteConfirmed`; optional convergence on `useAsyncState`.
-  ([collection-manage.md](collection-manage.md))
-
-## Behavior / UX
-
-- [ ] **Dashboard tab switches wipe per-tab URL state.** `CollectionView.vue` activeTab setter
-  only carries `labelFilterParams`; remember each tab's last query. ([common.md](common.md))
-- [ ] **Label filter lost on round trip through Asset Review.** `CollectionAssetsTab.vue`
-  shield click and some `useAppBreadcrumb.js` pushes don't carry it. ([common.md](common.md))
-- [ ] **Every visited tab refetches on label-filter change.** Refetch the active tab only,
-  mark others stale. ([dashboards.md](dashboards.md))
 
 ## Polish / Layout
 
