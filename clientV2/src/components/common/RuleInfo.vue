@@ -1,6 +1,7 @@
 <script setup>
 import { severityMap } from '../../shared/lib/checklistUtils.js'
 import CatBadge from './CatBadge.vue'
+import HighlightText from './HighlightText.vue'
 
 defineProps({
   ruleContent: {
@@ -19,6 +20,14 @@ defineProps({
   compact: {
     type: Boolean,
     default: false,
+  },
+  /**
+   * Search terms to mark in the content, keyed by field: ruleId, version, title,
+   * discussion, check, fix, ccis. Empty by default, so callers without a search are unaffected.
+   */
+  highlight: {
+    type: Object,
+    default: () => ({}),
   },
   /** Shown when no rule is selected. */
   emptyText: {
@@ -61,16 +70,16 @@ const emit = defineEmits(['retry'])
     <div v-else-if="ruleContent" class="rule-info__content">
       <div class="rule-info__header">
         <div class="rule-info__header-row">
-          <span class="rule-info__rule-id">{{ ruleContent.ruleId }}</span>
+          <span class="rule-info__rule-id"><HighlightText :text="ruleContent.ruleId" :term="highlight.ruleId" /></span>
           <div class="rule-info__cat-badge">
             <CatBadge :category="severityMap[ruleContent.severity]" variant="label" />
           </div>
         </div>
         <div v-if="ruleContent.version" class="rule-info__version">
-          {{ ruleContent.version }}
+          <HighlightText :text="ruleContent.version" :term="highlight.version" />
         </div>
         <div class="rule-info__title">
-          {{ ruleContent.title }}
+          <HighlightText :text="ruleContent.title" :term="highlight.title" />
         </div>
       </div>
 
@@ -79,14 +88,14 @@ const emit = defineEmits(['retry'])
           <h4 class="rule-info__section-title">
             Manual Check
           </h4>
-          <pre class="rule-info__pre">{{ ruleContent.check.content }}</pre>
+          <pre class="rule-info__pre"><HighlightText :text="ruleContent.check.content" :term="highlight.check" /></pre>
         </div>
 
         <div v-if="ruleContent.fix?.text" class="rule-info__card-section">
           <h4 class="rule-info__section-title">
             Fix
           </h4>
-          <pre class="rule-info__pre">{{ ruleContent.fix.text }}</pre>
+          <pre class="rule-info__pre"><HighlightText :text="ruleContent.fix.text" :term="highlight.fix" /></pre>
         </div>
       </div>
 
@@ -97,7 +106,7 @@ const emit = defineEmits(['retry'])
 
         <div v-if="ruleContent.detail?.vulnDiscussion" class="rule-info__card-section">
           <span class="rule-info__sub-label">Vulnerability Discussion</span>
-          <pre class="rule-info__pre">{{ ruleContent.detail.vulnDiscussion }}</pre>
+          <pre class="rule-info__pre"><HighlightText :text="ruleContent.detail.vulnDiscussion" :term="highlight.discussion" /></pre>
         </div>
 
         <div v-if="ruleContent.detail?.documentable !== undefined" class="rule-info__field-inline">
@@ -122,7 +131,7 @@ const emit = defineEmits(['retry'])
             </thead>
             <tbody>
               <tr v-for="cci in ruleContent.ccis" :key="cci.cci">
-                <td>{{ cci.cci }}</td>
+                <td><HighlightText :text="cci.cci" :term="highlight.ccis" /></td>
                 <td>{{ cci.apAcronym || '-' }}</td>
                 <td>{{ cci.control || '-' }}</td>
               </tr>
