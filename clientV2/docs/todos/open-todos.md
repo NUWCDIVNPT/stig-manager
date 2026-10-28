@@ -16,11 +16,9 @@ linked source doc.
 - [ ] **`useAsyncState` abort signal is positional.** Three factories still destructure
   `({ signal } = {})`; stale `NOTE ... TBD` comment remains.
   ([async-state-abort-signal.md](async-state-abort-signal.md))
-- [ ] **STIG import zip walker has no depth limit.** `expandZipRow` in
-  `AppManagement/STIGManage/stores/stigImportStore.js`; mirror `MAX_ZIP_DEPTH` from
-  `shared/lib/zipFiles.js`. ([common.md](common.md))
-- [ ] **`TagAssetsModal` load bypasses `useAsyncState`.** Hand-rolled `isLoading` / `saving`;
-  follow `StigAssignmentModal.vue`. ([collection-manage.md](collection-manage.md))
+- [ ] **Label mutation handlers manage `saving` by hand.** `LabelFormModal.onSave`,
+  `ManageLabels.onDeleteConfirmed`; optional convergence on `useAsyncState`.
+  ([collection-manage.md](collection-manage.md))
 
 ## Behavior / UX
 

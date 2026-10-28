@@ -30,13 +30,6 @@ Most originated from the Findings feature review (2026-06-10).
   signal must declare it in slot 0, which only holds while `execute()` is called with
   no arguments — see [async-state-abort-signal.md](async-state-abort-signal.md).
 
-- [ ] **STIG import's zip walker has no nesting limit.** `expandZipRow` in
-  `features/AppManagement/STIGManage/stores/stigImportStore.js` recurses into nested
-  zips unbounded (a zip quine would spin forever). The Import Wizard's walker,
-  `shared/lib/zipFiles.js`, caps at `MAX_ZIP_DEPTH` and reports skipped archives via
-  `onSkip`; give the store the same guard — track depth on the row (or count `→` in
-  `row.source`) and mark the row as an error past the limit, so the user sees why.
-
 ## Consistency
 
 - [ ] **Pills-picker style near-duplicates.** `PillsTrigger.vue` chevron copies

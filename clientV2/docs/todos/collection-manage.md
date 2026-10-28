@@ -5,16 +5,10 @@ Labels, roleId >= 3). Captured during the Manage Labels review (2026-06-24).
 
 ## Hardening / Consistency
 
-- [ ] **`TagAssetsModal` data load bypasses `useAsyncState`.** `loadData` in
-  `components/Label/TagAssetsModal.vue` hand-rolls `isLoading` +
-  `try/catch/triggerError` for its 3-way `Promise.all` fetch, so it loses the
-  composable's abort/race guard (matters on rapid modal reopen). The sibling
-  `components/Stig/StigAssignmentModal.vue` (~L87-117) already does this right —
-  `useAsyncState` for both its loads and its save; follow that. The label mutation
-  handlers (`Label/LabelFormModal.onSave`, `Label/TagAssetsModal.onSave`,
-  `ManageLabels.onDeleteConfirmed`) manage a `saving` ref manually too — softer call,
-  mixed precedent (`composables/useAssetForm.save` is also manual), but worth
-  converging while here.
+- [ ] **Label mutation handlers manage `saving` by hand.** `Label/LabelFormModal.onSave`
+  and `ManageLabels.onDeleteConfirmed` hand-roll a `saving` ref + `try/catch/triggerError`
+  instead of `useAsyncState` (as `TagAssetsModal` and `Stig/StigAssignmentModal.vue` do).
+  Softer call — mixed precedent (`composables/useAssetForm.save` is also manual).
 
 ## Test gaps
 

@@ -9,7 +9,7 @@ import LabelsRow from '../../../../components/columns/LabelsRow.vue'
 import LabelChip from '../../../../components/common/Label.vue'
 import PickListTable from '../../../../components/common/PickListTable.vue'
 import { fetchCollectionLabels } from '../../../../shared/api/collectionsApi.js'
-import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
+import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 
 import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { dashZero } from '../../../../shared/lib/numberFormat.js'
@@ -34,36 +34,43 @@ const localVisible = computed({
   set: v => emit('update:visible', v),
 })
 
-const { triggerError } = useGlobalError()
-
 const VIRTUAL_SCROLLER_OPTIONS = { itemSize: rowHeightPx('compact') }
 
-const isLoading = ref(false)
-const saving = ref(false)
 const pickerValue = ref([[], []])
 
 const availableCount = computed(() => pickerValue.value[0].length)
 const taggedCount = computed(() => pickerValue.value[1].length)
+
+const { isLoading, execute: executeLoad } = useAsyncState(
+  async () => {
+    const [allAssets, taggedAssets, labels] = await Promise.all([
+      fetchCollectionAssetsBasic(props.collectionId),
+      fetchAssetsByLabel(props.collectionId, props.label.labelId),
+      fetchCollectionLabels(props.collectionId),
+    ])
+    return partitionAssets(allAssets, taggedAssets, buildLabelMap(labels))
+  },
+  { immediate: false },
+)
+
+const {
+  isLoading: saving,
+  error: saveError,
+  execute: executeSave,
+} = useAsyncState(
+  assetIds => replaceLabelAssets(props.collectionId, props.label.labelId, assetIds),
+  { immediate: false },
+)
 
 async function loadData() {
   pickerValue.value = [[], []]
   if (!props.label) {
     return
   }
-  isLoading.value = true
-  try {
-    const [allAssets, taggedAssets, labels] = await Promise.all([
-      fetchCollectionAssetsBasic(props.collectionId),
-      fetchAssetsByLabel(props.collectionId, props.label.labelId),
-      fetchCollectionLabels(props.collectionId),
-    ])
-    pickerValue.value = partitionAssets(allAssets, taggedAssets, buildLabelMap(labels))
-  }
-  catch (err) {
-    triggerError(err)
-  }
-  finally {
-    isLoading.value = false
+  // null when superseded by a newer load or on error (already surfaced)
+  const result = await executeLoad()
+  if (result) {
+    pickerValue.value = result
   }
 }
 
@@ -84,19 +91,13 @@ async function onSave() {
   if (!props.label || saving.value) {
     return
   }
-  saving.value = true
-  try {
-    const assetIds = pickerValue.value[1].map(a => String(a.assetId))
-    await replaceLabelAssets(props.collectionId, props.label.labelId, assetIds)
-    emit('tagging-changed')
-    localVisible.value = false
+  await executeSave(pickerValue.value[1].map(a => String(a.assetId)))
+  if (saveError.value) {
+    // useAsyncState already surfaced via global error toast.
+    return
   }
-  catch (err) {
-    triggerError(err)
-  }
-  finally {
-    saving.value = false
-  }
+  emit('tagging-changed')
+  localVisible.value = false
 }
 
 const dialogPt = {
