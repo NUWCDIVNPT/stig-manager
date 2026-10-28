@@ -196,7 +196,7 @@ function toggleDashboardSidebar() {
 </script>
 
 <template>
-  <div v-if="collection" class="collection-view">
+  <div class="collection-view">
     <Splitter
       :pt="{
         gutter: { style: isManagement ? 'display: none' : 'background: var(--color-border-dark)' },
