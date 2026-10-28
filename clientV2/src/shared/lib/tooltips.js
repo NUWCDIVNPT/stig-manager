@@ -17,11 +17,22 @@ export const TOOLTIP_OPTS = Object.freeze({
   pt: { root: { style: { maxWidth: '40rem' } } },
 })
 
-// v-tooltip pt for a newline-joined list (e.g. STIG names): one item per line, never wrapped.
+// v-tooltip pt for a newline-joined list (e.g. STIG names): one item per line,
+// never wrapped. Long lists scroll inside the tooltip instead of overflowing the
+// viewport (PrimeVue has no overflow fallback once both .top and .bottom miss).
 export const LIST_TOOLTIP_PT = Object.freeze({
   root: { style: { maxWidth: 'none' } },
-  text: { style: { whiteSpace: 'pre' } },
+  text: { style: { whiteSpace: 'pre', maxHeight: '50vh', overflowY: 'auto' } },
 })
+
+// v-tooltip value for a list of strings, or null (directive no-ops) when empty.
+// `autoHide: false` keeps the tooltip open while the pointer scrolls inside it.
+export function listTooltip(items) {
+  if (!items?.length) {
+    return null
+  }
+  return { value: items.join('\n'), pt: LIST_TOOLTIP_PT, autoHide: false, hideDelay: 150 }
+}
 
 export const TOOLTIPS = Object.freeze({
   // Grant role explanations shown next to the role picker (HelpIcon / RolePopover).

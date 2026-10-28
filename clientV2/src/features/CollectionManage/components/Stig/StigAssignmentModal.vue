@@ -13,7 +13,7 @@ import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { dashZero } from '../../../../shared/lib/numberFormat.js'
 import { pickListVirtualScrollerOptions } from '../../../../shared/lib/pickListPt.js'
-import { LIST_TOOLTIP_PT, TOOLTIPS } from '../../../../shared/lib/tooltips.js'
+import { listTooltip, TOOLTIPS } from '../../../../shared/lib/tooltips.js'
 import {
   fetchAssetsByCollectionStig,
   fetchCollectionAssetsWithStigs,
@@ -361,7 +361,7 @@ const selectPt = {
             <div class="asset-row">
               <span class="asset-name">{{ item.name }}</span>
               <LabelsRow class="asset-labels" :labels="item.labels" compact />
-              <span v-tooltip.top="{ value: item.benchmarkIds.join('\n'), pt: LIST_TOOLTIP_PT }" class="asset-stig-count">
+              <span v-tooltip.top="listTooltip(item.benchmarkIds)" class="asset-stig-count">
                 <img :src="shieldIcon" class="asset-stig-icon" alt="">
                 {{ dashZero(item.benchmarkIds.length) }}
               </span>

@@ -14,7 +14,7 @@ import { useGlobalError } from '../../../../shared/composables/useGlobalError.js
 import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { dashZero } from '../../../../shared/lib/numberFormat.js'
 import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
-import { LIST_TOOLTIP_PT } from '../../../../shared/lib/tooltips.js'
+import { listTooltip } from '../../../../shared/lib/tooltips.js'
 import {
   fetchAssetsByLabel,
   fetchCollectionAssetsBasic,
@@ -182,7 +182,7 @@ const tablePt = {
           </Column>
           <Column header="STIGs" style="width: 6.25rem;" :header-style="{ textAlign: 'center', justifyContent: 'center' }">
             <template #body="{ data }">
-              <span v-tooltip.top="{ value: data.benchmarkIds.join('\n'), pt: LIST_TOOLTIP_PT }" class="asset-stig-count" style="justify-content: center;">
+              <span v-tooltip.top="listTooltip(data.benchmarkIds)" class="asset-stig-count" style="justify-content: center;">
                 <img :src="shieldIcon" class="asset-stig-icon" alt="">
                 {{ dashZero(data.stigCount) }}
               </span>
