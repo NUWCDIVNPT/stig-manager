@@ -1,8 +1,7 @@
 # Cross-cutting TODOs
 
 Items that affect multiple features and should get a shared fix, not a local patch.
-Most originated from the Findings feature review (2026-06-10) — see
-[findings-review.md](findings-review.md) for that feature's remaining items.
+Most originated from the Findings feature review (2026-06-10).
 
 ## Correctness
 
@@ -48,13 +47,6 @@ Most originated from the Findings feature review (2026-06-10) — see
   `row.source`) and mark the row as an error past the limit, so the user sees why.
 
 ## Consistency
-
-- [ ] **Consolidate ad-hoc mono fonts onto `var(--font-mono)`.** The token serves
-  Ubuntu Mono (legacy client's mono, now bundled; used by `StigPillStack` so far).
-  ~15 other components use their own mono stacks
-  (`grep -rn "monospace" src --include="*.vue"`). Mechanical swaps + a visual pass.
-  Caveats: token is regular-weight only (no bold), and `DiffPropertySection.vue`'s
-  bold header needs a decision.
 
 - [ ] **Pills-picker style near-duplicates.** `PillsTrigger.vue` chevron copies
   `BreadcrumbSelect.vue`'s `.p-select-dropdown` box (padding differs by a hair);

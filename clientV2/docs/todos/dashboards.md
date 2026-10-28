@@ -9,44 +9,15 @@ Rolls up review notes for both metrics dashboards:
 
 ## Layout
 
-- [ ] **Progress panel renders at different widths in the two dashes; normalize.**
-  `Progress.vue` is shared (`CollectionMetrics.vue` + `MetaCollectionMetrics.vue`) but renders at
-  different sizes. Likely the container, not the component: `MetaCollectionMetrics`'s vertical layout
-  caps `.stats-column` at `max-width: 400px`, while the Collection dash doesn't. Make the progress
-  column the same size in both.
+- [ ] **Confirm the Progress panel renders at the same width in both dashes.** Both
+  `CollectionMetrics.vue` and `MetaCollectionMetrics.vue` now share the same `.stats-column` rules
+  (`max-width: 400px`, `none` when vertical); check visually, then close.
 
 - [ ] **Tighten spacing in both dashes and make them responsive.**
   Squeeze padding/gaps in `CollectionMetrics.vue` and `MetaCollectionMetrics.vue` so the panels
   resize down gracefully in narrow windows *before* falling back to a scrolled view. Currently several
-  fixed dims jump straight to scroll — sidebar `min-width: 330px` (`MetaCollectionView.vue` ~L111),
-  `.stats-column max-width: 400px`, `Progress.vue` label col `width: 120px`.
-
-## Visual
-
-- [ ] **CORA grid sprites use a gradient; make them flat like the other sprites.**
-  `style.css` `.sm-cora-risk-*` (L150-165) use `linear-gradient(...)`; status sprites are flat fills.
-  Shared by the grid CORA column (`CoraColumn` via `MetricsSummaryGrid`), `Cora.vue`, `CoraPctBadge`,
-  `CoraTooltip` — swap to a flat `background-color` in one place.
-
-## Grid columns (shared `components/common/MetricsSummaryGrid.vue`)
-
-These manifest across the assets/STIGs grids in both dashes and the Collection view tabs.
-
-- [ ] **Assets-tab "Stigs" column is empty; should show the count of assigned STIGs.**
-  The `asset` column config reads `field: 'stigCnt'` (~L174), but the data map for `case 'asset'` emits
-  `stigs: r.benchmarkIds` (~L254) — no `stigCnt` key, and `benchmarkIds` is an array, not a count. Map
-  `stigCnt: r.benchmarkIds?.length`. Surfaces in `CollectionView/CollectionAssetsTab.vue` (agg-type `asset`).
-
-- [ ] **Asset-name column resizes mid-scroll as different-length names load.**
-  The grid DataTable is `scrollable`/virtual (~L327) and `AssetColumn.vue` sets no fixed width or
-  truncation, so the column re-widths to the longest name currently rendered. Give the asset column a
-  fixed width + ellipsis truncation. (Pre-measuring a max width across the dataset is fouled by virtual
-  scrolling — only loaded rows are known — so a fixed width is the pragmatic choice.)
-
-- [ ] **No column show/hide controls on the dashboard grids.** `MetricsSummaryGrid` always renders its full
-  column set per agg-type; users can't hide columns they don't care about. Add a column-display toggle.
-  `Findings/AggregatedFindingsGrid.vue` already does this with a `visibleColumns` Set (~L236+) — a
-  reusable pattern to lift.
+  fixed dims jump straight to scroll — sidebar `min-width: 380px` (`MetaCollectionView.vue` ~L76),
+  `.stats-column max-width: 400px`, `Progress.vue` label col `width: 160px`.
 
 ## Collection dash
 
@@ -56,21 +27,6 @@ These manifest across the assets/STIGs grids in both dashes and the Collection v
   fetches; Findings fires three). Up to ~9 requests per change, only the active pane
   visible. Predates the breadcrumb filter but is felt more now that changing it is one
   click. Refetch the active tab only and mark the others stale, fetching on activation.
-
-## Meta-dash
-
-- [ ] **"Go to collection" icon should be persistent, like the review shield.**
-  The collection-nav icon (`.collection-icon-action`, gated by `showCollectionIcon` in
-  `CollectionColumn.vue`) is hidden until row hover — `MetricsSummaryGrid.vue` ~L393
-  (`tr:hover .collection-icon-action { visibility: visible }`). The review shield (`.shield-action`)
-  is always shown at `opacity: 0.5`, brightening on hover. Give the collection icon the same
-  always-visible treatment.
-
-- [ ] **STIGs tab: rows duplicate on scroll and single rows can't be selected (row-key collision).**
-  `MetaStigsTab.vue` passes `data-key="benchmarkId"` to the STIGs `MetricsSummaryGrid` (~L140), but a
-  benchmarkId appears more than once when contained collections pin different default revisions, so the
-  key isn't unique. The DataTable reuses rows by key on scroll (duplication) and selection can't resolve
-  one row. Use a composite key (`benchmarkId` + `revisionStr`).
 
 ## See also
 
