@@ -1,6 +1,7 @@
 import JSZip from 'jszip'
 import { computed, reactive } from 'vue'
 import { useNotifications } from '../../../../shared/composables/useNotifications.js'
+import { MAX_ZIP_DEPTH } from '../../../../shared/lib/zipFiles.js'
 import { importStigFile } from '../api/stigsAdminApi.js'
 import StigImportProgressNotification from '../components/StigImportProgressNotification.vue'
 
@@ -11,7 +12,7 @@ const state = reactive({
   isDone: false,
   cancelled: false,
   paused: false,
-  // Each row: { id, filename, source, size, kind: 'xml'|'zip',
+  // Each row: { id, filename, source, size, kind: 'xml'|'zip', depth,
   //   status: 'pending'|'running'|'success'|'error',
   //   action: 'inserted'|'replaced'|'preserved'|null, message, detail }
   rows: [],
@@ -58,8 +59,8 @@ let _resumeGate = null
 export function useStigImportStore() {
   const notifs = useNotifications()
 
-  function makeRow({ id, filename, source = '', size = null, kind }) {
-    return { id, filename, source, size, kind, status: 'pending', action: null, message: '', detail: '' }
+  function makeRow({ id, filename, source = '', size = null, kind, depth = 0 }) {
+    return { id, filename, source, size, kind, depth, status: 'pending', action: null, message: '', detail: '' }
   }
 
   // Rebuilds pending rows from the drop zone's file list; no-op once started
@@ -150,6 +151,12 @@ export function useStigImportStore() {
   async function expandZipRow(row, index) {
     row.status = 'running'
     state.currentLabel = row.filename
+    if (row.depth > MAX_ZIP_DEPTH) {
+      row.status = 'error'
+      row.message = `Nested more than ${MAX_ZIP_DEPTH} levels deep`
+      payloads.delete(row.id)
+      return
+    }
     const payload = payloads.get(row.id)
     let zip
     try {
@@ -172,7 +179,7 @@ export function useStigImportStore() {
       if (ext !== 'xml' && ext !== 'zip') {
         continue
       }
-      const child = makeRow({ id: `${row.id}::${name}`, filename: name.split('/').pop(), source, kind: ext })
+      const child = makeRow({ id: `${row.id}::${name}`, filename: name.split('/').pop(), source, kind: ext, depth: row.depth + 1 })
       payloads.set(child.id, { zipEntry })
       children.push(child)
     }
