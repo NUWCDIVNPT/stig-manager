@@ -13,7 +13,7 @@ import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 import { capitalize } from '../../../shared/lib/exportCells.js'
-import { severitySortValue } from '../../../shared/lib/gridSorts.js'
+import { resultSortValue, severitySortValue } from '../../../shared/lib/gridSorts.js'
 
 const props = defineProps({
   matched: { type: Array, required: true },
@@ -134,13 +134,13 @@ const centerHeaderPt = { columnHeaderContent: { style: 'justify-content: center;
           </template>
         </Column>
         <Column field="severity" :sort-field="severitySortValue" header="Severity" style="width: 9rem" sortable />
-        <Column header="Current" field="currentResult" :export-value="exportResult" style="width: 7.25rem; text-align: center" :pt="centerHeaderPt" :sort-field="r => r.currentResult ?? ''" sortable>
+        <Column header="Current" field="currentResult" :export-value="exportResult" style="width: 7.25rem; text-align: center" :pt="centerHeaderPt" :sort-field="r => resultSortValue(r.currentResult)" sortable>
           <template #body="{ data }">
             <ResultBadge v-if="badgeFor(data.currentResult)" :status="badgeFor(data.currentResult)" />
             <span v-else>—</span>
           </template>
         </Column>
-        <Column header="New" field="newResult" :export-value="exportResult" style="width: 7.25rem; text-align: center" :pt="centerHeaderPt" :sort-field="r => r.newResult ?? ''" sortable>
+        <Column header="New" field="newResult" :export-value="exportResult" style="width: 7.25rem; text-align: center" :pt="centerHeaderPt" :sort-field="r => resultSortValue(r.newResult)" sortable>
           <template #body="{ data }">
             <ResultBadge v-if="badgeFor(data.newResult)" :status="badgeFor(data.newResult)" />
             <span v-else>—</span>

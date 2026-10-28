@@ -5,15 +5,6 @@ Most originated from the Findings feature review (2026-06-10).
 
 ## Correctness
 
-- [ ] **Wire up the remaining domain sorts from `shared/lib/gridSorts.js`.**
-  `statusSortValue` and `resultSortValue` are implemented (workflow order and badge
-  display order respectively) but not yet wired in — both change user-visible sort
-  behavior, so deferred. Targets: `statusSortValue` → status columns in
-  `AssetReview/AssetChecklistGridTable.vue` and `CollectionReview/RuleTableGrid.vue`
-  (currently `sort-field="status.label"`, alphabetical); `resultSortValue` →
-  Current/New columns in `AssetStigImport/AssetStigPreviewStep.vue` (currently raw
-  result strings, alphabetical) via `:sort-field="r => resultSortValue(r.currentResult)"`.
-
 - [ ] **CSV export fidelity audit.**
   Every exporting grid now declares fields/export headers and cells go through
   `exportDisplayValue` (see reusable-components.md, CSV export). Remaining work is a

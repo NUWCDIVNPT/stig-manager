@@ -5,9 +5,6 @@ linked source doc.
 
 ## Correctness
 
-- [ ] **Wire `statusSortValue` / `resultSortValue`.** Status columns in
-  `AssetChecklistGridTable.vue` and `RuleTableGrid.vue` still sort on `status.label`;
-  Current/New in `AssetStigPreviewStep.vue` still sort raw strings. ([common.md](common.md))
 - [ ] **CSV export fidelity audit** against the legacy client, grid by grid. ([common.md](common.md))
 - [ ] **CSV exports omit the classification "Marking" column.** Product decision, then one fix
   in `shared/csv.js`. ([common.md](common.md))

@@ -14,7 +14,7 @@ import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { durationToNow } from '../../../shared/lib.js'
 import { calculateChecklistStats, getEngineDisplay, getResultDisplay, severityMap } from '../../../shared/lib/checklistUtils.js'
 import { gridColumnPt } from '../../../shared/lib/dataTablePt.js'
-import { severitySortValue } from '../../../shared/lib/gridSorts.js'
+import { severitySortValue, statusSortValue } from '../../../shared/lib/gridSorts.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
 
 const props = defineProps({
@@ -285,7 +285,7 @@ const dataTablePt = {
 
     <Column
       v-if="visibleFields.has('status')"
-      field="status" header="Status" sortable sort-field="status.label" :style="{ width: '9rem', minWidth: '9rem' }"
+      field="status" header="Status" sortable :sort-field="statusSortValue" :style="{ width: '9rem', minWidth: '9rem' }"
       :pt="columnPt.center"
     >
       <template #body="{ data }">
