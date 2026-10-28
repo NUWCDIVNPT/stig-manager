@@ -28,10 +28,16 @@ if (import.meta.env.DEV && getCurrentInstance()?.vnode.key == null) {
 <template>
   <Column :field="field" :header="header">
     <template #body="{ data }">
-      <!-- block span so the whole cell, not just the digits, is the hover target -->
-      <span v-tooltip.top="listTooltip(tooltipValues?.(data))" style="display: block;">
+      <span v-tooltip.top="listTooltip(tooltipValues?.(data))" class="count-cell">
         {{ dashZero(valueOf(data)) }}
       </span>
     </template>
   </Column>
 </template>
+
+<style scoped>
+/* block so the whole cell, not just the digits, is the tooltip hover target */
+.count-cell {
+  display: block;
+}
+</style>

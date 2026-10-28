@@ -1,9 +1,10 @@
-// Centralized copy for substantial, explanatory tooltips / help popovers.
+// Centralized text for substantial, explanatory tooltips / help popovers, plus
+// the shared v-tooltip option presets (TOOLTIP_OPTS, listTooltip).
 //
-// This is for the longer, content-rich help text — multi-sentence explanations
-// and HTML help blocks — that benefits from living in one place. It is NOT for
-// short icon-button labels (those stay as inline `title` attributes on the
-// element) or for dynamic, data-driven tooltip builders.
+// The TOOLTIPS strings are the longer, content-rich help text — multi-sentence
+// explanations and HTML help blocks — that benefits from living in one place.
+// They are NOT for short icon-button labels (those stay as inline `title`
+// attributes on the element).
 //
 // Convention: group by domain, camelCase keys.
 
@@ -20,7 +21,7 @@ export const TOOLTIP_OPTS = Object.freeze({
 // v-tooltip pt for a newline-joined list (e.g. STIG names): one item per line,
 // never wrapped. Long lists scroll inside the tooltip instead of overflowing the
 // viewport (PrimeVue has no overflow fallback once both .top and .bottom miss).
-export const LIST_TOOLTIP_PT = Object.freeze({
+const LIST_TOOLTIP_PT = Object.freeze({
   root: { style: { maxWidth: 'none' } },
   text: { style: { whiteSpace: 'pre', maxHeight: '50vh', overflowY: 'auto' } },
 })
