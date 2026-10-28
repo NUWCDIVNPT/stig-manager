@@ -63,7 +63,7 @@ const leftHeaderBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify
 const tablePt = { footer: { style: 'padding: 0; border: none;' } }
 
 const metricColumns = [
-  { field: 'stigCnt', header: 'STIGs', component: CountColumn, width: '2.75rem', pt: borderPt },
+  { field: 'stigCnt', header: 'STIGs', component: CountColumn, tooltipValues: r => r.benchmarkIds, width: '2.75rem', pt: borderPt },
   { field: 'checks', header: 'Rules', component: CountColumn, width: '2.75rem', pt: borderPt },
   { field: 'oldest', header: 'Oldest', component: DurationColumn, width: '2.75rem', pt: borderPt },
   { field: 'newest', header: 'Newest', component: DurationColumn, width: '2.75rem', pt: borderPt },

@@ -78,7 +78,7 @@ describe('partitionAssets', () => {
 })
 
 describe('assetTextFilter', () => {
-  const row = buildAssetRow({ assetId: 'a1', name: 'web01', labelIds: ['l1'] }, labelMap)
+  const row = buildAssetRow({ assetId: 'a1', name: 'web01', labelIds: ['l1'], stigs: [{ benchmarkId: 'RHEL_9_STIG' }] }, labelMap)
 
   it('matches on asset name (case-insensitive)', () => {
     expect(assetTextFilter(row, 'WEB')).toBe(true)
@@ -86,6 +86,10 @@ describe('assetTextFilter', () => {
 
   it('matches on an applied label name', () => {
     expect(assetTextFilter(row, 'prod')).toBe(true)
+  })
+
+  it('matches on an assigned STIG benchmarkId', () => {
+    expect(assetTextFilter(row, 'rhel_9')).toBe(true)
   })
 
   it('returns false when nothing matches', () => {

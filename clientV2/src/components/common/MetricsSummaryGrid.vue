@@ -200,6 +200,7 @@ const columns = computed(() => {
   const titleColumn = { field: 'title', header: 'Title', group: 'STIG', defaultHidden: true, component: TextColumn, searchable: true, style: cellStyle(WIDTH.title), pt: LEFT_HEADER }
   const revisionColumn = { field: 'revisionStr', header: 'Revision', group: 'STIG', component: TextColumn, searchable: true, style: cellStyle(WIDTH.revision), pt: LEFT_HEADER }
   const assetColumn = { field: 'assetName', header: 'Asset', group: 'Asset', component: AssetColumn, locked: true, searchable: true, showShield: props.showShield, onShieldClick, style: cellStyle(WIDTH.name), pt: LEFT_HEADER }
+  const stigNames = r => r.stigs
   const labelsColumn = { field: 'labels', header: 'Labels', group: 'Asset', component: LabelsColumn, searchable: true, filterValues: r => r.labels, multiple: true, style: cellStyle(WIDTH.labels), pt: LEFT_HEADER }
   switch (aggregationType.value) {
     case 'collection':
@@ -214,7 +215,7 @@ const columns = computed(() => {
       return [
         assetColumn,
         labelsColumn,
-        { field: 'stigCnt', header: 'STIGs', group: 'Asset', component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
+        { field: 'stigCnt', header: 'STIGs', group: 'Asset', component: CountColumn, tooltipValues: stigNames, searchable: true, filterValues: stigNames, multiple: true, quickSearch: false, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
         { field: 'fqdn', header: 'FQDN', group: 'Asset', defaultHidden: true, component: TextColumn, searchable: true, style: cellStyle(WIDTH.name), pt: LEFT_HEADER },
         { field: 'ip', header: 'IP', group: 'Asset', defaultHidden: true, component: TextColumn, searchable: true, style: cellStyle(WIDTH.ip), pt: LEFT_HEADER },
         { field: 'mac', header: 'MAC', group: 'Asset', defaultHidden: true, component: TextColumn, searchable: true, style: cellStyle(WIDTH.mac), pt: LEFT_HEADER },
