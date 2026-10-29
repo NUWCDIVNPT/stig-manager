@@ -1,7 +1,6 @@
 # Open TODOs
 
-Consolidated list of items still open as of 2026-10-28. Details for each live in the
-linked source doc.
+Consolidated list of items still open. Details for each live in the linked source doc.
 
 ## CSV export — [csv-export.md](csv-export.md)
 

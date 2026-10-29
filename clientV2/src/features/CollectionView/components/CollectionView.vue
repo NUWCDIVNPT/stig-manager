@@ -152,7 +152,11 @@ watch(activeTab, tab => visitedTabs.value.add(tab))
 // the visible tab; the others pick it up (and refetch) when next activated.
 const tabLabelNames = ref({})
 watch([activeTab, selectedLabelNames], ([tab, names]) => {
-  tabLabelNames.value[tab] = names
+  // selectedLabelNames is a fresh array per filter change, so compare contents:
+  // a filter that changed and reverted while this tab was hidden is not a change
+  if (JSON.stringify(tabLabelNames.value[tab]) !== JSON.stringify(names)) {
+    tabLabelNames.value[tab] = names
+  }
 }, { immediate: true })
 watch(() => props.collectionId, () => {
   visitedTabs.value = new Set([activeTab.value])

@@ -108,4 +108,17 @@ describe('collectionView label filter', () => {
 
     expect(refetch).not.toHaveBeenCalled()
   })
+
+  it('does not refetch a hidden tab when the filter changed and reverted', async () => {
+    await router.replace({ query: { labelName: 'Alpha' } })
+    await flushPromises()
+    await router.replace({ query: {} })
+    await flushPromises()
+    refetch.mockClear()
+
+    await goTo('stigs')
+
+    expect(refetch).not.toHaveBeenCalled()
+    expect(shownLabels('stigs')).toEqual([])
+  })
 })

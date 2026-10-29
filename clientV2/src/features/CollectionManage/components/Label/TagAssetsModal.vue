@@ -94,7 +94,7 @@ async function onSave() {
   }
   await executeSave(pickerValue.value[1].map(a => String(a.assetId)))
   if (saveError.value) {
-    // useAsyncState already surfaced via global error toast.
+    // useAsyncState already surfaced via the global error modal.
     return
   }
   emit('tagging-changed')
