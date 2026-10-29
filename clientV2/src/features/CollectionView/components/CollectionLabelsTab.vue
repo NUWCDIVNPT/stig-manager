@@ -18,6 +18,11 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  // Gated by CollectionView.collectionReady
+  ready: {
+    type: Boolean,
+    default: true,
+  },
 })
 
 const { state: labels, isLoading: labelsLoading, execute: loadLabels } = useAsyncState(
@@ -59,7 +64,10 @@ const { state: assetStigs, isLoading: assetStigsLoading, execute: loadAssetStigs
 )
 
 // first load
-watch([() => props.collectionId, () => props.selectedLabelNames], () => {
+watch([() => props.ready, () => props.collectionId, () => props.selectedLabelNames], () => {
+  if (!props.ready) {
+    return
+  }
   loadLabels()
   selectedLabelId.value = null
   isLabelSelected.value = false

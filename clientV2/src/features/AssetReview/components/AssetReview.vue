@@ -55,6 +55,8 @@ const { state: collection, execute: loadCollection } = useAsyncState(
 
 watch(assetId, () => {
   if (assetId.value) {
+    // Clear first so the header does not show the previous asset while this one loads
+    asset.value = null
     loadAsset()
   }
 }, { immediate: true })
@@ -191,13 +193,11 @@ function onGridRefresh() {
 
 <template>
   <div class="asset-review">
-    <div v-if="isLoading" class="asset-review__loading">
-      Loading asset details...
-    </div>
-    <div v-else-if="error" class="asset-review__error">
+    <div v-if="error" class="asset-review__error">
       {{ error || 'Error loading asset' }}
     </div>
-    <div v-else-if="asset" class="asset-review__content">
+    <!-- Keep the grid mounted while the asset loads; child components tolerate a null asset -->
+    <div v-else-if="asset || isLoading" class="asset-review__content">
       <div v-if="checklistError" class="asset-review__checklist-error">
         <i class="pi pi-exclamation-triangle" />
         <span>Could not load checklist: {{ checklistError.message || 'Unknown error' }}</span>
@@ -268,7 +268,6 @@ function onGridRefresh() {
   flex-direction: column;
 }
 
-.asset-review__loading,
 .asset-review__error,
 .asset-review__empty {
   padding: 2rem;

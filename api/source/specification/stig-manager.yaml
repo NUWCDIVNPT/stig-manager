@@ -7831,14 +7831,16 @@ components:
       additionalProperties: false
       type: object
       properties:
+        seq:
+          type: integer
         type:
           type: string
         message:
           type: string
         task:
-          $ref: "#/components/schemas/String45"
+          $ref: "#/components/schemas/String45Nullable"
         taskId:
-          $ref: "#/components/schemas/JobTaskId"
+          $ref: "#/components/schemas/StringIntIdNullable"
         ts:
           $ref: '#/components/schemas/StringDateTime'
       required: [message, type, task, ts]
@@ -10548,6 +10550,7 @@ components:
       name: labelName
       in: query
       description: Selectes Assets by label name
+      allowReserved: true
       schema:
         type: array
         uniqueItems: true

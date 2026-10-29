@@ -37,12 +37,11 @@ export function partitionAssets(allAssets, taggedAssets, labelMap) {
   return [available, tagged]
 }
 
-// Matches a row from buildAssetRow against search text by asset name or by the
-// name of any label applied to it.
+// Matches a row from buildAssetRow against search text by asset name, the name
+// of any label applied to it, or any assigned STIG benchmarkId.
 export function assetTextFilter(item, text) {
   const lower = text.toLowerCase()
-  if (item.name && item.name.toLowerCase().includes(lower)) {
-    return true
-  }
-  return item.labels.some(l => l.name.toLowerCase().includes(lower))
+  return Boolean(item.name?.toLowerCase().includes(lower))
+    || item.labels.some(l => l.name.toLowerCase().includes(lower))
+    || item.benchmarkIds.some(id => id.toLowerCase().includes(lower))
 }

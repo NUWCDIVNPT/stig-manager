@@ -134,11 +134,12 @@ describe('assetReview.vue', () => {
   }
 
   describe('initialization & Loading', () => {
-    it('renders loading state initially', async () => {
+    it('renders the checklist grid while the asset is still loading', async () => {
       // Delay resolution so it stays in loading state
       fetchAsset.mockImplementation(() => new Promise(() => {}))
       createWrapper()
-      expect(screen.getByText('Loading asset details...')).toBeInTheDocument()
+      expect(screen.getByTestId('emit-refresh')).toBeInTheDocument()
+      expect(screen.queryByText('Asset not found.')).not.toBeInTheDocument()
     })
 
     it('fetches asset and collection on mount', async () => {
