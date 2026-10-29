@@ -1,0 +1,397 @@
+/* LCARS skin (Star Trek: TNG "Okuda" style). Loaded at runtime by
+   shared/lib/skins.js when <html data-skin="lcars">; everything here is
+   scoped to that attribute so the stylesheet is inert otherwise.
+   Lives outside src/ because it deliberately uses its own display face. */
+@import url('https://fonts.googleapis.com/css2?family=Antonio:wght@400;700&display=swap');
+
+html[data-skin='lcars'] {
+  /* Okuda palette */
+  --lcars-orange: #ff9900;
+  --lcars-tanoi: #ffcc99;
+  --lcars-butterscotch: #ff9966;
+  --lcars-sunflower: #ffcc00;
+  --lcars-lilac: #cc99cc;
+  --lcars-periwinkle: #9999ff;
+  --lcars-ice: #99ccff;
+  --lcars-slate: #9999cc;
+  --lcars-tomato: #cc6666;
+  --lcars-hopbush: #cc6699;
+  --lcars-black: #000000;
+  --lcars-bar: 1.1rem;
+
+  font-family: 'Antonio', 'Open Sans', sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+
+  --color-primary: var(--lcars-orange);
+  --color-primary-hover: var(--lcars-butterscotch);
+  --color-primary-highlight: var(--lcars-ice);
+  --color-primary-highlight-light: var(--lcars-tanoi);
+  --color-action-blue: var(--lcars-periwinkle);
+  --color-action-blue-dark: var(--lcars-slate);
+  --color-action-red: var(--lcars-tomato);
+  --color-action-green: var(--lcars-sunflower);
+  --color-success: var(--lcars-sunflower);
+  --color-warning-yellow: var(--lcars-sunflower);
+  --color-warning-orange: var(--lcars-butterscotch);
+  --color-shield-green: var(--lcars-orange);
+  --color-shield-green-dark: var(--lcars-tomato);
+  --color-oss-blue: var(--lcars-periwinkle);
+
+  --color-button-hover-bg: rgba(255, 153, 0, 0.18);
+  --color-bg-hover: rgba(255, 153, 0, 0.08);
+  --color-bg-hover-strong: #2a1a00;
+  --color-bg-hover-light: #4a3000;
+
+  --metrics-status-chart-assessed: var(--lcars-periwinkle);
+  --metrics-status-chart-submitted: var(--lcars-sunflower);
+  --metrics-status-chart-accepted: var(--lcars-ice);
+  --metrics-status-chart-unassessed: #332200;
+  --metrics-status-chart-unsaved: #332200;
+  --metrics-status-chart-rejected: var(--lcars-tomato);
+
+  --color-cat1: var(--lcars-tomato);
+  --color-cat2: var(--lcars-sunflower);
+  --color-cat3: var(--lcars-periwinkle);
+  --color-risk-moderate: var(--lcars-butterscotch);
+  --color-risk-very-low: var(--lcars-ice);
+  --color-inventory: var(--lcars-tanoi);
+  --color-review-age: var(--lcars-lilac);
+
+  --color-text-primary: var(--lcars-tanoi);
+  --color-text-dim: var(--lcars-slate);
+  --color-text-bright: #ffffff;
+  --color-link: var(--lcars-ice);
+  --color-link-hover: var(--lcars-tanoi);
+
+  --color-background-darkest: var(--lcars-black);
+  --color-background-dark: var(--lcars-black);
+  --color-background-light: #111111;
+  --color-background-subtle: rgba(255, 153, 0, 0.06);
+
+  --color-border-default: #3a2a10;
+  --color-border-light: #221800;
+  --color-border-hover: var(--lcars-orange);
+
+  --color-text-error: var(--lcars-tomato);
+  --color-status-error-border: var(--lcars-tomato);
+  --color-status-warning-border: var(--lcars-sunflower);
+  --color-status-success-border: var(--lcars-ice);
+
+  /* PrimeVue Material preset hooks */
+  --p-primary-color: var(--lcars-orange);
+  --p-primary-hover-color: var(--lcars-butterscotch);
+  --p-primary-contrast-color: var(--lcars-black);
+  --p-content-background: var(--lcars-black);
+  --p-content-border-color: var(--color-border-default);
+  --p-text-color: var(--color-text-primary);
+  --p-text-muted-color: var(--color-text-dim);
+  --p-surface-900: #111111;
+  --p-surface-800: #1a1200;
+  --p-surface-700: #2a1a00;
+}
+
+/* ---------- Base ---------- */
+html[data-skin='lcars'] body,
+html[data-skin='lcars'] #app {
+  background: var(--lcars-black);
+  font-family: 'Antonio', 'Open Sans', sans-serif;
+}
+
+html[data-skin='lcars'] .p-button,
+html[data-skin='lcars'] .badge,
+html[data-skin='lcars'] .p-inputtext,
+html[data-skin='lcars'] .p-select,
+html[data-skin='lcars'] .p-tag,
+html[data-skin='lcars'] .p-chip,
+html[data-skin='lcars'] .label-tag {
+  border-radius: 999px !important;
+}
+
+html[data-skin='lcars'] .p-button:not(.p-button-text):not(.p-button-outlined) {
+  background: var(--lcars-tanoi);
+  border-color: var(--lcars-tanoi);
+  color: var(--lcars-black);
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+html[data-skin='lcars'] .p-button:not(.p-button-text):not(.p-button-outlined) .p-button-label,
+html[data-skin='lcars'] .p-button:not(.p-button-text):not(.p-button-outlined) .p-button-icon,
+html[data-skin='lcars'] .p-button:not(.p-button-text):not(.p-button-outlined) > * {
+  color: var(--lcars-black) !important;
+}
+
+html[data-skin='lcars'] .p-button:not(.p-button-text):not(.p-button-outlined):hover {
+  background: var(--lcars-orange);
+  border-color: var(--lcars-orange);
+}
+
+/* ---------- Header bar: segmented, with a rounded endcap on the right ----------
+   The menubar reserves the bar height with a transparent border; the two
+   pseudo-elements paint the segments over it. The bar continues left into the
+   elbow formed by the splitter below (see Nav rail). */
+html[data-skin='lcars'] .p-menubar {
+  position: relative;
+  border-bottom: var(--lcars-bar) solid transparent !important;
+  background: var(--lcars-black) !important;
+}
+
+html[data-skin='lcars'] .p-menubar::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 11rem;
+  bottom: calc(-1 * var(--lcars-bar));
+  height: var(--lcars-bar);
+  background: var(--lcars-orange);
+}
+
+html[data-skin='lcars'] .p-menubar::after {
+  content: '';
+  position: absolute;
+  right: 1.5rem;
+  width: 9rem;
+  bottom: calc(-1 * var(--lcars-bar));
+  height: var(--lcars-bar);
+  background: var(--lcars-lilac);
+  border-radius: 0 999px 999px 0;
+}
+
+html[data-skin='lcars'] .home-link {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--lcars-orange) !important;
+}
+
+html[data-skin='lcars'] .logo-icon {
+  filter: sepia(1) saturate(4) hue-rotate(-10deg) brightness(1.1);
+}
+
+html[data-skin='lcars'] .badge {
+  color: var(--lcars-black) !important;
+}
+
+html[data-skin='lcars'] .breadcrumb-link,
+html[data-skin='lcars'] .breadcrumb-current {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ---------- Nav rail + elbow ----------
+   The splitter root is painted orange and shows through in two places: the
+   gutter (a vertical LCARS bar running the full height) and the concave
+   top-left corner of the content panel. Together with the header bar this is
+   the classic LCARS elbow. */
+html[data-skin='lcars'] .nav-rail-splitter {
+  background: var(--lcars-orange) !important;
+}
+
+html[data-skin='lcars'] .nav-rail-splitter > .p-splitter-gutter {
+  width: var(--lcars-bar) !important;
+  flex: 0 0 var(--lcars-bar) !important;
+  background: var(--lcars-orange) !important;
+}
+
+html[data-skin='lcars'] .nav-rail-splitter > .p-splitter-gutter .p-splitter-gutter-handle {
+  background: var(--lcars-black);
+  width: 0.25rem;
+  height: 3rem;
+  border-radius: 999px;
+}
+
+html[data-skin='lcars'] .nav-rail-splitter > .p-splitterpanel:last-child {
+  background: var(--lcars-black);
+  border-radius: 2.4rem 0 0 0;
+  margin-top: 0.35rem;
+  overflow: hidden;
+}
+
+html[data-skin='lcars'] .nav-rail-splitter > .p-splitterpanel:first-child {
+  background: var(--lcars-black);
+}
+
+html[data-skin='lcars'] .nav-rail {
+  background: var(--lcars-black) !important;
+  padding: 0 0.4rem 0.5rem 0;
+  gap: 0.35rem;
+}
+
+/* top block of the rail is part of the elbow, so it is orange and square */
+html[data-skin='lcars'] .nav-rail-toggle {
+  background: var(--lcars-orange) !important;
+  color: var(--lcars-black) !important;
+  border: none !important;
+  border-radius: 0 0 0 1.4rem;
+  margin: 0 -0.4rem 0.5rem 0;
+  width: calc(100% + 0.4rem) !important;
+  justify-content: flex-end !important;
+  padding-right: 0.9rem;
+}
+
+html[data-skin='lcars'] .nav-rail-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+html[data-skin='lcars'] .nav-rail-item,
+html[data-skin='lcars'] .nav-rail-items > button,
+html[data-skin='lcars'] .nav-rail-items > a {
+  border-radius: 0 999px 999px 0 !important;
+  color: var(--lcars-black) !important;
+  background: var(--lcars-tanoi) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  justify-content: flex-end;
+  text-align: right;
+}
+
+html[data-skin='lcars'] [data-tour='nav-item-home'] { background: var(--lcars-tanoi) !important; }
+html[data-skin='lcars'] [data-tour='nav-item-collections'] .nav-rail-item,
+html[data-skin='lcars'] [data-tour='nav-item-collections'] { background: var(--lcars-lilac) !important; }
+html[data-skin='lcars'] [data-tour='nav-item-library'] { background: var(--lcars-periwinkle) !important; }
+html[data-skin='lcars'] [data-tour='nav-item-whats-new'] { background: var(--lcars-ice) !important; }
+html[data-skin='lcars'] [data-tour='nav-item-admin'] { background: var(--lcars-butterscotch) !important; }
+
+html[data-skin='lcars'] .nav-rail-item:hover,
+html[data-skin='lcars'] .nav-rail-item--active {
+  filter: brightness(1.18);
+  box-shadow: inset 0 0 0 2px var(--lcars-black), inset 0 0 0 3px currentColor;
+}
+
+html[data-skin='lcars'] .nav-rail-item-icon {
+  color: var(--lcars-black) !important;
+}
+
+html[data-skin='lcars'] .nav-rail-separator {
+  height: 0.5rem !important;
+  margin: 0.4rem 0.4rem 0.4rem 0 !important;
+  background: var(--lcars-tomato) !important;
+  border-radius: 0 999px 999px 0;
+}
+
+/* ---------- Tabs ---------- */
+html[data-skin='lcars'] .p-tab {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: var(--lcars-slate);
+  border-radius: 999px;
+  margin: 0.25rem 0.2rem;
+}
+
+html[data-skin='lcars'] .p-tab-active {
+  background: var(--lcars-orange) !important;
+  color: var(--lcars-black) !important;
+}
+
+html[data-skin='lcars'] .p-tablist-active-bar {
+  display: none;
+}
+
+html[data-skin='lcars'] .p-tablist-tab-list {
+  border-bottom: 0.35rem solid var(--lcars-slate) !important;
+}
+
+/* ---------- Frames: LCARS panel with a header bar and left column ----------
+   A frame is a thick top bar joined to a thick left column by a rounded
+   outer corner; the content sits inside the black area. Colors alternate
+   down the dashboard sidebar. */
+html[data-skin='lcars'] .metric-card,
+html[data-skin='lcars'] .details-card {
+  --frame: var(--lcars-tanoi);
+  position: relative;
+  background: var(--lcars-black) !important;
+  border: none !important;
+  border-left: 1.1rem solid var(--frame) !important;
+  border-top: 0.45rem solid var(--frame) !important;
+  border-radius: 1.8rem 0 0 0.6rem !important;
+  padding-left: 1rem !important;
+}
+
+html[data-skin='lcars'] .metric-card::after,
+html[data-skin='lcars'] .details-card::after {
+  /* a short second-color segment at the bar's right end, as on real panels */
+  content: '';
+  position: absolute;
+  top: -0.45rem;
+  right: 0;
+  width: 3rem;
+  height: 0.45rem;
+  background: var(--lcars-lilac);
+  border-radius: 0 999px 999px 0;
+}
+
+html[data-skin='lcars'] .metric-card:nth-child(5n + 2) { --frame: var(--lcars-lilac); }
+html[data-skin='lcars'] .metric-card:nth-child(5n + 3) { --frame: var(--lcars-periwinkle); }
+html[data-skin='lcars'] .metric-card:nth-child(5n + 4) { --frame: var(--lcars-ice); }
+html[data-skin='lcars'] .metric-card:nth-child(5n + 5) { --frame: var(--lcars-butterscotch); }
+
+html[data-skin='lcars'] .metric-title,
+html[data-skin='lcars'] .panel-title,
+html[data-skin='lcars'] .collection-tab-panel .panel-header h3 {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--lcars-orange) !important;
+  font-weight: 700;
+}
+
+/* grid panels get the same frame treatment */
+html[data-skin='lcars'] .collection-tab-panel .panel-content {
+  background: var(--lcars-black) !important;
+  border: none !important;
+  border-left: 1.1rem solid var(--lcars-slate) !important;
+  border-top: 0.45rem solid var(--lcars-slate) !important;
+  border-radius: 1.8rem 0 0 0.6rem !important;
+}
+
+html[data-skin='lcars'] .collection-tab-panel .panel-header,
+html[data-skin='lcars'] .grid-toolbar {
+  background: var(--lcars-black) !important;
+  border-bottom: 1px solid var(--color-border-default) !important;
+}
+
+/* ---------- Data tables ---------- */
+html[data-skin='lcars'] .p-datatable-thead > tr > th {
+  background: var(--lcars-black) !important;
+  color: var(--lcars-orange) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  border-bottom: 0.25rem solid var(--lcars-slate) !important;
+}
+
+html[data-skin='lcars'] .p-datatable-tbody > tr {
+  background: var(--lcars-black) !important;
+}
+
+html[data-skin='lcars'] .p-datatable-tbody > tr:hover {
+  background: var(--color-bg-hover-strong) !important;
+}
+
+html[data-skin='lcars'] .p-datatable-tbody > tr.p-datatable-row-selected,
+html[data-skin='lcars'] .p-datatable-tbody > tr.p-row-selected {
+  background: #3a2300 !important;
+  color: var(--lcars-tanoi) !important;
+}
+
+html[data-skin='lcars'] .p-datatable-tbody > tr > td {
+  border-color: var(--color-border-light) !important;
+}
+
+html[data-skin='lcars'] .status-footer {
+  background: var(--lcars-black) !important;
+  border-color: var(--color-border-default) !important;
+}
+
+/* ---------- Scrollbars ---------- */
+html[data-skin='lcars'] ::-webkit-scrollbar-thumb {
+  background-color: var(--lcars-slate) !important;
+  border-radius: 999px;
+}
+
+html[data-skin='lcars'] * {
+  scrollbar-color: var(--lcars-slate) transparent;
+}

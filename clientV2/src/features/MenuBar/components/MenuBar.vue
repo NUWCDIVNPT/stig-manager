@@ -6,6 +6,7 @@ import { computed, inject, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import LabelFilterPills from '../../../components/common/LabelFilterPills.vue'
 import { formatDateTimeString } from '../../../shared/lib.js'
+import { applySkin, currentSkin } from '../../../shared/lib/skins.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import { useEnv } from '../../../shared/stores/useEnv.js'
 import CollectionFilterPills from '../../MetaCollectionView/components/CollectionFilterPills.vue'
@@ -70,6 +71,13 @@ async function copyToken() {
   }
 }
 
+const skin = ref(currentSkin())
+
+function toggleLcarsSkin() {
+  skin.value = skin.value === 'lcars' ? '' : 'lcars'
+  applySkin(skin.value)
+}
+
 function handleLogout() {
   oidcWorker.logout()
 }
@@ -95,6 +103,11 @@ const items = computed(() => {
         },
         {
           separator: true,
+        },
+        {
+          label: skin.value === 'lcars' ? 'LCARS skin: on' : 'LCARS skin: off',
+          icon: 'pi pi-palette',
+          command: toggleLcarsSkin,
         },
         ...(oidcWorker.logoutAvailable ? [{
           label: 'Sign out',

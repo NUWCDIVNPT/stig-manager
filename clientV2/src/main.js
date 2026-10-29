@@ -9,6 +9,7 @@ import router from './router'
 import { api, configureApiSpec, configureAuth } from './shared/api/apiClient.js'
 
 import { useGlobalError } from './shared/composables/useGlobalError.js'
+import { applyStoredSkin } from './shared/lib/skins.js'
 import { useGlobalAppStore } from './shared/stores/globalAppStore.js'
 import 'primeicons/primeicons.css'
 import './style.css'
@@ -16,6 +17,7 @@ import './style.css'
 // this is a dark mode override — in the future we may want to make this dynamic based on user preference?
 if (typeof document !== 'undefined') {
   document.documentElement.classList.add('app-dark')
+  applyStoredSkin()
 }
 
 try {
