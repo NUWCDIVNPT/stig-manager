@@ -2,6 +2,7 @@
 import { toRefs } from 'vue'
 import HelpIcon from '../../../components/common/HelpIcon.vue'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
+import { PENDING_PLACEHOLDER } from '../emptyMetrics.js'
 
 const props = defineProps({
   coraData: {
@@ -9,9 +10,17 @@ const props = defineProps({
     required: false,
     default: null,
   },
+  // True until the first metrics response: the card keeps its layout but shows
+  // placeholders instead of a rating computed from zeroed input.
+  pending: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const { coraData } = toRefs(props)
+
+const show = v => (props.pending ? PENDING_PLACEHOLDER : v)
 
 function getRiskClass(riskRating) {
   switch (riskRating) {
@@ -51,32 +60,32 @@ function getRiskClass(riskRating) {
         <div class="cora-row sm-cat1-row">
           <div class="row-content">
             <span class="cora-cat-label">CAT 1</span>
-            <span class="cora-cat-count">{{ coraData.catI.toFixed(0) }}</span>
+            <span class="cora-cat-count">{{ show(coraData.catI.toFixed(0)) }}</span>
           </div>
         </div>
         <div class="cora-row sm-cat2-row">
           <div class="row-content">
             <span class="cora-cat-label">CAT 2</span>
-            <span class="cora-cat-count">{{ coraData.catII.toFixed(0) }}</span>
+            <span class="cora-cat-count">{{ show(coraData.catII.toFixed(0)) }}</span>
           </div>
         </div>
         <div class="cora-row sm-cat3-row">
           <div class="row-content">
             <span class="cora-cat-label">CAT 3</span>
-            <span class="cora-cat-count">{{ coraData.catIII.toFixed(0) }}</span>
+            <span class="cora-cat-count">{{ show(coraData.catIII.toFixed(0)) }}</span>
           </div>
         </div>
       </div>
 
-      <div class="cora-risk-card" :class="getRiskClass(coraData.riskRating)">
+      <div class="cora-risk-card" :class="pending ? '' : getRiskClass(coraData.riskRating)">
         <div class="risk-label">
           CORA RISK
         </div>
         <div class="risk-score">
-          {{ coraData.weightedAvg.toFixed(1) }}%
+          {{ show(`${coraData.weightedAvg.toFixed(1)}%`) }}
         </div>
         <div class="risk-rating">
-          {{ coraData.riskRating.toUpperCase() }}
+          {{ show(coraData.riskRating.toUpperCase()) }}
         </div>
       </div>
     </div>

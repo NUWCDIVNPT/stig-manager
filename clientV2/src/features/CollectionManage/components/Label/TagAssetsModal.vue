@@ -14,6 +14,7 @@ import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { dashZero } from '../../../../shared/lib/numberFormat.js'
 import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
+import { listTooltip } from '../../../../shared/lib/tooltips.js'
 import {
   fetchAssetsByLabel,
   fetchCollectionAssetsBasic,
@@ -150,8 +151,8 @@ const tablePt = {
         :show-source-filter="true"
         :show-target-filter="true"
         filter-by="name"
-        source-filter-placeholder="Search available assets and labels..."
-        target-filter-placeholder="Search tagged assets and labels..."
+        source-filter-placeholder="Search available assets, labels, and STIGs..."
+        target-filter-placeholder="Search tagged assets, labels, and STIGs..."
         :virtual-scroller-options="VIRTUAL_SCROLLER_OPTIONS"
         :text-filter-fn="assetTextFilter"
         :table-pt="tablePt"
@@ -182,7 +183,7 @@ const tablePt = {
           </Column>
           <Column header="STIGs" style="width: 6.25rem;" :header-style="{ textAlign: 'center', justifyContent: 'center' }">
             <template #body="{ data }">
-              <span class="asset-stig-count" style="justify-content: center;">
+              <span v-tooltip.top="listTooltip(data.benchmarkIds)" class="asset-stig-count" style="justify-content: center;">
                 <img :src="shieldIcon" class="asset-stig-icon" alt="">
                 {{ dashZero(data.stigCount) }}
               </span>

@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 import { catLabel } from '../../../shared/lib/exportCells.js'
 import DiffRuleTable from './DiffRuleTable.vue'
@@ -74,6 +74,7 @@ const emit = defineEmits([
   'close',
   'retry-rules',
   'retry-diff',
+  'update:highlight',
 ])
 
 const diffMode = computed(() => !!props.compareRev)
@@ -105,13 +106,19 @@ const bodyState = computed(() => {
 
 const bodyError = computed(() => (diffMode.value ? props.diffError : props.rulesError))
 
-// One search for whichever table is showing; rules on a column the other mode lacks are dropped
+// One search for whichever table is showing; rules on a column the other mode lacks are dropped.
+// The rules arrive with the detail, check, fix and ccis projections, so the view-mode search
+// also reads the rule content that only the detail pane renders.
 const viewColumns = [
   { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false },
   { field: 'version', header: 'STIG ID' },
   { field: 'groupId', header: 'Group' },
   { field: 'ruleId', header: 'Rule Id' },
   { field: 'title', header: 'Rule Title' },
+  { field: 'discussion', header: 'Discussion', searchText: r => r.detail?.vulnDiscussion },
+  { field: 'check', header: 'Check', searchText: r => r.check?.content },
+  { field: 'fix', header: 'Fix', searchText: r => r.fix?.text },
+  { field: 'ccis', header: 'CCIs', searchText: r => (r.ccis ?? []).map(c => c.cci).join(' ') },
 ]
 const diffColumns = computed(() => [
   { field: 'stigId', header: 'STIG ID' },
@@ -131,6 +138,13 @@ const {
   valueOptions,
   highlightTerm,
 } = useGridSearch(tableRows, () => (diffMode.value ? diffColumns.value : viewColumns))
+
+// Per-field terms for the detail pane, so a match that only lives in the rule content is still visible
+const DETAIL_FIELDS = ['ruleId', 'version', 'title', 'discussion', 'check', 'fix', 'ccis']
+const detailHighlight = computed(() => diffMode.value
+  ? {}
+  : Object.fromEntries(DETAIL_FIELDS.map(f => [f, highlightTerm(f)]).filter(([, term]) => term)))
+watch(detailHighlight, v => emit('update:highlight', v), { immediate: true })
 </script>
 
 <template>

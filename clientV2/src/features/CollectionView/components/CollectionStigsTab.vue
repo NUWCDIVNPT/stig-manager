@@ -21,6 +21,11 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  // Gated by CollectionView.collectionReady
+  ready: {
+    type: Boolean,
+    default: true,
+  },
 })
 
 const router = useRouter()
@@ -55,7 +60,10 @@ const { state: checklistAssets, isLoading: checklistAssetsLoading, execute: load
 )
 
 // Initial Load
-watch([() => props.collectionId, () => props.selectedLabelNames, () => props.refreshKey], () => {
+watch([() => props.ready, () => props.collectionId, () => props.selectedLabelNames, () => props.refreshKey], () => {
+  if (!props.ready) {
+    return
+  }
   loadStigs()
   selectedBenchmarkId.value = null
 }, { immediate: true, deep: true })

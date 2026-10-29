@@ -95,6 +95,11 @@ watch([() => props.collectionId], () => {
   loadCollection()
 }, { immediate: true })
 
+// Children stay mounted (no layout flash) but hold their fetches until the
+// collection itself has loaded, so a deleted or revoked collection only fails
+// through the fetchCollection error path above.
+const collectionReady = computed(() => Boolean(collection.value))
+
 // Map route name to tab value
 const routeToTab = {
   'collection-stigs': 'stigs',
@@ -203,7 +208,7 @@ function toggleDashboardSidebar() {
 </script>
 
 <template>
-  <div v-if="collection" class="collection-view">
+  <div class="collection-view">
     <Splitter
       :pt="{
         gutter: { style: isManagement ? 'display: none' : 'background: var(--color-border-dark)' },
@@ -237,6 +242,7 @@ function toggleDashboardSidebar() {
               :collection-id="collectionId"
               :collection-name="collectionName"
               :refresh-key="refreshKey"
+              :ready="collectionReady"
               vertical
             />
             <div class="sidebar-export">
@@ -281,20 +287,20 @@ function toggleDashboardSidebar() {
 
             <TabPanels :pt="tabPanelsPt">
               <TabPanel value="stigs" :pt="tabPanelPt">
-                <CollectionStigsTab v-if="visitedTabs.has('stigs')" :collection-id="collectionId" :selected-label-names="tabLabelNames.stigs" :refresh-key="refreshKey" />
+                <CollectionStigsTab v-if="visitedTabs.has('stigs')" :collection-id="collectionId" :selected-label-names="tabLabelNames.stigs" :refresh-key="refreshKey" :ready="collectionReady" />
               </TabPanel>
               <TabPanel value="assets" :pt="tabPanelPt">
-                <CollectionAssetsTab v-if="visitedTabs.has('assets')" :collection-id="collectionId" :selected-label-names="tabLabelNames.assets" :refresh-key="refreshKey" />
+                <CollectionAssetsTab v-if="visitedTabs.has('assets')" :collection-id="collectionId" :selected-label-names="tabLabelNames.assets" :refresh-key="refreshKey" :ready="collectionReady" />
               </TabPanel>
               <TabPanel value="labels" :pt="tabPanelPt">
-                <CollectionLabelsTab v-if="visitedTabs.has('labels')" :collection-id="collectionId" :selected-label-names="tabLabelNames.labels" />
+                <CollectionLabelsTab v-if="visitedTabs.has('labels')" :collection-id="collectionId" :selected-label-names="tabLabelNames.labels" :ready="collectionReady" />
               </TabPanel>
               <TabPanel value="findings" :pt="tabPanelPt">
-                <Findings v-if="visitedTabs.has('findings')" :collection-id="collectionId" :selected-label-names="tabLabelNames.findings" />
+                <Findings v-if="visitedTabs.has('findings')" :collection-id="collectionId" :selected-label-names="tabLabelNames.findings" :ready="collectionReady" />
               </TabPanel>
               <TabPanel v-if="canManage" value="management" :pt="tabPanelPt">
                 <Transition name="management-fade">
-                  <CollectionManage v-if="isManagement" :collection-id="collectionId" @imported="handleImported" />
+                  <CollectionManage v-if="isManagement && collectionReady" :collection-id="collectionId" @imported="handleImported" />
                 </Transition>
               </TabPanel>
             </TabPanels>

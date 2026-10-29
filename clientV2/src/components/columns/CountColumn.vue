@@ -2,10 +2,13 @@
 import Column from 'primevue/column'
 import { computed, getCurrentInstance } from 'vue'
 import { dashZero } from '../../shared/lib/numberFormat.js'
+import { listTooltip } from '../../shared/lib/tooltips.js'
 
 const props = defineProps({
   field: String,
   header: String,
+  // row => string[] shown one per line on hover (e.g. the STIG names behind a STIG count)
+  tooltipValues: Function,
 })
 
 // field may be a dotted path (statistics.userCount), as Column sorting allows
@@ -25,7 +28,16 @@ if (import.meta.env.DEV && getCurrentInstance()?.vnode.key == null) {
 <template>
   <Column :field="field" :header="header">
     <template #body="{ data }">
-      {{ dashZero(valueOf(data)) }}
+      <span v-tooltip.top="listTooltip(tooltipValues?.(data))" class="count-cell">
+        {{ dashZero(valueOf(data)) }}
+      </span>
     </template>
   </Column>
 </template>
+
+<style scoped>
+/* block so the whole cell, not just the digits, is the tooltip hover target */
+.count-cell {
+  display: block;
+}
+</style>
