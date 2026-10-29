@@ -147,6 +147,17 @@ watch(isManagement, () => {
 // (and fetch) unvisited in the new one.
 const visitedTabs = ref(new Set([activeTab.value]))
 watch(activeTab, tab => visitedTabs.value.add(tab))
+
+// Hidden tabs keep the label filter they last saw, so a filter change refetches only
+// the visible tab; the others pick it up (and refetch) when next activated.
+const tabLabelNames = ref({})
+watch([activeTab, selectedLabelNames], ([tab, names]) => {
+  // selectedLabelNames is a fresh array per filter change, so compare contents:
+  // a filter that changed and reverted while this tab was hidden is not a change
+  if (JSON.stringify(tabLabelNames.value[tab]) !== JSON.stringify(names)) {
+    tabLabelNames.value[tab] = names
+  }
+}, { immediate: true })
 watch(() => props.collectionId, () => {
   visitedTabs.value = new Set([activeTab.value])
 })
@@ -212,7 +223,7 @@ function toggleDashboardSidebar() {
       <SplitterPanel
         :size="18"
         :min-size="4"
-        :pt="{ root: { class: { 'sidebar-panel--collapsed': dashboardCollapsed, 'sidebar-panel--animating': isAnimating || sidebarTransitioning, 'sidebar-panel--hidden': isManagement }, style: isManagement ? '' : 'min-width: 380px; max-width: 460px;' } }"
+        :pt="{ root: { class: { 'sidebar-panel--collapsed': dashboardCollapsed, 'sidebar-panel--animating': isAnimating || sidebarTransitioning, 'sidebar-panel--hidden': isManagement }, style: isManagement ? '' : 'min-width: 320px; max-width: 460px;' } }"
       >
         <aside class="dashboard-sidebar">
           <button
@@ -280,16 +291,16 @@ function toggleDashboardSidebar() {
 
             <TabPanels :pt="tabPanelsPt">
               <TabPanel value="stigs" :pt="tabPanelPt">
-                <CollectionStigsTab v-if="visitedTabs.has('stigs')" :collection-id="collectionId" :selected-label-names="selectedLabelNames" :refresh-key="refreshKey" :ready="collectionReady" />
+                <CollectionStigsTab v-if="visitedTabs.has('stigs')" :collection-id="collectionId" :selected-label-names="tabLabelNames.stigs" :refresh-key="refreshKey" :ready="collectionReady" />
               </TabPanel>
               <TabPanel value="assets" :pt="tabPanelPt">
-                <CollectionAssetsTab v-if="visitedTabs.has('assets')" :collection-id="collectionId" :selected-label-names="selectedLabelNames" :refresh-key="refreshKey" :ready="collectionReady" />
+                <CollectionAssetsTab v-if="visitedTabs.has('assets')" :collection-id="collectionId" :selected-label-names="tabLabelNames.assets" :refresh-key="refreshKey" :ready="collectionReady" />
               </TabPanel>
               <TabPanel value="labels" :pt="tabPanelPt">
-                <CollectionLabelsTab v-if="visitedTabs.has('labels')" :collection-id="collectionId" :selected-label-names="selectedLabelNames" :ready="collectionReady" />
+                <CollectionLabelsTab v-if="visitedTabs.has('labels')" :collection-id="collectionId" :selected-label-names="tabLabelNames.labels" :ready="collectionReady" />
               </TabPanel>
               <TabPanel value="findings" :pt="tabPanelPt">
-                <Findings v-if="visitedTabs.has('findings')" :collection-id="collectionId" :selected-label-names="selectedLabelNames" :ready="collectionReady" />
+                <Findings v-if="visitedTabs.has('findings')" :collection-id="collectionId" :selected-label-names="tabLabelNames.findings" :ready="collectionReady" />
               </TabPanel>
               <TabPanel v-if="canManage" value="management" :pt="tabPanelPt">
                 <Transition name="management-fade">

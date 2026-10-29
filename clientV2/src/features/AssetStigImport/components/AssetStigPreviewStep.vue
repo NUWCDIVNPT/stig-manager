@@ -4,16 +4,19 @@ import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref } from 'vue'
 import ActionToolbar from '../../../components/common/ActionToolbar.vue'
+import CatBadge from '../../../components/common/CatBadge.vue'
 import DensityControls from '../../../components/common/DensityControls.vue'
 import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../components/common/GridSearch.vue'
 import HighlightText from '../../../components/common/HighlightText.vue'
 import ResultBadge from '../../../components/common/ResultBadge.vue'
+import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
-import { capitalize } from '../../../shared/lib/exportCells.js'
-import { severitySortValue } from '../../../shared/lib/gridSorts.js'
+import { severityMap } from '../../../shared/lib/checklistUtils.js'
+import { catLabel, statusText } from '../../../shared/lib/exportCells.js'
+import { resultSortValue, severitySortValue, statusSortValue } from '../../../shared/lib/gridSorts.js'
 
 const props = defineProps({
   matched: { type: Array, required: true },
@@ -68,14 +71,15 @@ const {
   { field: 'ruleId', header: 'Rule' },
   { field: 'title', header: 'Title' },
   { field: 'groupId', header: 'Group' },
-  { field: 'severity', header: 'Severity', filterValues: r => capitalize(r.severity) },
+  { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false },
   { field: 'currentResult', header: 'Current', filterValues: r => badgeFor(r.currentResult) ?? '', quickSearch: false },
   { field: 'newResult', header: 'New', filterValues: r => badgeFor(r.newResult) ?? '', quickSearch: false },
   { field: 'newDetail', header: 'New Detail' },
   { field: 'newComment', header: 'New Comment' },
-  { field: 'newStatus', header: 'New Status', filterValues: r => capitalize(r.newStatus), quickSearch: false },
+  { field: 'newStatus', header: 'New Status', filterValues: r => statusText(r.newStatus), quickSearch: false },
 ])
 const exportResult = ({ data }) => badgeFor(data) ?? ''
+const exportStatus = ({ data }) => statusText(data)
 
 const centerHeaderPt = { columnHeaderContent: { style: 'justify-content: center;' } }
 </script>
@@ -133,14 +137,19 @@ const centerHeaderPt = { columnHeaderContent: { style: 'justify-content: center;
             <HighlightText :text="data.groupId" :term="highlightTerm('groupId')" />
           </template>
         </Column>
-        <Column field="severity" :sort-field="severitySortValue" header="Severity" style="width: 9rem" sortable />
-        <Column header="Current" field="currentResult" :export-value="exportResult" style="width: 7.25rem; text-align: center" :pt="centerHeaderPt" :sort-field="r => r.currentResult ?? ''" sortable>
+        <Column field="severity" :sort-field="severitySortValue" header="CAT" style="width: 6.5rem; text-align: center" :pt="centerHeaderPt" sortable>
+          <template #body="{ data }">
+            <CatBadge v-if="severityMap[data.severity]" :category="severityMap[data.severity]" variant="label" centered />
+            <span v-else class="status-empty">—</span>
+          </template>
+        </Column>
+        <Column header="Current" field="currentResult" :export-value="exportResult" style="width: 7.25rem; text-align: center" :pt="centerHeaderPt" :sort-field="r => resultSortValue(r.currentResult)" sortable>
           <template #body="{ data }">
             <ResultBadge v-if="badgeFor(data.currentResult)" :status="badgeFor(data.currentResult)" />
             <span v-else>—</span>
           </template>
         </Column>
-        <Column header="New" field="newResult" :export-value="exportResult" style="width: 7.25rem; text-align: center" :pt="centerHeaderPt" :sort-field="r => r.newResult ?? ''" sortable>
+        <Column header="New" field="newResult" :export-value="exportResult" style="width: 7.25rem; text-align: center" :pt="centerHeaderPt" :sort-field="r => resultSortValue(r.newResult)" sortable>
           <template #body="{ data }">
             <ResultBadge v-if="badgeFor(data.newResult)" :status="badgeFor(data.newResult)" />
             <span v-else>—</span>
@@ -156,9 +165,9 @@ const centerHeaderPt = { columnHeaderContent: { style: 'justify-content: center;
             <span class="cell-text--clamped" :title="data.newComment"><HighlightText :text="data.newComment" :term="highlightTerm('newComment')" /></span>
           </template>
         </Column>
-        <Column field="newStatus" header="New Status" style="width: 10rem" sortable>
+        <Column field="newStatus" header="New Status" :export-value="exportStatus" style="width: 9rem; text-align: center" :pt="centerHeaderPt" :sort-field="r => statusSortValue({ status: r.newStatus })" sortable>
           <template #body="{ data }">
-            <span v-if="data.newStatus" class="status-pill">{{ data.newStatus }}</span>
+            <StatusBadge v-if="data.newStatus" :status="data.newStatus" />
             <span v-else class="status-empty">—</span>
           </template>
         </Column>
@@ -343,17 +352,6 @@ const centerHeaderPt = { columnHeaderContent: { style: 'justify-content: center;
   color: var(--color-text-dim);
   border: 1px solid var(--color-border-default);
   font-family: var(--font-mono);
-}
-
-.status-pill {
-  display: inline-block;
-  padding: 0.05rem 0.5rem;
-  border-radius: 999px;
-  background: var(--color-background-darkest);
-  color: var(--color-text-primary);
-  border: 1px solid var(--color-border-default);
-  font-size: var(--text-sm);
-  text-transform: capitalize;
 }
 
 .status-empty {

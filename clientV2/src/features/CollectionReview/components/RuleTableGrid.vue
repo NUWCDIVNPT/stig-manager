@@ -20,6 +20,7 @@ import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { durationToNow } from '../../../shared/lib.js'
 import { calculateChecklistStats, getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
 import { gridColumnPt } from '../../../shared/lib/dataTablePt.js'
+import { statusSortValue } from '../../../shared/lib/gridSorts.js'
 import { formatReviewDate, statusPayloadForAction } from '../../../shared/lib/reviewFormUtils.js'
 import { patchReview, putReview } from '../../AssetReview/api/assetReviewApi.js'
 
@@ -398,7 +399,7 @@ const dataTablePt = {
     </Column>
 
     <!-- Status -->
-    <Column field="status" header="Status" sort-field="status.label" sortable :style="{ width: '9rem', minWidth: '9rem' }" :pt="columnPt.center">
+    <Column field="status" header="Status" :sort-field="statusSortValue" sortable :style="{ width: '9rem', minWidth: '9rem' }" :pt="columnPt.center">
       <template #body="{ data }">
         <StatusBadge v-if="data.status" :status="data.status?.label ?? data.status" />
       </template>

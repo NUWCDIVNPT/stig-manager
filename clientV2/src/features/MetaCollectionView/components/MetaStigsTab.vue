@@ -138,8 +138,8 @@ function handleAssetStigAction(rowData) {
               agg-type="stig"
               :is-loading="stigsLoading"
               selectable
-              data-key="benchmarkId"
-              :selected-key="selectedStig?.benchmarkId"
+              data-key="revisionKey"
+              :selected-key="selectedStig?.revisionKey"
               @row-select="handleStigSelect"
               @refresh="loadStigs"
             />
