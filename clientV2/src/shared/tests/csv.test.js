@@ -111,6 +111,12 @@ describe('generateCsv', () => {
     expect(generateCsv(data, cols)).toBe('Name,IP\nsrv,1.2.3.4')
   })
 
+  it('adds a leading Marking column only when asked', () => {
+    const data = [{ name: 'srv', ip: '1.2.3.4' }, { name: 'srv2' }]
+    expect(generateCsv(data, cols, ',', { marking: '(U)' })).toBe('Marking,Name,IP\n(U),srv,1.2.3.4\n(U),srv2,')
+    expect(generateCsv(data, cols, ',', {})).toBe('Name,IP\nsrv,1.2.3.4\nsrv2,')
+  })
+
   it('emits empty cells when an apiProperty is missing on the data row', () => {
     const data = [{ name: 'srv' }]
     expect(generateCsv(data, cols)).toBe('Name,IP\nsrv,')

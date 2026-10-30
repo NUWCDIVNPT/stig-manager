@@ -4,6 +4,7 @@ import { buildQueryString } from '../../shared/api/queryString.js'
 import { useGlobalError } from '../../shared/composables/useGlobalError.js'
 import {
   ASSET_FIELDS,
+  csvMarking,
   formatAssetsForCsv,
   generateCsv,
   mapAssetToLabel,
@@ -109,7 +110,7 @@ export async function handleInventoryExport({
         finalFields = csvFields
       }
 
-      const csvContent = generateCsv(data, finalFields, finalDelimiter)
+      const csvContent = generateCsv(data, finalFields, finalDelimiter, { marking: csvMarking() })
       downloadData = new Blob([csvContent])
     }
     else {

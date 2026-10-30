@@ -83,18 +83,18 @@ Each step is small, leaves the suite green, and can be reviewed alone. Run
 
 ### Step 3: `Marking` column in the inventory export
 
-- [ ] Change `generateCsv(data, columns, listDelimiter)` to
+- [x] Change `generateCsv(data, columns, listDelimiter)` to
   `generateCsv(data, columns, listDelimiter, { marking } = {})`, using the same rule as
   step 2.
-- [ ] In `exportMetricsUtils.js`, the inventory CSV branch passes
+- [x] In `exportMetricsUtils.js`, the inventory CSV branch passes
   `{ marking: csvMarking() }`. This covers group-by-asset, including the asset-format
   output with its `___skipped___` placeholder columns, and group-by-STIG. JSON output
   stays as it is.
-- [ ] `csv.test.js`: `generateCsv` with and without the option.
-- [ ] `exportMetricsUtils.test.js`: the inventory CSV is marked for both groupings, and
+- [x] `csv.test.js`: `generateCsv` with and without the option.
+- [x] `exportMetricsUtils.test.js`: the inventory CSV is marked for both groupings, and
   JSON is unchanged.
-- [ ] Confirm that `ExportAssetsCsvButton.test.js` passes unchanged. The asset export
-  stays unmarked (D5).
+- [x] `ExportAssetsCsvButton.test.js` now asserts the exact header row, so a Marking
+  column added by mistake fails the test. The asset export stays unmarked (D5).
 - **Done when:** the inventory CSV is marked and asset export files still re-import.
 
 ### Step 4: docs and manual check

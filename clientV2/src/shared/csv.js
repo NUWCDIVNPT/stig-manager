@@ -36,12 +36,13 @@ export function escapeCsv(value) {
  * - Array values are joined with `listDelimiter`. If items are objects and
  *   the column declares `delimitedProperty`, that property is extracted first.
  * - Missing properties produce empty cells, preserving header order.
+ * - With `marking`, a leading `Marking` column carries it on every row.
  */
-export function generateCsv(data, columns, listDelimiter = ',') {
+export function generateCsv(data, columns, listDelimiter = ',', { marking } = {}) {
   const csvRows = []
 
-  const headerRow = columns.map(c => escapeCsv(c.header)).join(',')
-  csvRows.push(headerRow)
+  const headers = columns.map(c => c.header)
+  csvRows.push((marking ? ['Marking', ...headers] : headers).map(escapeCsv).join(','))
 
   for (const item of data) {
     const rowValues = columns.map((col) => {
@@ -54,7 +55,7 @@ export function generateCsv(data, columns, listDelimiter = ',') {
       }
       return escapeCsv(val)
     })
-    csvRows.push(rowValues.join(','))
+    csvRows.push((marking ? [escapeCsv(marking), ...rowValues] : rowValues).join(','))
   }
   return csvRows.join('\n')
 }
