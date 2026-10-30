@@ -574,8 +574,9 @@ html[data-skin='lcars'] .p-button.p-button-text {
 }
 
 html[data-skin='lcars'] .p-button.p-button-outlined {
-  border: 2px solid var(--lcars-slate);
-  background: transparent;
+  border: none;
+  background: var(--lcars-slate);
+  color: var(--lcars-black);
 }
 
 html[data-skin='lcars'] .p-button.p-button-outlined:hover,
@@ -662,4 +663,406 @@ html[data-skin='lcars'] .review-edit-popover__textarea {
 
 html[data-skin='lcars'] .review-edit-popover__attr-pill {
   border-radius: 999px !important;
+}
+
+/* ---------- Grid toolbar triggers: pills ---------- */
+/* solid blocks, no outlines: LCARS controls are filled shapes */
+html[data-skin='lcars'] .grid-filter-btn,
+html[data-skin='lcars'] .column-toggle-select,
+html[data-skin='lcars'] .p-multiselect,
+html[data-skin='lcars'] .density-controls,
+html[data-skin='lcars'] .action-btn {
+  border-radius: 999px !important;
+  border: none !important;
+  background: var(--lcars-slate) !important;
+  color: var(--lcars-black) !important;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+html[data-skin='lcars'] .grid-filter-btn *,
+html[data-skin='lcars'] .column-toggle-select *,
+html[data-skin='lcars'] .density-controls *,
+html[data-skin='lcars'] .action-btn * {
+  color: var(--lcars-black) !important;
+}
+
+/* overlay triggers keep one color so they always match the frame they open;
+   only plain action buttons change on hover */
+html[data-skin='lcars'] .action-btn:hover {
+  background: var(--lcars-tanoi) !important;
+}
+
+html[data-skin='lcars'] .grid-filter-btn:focus,
+html[data-skin='lcars'] .grid-filter-btn:focus-visible,
+html[data-skin='lcars'] .p-multiselect:focus,
+html[data-skin='lcars'] .p-multiselect:focus-visible,
+html[data-skin='lcars'] .p-multiselect.p-focus,
+html[data-skin='lcars'] .p-select:focus,
+html[data-skin='lcars'] .p-select.p-focus,
+html[data-skin='lcars'] .p-select:focus-visible,
+html[data-skin='lcars'] .p-inputtext:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: transparent !important;
+}
+
+/* text fields: dark pills with no border */
+html[data-skin='lcars'] .grid-search,
+html[data-skin='lcars'] .p-inputtext,
+html[data-skin='lcars'] .p-select {
+  border-radius: 999px !important;
+  border: none !important;
+  background: #161616 !important;
+  color: var(--lcars-tanoi) !important;
+  box-shadow: none !important;
+}
+
+html[data-skin='lcars'] .grid-search:focus-within,
+html[data-skin='lcars'] .p-inputtext:focus,
+html[data-skin='lcars'] .p-select:focus-within {
+  background: #1f1a10 !important;
+  outline: none !important;
+}
+
+html[data-skin='lcars'] .grid-search__input {
+  background: transparent !important;
+  border: none !important;
+  color: var(--lcars-tanoi) !important;
+}
+
+html[data-skin='lcars'] .grid-filter-btn__count {
+  background: var(--lcars-orange) !important;
+  color: var(--lcars-black) !important;
+  border-radius: 999px !important;
+}
+
+/* ---------- Overlays swoop out of their trigger with a fat elbow ----------
+   PrimeVue draws the popover arrow with ::before/::after; those become the
+   bar notches instead. The thick top bar and left column meet in a big
+   rounded corner; the far edges are thin so the content stays the focus. */
+html[data-skin='lcars'] .p-popover:has(.grid-filter),
+html[data-skin='lcars'] .p-multiselect-overlay,
+html[data-skin='lcars'] .p-select-overlay {
+  --frame: var(--lcars-slate);
+  background: var(--lcars-black) !important;
+  border: 2px solid var(--frame) !important;
+  border-left-width: 1.1rem !important;
+  border-top-width: 1.1rem !important;
+  border-radius: 2.6rem 1.6rem 1.6rem 1.6rem !important;
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.8) !important;
+  margin-top: 0.4rem;
+  overflow: visible;
+}
+
+/* the frame takes the trigger's color, so an open trigger holds that color
+   instead of its hover color */
+html[data-skin='lcars'] .column-toggle-select.p-multiselect-open,
+html[data-skin='lcars'] .column-toggle-select.p-multiselect-open:hover {
+  background: var(--lcars-slate) !important;
+}
+
+/* content sits inset from the frame so no square corner meets the curve */
+html[data-skin='lcars'] .p-popover:has(.grid-filter),
+html[data-skin='lcars'] .p-multiselect-overlay,
+html[data-skin='lcars'] .p-select-overlay {
+  padding: 0.5rem 0.4rem 0.4rem 0.3rem;
+}
+
+html[data-skin='lcars'] .p-multiselect-overlay > :first-child,
+html[data-skin='lcars'] .p-select-overlay > :first-child,
+html[data-skin='lcars'] .p-multiselect-overlay .p-multiselect-header {
+  border-radius: 1.4rem 0.8rem 0 0;
+}
+
+html[data-skin='lcars'] .p-multiselect-overlay > :last-child,
+html[data-skin='lcars'] .p-select-overlay > :last-child {
+  border-radius: 0 0 1rem 1rem;
+}
+
+html[data-skin='lcars'] .p-popover:has(.grid-filter)::before,
+html[data-skin='lcars'] .p-popover:has(.grid-filter)::after,
+html[data-skin='lcars'] .p-multiselect-overlay::before,
+html[data-skin='lcars'] .p-multiselect-overlay::after,
+html[data-skin='lcars'] .p-select-overlay::before,
+html[data-skin='lcars'] .p-select-overlay::after {
+  content: '';
+  position: absolute;
+  top: -1.1rem;
+  width: 0.35rem;
+  height: 1.1rem;
+  background: var(--lcars-black);
+  border: none !important;
+  transform: none;
+  left: auto;
+  bottom: auto;
+}
+
+html[data-skin='lcars'] .p-popover:has(.grid-filter)::before,
+html[data-skin='lcars'] .p-multiselect-overlay::before,
+html[data-skin='lcars'] .p-select-overlay::before { right: 3rem; }
+
+html[data-skin='lcars'] .p-popover:has(.grid-filter)::after,
+html[data-skin='lcars'] .p-multiselect-overlay::after,
+html[data-skin='lcars'] .p-select-overlay::after { right: 7rem; }
+
+html[data-skin='lcars'] .grid-filter__head,
+html[data-skin='lcars'] .grid-filter__foot {
+  background: var(--lcars-black) !important;
+}
+
+html[data-skin='lcars'] .grid-filter__head > :first-child {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--lcars-orange);
+}
+
+/* inner list follows the frame's curves so nothing pokes out of a corner */
+html[data-skin='lcars'] .p-multiselect-overlay .p-multiselect-list-container,
+html[data-skin='lcars'] .p-select-overlay .p-select-list-container,
+html[data-skin='lcars'] .p-popover:has(.grid-filter) .p-popover-content {
+  border-radius: 1.2rem 1.2rem 1.2rem 1.2rem;
+  overflow: hidden;
+}
+
+html[data-skin='lcars'] .p-multiselect-overlay .p-multiselect-header,
+html[data-skin='lcars'] .p-multiselect-overlay .p-multiselect-option-group {
+  background: var(--lcars-black) !important;
+  color: var(--lcars-orange) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ---------- Home: each widget is an LCARS frame ---------- */
+html[data-skin='lcars'] .home-panel {
+  --frame: var(--lcars-tanoi);
+  --p-panel-header-background: var(--lcars-black);
+  --p-panel-header-border-width: 0;
+  --p-panel-background: var(--lcars-black);
+  border: none !important;
+  border-left: 1.1rem solid var(--frame) !important;
+  border-top: 0.45rem solid var(--frame) !important;
+  border-radius: 1.8rem 0 0 0.6rem !important;
+  position: relative;
+}
+
+html[data-skin='lcars'] .home-panel::after {
+  content: '';
+  position: absolute;
+  top: -0.45rem;
+  right: 3rem;
+  width: 0.35rem;
+  height: 0.45rem;
+  background: var(--lcars-black);
+}
+
+html[data-skin='lcars'] .home-grid > :nth-child(4n + 2) .home-panel,
+html[data-skin='lcars'] .home-grid > :nth-child(4n + 2).home-panel { --frame: var(--lcars-lilac); }
+html[data-skin='lcars'] .home-grid > :nth-child(4n + 3) .home-panel,
+html[data-skin='lcars'] .home-grid > :nth-child(4n + 3).home-panel { --frame: var(--lcars-periwinkle); }
+html[data-skin='lcars'] .home-grid > :nth-child(4n + 4) .home-panel,
+html[data-skin='lcars'] .home-grid > :nth-child(4n + 4).home-panel { --frame: var(--lcars-ice); }
+
+html[data-skin='lcars'] .card-title {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--lcars-orange) !important;
+}
+
+/* ---------- Findings panels: left brackets like the grid panels ---------- */
+html[data-skin='lcars'] .findings__panel {
+  background: var(--lcars-black) !important;
+  border: none !important;
+  border-left: 0.9rem solid var(--lcars-slate) !important;
+  border-top: 0.45rem solid var(--lcars-slate) !important;
+  border-bottom: 0.45rem solid var(--lcars-slate) !important;
+  border-radius: 1.8rem 0 0 1.8rem !important;
+}
+
+/* ---------- Admin side nav: pill blocks like the rail ---------- */
+html[data-skin='lcars'] .admin-nav-item {
+  border-radius: 0 999px 999px 0 !important;
+  background: var(--lcars-slate) !important;
+  color: var(--lcars-black) !important;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.35rem;
+}
+
+html[data-skin='lcars'] .admin-nav-item:hover {
+  filter: brightness(1.12);
+}
+
+html[data-skin='lcars'] .admin-nav-item.is-active {
+  background: var(--lcars-orange) !important;
+  color: var(--lcars-black) !important;
+}
+
+/* ---------- Segmented tab buttons (Management, user detail) ---------- */
+html[data-skin='lcars'] .manage-header .p-button,
+html[data-skin='lcars'] .manage-header .p-togglebutton {
+  border-radius: 999px !important;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin: 0 0.15rem;
+}
+
+/* header label/collection filter: its wrapper already draws the box, so the
+   inner control stays borderless and in sentence case */
+html[data-skin='lcars'] .breadcrumb-filter .p-multiselect {
+  border: none !important;
+  background: transparent !important;
+}
+
+html[data-skin='lcars'] .breadcrumb-filter .p-multiselect,
+html[data-skin='lcars'] .breadcrumb-filter .p-multiselect * {
+  text-transform: none;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+/* review toolbar: bulk actions and checklist menu are solid pills too */
+html[data-skin='lcars'] .checklist-grid__bulk-btn,
+html[data-skin='lcars'] .checklist-grid__menu-btn {
+  border: none !important;
+  border-radius: 999px !important;
+  background: var(--lcars-tanoi) !important;
+  color: var(--lcars-black) !important;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+html[data-skin='lcars'] .checklist-grid__bulk-btn:hover,
+html[data-skin='lcars'] .checklist-grid__menu-btn:hover {
+  background: var(--lcars-orange) !important;
+}
+
+html[data-skin='lcars'] .checklist-grid__bulk-btn:disabled {
+  opacity: 0.45;
+}
+
+html[data-skin='lcars'] .checklist-grid__menu-caret,
+html[data-skin='lcars'] .checklist-grid__bulk-btn * {
+  color: var(--lcars-black) !important;
+}
+
+/* density steppers: black glyphs on the slate pill, disabled ones faded */
+html[data-skin='lcars'] .density-controls__btn {
+  border: none !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+}
+
+html[data-skin='lcars'] .density-controls__btn img {
+  filter: brightness(0);
+}
+
+html[data-skin='lcars'] .density-controls__btn:hover:not(:disabled) {
+  background: var(--lcars-black) !important;
+}
+
+html[data-skin='lcars'] .density-controls__btn:hover:not(:disabled) img {
+  filter: brightness(0) invert(1);
+}
+
+html[data-skin='lcars'] .density-controls__btn:disabled img {
+  opacity: 0.35;
+}
+
+/* ---------- Review popover funnel ----------
+   The frame's bottom (or top, when the popover opens below the row) bar
+   grows a tapered orange funnel that points at the clicked row. The app
+   publishes the click's x offset as --sm-popover-arrow-left; the funnel is
+   centered on it. ::after is repurposed from a notch for this. */
+html[data-skin='lcars'] .p-popover.review-popover {
+  --funnel-w: 9rem;
+  --funnel-h: 2.2rem;
+  border-bottom: 0.6rem solid var(--lcars-orange) !important;
+  overflow: visible;
+}
+
+html[data-skin='lcars'] .p-popover.review-popover::after {
+  content: '';
+  position: absolute;
+  width: var(--funnel-w);
+  height: var(--funnel-h);
+  left: calc(var(--sm-popover-arrow-left, 6rem) - var(--funnel-w) / 2 - 1.1rem);
+  right: auto;
+  background: var(--lcars-orange);
+  border: none;
+  transform: none;
+}
+
+/* above the row: funnel hangs off the bottom bar, narrowing toward the row */
+html[data-skin='lcars'] .p-popover.review-popover.p-popover-flipped::after {
+  top: auto;
+  bottom: calc(-1 * var(--funnel-h) - 0.6rem);
+  /* curved shoulders (path units are px at the skin's 14px root: 126 x 31) */
+  clip-path: path('M0 0 H126 C104 2 92 12 84 31 H42 C34 12 22 2 0 0 Z');
+}
+
+/* below the row: funnel rises from the top bar */
+html[data-skin='lcars'] .p-popover.review-popover:not(.p-popover-flipped)::after {
+  bottom: auto;
+  top: calc(-1 * var(--funnel-h) - 0.6rem);
+  clip-path: path('M42 0 H84 C92 19 104 29 126 31 H0 C22 29 34 19 42 0 Z');
+}
+
+/* popup status/undo buttons: solid pills, faded when unavailable */
+html[data-skin='lcars'] .review-edit-popover__btn-fixed,
+html[data-skin='lcars'] .review-edit-popover__undo-btn,
+html[data-skin='lcars'] .review-edit-popover__actions .p-button {
+  border: none !important;
+  border-radius: 999px !important;
+  background: var(--lcars-slate) !important;
+  color: var(--lcars-black) !important;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+html[data-skin='lcars'] .review-edit-popover__btn-fixed *,
+html[data-skin='lcars'] .review-edit-popover__undo-btn *,
+html[data-skin='lcars'] .review-edit-popover__actions .p-button * {
+  color: var(--lcars-black) !important;
+}
+
+html[data-skin='lcars'] .review-edit-popover__btn-fixed:not(:disabled):hover,
+html[data-skin='lcars'] .review-edit-popover__undo-btn:not(:disabled):hover,
+html[data-skin='lcars'] .review-edit-popover__actions .p-button:not(:disabled):hover {
+  background: var(--lcars-tanoi) !important;
+}
+
+html[data-skin='lcars'] .review-edit-popover__btn-fixed:disabled,
+html[data-skin='lcars'] .review-edit-popover__undo-btn:disabled,
+html[data-skin='lcars'] .review-edit-popover__actions .p-button:disabled {
+  opacity: 0.35;
+}
+
+/* status buttons (Submit / Accept / Reject) in the popup: solid pills */
+html[data-skin='lcars'] .status-button {
+  border: none !important;
+  border-radius: 999px !important;
+  background: var(--lcars-slate) !important;
+  color: var(--lcars-black) !important;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+html[data-skin='lcars'] .status-button * {
+  color: var(--lcars-black) !important;
+}
+
+html[data-skin='lcars'] .status-button:not(.status-button--disabled):hover {
+  background: var(--lcars-tanoi) !important;
+}
+
+html[data-skin='lcars'] .status-button--active {
+  background: var(--lcars-orange) !important;
+}
+
+html[data-skin='lcars'] .status-button--disabled {
+  opacity: 0.35;
 }
