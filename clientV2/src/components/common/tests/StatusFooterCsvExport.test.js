@@ -1,8 +1,9 @@
 import { screen } from '@testing-library/vue'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { nextTick, ref } from 'vue'
+import { useGlobalAppStore } from '../../../shared/stores/globalAppStore.js'
 import { renderWithProviders } from '../../../testUtils/utils.js'
 import StatusFooter from '../StatusFooter.vue'
 
@@ -50,7 +51,11 @@ const Harness = {
 }
 
 describe('statusFooter CSV export against a real DataTable', () => {
+  const appStore = useGlobalAppStore()
+  afterEach(() => appStore.setClassification(null))
+
   it('downloads correctly serialized CSV when the footer button is clicked', async () => {
+    appStore.setClassification('U')
     renderWithProviders(Harness)
     // The DataTable template ref reaches StatusFooter's dt prop on the tick after mount.
     await nextTick()
@@ -61,11 +66,12 @@ describe('statusFooter CSV export against a real DataTable', () => {
     expect(saveAs.mock.calls.at(-1)[1]).toMatch(/^integration-export_\d{4}-\d{2}-\d{2}T\d{4}Z\.csv$/)
 
     const lines = (await savedCsvText()).replace(/^\uFEFF/, '').split('\n')
-    expect(lines[0]).toBe('Name,Count,Tasks')
+    // Legacy Marking column leads every row
+    expect(lines[0]).toBe('Marking,Name,Count,Tasks')
     // Dot path resolves; array of objects serializes as JSON items, not [object Object]
-    expect(lines[1]).toBe('srv1,3,"{""name"":""t1""}, {""name"":""t2""}"')
+    expect(lines[1]).toBe('(U),srv1,3,"{""name"":""t1""}, {""name"":""t2""}"')
     // Formula guard from escapeCsv; field-less and exportable=false columns skipped
-    expect(lines[2]).toBe('"\t=cmd()",0,')
+    expect(lines[2]).toBe('(U),"\t=cmd()",0,')
     expect(lines).toHaveLength(3)
   })
 })

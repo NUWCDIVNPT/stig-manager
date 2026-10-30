@@ -1,6 +1,7 @@
 import { userEvent } from '@testing-library/user-event'
 import { screen } from '@testing-library/vue'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { useGlobalAppStore } from '../../../shared/stores/globalAppStore.js'
 import { renderWithProviders } from '../../../testUtils/utils.js'
 import DiffRuleTable from '../components/DiffRuleTable.vue'
 
@@ -21,7 +22,11 @@ function savedCsvText() {
 // fields, export headers and the default display formatter together must
 // reproduce the legacy diff report columns.
 describe('diffRuleTable CSV export', () => {
+  const appStore = useGlobalAppStore()
+  afterEach(() => appStore.setClassification(null))
+
   it('exports every visible column as displayed', async () => {
+    appStore.setClassification('U')
     renderWithProviders(DiffRuleTable, {
       props: {
         rows: [
@@ -36,9 +41,9 @@ describe('diffRuleTable CSV export', () => {
 
     const csv = await savedCsvText()
     expect(csv.split('\n')).toEqual([
-      'STIG ID,Left rule,Right rule,CAT,Changed properties',
-      'RHEL-08-010000,SV-1r1_rule,SV-1r2_rule,CAT 1,"ruleId, check"',
-      'RHEL-08-010001,SV-2r1_rule,,CAT 2,rule removed',
+      'Marking,STIG ID,Left rule,Right rule,CAT,Changed properties',
+      '(U),RHEL-08-010000,SV-1r1_rule,SV-1r2_rule,CAT 1,"ruleId, check"',
+      '(U),RHEL-08-010001,SV-2r1_rule,,CAT 2,rule removed',
     ])
     expect(saveAs.mock.calls.at(-1)[1]).toMatch(/^Changed Rules_.*\.csv$/)
   })

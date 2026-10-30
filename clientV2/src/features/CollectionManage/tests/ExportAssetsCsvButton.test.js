@@ -70,6 +70,8 @@ describe('exportAssetsCsvButton', () => {
     const [blob, filename] = saveAs.mock.calls[0]
     expect(blob).toBeInstanceOf(globalThis.Blob)
     expect(filename).toMatch(/^assets-Test Collection-\d{4}-\d{2}-\d{2}\.csv$/)
+    // No Marking column: AssetParser rejects unknown headers, so it would break re-import
+    expect((await blob.text()).split('\n')[0]).toBe('Name,Description,IP,FQDN,MAC,Non-Computing,STIGs,Labels,Metadata')
   })
 
   it('filters assets to selectedAssets when provided', async () => {

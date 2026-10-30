@@ -2,6 +2,7 @@ import { saveAs } from 'file-saver-es'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { apiCall } from '../../../shared/api/apiClient.js'
 import { getDownloadUrl } from '../../../shared/serviceWorker.js'
+import { useGlobalAppStore } from '../../../shared/stores/globalAppStore.js'
 import { generateCsv, handleInventoryExport, handleMetricDownload } from '../exportMetricsUtils'
 
 // Mock dependencies
@@ -95,6 +96,10 @@ describe('exportMetricsUtils', () => {
   })
 
   describe('handleInventoryExport', () => {
+    const appStore = useGlobalAppStore()
+    beforeEach(() => appStore.setClassification('U'))
+    afterEach(() => appStore.setClassification(null))
+
     it('should handle asset export with newly active fields and formats', async () => {
       const mockAssets = [{
         assetId: '1',
@@ -138,7 +143,8 @@ describe('exportMetricsUtils', () => {
       const blob = saveAs.mock.calls[0][0]
       const text = await blob.text()
 
-      expect(text).toContain('Name,Description,IP,FQDN,MAC,Non-Computing,STIGs,Labels,Metadata')
+      expect(text.split('\n')[0]).toBe('Marking,Name,Description,IP,FQDN,MAC,Non-Computing,STIGs,Labels,Metadata')
+      expect(text.split('\n')[1]).toMatch(/^\(U\),Asset1,/)
 
       expect(text).toContain('True')
       expect(text).toContain('Label1')
@@ -169,8 +175,46 @@ describe('exportMetricsUtils', () => {
       const blob = saveAs.mock.calls[0][0]
       const text = await blob.text()
 
-      expect(text).toContain('Name,Description,IP,FQDN,MAC')
-      expect(text).toContain('Asset1,,,,,,,,')
+      expect(text).toBe('Marking,Name,Description,IP,FQDN,MAC,Non-Computing,STIGs,Labels,Metadata\n(U),Asset1,,,,,,,,')
+    })
+
+    it('should mark the group-by-STIG CSV', async () => {
+      apiCall.mockResolvedValueOnce([
+        { benchmarkId: 'STIG1', title: 'First' },
+        { benchmarkId: 'STIG2', title: 'Second' },
+      ])
+
+      await handleInventoryExport({
+        groupBy: 'stig',
+        format: 'csv',
+        csvFields: [
+          { apiProperty: 'benchmarkId', header: 'Benchmark' },
+          { apiProperty: 'title', header: 'Title' },
+        ],
+        collectionId: 'col1',
+        collectionName: 'TestCollection',
+        delimiter: 'comma',
+      })
+
+      const text = await saveAs.mock.calls[0][0].text()
+      expect(text).toBe('Marking,Benchmark,Title\n(U),STIG1,First\n(U),STIG2,Second')
+    })
+
+    it('should leave JSON output unmarked', async () => {
+      const stigs = [{ benchmarkId: 'STIG1' }]
+      apiCall.mockResolvedValueOnce(stigs)
+
+      await handleInventoryExport({
+        groupBy: 'stig',
+        format: 'json',
+        include: false,
+        prettyPrint: false,
+        collectionId: 'col1',
+        collectionName: 'TestCollection',
+      })
+
+      const text = await saveAs.mock.calls[0][0].text()
+      expect(text).toBe(JSON.stringify(stigs))
     })
 
     it('should catch errors from fetchApiData and call triggerError', async () => {

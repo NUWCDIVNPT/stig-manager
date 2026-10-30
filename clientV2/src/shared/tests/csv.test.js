@@ -1,6 +1,7 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   ASSET_FIELDS,
+  csvMarking,
   dataTableCellText,
   dataTableCsv,
   escapeCsv,
@@ -11,6 +12,7 @@ import {
   serializeCsvValue,
   STIG_FIELDS,
 } from '../csv.js'
+import { useGlobalAppStore } from '../stores/globalAppStore.js'
 
 vi.mock('file-saver-es', () => ({ saveAs: vi.fn() }))
 
@@ -77,6 +79,23 @@ describe('escapeCsv', () => {
   })
 })
 
+describe('csvMarking', () => {
+  const appStore = useGlobalAppStore()
+  afterEach(() => appStore.setClassification(null))
+
+  it('wraps the classification code in parentheses', () => {
+    appStore.setClassification('U')
+    expect(csvMarking()).toBe('(U)')
+    appStore.setClassification('CUI')
+    expect(csvMarking()).toBe('(CUI)')
+  })
+
+  it('marks NONE deployments as (NONE), like the legacy client', () => {
+    appStore.setClassification('NONE')
+    expect(csvMarking()).toBe('(NONE)')
+  })
+})
+
 describe('generateCsv', () => {
   const cols = [
     { apiProperty: 'name', header: 'Name' },
@@ -90,6 +109,12 @@ describe('generateCsv', () => {
   it('preserves column order regardless of data-key order', () => {
     const data = [{ ip: '1.2.3.4', name: 'srv' }]
     expect(generateCsv(data, cols)).toBe('Name,IP\nsrv,1.2.3.4')
+  })
+
+  it('adds a leading Marking column only when asked', () => {
+    const data = [{ name: 'srv', ip: '1.2.3.4' }, { name: 'srv2' }]
+    expect(generateCsv(data, cols, ',', { marking: '(U)' })).toBe('Marking,Name,IP\n(U),srv,1.2.3.4\n(U),srv2,')
+    expect(generateCsv(data, cols, ',', {})).toBe('Name,IP\nsrv,1.2.3.4\nsrv2,')
   })
 
   it('emits empty cells when an apiProperty is missing on the data row', () => {
@@ -283,6 +308,10 @@ describe('serializeCsvValue', () => {
 })
 
 describe('exportDataTableCsv', () => {
+  const appStore = useGlobalAppStore()
+  beforeEach(() => appStore.setClassification('U'))
+  afterEach(() => appStore.setClassification(null))
+
   // Fake PrimeVue DataTable instance: columnProp reads props straight off the
   // fake column objects, matching how the real method reads Column vnodes.
   function fakeDt(overrides = {}) {
@@ -310,8 +339,8 @@ describe('exportDataTableCsv', () => {
 
     const csv = await savedCsvText()
     const lines = csv.split('\n')
-    expect(lines[0]).toBe('Name,Count,Tasks')
-    expect(lines[1]).toBe('row1,3,"{""name"":""t1""}"')
+    expect(lines[0]).toBe('Marking,Name,Count,Tasks')
+    expect(lines[1]).toBe('(U),row1,3,"{""name"":""t1""}"')
     // Legacy naming: basename_compactUtcTimestamp.csv, e.g. test-export_2026-09-03T1105Z.csv
     expect(saveAs.mock.calls.at(-1)[1]).toMatch(/^test-export_\d{4}-\d{2}-\d{2}T\d{4}Z\.csv$/)
   })
@@ -343,7 +372,7 @@ describe('exportDataTableCsv', () => {
     }))
 
     const csv = await savedCsvText()
-    expect(csv.split('\n')[1]).toBe('row1,derived-row1')
+    expect(csv.split('\n')[1]).toBe('(U),row1,derived-row1')
     expect(seen).toContainEqual(['missing', undefined, 'row1'])
   })
 
@@ -358,7 +387,7 @@ describe('exportDataTableCsv', () => {
     }))
 
     const csv = await savedCsvText()
-    expect(csv.split('\n').slice(0, 2)).toEqual(['Name,Derived', 'row1!3,true:row1'])
+    expect(csv.split('\n').slice(0, 2)).toEqual(['Marking,Name,Derived', '(U),row1!3,true:row1'])
   })
 
   it('applies exportDisplayValue by default so cells export as the grid displays them', async () => {
@@ -381,8 +410,8 @@ describe('exportDataTableCsv', () => {
 
     const csv = await savedCsvText()
     expect(csv.split('\n')).toEqual([
-      'Engine,Status,Result,CAT,Labels',
-      'manual,Submitted,NF,CAT 2,"label-1, label-2"',
+      'Marking,Engine,Status,Result,CAT,Labels',
+      '(U),manual,Submitted,NF,CAT 2,"label-1, label-2"',
     ])
   })
 
@@ -393,7 +422,17 @@ describe('exportDataTableCsv', () => {
     }))
 
     const csv = await savedCsvText()
-    expect(csv.split('\n')[1]).toBe('2026-09-08T12:00:00.000Z')
+    expect(csv.split('\n')[1]).toBe('(U),2026-09-08T12:00:00.000Z')
+  })
+
+  it('leads every row with the classification marking, (NONE) included', async () => {
+    appStore.setClassification('NONE')
+    exportDataTableCsv(fakeDt())
+
+    const lines = (await savedCsvText()).split('\n')
+    expect(lines[0]).toBe('Marking,Name,Count,Tasks')
+    expect(lines.slice(1).every(line => line.startsWith('(NONE),'))).toBe(true)
+    expect(lines).toHaveLength(3)
   })
 
   it('no-ops when DataTable internals are unavailable or the table has no columns', () => {
@@ -409,6 +448,24 @@ describe('exportDataTableCsv', () => {
       const dt = fakeDt()
       const csv = dataTableCsv(dt, [dt.processedData[0]])
       expect(csv).toBe('Name,Count,Tasks\nrow1,3,"{""name"":""t1""}"')
+    })
+
+    it('adds no marking unless asked, so row copies stay unmarked', () => {
+      const dt = fakeDt()
+      expect(dataTableCsv(dt, [dt.processedData[0]], {})).toBe('Name,Count,Tasks\nrow1,3,"{""name"":""t1""}"')
+    })
+
+    it('puts the marking column first, ahead of export-value columns', () => {
+      const dt = fakeDt({
+        columns: [
+          { field: 'secret', header: 'Secret', exportable: false },
+          { header: 'Derived', props: { exportValue: ({ record }) => `d-${record.name}` } },
+          { field: 'name', header: 'Name' },
+        ],
+      })
+      expect(dataTableCsv(dt, dt.processedData, { marking: '(CUI)' })).toBe(
+        'Marking,Derived,Name\n(CUI),d-row1,row1\n(CUI),d-=cmd(),"\t=cmd()"',
+      )
     })
 
     it('returns null when no column is exportable', () => {
