@@ -98,7 +98,6 @@ export function useExportModal(props, emit, { prefsKeyPrefix, effectiveSelection
         format: value,
         mode,
         selections: effectiveSelections.value,
-        filename,
         onStreamStart: () => {
           emit('export-started', { type: 'archive', format: value, mode, filename })
         },

@@ -1,6 +1,7 @@
 import { saveAs } from 'file-saver-es'
 import { apiCall } from '../../../../shared/api/apiClient.js'
 import { buildQueryString } from '../../../../shared/api/queryString.js'
+import { filenameFromContentDisposition } from '../../../../shared/lib/contentDisposition.js'
 import { getDownloadUrl } from '../../../../shared/serviceWorker.js'
 
 function apiBase() {
@@ -44,7 +45,9 @@ function exportToCollectionUrl(collectionId, dstCollectionId) {
   return `${apiBase()}/collections/${collectionId}/export-to/${dstCollectionId}`
 }
 
-export async function downloadArchive({ collectionId, format, mode, selections, filename, onProgress, onStreamStart, signal }) {
+// The ZIP keeps the API's Content-Disposition name, which carries the
+// classification prefix (e.g. S_<collection>-CKL_<ts>.zip), as in the legacy client.
+export async function downloadArchive({ collectionId, format, mode, selections, onProgress, onStreamStart, signal }) {
   const token = bearerToken()
   const url = archiveUrl(collectionId, format, mode)
   const init = {
@@ -55,7 +58,6 @@ export async function downloadArchive({ collectionId, format, mode, selections, 
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(selections),
-    attachment: filename,
   }
 
   const href = await getDownloadUrl(init)
@@ -75,6 +77,10 @@ export async function downloadArchive({ collectionId, format, mode, selections, 
     const body = await response.text().catch(() => '')
     throw new Error(`Archive request failed (${response.status}). ${body}`)
   }
+  const filename = filenameFromContentDisposition(response.headers.get('content-disposition'))
+  if (!filename) {
+    throw new Error('No Content-Disposition header in Response')
+  }
 
   const totalHeader = response.headers.get('Content-Length')
   const totalBytes = totalHeader ? Number(totalHeader) : null
@@ -82,7 +88,7 @@ export async function downloadArchive({ collectionId, format, mode, selections, 
   if (!response.body || !onProgress) {
     const blob = await response.blob()
     saveAs(blob, filename)
-    return { via: 'fallback', bytes: blob.size, totalBytes }
+    return { via: 'fallback', bytes: blob.size, totalBytes, filename }
   }
 
   const reader = response.body.getReader()
@@ -102,7 +108,7 @@ export async function downloadArchive({ collectionId, format, mode, selections, 
 
   const blob = new Blob(chunks, { type: 'application/zip' })
   saveAs(blob, filename)
-  return { via: 'stream', bytes: receivedBytes, totalBytes }
+  return { via: 'stream', bytes: receivedBytes, totalBytes, filename }
 }
 
 export async function startCollectionExport({ collectionId, dstCollectionId, selections }) {

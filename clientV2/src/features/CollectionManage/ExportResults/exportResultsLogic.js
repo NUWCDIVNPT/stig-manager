@@ -7,6 +7,8 @@ export function assetKey(assetId) {
   return `asset-${assetId}`
 }
 
+// Names the archive's .log.txt only; the ZIP itself keeps the API's
+// classification-prefixed Content-Disposition name (see downloadArchive).
 export function archiveFilename(collectionName, format, now = new Date()) {
   const safeName = (collectionName || 'collection').replace(/[\\/:*?"<>|]/g, '_')
   const timestamp = now.toISOString().replace(/[:.]/g, '-').replace(/Z$/, '')
