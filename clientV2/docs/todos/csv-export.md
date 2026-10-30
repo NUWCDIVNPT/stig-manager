@@ -15,7 +15,7 @@ visible columns, header text, and each cell's rendered value
   - Product decision first. Options: match legacy (leading `Marking` column on every
     row), a single marking line at the top of the file, or the marking in the filename.
   - Whichever is chosen is one change in `shared/csv.js` and covers every grid.
-  - Planned as its own PR.
+  - Planned as its own PR. Plan and open decisions: [csv-export-marking-plan.md](csv-export-marking-plan.md).
 
 - [ ] **Fidelity audit against the legacy client.** No one has compared clientV2
   exports to the legacy output for the same screen. Risks: missing or extra columns,

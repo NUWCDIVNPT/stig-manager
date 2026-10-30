@@ -1,6 +1,7 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   ASSET_FIELDS,
+  csvMarking,
   dataTableCellText,
   dataTableCsv,
   escapeCsv,
@@ -11,6 +12,7 @@ import {
   serializeCsvValue,
   STIG_FIELDS,
 } from '../csv.js'
+import { useGlobalAppStore } from '../stores/globalAppStore.js'
 
 vi.mock('file-saver-es', () => ({ saveAs: vi.fn() }))
 
@@ -74,6 +76,23 @@ describe('escapeCsv', () => {
   it('does not alter values that do not start with formula chars', () => {
     expect(escapeCsv('asset-01')).toBe('asset-01')
     expect(escapeCsv('1.2.3.4')).toBe('1.2.3.4')
+  })
+})
+
+describe('csvMarking', () => {
+  const appStore = useGlobalAppStore()
+  afterEach(() => appStore.setClassification(null))
+
+  it('wraps the classification code in parentheses', () => {
+    appStore.setClassification('U')
+    expect(csvMarking()).toBe('(U)')
+    appStore.setClassification('CUI')
+    expect(csvMarking()).toBe('(CUI)')
+  })
+
+  it('marks NONE deployments as (NONE), like the legacy client', () => {
+    appStore.setClassification('NONE')
+    expect(csvMarking()).toBe('(NONE)')
   })
 })
 

@@ -1,6 +1,15 @@
 import { saveAs } from 'file-saver-es'
 import { filenameComponentFromDate, filenameEscaped } from './lib.js'
 import { exportDisplayValue } from './lib/exportCells.js'
+import { useGlobalAppStore } from './stores/globalAppStore.js'
+
+/**
+ * The classification marking cell for exported CSV rows, e.g. `(U)`. Matches
+ * the legacy client, including `(NONE)` on unclassified-config deployments.
+ */
+export function csvMarking() {
+  return `(${useGlobalAppStore().classification})`
+}
 
 /**
  * Escapes a value for CSV output. Null/undefined → empty string.
