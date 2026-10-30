@@ -61,21 +61,23 @@ Each step is small, leaves the suite green, and can be reviewed alone. Run
 
 ### Step 2: `Marking` column in grid exports
 
-- [ ] Change `dataTableCsv(dt, rows)` to `dataTableCsv(dt, rows, { marking } = {})`.
+- [x] Change `dataTableCsv(dt, rows)` to `dataTableCsv(dt, rows, { marking } = {})`.
   When `marking` is set, put `Marking` first in the header row and the marking value
   first in every data row, both through `escapeCsv`.
-- [ ] `exportDataTableCsv` passes `{ marking: csvMarking() }`. GridCopyMenu stays
+- [x] `exportDataTableCsv` passes `{ marking: csvMarking() }`. GridCopyMenu stays
   unchanged (D2).
-- [ ] `csv.test.js`:
+- [x] `csv.test.js`:
   - The `Marking` header comes first and every row starts with the marking.
   - The marking column still comes first when a column has `exportable=false` or an
     `export-value`.
   - `dataTableCsv` without the option is unchanged.
-- [ ] `StatusFooterCsvExport.test.js`: after `setClassification('U')`, the downloaded
+- [x] `StatusFooterCsvExport.test.js`: after `setClassification('U')`, the downloaded
   file starts with `Marking` and its rows start with `(U)`.
-- [ ] Confirm that `columnExportConventions.test.js` and `GridCopyMenu.test.js` still
+- [x] Confirm that `columnExportConventions.test.js` and `GridCopyMenu.test.js` still
   pass unchanged. Both call `dataTableCsv` without the option.
   `AssetChecklistGridTable.test.js` mocks `exportDataTableCsv`, so it is unaffected.
+- [x] `DiffRuleTableExport.test.js` (a real-DataTable export test) now expects the
+  marking too. The legacy Changed Rules export had one.
 - **Done when:** every StatusFooter grid export is marked and the copy-row output is
   unchanged.
 

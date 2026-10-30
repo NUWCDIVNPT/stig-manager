@@ -121,7 +121,7 @@ export function downloadCsv(content, filename) {
  * column with `export-value` but no `field` still exports.
  */
 export function exportDataTableCsv(dt) {
-  const csv = dataTableCsv(dt, dt?.processedData)
+  const csv = dataTableCsv(dt, dt?.processedData, { marking: csvMarking() })
   if (csv == null) {
     return
   }
@@ -132,10 +132,11 @@ export function exportDataTableCsv(dt) {
 /**
  * Serializes `rows` to a CSV string (header line included) using the
  * DataTable's column export rules described on exportDataTableCsv.
+ * With `marking`, a leading `Marking` column carries it on every row.
  * Returns null when the table has no exportable columns or rows isn't an
  * array.
  */
-export function dataTableCsv(dt, rows) {
+export function dataTableCsv(dt, rows, { marking } = {}) {
   const columns = dt?.columns
   // PrimeVue's `columns` is null (not []) when no Column is rendered, so a
   // table with nothing to export is a no-op rather than an empty file.
@@ -150,14 +151,12 @@ export function dataTableCsv(dt, rows) {
     return null
   }
 
-  const csvRows = [
-    exportable
-      .map(col => escapeCsv(dt.columnProp(col, 'exportHeader') || dt.columnProp(col, 'header') || dt.columnProp(col, 'field') || ''))
-      .join(','),
-  ]
+  const headers = exportable.map(col => dt.columnProp(col, 'exportHeader') || dt.columnProp(col, 'header') || dt.columnProp(col, 'field') || '')
+  const csvRows = [(marking ? ['Marking', ...headers] : headers).map(escapeCsv).join(',')]
 
   for (const record of rows) {
-    csvRows.push(exportable.map(col => escapeCsv(dataTableCellText(dt, col, record))).join(','))
+    const cells = exportable.map(col => dataTableCellText(dt, col, record))
+    csvRows.push((marking ? [marking, ...cells] : cells).map(escapeCsv).join(','))
   }
 
   return csvRows.join('\n')
