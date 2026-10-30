@@ -1,7 +1,7 @@
 import { fireEvent, screen } from '@testing-library/vue'
 import { flushPromises } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { ref } from 'vue'
+import { nextTick, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 // API Mocks
@@ -82,7 +82,7 @@ describe('assetReview.vue', () => {
     mockClearSelectedRule = vi.fn()
 
     useRouter.mockReturnValue({ push: mockRouterPush })
-    useRoute.mockReturnValue({
+    useRoute.mockReturnValue(reactive({
       params: {
         collectionId: 'coll-1',
         assetId: 'asset-1',
@@ -91,7 +91,8 @@ describe('assetReview.vue', () => {
       },
       fullPath: '/collections/coll-1/assets/asset-1/bench-1/rev-1',
       path: '/collections/coll-1/assets/asset-1/bench-1/rev-1',
-    })
+      query: {},
+    }))
 
     useCurrentUser.mockReturnValue({
       getCollectionRoleId: vi.fn().mockReturnValue(3),
@@ -161,6 +162,36 @@ describe('assetReview.vue', () => {
         label: 'Test Asset / bench-1',
         type: 'asset-review',
       }))
+    })
+  })
+
+  describe('route param changes', () => {
+    // The router reuses this component when only params change (e.g. Recent
+    // views or Back/Forward between two assets on the same STIG and revision),
+    // so the checklist must follow the asset, not just the STIG/revision.
+    it('reloads the checklist and clears the selection when only assetId changes', async () => {
+      const checklistData = ref([{ ruleId: 'V-123', result: 'pass' }])
+      useChecklistData.mockReturnValue({
+        accessMode: 'rw',
+        checklistData,
+        isChecklistLoading: ref(false),
+        checklistError: ref(null),
+        gridData: ref([]),
+        ruleLookupMap: ref(new Map()),
+        loadChecklist: mockLoadChecklist,
+        upsertReview: mockUpsertReview,
+      })
+      createWrapper()
+      await flushPromises()
+      expect(mockLoadChecklist).toHaveBeenCalledTimes(1)
+      mockClearSelectedRule.mockClear()
+
+      useRoute().params.assetId = 'asset-2'
+      await nextTick()
+
+      expect(mockClearSelectedRule).toHaveBeenCalled()
+      expect(checklistData.value).toEqual([])
+      expect(mockLoadChecklist).toHaveBeenCalledTimes(2)
     })
   })
 

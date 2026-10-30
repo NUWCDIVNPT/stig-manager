@@ -143,8 +143,12 @@ watch(selectedRuleId, (ruleId) => {
   router.replace({ query: next })
 })
 
-watch([benchmarkId, revisionStr], () => {
+// assetId is included because the router reuses this component when only the
+// asset changes (Recent views, Back/Forward); without it the grid would keep
+// the previous asset's rows while saves target the new asset.
+watch([assetId, benchmarkId, revisionStr], () => {
   clearSelectedRule()
+  checklistData.value = []
   if (benchmarkId.value && revisionStr.value) {
     if (!stigRevisions.value?.length) {
       loadStigRevisions()
