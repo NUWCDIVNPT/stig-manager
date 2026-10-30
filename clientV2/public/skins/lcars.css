@@ -16,8 +16,10 @@ html[data-skin='lcars'] {
   --lcars-slate: #9999cc;
   --lcars-tomato: #cc6666;
   --lcars-hopbush: #cc6699;
+  --lcars-green: #66cc66; /* okuda-green, the one green in the lcars-core palette */
   --lcars-black: #000000;
   --lcars-bar: 1.1rem;
+  --lcars-elbow: 2.75rem; /* height of the elbow trunk below the header bar */
 
   font-family: 'Antonio', 'Open Sans', sans-serif;
   font-size: 14px;
@@ -164,9 +166,44 @@ html[data-skin='lcars'] .home-link {
   color: var(--lcars-orange) !important;
 }
 
+/* the shield becomes the saucer of a small starship (lcars-ship.svg) */
 html[data-skin='lcars'] .logo-icon {
-  filter: sepia(1) saturate(4) hue-rotate(-10deg) brightness(1.1);
+  background-image: url('lcars-ship.svg') !important;
+  width: 3rem !important;
+  height: 3.9rem !important;
+  position: relative;
 }
+
+/* Warp pulse: a bright streak runs fore-to-aft along each nacelle (from the
+   bussard collector toward the tail), then the
+   engines rest for the remainder of the cycle. Positions are percentages of
+   the logo box, matching the nacelle rects in lcars-ship.svg (viewBox 100x130).
+   Chrome does not animate SVG used as a background image, hence pseudo-elements. */
+html[data-skin='lcars'] .logo-icon::before,
+html[data-skin='lcars'] .logo-icon::after {
+  content: '';
+  position: absolute;
+  top: 2%;
+  width: 12%;
+  height: 26%;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 0 0.5rem 0.15rem #99ccff;
+  opacity: 0;
+  animation: lcars-warp-pulse 5s ease-in-out infinite;
+}
+
+html[data-skin='lcars'] .logo-icon::before { left: 9%; }
+html[data-skin='lcars'] .logo-icon::after { left: 81%; }
+
+@keyframes lcars-warp-pulse {
+  0% { top: 30%; opacity: 0; }
+  8% { opacity: 1; }
+  24% { opacity: 1; }
+  32% { top: 0%; opacity: 0; }
+  100% { top: 0%; opacity: 0; }
+}
+
 
 html[data-skin='lcars'] .badge {
   color: var(--lcars-black) !important;
@@ -184,17 +221,19 @@ html[data-skin='lcars'] .breadcrumb-current {
    top-left corner of the content panel. Together with the header bar this is
    the classic LCARS elbow. */
 html[data-skin='lcars'] .nav-rail-splitter {
-  background: var(--lcars-orange) !important;
+  /* orange band behind the top edge: shows through the content panel's
+     rounded corner (the elbow) and the top of the gutter; black below */
+  background: linear-gradient(var(--lcars-orange) 0 var(--lcars-elbow), var(--lcars-black) var(--lcars-elbow)) !important;
 }
 
 html[data-skin='lcars'] .nav-rail-splitter > .p-splitter-gutter {
-  width: var(--lcars-bar) !important;
-  flex: 0 0 var(--lcars-bar) !important;
-  background: var(--lcars-orange) !important;
+  width: 0.5rem !important;
+  flex: 0 0 0.5rem !important;
+  background: transparent !important;
 }
 
 html[data-skin='lcars'] .nav-rail-splitter > .p-splitter-gutter .p-splitter-gutter-handle {
-  background: var(--lcars-black);
+  background: var(--color-border-default);
   width: 0.25rem;
   height: 3rem;
   border-radius: 999px;
@@ -202,7 +241,7 @@ html[data-skin='lcars'] .nav-rail-splitter > .p-splitter-gutter .p-splitter-gutt
 
 html[data-skin='lcars'] .nav-rail-splitter > .p-splitterpanel:last-child {
   background: var(--lcars-black);
-  border-radius: 2.4rem 0 0 0;
+  border-radius: calc(var(--lcars-elbow) - 0.35rem) 0 0 0;
   margin-top: 0.35rem;
   overflow: hidden;
 }
@@ -222,7 +261,8 @@ html[data-skin='lcars'] .nav-rail-toggle {
   background: var(--lcars-orange) !important;
   color: var(--lcars-black) !important;
   border: none !important;
-  border-radius: 0 0 0 1.4rem;
+  border-radius: 0;
+  height: var(--lcars-elbow) !important;
   margin: 0 -0.4rem 0.5rem 0;
   width: calc(100% + 0.4rem) !important;
   justify-content: flex-end !important;
@@ -235,34 +275,94 @@ html[data-skin='lcars'] .nav-rail-items {
   gap: 0.35rem;
 }
 
-html[data-skin='lcars'] .nav-rail-item,
-html[data-skin='lcars'] .nav-rail-items > button,
-html[data-skin='lcars'] .nav-rail-items > a {
+html[data-skin='lcars'] .nav-rail-item {
+  --pill: var(--lcars-tanoi);
   border-radius: 0 999px 999px 0 !important;
   color: var(--lcars-black) !important;
-  background: var(--lcars-tanoi) !important;
+  background: var(--pill) !important;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   font-weight: 700;
-  justify-content: flex-end;
-  text-align: right;
+  justify-content: flex-start;
 }
 
-html[data-skin='lcars'] [data-tour='nav-item-home'] { background: var(--lcars-tanoi) !important; }
-html[data-skin='lcars'] [data-tour='nav-item-collections'] .nav-rail-item,
-html[data-skin='lcars'] [data-tour='nav-item-collections'] { background: var(--lcars-lilac) !important; }
-html[data-skin='lcars'] [data-tour='nav-item-library'] { background: var(--lcars-periwinkle) !important; }
-html[data-skin='lcars'] [data-tour='nav-item-whats-new'] { background: var(--lcars-ice) !important; }
-html[data-skin='lcars'] [data-tour='nav-item-admin'] { background: var(--lcars-butterscotch) !important; }
-
-html[data-skin='lcars'] .nav-rail-item:hover,
-html[data-skin='lcars'] .nav-rail-item--active {
-  filter: brightness(1.18);
-  box-shadow: inset 0 0 0 2px var(--lcars-black), inset 0 0 0 3px currentColor;
+/* icon pinned left, label pushed to the right end of the block */
+html[data-skin='lcars'] .nav-rail-item > .nav-rail-item-label,
+html[data-skin='lcars'] .nav-rail-item-toggle > .nav-rail-item-label {
+  margin-left: auto;
+  padding-right: 0.5rem;
 }
 
-html[data-skin='lcars'] .nav-rail-item-icon {
+/* every collapsed item, whatever component renders it, centers its glyph
+   the same way (nudged left so it reads centered inside the D shape) */
+html[data-skin='lcars'] .nav-rail-item--icon-only,
+html[data-skin='lcars'] .nav-panel--collapsed .nav-rail-item {
+  justify-content: center !important;
+  padding: 0 0.6rem 0 0 !important;
+}
+
+/* expanded rail wide enough for collection names */
+html[data-skin='lcars'] .nav-rail-splitter > .p-splitterpanel:first-child:not(.nav-panel--collapsed) {
+  min-width: 22rem !important;
+}
+
+html[data-skin='lcars'] .nav-rail-item-toggle {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+html[data-skin='lcars'] [data-tour='nav-item-collections'] > .nav-rail-item { --pill: var(--lcars-slate); }
+html[data-skin='lcars'] [data-tour='nav-item-library'] { --pill: var(--lcars-periwinkle); }
+html[data-skin='lcars'] [data-tour='nav-item-whats-new'] { --pill: var(--lcars-ice); }
+html[data-skin='lcars'] [data-tour='nav-item-admin'] { --pill: var(--lcars-butterscotch); }
+
+html[data-skin='lcars'] .nav-rail-item:hover {
+  filter: brightness(1.12);
+}
+
+/* active block keeps its fill; its glyph and label light up white instead */
+html[data-skin='lcars'] .nav-rail .nav-rail-item.nav-rail-item--active,
+html[data-skin='lcars'] .nav-rail .nav-rail-item.nav-rail-item--active .nav-rail-item-icon,
+html[data-skin='lcars'] .nav-rail .nav-rail-item.nav-rail-item--active .nav-rail-item-label,
+html[data-skin='lcars'] .nav-rail .nav-rail-item.nav-rail-item--active .nav-rail-item-chevron {
+  color: #ffffff !important;
+}
+
+html[data-skin='lcars'] .nav-rail .nav-rail-item.nav-rail-item--active .nav-icon-library,
+html[data-skin='lcars'] .nav-rail .nav-rail-item.nav-rail-item--active .nav-icon-admin {
+  filter: brightness(10);
+}
+
+html[data-skin='lcars'] .nav-rail-item-icon,
+html[data-skin='lcars'] .nav-rail-item-chevron,
+html[data-skin='lcars'] .nav-rail-item-add-icon {
   color: var(--lcars-black) !important;
+}
+
+/* library and admin are white svg glyphs on transparent, so darken by filter;
+   the collection glyph keeps its own colors */
+html[data-skin='lcars'] .nav-rail-item .nav-icon-library,
+html[data-skin='lcars'] .nav-rail-item .nav-icon-admin {
+  filter: brightness(0);
+}
+
+/* the expanded collection list stays on black with the lilac as text */
+html[data-skin='lcars'] .nav-rail-collections-list {
+  background: var(--lcars-black);
+  border-left: 0.35rem solid var(--lcars-lilac);
+  margin-left: 0.6rem;
+}
+
+html[data-skin='lcars'] .collection-list-link {
+  color: var(--lcars-lilac);
+}
+
+html[data-skin='lcars'] .collection-list-link--active {
+  background: var(--lcars-lilac) !important;
+  color: var(--lcars-black) !important;
+  border-radius: 0 999px 999px 0;
 }
 
 html[data-skin='lcars'] .nav-rail-separator {
@@ -313,15 +413,14 @@ html[data-skin='lcars'] .details-card {
 
 html[data-skin='lcars'] .metric-card::after,
 html[data-skin='lcars'] .details-card::after {
-  /* a short second-color segment at the bar's right end, as on real panels */
+  /* black notch near the bar's right end: LCARS bars are segmented */
   content: '';
   position: absolute;
   top: -0.45rem;
-  right: 0;
-  width: 3rem;
+  right: 3rem;
+  width: 0.35rem;
   height: 0.45rem;
-  background: var(--lcars-lilac);
-  border-radius: 0 999px 999px 0;
+  background: var(--lcars-black);
 }
 
 html[data-skin='lcars'] .metric-card:nth-child(5n + 2) { --frame: var(--lcars-lilac); }
@@ -342,9 +441,10 @@ html[data-skin='lcars'] .collection-tab-panel .panel-header h3 {
 html[data-skin='lcars'] .collection-tab-panel .panel-content {
   background: var(--lcars-black) !important;
   border: none !important;
-  border-left: 1.1rem solid var(--lcars-slate) !important;
+  border-left: 0.9rem solid var(--lcars-slate) !important;
   border-top: 0.45rem solid var(--lcars-slate) !important;
-  border-radius: 1.8rem 0 0 0.6rem !important;
+  border-bottom: 0.45rem solid var(--lcars-slate) !important;
+  border-radius: 1.8rem 0 0 1.8rem !important;
 }
 
 html[data-skin='lcars'] .collection-tab-panel .panel-header,
@@ -388,10 +488,178 @@ html[data-skin='lcars'] .status-footer {
 
 /* ---------- Scrollbars ---------- */
 html[data-skin='lcars'] ::-webkit-scrollbar-thumb {
-  background-color: var(--lcars-slate) !important;
+  background-color: var(--color-border-default);
   border-radius: 999px;
 }
 
-html[data-skin='lcars'] * {
-  scrollbar-color: var(--lcars-slate) transparent;
+html[data-skin='lcars'] ::-webkit-scrollbar-thumb:hover {
+  background-color: var(--lcars-slate);
+}
+
+/* ---------- Breadcrumb: bold caps, chevron ticks, current crumb in primary ---------- */
+html[data-skin='lcars'] .breadcrumb {
+  font-weight: 700;
+}
+
+html[data-skin='lcars'] .breadcrumb-separator {
+  font-size: 0 !important;
+  margin: 0 0.5rem;
+}
+
+html[data-skin='lcars'] .breadcrumb-separator::before {
+  content: '›';
+  font-size: var(--text-2xl);
+  color: var(--lcars-slate);
+  font-weight: 700;
+}
+
+html[data-skin='lcars'] .breadcrumb-link {
+  color: var(--lcars-ice) !important;
+}
+
+html[data-skin='lcars'] .breadcrumb-link:hover {
+  color: var(--lcars-tanoi) !important;
+  text-decoration: none !important;
+}
+
+html[data-skin='lcars'] .breadcrumb-current {
+  color: var(--lcars-orange) !important;
+}
+
+/* ---------- Percentage cells as LCARS sliders ---------- */
+html[data-skin='lcars'] .sm-cell-thermometer-bg {
+  background: var(--lcars-black) !important;
+  outline: 2px solid var(--lcars-slate) !important;
+  outline-offset: -2px !important;
+  border-radius: 999px !important;
+  overflow: hidden !important;
+  position: relative;
+}
+
+html[data-skin='lcars'] .sm-cell-thermometer-bg > div {
+  border-radius: 999px 0 0 999px;
+  position: relative;
+}
+
+html[data-skin='lcars'] .sm-cell-thermometer-bg > div::after {
+  /* end cap, flush with the track so it reads as a marker, not a handle */
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 0.3rem;
+  background: var(--lcars-sunflower);
+}
+
+html[data-skin='lcars'] .sm-cell-mercury-low { background-color: var(--lcars-ice) !important; }
+html[data-skin='lcars'] .sm-cell-mercury-medium { background-color: var(--lcars-periwinkle) !important; }
+html[data-skin='lcars'] .sm-cell-mercury-high { background-color: var(--lcars-tomato) !important; }
+
+html[data-skin='lcars'] .sm-cell-thermometer-text {
+  font-style: normal;
+  color: var(--lcars-tanoi);
+  text-shadow: 0 0 2px var(--lcars-black), 0 0 4px var(--lcars-black);
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- Buttons: text and outlined variants ---------- */
+html[data-skin='lcars'] .p-button.p-button-outlined,
+html[data-skin='lcars'] .p-button.p-button-text {
+  color: var(--lcars-tanoi);
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+html[data-skin='lcars'] .p-button.p-button-outlined {
+  border: 2px solid var(--lcars-slate);
+  background: transparent;
+}
+
+html[data-skin='lcars'] .p-button.p-button-outlined:hover,
+html[data-skin='lcars'] .p-button.p-button-text:hover {
+  background: var(--lcars-slate) !important;
+  color: var(--lcars-black) !important;
+}
+
+html[data-skin='lcars'] .p-button.p-button-secondary:not(.p-button-text):not(.p-button-outlined) {
+  background: var(--lcars-periwinkle);
+  border-color: var(--lcars-periwinkle);
+}
+
+html[data-skin='lcars'] .p-button.p-button-danger:not(.p-button-text):not(.p-button-outlined) {
+  background: var(--lcars-tomato);
+  border-color: var(--lcars-tomato);
+}
+
+html[data-skin='lcars'] .p-button.p-button-success:not(.p-button-text):not(.p-button-outlined) {
+  background: var(--lcars-sunflower);
+  border-color: var(--lcars-sunflower);
+}
+
+html[data-skin='lcars'] .p-button:disabled {
+  opacity: 0.45;
+}
+
+/* ---------- Review popover: an elbow-framed panel ---------- */
+html[data-skin='lcars'] .p-popover:has(.review-edit-popover) {
+  background: var(--lcars-black) !important;
+  border: none !important;
+  border-left: 1.1rem solid var(--lcars-orange) !important;
+  border-top: 0.6rem solid var(--lcars-orange) !important;
+  border-bottom: 0.45rem solid var(--lcars-lilac) !important;
+  border-right: 0.45rem solid var(--lcars-lilac) !important;
+  border-radius: 2.4rem 1rem 1rem 1.6rem !important;
+  box-shadow: 0 0 0 2px var(--lcars-black), 0 1rem 3rem rgba(0, 0, 0, 0.8) !important;
+}
+
+html[data-skin='lcars'] .p-popover:has(.review-edit-popover)::before,
+html[data-skin='lcars'] .p-popover:has(.review-edit-popover)::after {
+  /* notches segment the top bar, as on a real LCARS frame */
+  content: '';
+  position: absolute;
+  top: -0.6rem;
+  width: 0.35rem;
+  height: 0.6rem;
+  background: var(--lcars-black);
+  border: none;
+  transform: none;
+  left: auto;
+}
+
+html[data-skin='lcars'] .p-popover:has(.review-edit-popover)::before { right: 6rem; }
+html[data-skin='lcars'] .p-popover:has(.review-edit-popover)::after { right: 14rem; }
+
+html[data-skin='lcars'] .review-edit-popover__label,
+html[data-skin='lcars'] .review-edit-popover__attr-label {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--lcars-orange) !important;
+}
+
+html[data-skin='lcars'] .review-edit-popover__subject-value {
+  color: var(--lcars-tanoi);
+}
+
+html[data-skin='lcars'] .review-edit-popover__result-item {
+  border-radius: 999px !important;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+html[data-skin='lcars'] .review-edit-popover__result-item--active {
+  background: var(--lcars-orange) !important;
+  color: var(--lcars-black) !important;
+}
+
+html[data-skin='lcars'] .review-edit-popover__textarea {
+  border-radius: 1rem !important;
+  border: 2px solid var(--lcars-slate) !important;
+  background: var(--lcars-black) !important;
+}
+
+html[data-skin='lcars'] .review-edit-popover__attr-pill {
+  border-radius: 999px !important;
 }

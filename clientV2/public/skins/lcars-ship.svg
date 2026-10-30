@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 130">
+  <!-- LCARS skin logo: top-down starship, the STIG Manager shield as the saucer,
+       its point forward (down). Nacelles astern on either side. Flat fills, with
+       a short drop shadow so the overlapping parts stay distinct. -->
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0.8" dy="1.4" stdDeviation="1.1" flood-color="#000" flood-opacity="0.65"/>
+    </filter>
+  </defs>
+  <g filter="url(#shadow)">
+    <!-- nacelles -->
+    <rect x="6" y="2" width="16" height="66" rx="8" fill="#9999ff"/>
+    <rect x="6" y="50" width="16" height="18" rx="8" fill="#cc6666"/>
+    <rect x="9" y="2" width="10" height="14" rx="5" fill="#99ccff"/>
+    <rect x="78" y="2" width="16" height="66" rx="8" fill="#9999ff"/>
+    <rect x="78" y="50" width="16" height="18" rx="8" fill="#cc6666"/>
+    <rect x="81" y="2" width="10" height="14" rx="5" fill="#99ccff"/>
+    <!-- pylons -->
+    <polygon points="22,22 22,34 40,42 40,30" fill="#9999cc"/>
+    <polygon points="78,22 78,34 60,42 60,30" fill="#9999cc"/>
+  </g>
+  <g filter="url(#shadow)">
+    <!-- secondary hull, tucked behind the saucer -->
+    <rect x="37" y="6" width="26" height="70" rx="13" fill="#ffcc99"/>
+    <rect x="44" y="12" width="12" height="22" rx="6" fill="#ff9900"/>
+  </g>
+  <!-- saucer: the shield with its check, point forward -->
+  <g transform="translate(5 36) scale(3.75)" filter="url(#shadow)">
+    <rect x="3" y="3.5" width="18" height="18" rx="9" fill="#ffffff"/>
+    <path fill="#66cc66" d="M 12,1 3,5 v 6 c 0,5.55 3.84,10.74 9,12 5.16,-1.26 9,-6.45 9,-12 V 5 Z M 10,17 6,13 7.41,11.59 10,14.17 16.59,7.58 18,9 Z"/>
+  </g>
+</svg>
