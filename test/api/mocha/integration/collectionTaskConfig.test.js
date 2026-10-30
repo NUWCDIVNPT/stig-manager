@@ -2,6 +2,9 @@ import { config } from '../testConfig.js'
 import * as utils from '../utils/testUtils.js'
 import reference from '../referenceData.js'
 import { expect } from 'chai'
+import { readFileSync } from 'fs'
+import { dirname, join } from 'path'
+import { fileURLToPath } from 'url'
 
 // admin: Application Manager + Owner grant on testCollection (collectionId=21)
 const admin = {
@@ -126,6 +129,25 @@ describe('Collection Task Config - /collections/{collectionId}/tasks/review-agin
       expect(res.status).to.eql(400)
     })
 
+    // A 0-second interval puts the cutoff at "now", so the rule matches every review in scope
+    for (const rule of [
+      { triggerField: 'ts', triggerAction: 'delete', enabled: true },
+      { triggerField: 'ts', triggerAction: 'update', updateField: 'status', updateValue: 'saved', enabled: true },
+      { triggerField: 'ts', triggerAction: 'update', updateField: 'result', updateValue: 'notchecked', enabled: true }
+    ]) {
+      const ruleType = rule.updateField ? `update ${rule.updateField}` : 'delete'
+      it(`should return 400 for triggerInterval 0 (${ruleType})`, async function () {
+        const res = await utils.executeRequest(baseConfigUrl, 'PUT', admin.token, [{ ...rule, triggerInterval: 0 }])
+        expect(res.status).to.eql(400)
+      })
+
+      it(`should accept triggerInterval 1 (${ruleType})`, async function () {
+        const res = await utils.executeRequest(baseConfigUrl, 'PUT', admin.token, [{ ...rule, triggerInterval: 1 }])
+        expect(res.status).to.eql(200)
+        expect(res.body[0]).to.have.property('triggerInterval', 1)
+      })
+    }
+
     it('should accept a config with a benchmark target and return it expanded', async function () {
       const configWithTarget = [{ ...sampleConfig[0], target: { benchmarkId: 'VPN_SRG_TEST' } }]
       const res = await utils.executeRequest(baseConfigUrl, 'PUT', admin.token, configWithTarget)
@@ -138,6 +160,37 @@ describe('Collection Task Config - /collections/{collectionId}/tasks/review-agin
       const invalidConfig = [{ ...sampleConfig[0], target: { assetId: '99999' } }]
       const res = await utils.executeRequest(baseConfigUrl, 'PUT', admin.token, invalidConfig)
       expect(res.status).to.eql(422)
+    })
+  })
+
+  describe('migration of stored rules with triggerInterval 0', function () {
+    // The appdata is at an earlier migration, so loading it replays the newer
+    // migrations over the loaded rows, including the one that disables these rules
+    it('should disable rules whose triggerInterval is 0 and leave other rules enabled', async function () {
+      const appdataPath = join(dirname(fileURLToPath(import.meta.url)), '../../appdata/appdata.jsonl')
+      const lines = readFileSync(appdataPath, 'utf-8').split('\n')
+      const headerIndex = lines.findIndex(l => l.startsWith('{"table":"review_aging_rule"'))
+      const header = JSON.parse(lines[headerIndex])
+      expect(header.columns).to.eql('`assetId`,`benchmarkId`,`clId`,`collectionId`,`enabled`,`ordinal`,`ruleId`,`title`,`triggerAction`,`triggerField`,`triggerInterval`,`updateField`,`updateValue`')
+      const rows = [
+        [null, null, null, parseInt(collectionId), 1, 0, 1, 'zero interval', 'delete', 'ts', 0, null, null],
+        [null, null, null, parseInt(collectionId), 1, 1, 2, 'one day', 'update', 'ts', 86400, 'status', 'saved']
+      ]
+      lines.splice(headerIndex, 1, JSON.stringify({ ...header, rowCount: rows.length }), ...rows.map(r => JSON.stringify(r)))
+
+      const loadRes = await fetch(`${config.baseUrl}/op/appdata?elevate=true`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${admin.token}`, 'Content-Type': 'application/jsonl' },
+        body: lines.join('\n')
+      })
+      expect(loadRes.status).to.eql(200)
+      await loadRes.text()
+
+      const res = await utils.executeRequest(baseConfigUrl, 'GET', admin.token)
+      expect(res.status).to.eql(200)
+      expect(res.body).to.have.length(2)
+      expect(res.body[0]).to.include({ title: 'zero interval', triggerInterval: 0, enabled: false })
+      expect(res.body[1]).to.include({ title: 'one day', triggerInterval: 86400, enabled: true })
     })
   })
 

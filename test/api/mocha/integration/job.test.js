@@ -599,7 +599,7 @@ describe('Task tests', function () {
 
       await runAgingWithConfig([{
         triggerField: 'ts',
-        triggerInterval: 0,
+        triggerInterval: 1,
         triggerAction: 'update',
         updateField: 'status',
         updateValue: 'saved',
@@ -688,7 +688,7 @@ describe('Task tests', function () {
 
       const runId = await runAgingWithConfig([{
         triggerField: 'ts',
-        triggerInterval: 0,
+        triggerInterval: 1,
         triggerAction: 'update',
         updateField: 'status',
         updateValue: 'saved',
@@ -714,7 +714,7 @@ describe('Task tests', function () {
       }
     })
 
-    it('should delete matching reviews (triggerAction:delete, triggerInterval:0)', async function () {
+    it('should delete matching reviews (triggerAction:delete, triggerInterval:1)', async function () {
       this.timeout(60_000)
       const reviewsBefore = await utils.executeRequest(
         `${config.baseUrl}/collections/${collectionId}/reviews`,
@@ -724,7 +724,7 @@ describe('Task tests', function () {
 
       await runAgingWithConfig([{
         triggerField: 'ts',
-        triggerInterval: 0,
+        triggerInterval: 1,
         triggerAction: 'delete',
         enabled: true
       }])
@@ -743,7 +743,7 @@ describe('Task tests', function () {
       const otherAssetId = "62"
       await runAgingWithConfig([{
         triggerField: 'ts',
-        triggerInterval: 0,
+        triggerInterval: 1,
         triggerAction: 'update',
         updateField: 'status',
         updateValue: 'saved',
@@ -781,7 +781,7 @@ describe('Task tests', function () {
       const untargetedAssetId = "154"
       await runAgingWithConfig([{
         triggerField: 'ts',
-        triggerInterval: 0,
+        triggerInterval: 1,
         triggerAction: 'update',
         updateField: 'status',
         updateValue: 'saved',
@@ -832,7 +832,7 @@ describe('Task tests', function () {
 
       await runAgingWithConfig([{
         triggerField: 'ts',
-        triggerInterval: 0,
+        triggerInterval: 1,
         triggerAction: 'update',
         updateField: 'status',
         updateValue: 'saved',
@@ -891,7 +891,7 @@ describe('Task tests', function () {
 
       const runId = await runAgingWithConfig([{
         triggerField: 'ts',
-        triggerInterval: 0,
+        triggerInterval: 1,
         triggerAction: 'update',
         updateField: 'status',
         updateValue: 'saved',
@@ -934,7 +934,7 @@ describe('Task tests', function () {
 
       await runAgingWithConfig([{
         triggerField: 'ts',
-        triggerInterval: 0,
+        triggerInterval: 1,
         triggerAction: 'update',
         updateField: 'status',
         updateValue: 'saved',
@@ -970,11 +970,11 @@ describe('Task tests', function () {
       expect(savedOn62).to.be.lessThan(asset62Res.body.length)
     })
 
-    it('should update review status to saved for all reviews (triggerInterval:0)', async function () {
+    it('should update review status to saved for all reviews (triggerInterval:1)', async function () {
       this.timeout(60_000)
       await runAgingWithConfig([{
         triggerField: 'ts',
-        triggerInterval: 0,
+        triggerInterval: 1,
         triggerAction: 'update',
         updateField: 'status',
         updateValue: 'saved',
@@ -991,11 +991,11 @@ describe('Task tests', function () {
       }
     })
 
-    it('should update review result to notchecked for all reviews (triggerInterval:0, updateField:result)', async function () {
+    it('should update review result to notchecked for all reviews (triggerInterval:1, updateField:result)', async function () {
       this.timeout(60_000)
       await runAgingWithConfig([{
         triggerField: 'ts',
-        triggerInterval: 0,
+        triggerInterval: 1,
         triggerAction: 'update',
         updateField: 'result',
         updateValue: 'notchecked',

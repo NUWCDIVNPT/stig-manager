@@ -8075,7 +8075,7 @@ components:
         triggerInterval:
           type: integer
           description: Interval in seconds
-          minimum: 0
+          minimum: 1
           maximum: 2147483647
         triggerAction:
           type: string
@@ -8103,7 +8103,7 @@ components:
         triggerInterval:
           type: integer
           description: Interval in seconds
-          minimum: 0
+          minimum: 1
           maximum: 2147483647
         triggerAction:
           type: string
@@ -8137,7 +8137,7 @@ components:
         triggerInterval:
           type: integer
           description: Interval in seconds
-          minimum: 0
+          minimum: 1
           maximum: 2147483647
         triggerAction:
           type: string
