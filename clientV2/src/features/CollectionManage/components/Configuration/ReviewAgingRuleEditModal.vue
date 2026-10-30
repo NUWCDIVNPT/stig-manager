@@ -27,6 +27,7 @@ import {
   formToRule,
   INTERVAL_UNIT_OPTIONS,
   isCollectionTarget,
+  isValidIntervalValue,
   ruleToForm,
   TRIGGER_FIELD_OPTIONS,
   UPDATE_FIELD_OPTIONS,
@@ -134,7 +135,14 @@ const titleError = computed(() => {
 const updateValueChoices = computed(() => updateValueOptions(form.updateField))
 const showUpdateFields = computed(() => form.triggerAction === 'update')
 
-const isValid = computed(() => !titleError.value && isTargetValid.value)
+const intervalError = computed(() => {
+  if (!isValidIntervalValue(form.intervalValue)) {
+    return 'Interval must be a whole number of at least 1'
+  }
+  return ''
+})
+
+const isValid = computed(() => !titleError.value && !intervalError.value && isTargetValid.value)
 
 // Keep the first update value valid whenever the update field changes.
 watch(() => form.updateField, (field) => {
@@ -429,6 +437,9 @@ const dialogPt = {
               :pt="collectionSelectPt"
               class="interval-unit"
             />
+          </div>
+          <div v-if="intervalError" class="field-error">
+            {{ intervalError }}
           </div>
         </div>
       </div>
