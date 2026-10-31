@@ -40,10 +40,21 @@ export function updateValueOptions(updateField) {
 
 // ── Interval conversion ─────────────────────────────────────────────────────
 
+// The interval must be a whole number of at least 1. A cleared InputNumber
+// yields null, which must not be mistaken for 0.
+export function isValidIntervalValue(value) {
+  return Number.isInteger(value) && value >= 1
+}
+
 // Convert a number + unit to whole seconds for the triggerInterval payload.
+// Returns null for an invalid value rather than 0, since a 0-second interval
+// matches every review.
 export function intervalToSeconds(value, unit) {
+  if (!isValidIntervalValue(value)) {
+    return null
+  }
   const multiplier = INTERVAL_UNIT_OPTIONS.find(u => u.value === unit)?.multiplier ?? 86400
-  return Math.round(Number(value) * multiplier)
+  return value * multiplier
 }
 
 // Convert stored seconds back to the modal's number + unit. Prefers whole days,
