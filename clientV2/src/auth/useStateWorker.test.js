@@ -4,6 +4,9 @@ import { setupStateHandler, useStateWorker } from './useStateWorker.js'
 describe('setupStateHandler', () => {
   afterEach(() => {
     vi.unstubAllGlobals()
+    // state is a module-level singleton; reset it so the tests do not depend
+    // on their order
+    useStateWorker().state.value = null
   })
 
   // With STIGMAN_CLIENT_STATE_EVENTS=false, init.js never creates the state

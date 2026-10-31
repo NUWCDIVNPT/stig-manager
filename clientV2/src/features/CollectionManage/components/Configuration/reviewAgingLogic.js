@@ -54,7 +54,7 @@ export function intervalToSeconds(value, unit) {
     return null
   }
   const multiplier = INTERVAL_UNIT_OPTIONS.find(u => u.value === unit)?.multiplier ?? 86400
-  return Math.round(Number(value) * multiplier)
+  return value * multiplier
 }
 
 // Convert stored seconds back to the modal's number + unit. Prefers whole days,

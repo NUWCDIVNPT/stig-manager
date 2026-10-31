@@ -246,10 +246,15 @@ function onSave() {
   close()
 }
 
-const inputNumberPt = {
-  pcInputText: {
-    root: { style: 'width: 100%; text-align: center; background-color: var(--color-background-dark); color: var(--color-text-primary); border: 1px solid var(--color-border-default); border-left: none; border-right: none; padding: 0.5rem; min-width: 0;' },
-  },
+const inputNumberPt = (invalid = false) => {
+  const bg = invalid
+    ? 'color-mix(in srgb, var(--color-text-error) 15%, var(--color-background-dark))'
+    : 'var(--color-background-dark)'
+  return {
+    pcInputText: {
+      root: { style: `width: 100%; text-align: center; background-color: ${bg}; color: var(--color-text-primary); border: 1px solid var(--color-border-default); border-left: none; border-right: none; padding: 0.5rem; min-width: 0; transition: background-color 0.2s ease;` },
+    },
+  }
 }
 
 const dialogPt = {
@@ -419,7 +424,7 @@ const dialogPt = {
               show-buttons
               button-layout="horizontal"
               class="interval-number"
-              :pt="inputNumberPt"
+              :pt="inputNumberPt(!!intervalError)"
             >
               <template #incrementicon>
                 <i class="pi pi-plus" />
@@ -438,8 +443,8 @@ const dialogPt = {
               class="interval-unit"
             />
           </div>
-          <div v-if="intervalError" class="field-error">
-            {{ intervalError }}
+          <div class="field-error" :class="{ 'field-error--hidden': !intervalError }">
+            {{ intervalError || 'Placeholder' }}
           </div>
         </div>
       </div>

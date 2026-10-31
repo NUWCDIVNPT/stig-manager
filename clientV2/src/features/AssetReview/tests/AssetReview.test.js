@@ -169,7 +169,7 @@ describe('assetReview.vue', () => {
     // The router reuses this component when only params change (e.g. Recent
     // views or Back/Forward between two assets on the same STIG and revision),
     // so the checklist must follow the asset, not just the STIG/revision.
-    it('reloads the checklist and clears the selection when only assetId changes', async () => {
+    it('reloads the checklist and resets the selection when only assetId changes', async () => {
       const checklistData = ref([{ ruleId: 'V-123', result: 'pass' }])
       useChecklistData.mockReturnValue({
         accessMode: 'rw',
@@ -184,14 +184,30 @@ describe('assetReview.vue', () => {
       createWrapper()
       await flushPromises()
       expect(mockLoadChecklist).toHaveBeenCalledTimes(1)
-      mockClearSelectedRule.mockClear()
+      mockSelectRule.mockClear()
 
       useRoute().params.assetId = 'asset-2'
       await nextTick()
 
-      expect(mockClearSelectedRule).toHaveBeenCalled()
+      expect(mockSelectRule).toHaveBeenCalledWith(null)
       expect(checklistData.value).toEqual([])
       expect(mockLoadChecklist).toHaveBeenCalledTimes(2)
+    })
+
+    // A Recent view stores the full path, including ?ruleId, so the selection
+    // must follow the incoming query instead of being cleared (which would
+    // also strip ruleId from the new URL).
+    it('seeds the selection from ?ruleId when the asset changes', async () => {
+      createWrapper()
+      await flushPromises()
+      mockSelectRule.mockClear()
+
+      const route = useRoute()
+      route.query.ruleId = 'V-789'
+      route.params.assetId = 'asset-2'
+      await nextTick()
+
+      expect(mockSelectRule).toHaveBeenCalledWith('V-789')
     })
   })
 

@@ -257,6 +257,12 @@ watch([
   () => route.params.revisionStr,
 ], () => {
   searchFilter.value = ''
+  // The router reuses this component across assets, so an open row editor
+  // (and any unsaved edits in it) would otherwise carry over to the new asset.
+  if (editingRow.value) {
+    reviewEditPopover.value?.hide()
+    editingRow.value = null
+  }
 })
 
 // The checklist endpoint carries no reviewer or status user, so the first time
