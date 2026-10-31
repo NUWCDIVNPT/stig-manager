@@ -253,6 +253,7 @@ SM.TaskConfig.ReviewAging.showRuleEditWindow = async function ({
       fieldLabel: 'Interval',
       name: 'intervalValue',
       minValue: 1,
+      allowBlank: false,
       allowDecimals: false,
       value: intervalInfo.value,
       width: 80,
