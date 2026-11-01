@@ -4,6 +4,11 @@ const state = ref(null) // current state object from the worker
 const error = ref(null)
 
 export function setupStateHandler() {
+  // init.js skips creating the state worker when STIGMAN_CLIENT_STATE_EVENTS
+  // is false. state then stays null, which every consumer treats as "no report".
+  if (!STIGMAN.stateWorker?.workerChannel) {
+    return
+  }
   STIGMAN.stateWorker.workerChannel.addEventListener('message', async (ev) => {
     const eventMessage = ev.data || {}
     // successful state updates should update state and clear any prior error
