@@ -1,3 +1,21 @@
+1.6.18
+-------
+
+Changes:
+
+  - (API) Review aging rules now require a ``triggerInterval`` of at least 3600 seconds (one hour). Existing rules below the minimum are raised to 3600 seconds and disabled by a migration so the collection owner can review and re-enable them.
+  - (API) Fixed the review aging task failing for reviews whose rule appears in more than one STIG. Such reviews were selected once per STIG, which aborted the metrics refresh for the collection, and a failed collection left the task unable to process later collections in the same run. Benchmark-targeted rules now select only reviews on assets assigned that STIG.
+  - (API) Added the ``labelId``, ``labelName``, and ``labelMatch`` query parameters to the collection checklist endpoint (``getChecklistByCollectionStig``). When present, per-rule result and status counts include only the assets matching the filter.
+  - (API) The ``labelName`` query parameter now allows reserved characters in label names.
+  - (API) Job run output now includes a ``seq`` property, returns ``taskId`` as a string, and marks the task fields as nullable, matching the ``JobRunOutput`` schema to the actual output.
+  - (UI) The review aging rule editor no longer accepts a blank interval, which was saved as 0.
+  - (Tests) Added integration tests for the review aging interval minimum, the migration that disables sub-minimum rules, and metrics refresh for reviews shared across STIGs. Updated the API test suite to ``mocha`` v12 and ``mochawesome`` v8.
+  - (Dependencies) Updated ``undici`` to v8.12.3, ``multer`` to v2.5.0, and ``compression`` to v1.8.2. Various security and maintenance updates.
+
+Note 1: Review aging rules with a ``triggerInterval`` below 3600 seconds have been set to 3600 seconds and disabled. Collection owners should review these rules and re-enable them if the one-hour interval is intended.
+
+Note 2: This release includes a database migration to support the review aging changes.
+
 1.6.17
 -------
 

@@ -48,7 +48,7 @@ watch(expandedByTour, animate)
     <SplitterPanel
       :size="10"
       :min-size="4"
-      :pt="{ root: { class: { 'nav-panel--collapsed': !expanded, 'nav-panel--animating': isAnimating }, style: 'min-width: 12rem; max-width: 35rem;' } }"
+      :pt="{ root: { class: { 'nav-panel--collapsed': !expanded, 'nav-panel--animating': isAnimating }, style: 'min-width: 18rem; max-width: 35rem;' } }"
     >
       <nav class="nav-rail" data-tour="nav-rail">
         <button

@@ -126,6 +126,27 @@ describe('Collection Task Config - /collections/{collectionId}/tasks/review-agin
       expect(res.status).to.eql(400)
     })
 
+    // Intervals below one hour are rejected; 0 would put the cutoff at "now" and match every review in scope
+    for (const rule of [
+      { triggerField: 'ts', triggerAction: 'delete', enabled: true },
+      { triggerField: 'ts', triggerAction: 'update', updateField: 'status', updateValue: 'saved', enabled: true },
+      { triggerField: 'ts', triggerAction: 'update', updateField: 'result', updateValue: 'notchecked', enabled: true }
+    ]) {
+      const ruleType = rule.updateField ? `update ${rule.updateField}` : 'delete'
+      for (const interval of [0, 3599]) {
+        it(`should return 400 for triggerInterval ${interval} (${ruleType})`, async function () {
+          const res = await utils.executeRequest(baseConfigUrl, 'PUT', admin.token, [{ ...rule, triggerInterval: interval }])
+          expect(res.status).to.eql(400)
+        })
+      }
+
+      it(`should accept triggerInterval 3600 (${ruleType})`, async function () {
+        const res = await utils.executeRequest(baseConfigUrl, 'PUT', admin.token, [{ ...rule, triggerInterval: 3600 }])
+        expect(res.status).to.eql(200)
+        expect(res.body[0]).to.have.property('triggerInterval', 3600)
+      })
+    }
+
     it('should accept a config with a benchmark target and return it expanded', async function () {
       const configWithTarget = [{ ...sampleConfig[0], target: { benchmarkId: 'VPN_SRG_TEST' } }]
       const res = await utils.executeRequest(baseConfigUrl, 'PUT', admin.token, configWithTarget)

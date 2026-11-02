@@ -3,6 +3,7 @@ import {
   formToRule,
   intervalToSeconds,
   isCollectionTarget,
+  isValidIntervalValue,
   ruleActionSummary,
   ruleIntervalLabel,
   rulesToPutPayload,
@@ -24,6 +25,23 @@ describe('interval conversion', () => {
     expect(secondsToInterval(604800)).toEqual({ value: 7, unit: 'days' })
     expect(secondsToInterval(7200)).toEqual({ value: 2, unit: 'hours' })
     expect(secondsToInterval(5400)).toEqual({ value: 2, unit: 'hours' }) // 1.5h rounds
+  })
+
+  // A cleared InputNumber yields null; Number(null) * multiplier would
+  // silently become a 0-second interval, which matches every review.
+  it('accepts only whole numbers of at least 1', () => {
+    expect(isValidIntervalValue(1)).toBe(true)
+    expect(isValidIntervalValue(30)).toBe(true)
+    expect(isValidIntervalValue(null)).toBe(false)
+    expect(isValidIntervalValue(undefined)).toBe(false)
+    expect(isValidIntervalValue(0)).toBe(false)
+    expect(isValidIntervalValue(-1)).toBe(false)
+    expect(isValidIntervalValue(1.5)).toBe(false)
+  })
+
+  it('never converts a missing or non-positive value to 0 seconds', () => {
+    expect(intervalToSeconds(null, 'days')).toBeNull()
+    expect(intervalToSeconds(0, 'hours')).toBeNull()
   })
 })
 

@@ -103,7 +103,6 @@ const {
   isRuleLoading,
   ruleContentError,
   selectRule,
-  clearSelectedRule,
 } = useRuleDetail({ ruleLookupMap, collectionId, assetId, benchmarkId, revisionStr })
 
 // If the route arrives with ?ruleId=… (e.g. from the Findings shield button),
@@ -143,8 +142,14 @@ watch(selectedRuleId, (ruleId) => {
   router.replace({ query: next })
 })
 
-watch([benchmarkId, revisionStr], () => {
-  clearSelectedRule()
+// assetId is included because the router reuses this component when only the
+// asset changes (Recent views, Back/Forward); without it the grid would keep
+// the previous asset's rows while saves target the new asset. The selection
+// is seeded from the incoming ?ruleId rather than cleared: clearing it would
+// make the watcher below strip ruleId from the URL the route just arrived on.
+watch([assetId, benchmarkId, revisionStr], () => {
+  selectRule(route.query.ruleId ?? null)
+  checklistData.value = []
   if (benchmarkId.value && revisionStr.value) {
     if (!stigRevisions.value?.length) {
       loadStigRevisions()
