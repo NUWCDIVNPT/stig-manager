@@ -6,8 +6,10 @@
   "overrides": {
     "serialize-javascript": "^7.1.4",
     "diff": "^8.0.3",
-    "uuid": "^14.0.0"
-  },    
+    "uuid": "^14.0.0",
+    "minimatch": "^11.0.1",
+    "glob": "^14.0.2"
+  },
   "dependencies": {
     "chai": "^5.2.0",
     "chai-datetime": "^1.8.1",
