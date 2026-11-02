@@ -305,6 +305,9 @@ async function onQuickCreated(created) {
   padding-right: 0.25rem;
   max-height: 26rem;
   overflow-y: auto;
+  /* The outer .nav-scroll-area already reserves a stable gutter; reserving a
+     second one here permanently costs the row labels ~11px at the min width */
+  scrollbar-gutter: auto;
 }
 
 .collections-group {
