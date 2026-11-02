@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { useGlobalAppStore } from '../../shared/stores/globalAppStore.js'
 
 const globalAppState = useGlobalAppStore()
-const classification = computed(() => globalAppState.classification || 'NONE')
+const classification = computed(() => globalAppState.classification)
 
 class Classification {
   constructor(apiClassification) {

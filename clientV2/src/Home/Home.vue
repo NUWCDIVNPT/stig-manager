@@ -7,10 +7,7 @@ import { useGlobalAppStore } from '../shared/stores/globalAppStore.js'
 const globalAppState = useGlobalAppStore()
 
 // check if banner is shown based on classification
-const bannerHeight = computed(() => {
-  const cls = globalAppState.classification
-  return cls && cls !== 'NONE' ? '20px' : '0px'
-})
+const bannerHeight = computed(() => globalAppState.classification !== 'NONE' ? '20px' : '0px')
 </script>
 
 <template>

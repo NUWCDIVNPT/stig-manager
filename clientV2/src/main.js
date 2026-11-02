@@ -6,7 +6,7 @@ import { setupOidcHandler } from './auth/useOidcWorker.js'
 import { setupStateHandler } from './auth/useStateWorker.js'
 import { BluePreset, MyPrimeVuePT } from './primevueTheme.js'
 import router from './router'
-import { api, apiCall, configureApiSpec, configureAuth } from './shared/api/apiClient.js'
+import { api, configureApiSpec, configureAuth } from './shared/api/apiClient.js'
 
 import { useGlobalError } from './shared/composables/useGlobalError.js'
 import { useGlobalAppStore } from './shared/stores/globalAppStore.js'
@@ -36,13 +36,15 @@ try {
   const globalAppState = useGlobalAppStore()
   globalAppState.setUser(STIGMAN.curUser)
 
-  // Fetch and configure API Spec
-  const spec = await api.get('/op/definition')
+  // Fetch API spec and config together; op/configuration by path since apiCall needs the spec first
+  const [spec, apiConfig] = await Promise.all([
+    api.get('/op/definition'),
+    api.get('/op/configuration'),
+  ])
   configureApiSpec(spec)
 
   // Classification lives in op/configuration, not Env.js; set before mount since the banner reads it once
-  const apiConfig = await apiCall('getConfiguration')
-  globalAppState.setClassification(apiConfig?.classification || 'NONE')
+  globalAppState.setClassification(apiConfig?.classification)
 
   app.use(PrimeVue, {
     theme: {

@@ -88,7 +88,7 @@ export async function downloadArchive({ collectionId, format, mode, selections, 
   if (!response.body || !onProgress) {
     const blob = await response.blob()
     saveAs(blob, filename)
-    return { via: 'fallback', bytes: blob.size, totalBytes, filename }
+    return { via: 'fallback', bytes: blob.size, totalBytes }
   }
 
   const reader = response.body.getReader()
@@ -108,7 +108,7 @@ export async function downloadArchive({ collectionId, format, mode, selections, 
 
   const blob = new Blob(chunks, { type: 'application/zip' })
   saveAs(blob, filename)
-  return { via: 'stream', bytes: receivedBytes, totalBytes, filename }
+  return { via: 'stream', bytes: receivedBytes, totalBytes }
 }
 
 export async function startCollectionExport({ collectionId, dstCollectionId, selections }) {

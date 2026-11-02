@@ -94,6 +94,10 @@ describe('csvMarking', () => {
     appStore.setClassification('NONE')
     expect(csvMarking()).toBe('(NONE)')
   })
+
+  it('marks an unset classification as (NONE)', () => {
+    expect(csvMarking()).toBe('(NONE)')
+  })
 })
 
 describe('generateCsv', () => {
@@ -113,8 +117,8 @@ describe('generateCsv', () => {
 
   it('adds a leading Marking column only when asked', () => {
     const data = [{ name: 'srv', ip: '1.2.3.4' }, { name: 'srv2' }]
-    expect(generateCsv(data, cols, ',', { marking: '(U)' })).toBe('Marking,Name,IP\n(U),srv,1.2.3.4\n(U),srv2,')
-    expect(generateCsv(data, cols, ',', {})).toBe('Name,IP\nsrv,1.2.3.4\nsrv2,')
+    expect(generateCsv(data, cols, { marking: '(U)' })).toBe('Marking,Name,IP\n(U),srv,1.2.3.4\n(U),srv2,')
+    expect(generateCsv(data, cols, {})).toBe('Name,IP\nsrv,1.2.3.4\nsrv2,')
   })
 
   it('emits empty cells when an apiProperty is missing on the data row', () => {
@@ -136,7 +140,7 @@ describe('generateCsv', () => {
 
   it('joins array values with a custom listDelimiter', () => {
     const data = [{ tags: ['a', 'b'] }]
-    expect(generateCsv(data, [{ apiProperty: 'tags', header: 'Tags' }], '\n'))
+    expect(generateCsv(data, [{ apiProperty: 'tags', header: 'Tags' }], { listDelimiter: '\n' }))
       .toBe('Tags\n"a\nb"')
   })
 
@@ -272,7 +276,7 @@ describe('formatAssetsForCsv', () => {
     }]
     const labels = [{ labelId: 'l1', name: 'prod' }]
     const rows = formatAssetsForCsv(mapAssetToLabel(assets, labels))
-    const csv = generateCsv(rows, ASSET_FIELDS, '\n')
+    const csv = generateCsv(rows, ASSET_FIELDS, { listDelimiter: '\n' })
     expect(csv).toContain('Name,Description,IP,FQDN,MAC,Non-Computing,STIGs,Labels,Metadata')
     expect(csv).toContain('srv1')
     expect(csv).toContain('False')

@@ -46,10 +46,9 @@ describe('downloadArchive filename', () => {
     getDownloadUrl.mockResolvedValue(null)
     globalThis.fetch.mockResolvedValue(archiveResponse())
 
-    const result = await downloadArchive(args)
+    await downloadArchive(args)
 
     expect(saveAs.mock.calls[0][1]).toBe(API_NAME)
-    expect(result.filename).toBe(API_NAME)
   })
 
   it('keeps the prefixed name when streaming with progress', async () => {
@@ -67,7 +66,7 @@ describe('downloadArchive filename', () => {
     const result = await downloadArchive({ ...args, onProgress })
 
     expect(saveAs.mock.calls[0][1]).toBe(API_NAME)
-    expect(result).toMatchObject({ via: 'stream', bytes: 3, filename: API_NAME })
+    expect(result).toMatchObject({ via: 'stream', bytes: 3 })
     expect(onProgress).toHaveBeenLastCalledWith({ bytesReceived: 3, totalBytes: null })
   })
 })

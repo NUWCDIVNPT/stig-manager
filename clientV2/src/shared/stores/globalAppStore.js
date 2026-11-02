@@ -8,7 +8,7 @@ const state = reactive({
 export function useGlobalAppStore() {
   return {
     get classification() {
-      return state.classification
+      return state.classification || 'NONE'
     },
     get user() {
       return state.user

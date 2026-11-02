@@ -80,7 +80,7 @@ describe('exportMetricsUtils', () => {
         { apiProperty: 'name', header: 'Name' },
         { apiProperty: 'stigs', header: 'STIGs' },
       ]
-      const csv = generateCsv(data, fields, '\n')
+      const csv = generateCsv(data, fields, { listDelimiter: '\n' })
       expect(csv).toContain('"STIG1\nSTIG2"')
     })
 
@@ -143,8 +143,9 @@ describe('exportMetricsUtils', () => {
       const blob = saveAs.mock.calls[0][0]
       const text = await blob.text()
 
-      expect(text.split('\n')[0]).toBe('Marking,Name,Description,IP,FQDN,MAC,Non-Computing,STIGs,Labels,Metadata')
-      expect(text.split('\n')[1]).toMatch(/^\(U\),Asset1,/)
+      // Unmarked so it stays importable by AssetCsvParser
+      expect(text.split('\n')[0]).toBe('Name,Description,IP,FQDN,MAC,Non-Computing,STIGs,Labels,Metadata')
+      expect(text.split('\n')[1]).toMatch(/^Asset1,/)
 
       expect(text).toContain('True')
       expect(text).toContain('Label1')
@@ -175,7 +176,7 @@ describe('exportMetricsUtils', () => {
       const blob = saveAs.mock.calls[0][0]
       const text = await blob.text()
 
-      expect(text).toBe('Marking,Name,Description,IP,FQDN,MAC,Non-Computing,STIGs,Labels,Metadata\n(U),Asset1,,,,,,,,')
+      expect(text).toBe('Name,Description,IP,FQDN,MAC,Non-Computing,STIGs,Labels,Metadata\nAsset1,,,,,,,,')
     })
 
     it('should mark the group-by-STIG CSV', async () => {

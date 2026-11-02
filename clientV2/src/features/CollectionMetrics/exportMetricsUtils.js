@@ -110,7 +110,9 @@ export async function handleInventoryExport({
         finalFields = csvFields
       }
 
-      const csvContent = generateCsv(data, finalFields, finalDelimiter, { marking: csvMarking() })
+      // No Marking on asset CSV: AssetCsvParser rejects unknown headers, so it would break re-import
+      const marking = groupBy === 'asset' ? undefined : csvMarking()
+      const csvContent = generateCsv(data, finalFields, { listDelimiter: finalDelimiter, marking })
       downloadData = new Blob([csvContent])
     }
     else {

@@ -38,7 +38,7 @@ export function escapeCsv(value) {
  * - Missing properties produce empty cells, preserving header order.
  * - With `marking`, a leading `Marking` column carries it on every row.
  */
-export function generateCsv(data, columns, listDelimiter = ',', { marking } = {}) {
+export function generateCsv(data, columns, { listDelimiter = ',', marking } = {}) {
   const csvRows = []
 
   const headers = columns.map(c => c.header)
