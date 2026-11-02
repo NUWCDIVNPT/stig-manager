@@ -165,7 +165,11 @@ const columnPt = {
 const dataTablePt = {
   tableContainer: { style: { height: '100%' } },
   table: { style: { tableLayout: 'auto', minWidth: '100%' } },
-  bodyRow: { style: { cursor: 'pointer', height: 'var(--item-size)', overflow: 'hidden' } },
+  // The first row is the one the Asset Review tour clicks to open the editor.
+  bodyRow: ({ context }) => ({
+    'style': { cursor: 'pointer', height: 'var(--item-size)', overflow: 'hidden' },
+    'data-tour': context.index === 0 ? 'asset-review-row' : undefined,
+  }),
   footer: { style: { padding: '0', border: 'none' } },
   emptyMessageCell: { class: 'agg-grid-empty-cell' },
 }

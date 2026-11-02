@@ -79,7 +79,7 @@ describe('tourHost', () => {
 
     expect(screen.getByRole('dialog')).toBeInTheDocument()
     expect(screen.getByText('1 / 4')).toBeInTheDocument()
-    expect(screen.getByText('Navigation moved to the left rail')).toBeInTheDocument()
+    expect(screen.getByText('Navigation rail')).toBeInTheDocument()
 
     await fireEvent.click(screen.getByRole('button', { name: 'Next' }))
     expect(screen.getByText('2 / 4')).toBeInTheDocument()
@@ -87,7 +87,7 @@ describe('tourHost', () => {
 
     await fireEvent.click(screen.getByRole('button', { name: 'Next' }))
     expect(screen.getByText('3 / 4')).toBeInTheDocument()
-    expect(screen.getByText('Your account moved to the top right')).toBeInTheDocument()
+    expect(screen.getByText('Your account')).toBeInTheDocument()
     expect(pushMock).not.toHaveBeenCalled()
 
     // The last step has a route, so it stays in the tour without an anchor and navigates on arrival
@@ -116,6 +116,45 @@ describe('tourHost', () => {
     expect(screen.getByText('3 / 3')).toBeInTheDocument()
     // The link's own navigation got there first, so the route step has nothing to push
     expect(pushMock).not.toHaveBeenCalled()
+  })
+
+  it('clicks a target where the user would, with pointer coordinates', async () => {
+    addAnchor('nav-rail')
+    const link = addAnchor('nav-collections-dashboard')
+    const onClick = vi.fn()
+    link.addEventListener('click', onClick)
+    await renderAndStart()
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    await fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    expect(onClick).toHaveBeenCalledTimes(1)
+    const event = onClick.mock.calls[0][0]
+    expect(event.clientX).toBe(35)
+    expect(event.clientY).toBe(25)
+  })
+
+  it('keeps a deferred step whose target the previous click produces', async () => {
+    addAnchor('asset-review-checklist')
+    const row = addAnchor('asset-review-row')
+    row.addEventListener('click', () => addAnchor('review-popover'))
+    useTours().startTour('assetReview')
+    renderWithProviders(TourHost)
+    await vi.advanceTimersByTimeAsync(0)
+
+    // Checklist, row, editor. The editor step stays although its target is not yet on screen.
+    expect(screen.getByText('1 / 3')).toBeInTheDocument()
+    await fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    expect(screen.getByText('Edit a Review')).toBeInTheDocument()
+    await fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    expect(screen.getByText('Review editor')).toBeInTheDocument()
+    expect(document.querySelector('[data-tour="review-popover"]')).not.toBeNull()
+  })
+
+  it('does not open a tour whose only candidates are deferred or routed steps', async () => {
+    useTours().startTour('assetReview')
+    renderWithProviders(TourHost)
+    await vi.advanceTimersByTimeAsync(0)
+    expect(screen.queryByRole('dialog')).toBeNull()
   })
 
   it('leaves navigation to the clicked link even before the route has changed', async () => {
@@ -160,11 +199,11 @@ describe('tourHost', () => {
     addAnchor('nav-rail')
     addAnchor('asset-review-checklist')
     await renderAndStart()
-    expect(screen.getByText('Navigation moved to the left rail')).toBeInTheDocument()
+    expect(screen.getByText('Navigation rail')).toBeInTheDocument()
 
     useTours().offerTour('assetReview')
     await vi.advanceTimersByTimeAsync(0)
-    expect(screen.getByText('Navigation moved to the left rail')).toBeInTheDocument()
+    expect(screen.getByText('Navigation rail')).toBeInTheDocument()
 
     await fireEvent.click(screen.getByRole('button', { name: 'Skip' }))
     await vi.advanceTimersByTimeAsync(0)
@@ -270,7 +309,7 @@ describe('tourHost', () => {
     await vi.advanceTimersByTimeAsync(0)
     expect(screen.getByText('Checklist')).toBeInTheDocument()
 
-    await fireEvent.click(screen.getByRole('button', { name: 'Done' }))
+    await fireEvent.click(screen.getByRole('button', { name: 'Skip' }))
     await vi.waitFor(() => {
       expect(useGlobalAppStore().user.webPreferences.tours).toEqual({
         shell: SHELL_DATE,

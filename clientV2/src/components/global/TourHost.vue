@@ -135,6 +135,8 @@ const cardStyle = computed(() => {
   const midTop = clamp(r.top + r.height / 2 - height / 2, vh - height)
 
   switch (step.value?.placement) {
+    case 'below':
+      return { top: `${clamp(r.bottom + CARD_GAP, vh - height)}px`, left: `${clamp(r.left, vw - width)}px` }
     case 'below-end':
       return { top: `${clamp(r.bottom + CARD_GAP, vh - height)}px`, left: `${clamp(r.right - width, vw - width)}px` }
     case 'center':
@@ -146,6 +148,17 @@ const cardStyle = computed(() => {
   }
 })
 
+// Clicks the target where the user would, so a handler that anchors something
+// to the pointer (the Review editor pop-up, say) places it beside the target.
+function clickAt({ el, rect }) {
+  el.dispatchEvent(new MouseEvent('click', {
+    bubbles: true,
+    cancelable: true,
+    clientX: rect.left + rect.width / 2,
+    clientY: rect.top + rect.height / 2,
+  }))
+}
+
 function next() {
   if (isLast.value) {
     finish()
@@ -154,7 +167,7 @@ function next() {
   if (step.value?.clickTarget) {
     const target = findTarget(step.value.target)
     if (target) {
-      target.el.click()
+      clickAt(target)
       navigatedByClick = true
     }
   }
@@ -228,10 +241,11 @@ async function start(id) {
   // before deciding which steps are available.
   setNavRailExpanded(steps.some(s => s.expandRail))
   await nextTick()
-  // A step with a route brings its own target along once it navigates, but
-  // only joins a tour that has something to show on the current screen.
+  // A step with a route brings its own target along once it navigates, and a
+  // deferred step's target is produced by the click before it, but either only
+  // joins a tour that has something to show on the current screen.
   const onScreen = steps.filter(s => findTarget(s.target))
-  availableSteps.value = onScreen.length ? steps.filter(s => s.route || onScreen.includes(s)) : []
+  availableSteps.value = onScreen.length ? steps.filter(s => s.route || s.deferred || onScreen.includes(s)) : []
   if (availableSteps.value.length === 0) {
     setNavRailExpanded(false)
     return

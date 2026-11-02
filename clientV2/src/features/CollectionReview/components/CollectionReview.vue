@@ -9,6 +9,7 @@ import { fetchCollection } from '../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useLabelFilterQuery } from '../../../shared/composables/useLabelFilterQuery.js'
+import { useTours } from '../../../shared/composables/useTours.js'
 import { defaultFieldSettings, statusPayloadForAction } from '../../../shared/lib/reviewFormUtils.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
@@ -21,6 +22,7 @@ import RuleTable from './RuleTable.vue'
 
 const route = useRoute()
 const router = useRouter()
+const { offerTour } = useTours()
 const { addView, removeView } = useRecentViews()
 const { getCollectionRoleId } = useCurrentUser()
 
@@ -165,6 +167,13 @@ watch(checklistError, (err) => {
     removeView(recentViewKey())
   }
 })
+
+// The tour points at the grids, so it waits for the checklist.
+watch(() => Boolean(gridData.value?.length), (ready) => {
+  if (ready) {
+    offerTour('collectionReview')
+  }
+}, { immediate: true })
 
 // makes sure selectged is always valid or we pick first item
 watch(gridData, (data) => {
@@ -332,6 +341,7 @@ async function onBatchEditConfirm(payload) {
           >
             <SplitterPanel :size="50" :min-size="20">
               <CollectionChecklistGrid
+                data-tour="collection-review-checklist"
                 :grid-data="gridData ?? []"
                 :is-loading="isChecklistLoading"
                 :selected-rule-id="selectedRuleId"
@@ -345,6 +355,7 @@ async function onBatchEditConfirm(payload) {
             <SplitterPanel :size="50" :min-size="20">
               <RuleTable
                 v-model:selection="selectedRows"
+                data-tour="collection-review-reviews"
                 :grid-data="mergedReviewsData"
                 :is-loading="showReviewsLoading"
                 :selected-rule-id="selectedRuleId"
@@ -363,6 +374,7 @@ async function onBatchEditConfirm(payload) {
 
         <SplitterPanel :size="25" :min-size="20">
           <RuleInfo
+            data-tour="collection-review-rule"
             :rule-content="ruleContent"
             :is-loading="showRuleLoading"
             :rule-content-error="ruleContentError"
