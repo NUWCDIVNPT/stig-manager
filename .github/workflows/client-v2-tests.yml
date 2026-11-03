@@ -2,9 +2,11 @@ name: clientV2 tests
 on:
   pull_request:
     branches:
+      - main
       - new-client
   push:
     branches:
+      - main
       - new-client
   workflow_dispatch:
   workflow_call:

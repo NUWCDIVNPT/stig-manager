@@ -34,5 +34,5 @@ watch(() => props.selectedCollectionIds, () => {
 </script>
 
 <template>
-  <MetricsPanels :metrics="metrics" :is-loading="isLoading" :error="errorMessage" :vertical="vertical" :show-export-action="false" :show-details-action="false" />
+  <MetricsPanels :metrics="metrics" :is-loading="isLoading" :error="errorMessage" :vertical="vertical" :show-export-action="false" />
 </template>

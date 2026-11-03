@@ -29,7 +29,7 @@ The API layer is responsible for data access, authentication injection, and erro
     - **`path`**: Can be a relative path (e.g., `/stigs`) or a full URL.
     - **`opts.json`**: Pass a JS object here to have it automatically stringified and the `Content-Type` header set to `application/json`.
     - **`opts.rawBody`**: Use this for `FormData` or `Blob` payloads where you need browser-managed headers.
-    - **`opts.responseType`**: defaults to `'json'`, but can be `'text'` or `'blob'`.
+    - **`opts.responseType`**: defaults to `'json'`, but can be `'text'`, `'blob'`, or `'response'` (returns the raw `Response` for streamed bodies).
 
 - **`apiCall(operationId, params, body, opts)`**: The OpenAPI-aware wrapper.
     - Ensures you are calling a valid operation from the spec.
@@ -75,6 +75,11 @@ await apiCall('getStigById', { collectionId: 1, stigId: 'stig-1' })
 
 ### `useAsyncState`
 This is the async lifecycle and state orchestration layer. It executes async functions, always catches errors, converts failures into reactive state, and **triggers the global error modal by default**.
+
+`useAsyncState(promiseFactory, options)` returns `{ state, isLoading, error, execute }`. Options:
+- `immediate` (default `true`): run `execute()` on creation. Pass `false` when the component triggers the first load itself (e.g. from a watcher on route params).
+- `initialState` (default `null`): the value of `state` before the first result.
+- `onError` (default: trigger the global error modal): see the patterns below.
 
 ```javascript
 // src/shared/composables/useAsyncState.js
@@ -176,7 +181,7 @@ It tracks a `generation` counter for each execution. If you call `execute()` mul
 It automatically manages an `AbortController`.
 1.  When `execute()` is called, it aborts any pending request from the previous execution.
 2.  It creates a new `AbortController`.
-3.  It passes the `signal` to your promise factory as a second argument: `promiseFactory(arg1, { signal })`.
+3.  It appends `{ signal }` after whatever arguments were passed to `execute()`: `promiseFactory(...args, { signal })`. A factory that wants the signal therefore has to know its own arity (see `docs/todos/use-async-state.md`).
 
 **To check for cancellation in your API calls:**
 Ensure your API client or fetch wrapper forwards this `signal` to the underlying `fetch` call.

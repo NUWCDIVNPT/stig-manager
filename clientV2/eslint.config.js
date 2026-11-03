@@ -15,7 +15,6 @@ export default antfu({
   ignores: [
     '**/vite.config.js',
     '**/eslint.config.js',
-    '**/deprecated/**',
     'node_modules/**',
     'coverage/**',
     'package.json',
@@ -23,10 +22,9 @@ export default antfu({
     'src/assets/**',
   ],
   rules: {
-    // this stops eslint from complaining about console statements (for debugging)
+    // console output is gated at runtime by src/init.js (silent unless consoleMode is development)
     'no-console': 'off',
     'vue/custom-event-name-casing': 'off',
     'antfu/no-top-level-await': 'off',
-   
   }
 })

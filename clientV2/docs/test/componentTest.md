@@ -14,13 +14,12 @@ This project’s component tests are written with Vitest + @testing-library/vue 
 Most tests live near the code they test (feature/component folders), and are picked up by Vitest via these globs:
 
 *   `src/**/*.{test,spec}.{js,jsx,ts,tsx}`
-*   `tests/unit/**/*.{test,spec}.{js,jsx,ts,tsx}`
 
 Example: `MyComponent.test.js` tests `MyComponent.vue` in the same feature area.
 
 ## Our “default render” helper: renderWithProviders
 
-Most components assume certain global app context exists (Pinia, injected worker, PrimeVue). To avoid repeating setup in every test, use:
+Most components assume certain global app context exists (injected worker, PrimeVue, the tooltip directive). To avoid repeating setup in every test, use:
 
 ```javascript
 renderWithProviders(MyComponent, {
@@ -31,9 +30,9 @@ renderWithProviders(MyComponent, {
 ```
 
 **What it does:**
-1.  Registers Pinia
-2.  Provides an injected worker object (token + user identity)
-3.  Optionally installs PrimeVue (see `utils`)
+1.  Provides an injected worker object (token + user identity)
+2.  Optionally installs PrimeVue and the `tooltip` directive (`withPrimeVue`, default `true`)
+3.  Merges any `global` config you pass (plugins, provide, directives, stubs) with those defaults instead of replacing them
 
 This keeps tests consistent and reduces “random failing because provider missing.”
 
@@ -42,15 +41,15 @@ This keeps tests consistent and reduces “random failing because provider missi
 Vitest runs in JSDOM, which is missing some browser APIs that UI libraries expect. We handle that centrally in `setupTests.js`.
 
 *   Imports `jest-dom` matchers
-*   Mocks `ResizeObserver` (PrimeVue components often require it)
+*   Mocks `ResizeObserver` and `matchMedia` (PrimeVue components require them)
 *   Cleans up the DOM after each test (via Testing Library cleanup)
 
 Vitest loads this file automatically via `setupFiles` in `vitest.config`.
 
 ## When to mock per-test vs globally
 
-*   Put generally needed polyfills (`ResizeObserver`) in `setupTests.js`.
-*   Put component-specific hacks (like `matchMedia` for a single PrimeVue widget) inside that test file, so it’s obvious why it exists and doesn’t leak into unrelated tests.
+*   Put generally needed polyfills (`ResizeObserver`, `matchMedia`) in `setupTests.js`.
+*   Put component-specific hacks (a `vi.mock` of one module, a stubbed browser API only one widget touches) inside that test file, so it’s obvious why it exists and doesn’t leak into unrelated tests.
 
 ## The basic testing pattern we follow
 
@@ -138,7 +137,7 @@ This keeps tests aligned with the public component API.
 
 ## Checklist for writing a new component test
 
-1.  [ ] Render with `renderWithProviders` if the component expects Pinia / worker / PrimeVue.
+1.  [ ] Render with `renderWithProviders` if the component expects the worker / PrimeVue.
 2.  [ ] Mock boundary dependencies (env composables, API helpers, heavy utils).
 3.  [ ] Add polyfills only when needed (prefer global `setupTests.js` for common ones).
 4.  [ ] Use `waitFor` when the UI appears after async updates.

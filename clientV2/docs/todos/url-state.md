@@ -1,6 +1,6 @@
 # URL state — app-wide effort
 
-Planned as its own effort and PR (decided 2026-10-28): make URL handling consistent
+Planned as its own effort and PR: make URL handling consistent
 across the app instead of patching it per feature. Goal: what's on screen is always
 reflected in the URL, so Back, reload, recent views, and shared links restore the
 same view.
@@ -22,10 +22,9 @@ same view.
 - [ ] **Tab switches drop each tab's own query.** Leaving Findings for STIGs and
   returning drops `?agg/stig/sel` while the mounted component keeps its state — URL
   and screen disagree, and Back from Asset Review lands on the default view.
-  - Prototype stashed: `git stash list` → *"url-state: CollectionView per-tab query
-    save/restore"*. Keeps a `tabQueries` Map in `CollectionView`: on leave, save
+  - Sketch: keep a `tabQueries` Map in `CollectionView`: on leave, save
     `route.query` minus label keys; on return, re-attach it with the current label
-    filter on top; clear on collection switch. ~10 lines, tests and lint passed.
+    filter on top; clear on collection switch. About ten lines.
   - Safe because hidden tabs are inert: Findings only changes state from user input
     or its one-shot mount restore, so a saved query can't go stale.
 

@@ -5,7 +5,6 @@ import HelpIcon from '../../../../components/common/HelpIcon.vue'
 import { TOOLTIPS } from '../../../../shared/lib/tooltips.js'
 import { useEnv } from '../../../../shared/stores/useEnv.js'
 import { formatDateTime, transformLastClaims } from '../lib/userDisplay.js'
-// TODO get a real tree json tools
 // Read-only diagnostic view of statistics.lastClaims — the claims presented
 // at the user's most recent authentication.
 const props = defineProps({
