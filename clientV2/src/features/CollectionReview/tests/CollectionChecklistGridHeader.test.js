@@ -32,7 +32,7 @@ vi.mock('primevue/tieredmenu', () => ({
     template: `
       <div>
         <div v-for="group in model" :key="group.label">
-          <button v-for="item in group.items" :key="item.label" :data-icon="item.icon" @click="item.command && item.command()">
+          <button v-for="item in group.items" :key="item.label" :data-icon="item.icon" :title="item.tooltip" @click="item.command && item.command()">
             {{ item.label }}
           </button>
         </div>
@@ -172,6 +172,22 @@ describe('checklistGridHeader.vue', () => {
 
       await fireEvent.click(screen.getByText('Rule ID and Rule Title'))
       expect(emitted()['apply-preset'][1]).toEqual(['ruleRule'])
+    })
+
+    it('emits export-archive per format and shows the legacy tooltips', async () => {
+      const { emitted } = createWrapper()
+
+      await fireEvent.click(screen.getByText('CKL (STIG Viewer v2)'))
+      await fireEvent.click(screen.getByText('CKLB (STIG Viewer v3)'))
+      await fireEvent.click(screen.getByText('XCCDF'))
+
+      expect(emitted()['export-archive']).toEqual([
+        [{ format: 'ckl', mode: 'mono' }],
+        [{ format: 'cklb', mode: 'mono' }],
+        [{ format: 'xccdf', mode: null }],
+      ])
+      expect(screen.getByText('XCCDF').closest('button').title)
+        .toBe('Download an archive with results in XCCDF format for each asset in the collection')
     })
 
     it('fills the circle only for the active preset', () => {

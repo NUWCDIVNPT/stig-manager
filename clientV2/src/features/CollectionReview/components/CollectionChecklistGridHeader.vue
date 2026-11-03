@@ -11,6 +11,7 @@ import GridSearch from '../../../components/common/GridSearch.vue'
 import { fetchStigRevisions } from '../../../shared/api/stigsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { getRevisionInfo } from '../../../shared/lib/checklistUtils.js'
+import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 
 const props = defineProps({
   toggleableColumns: {
@@ -88,9 +89,9 @@ const checklistMenuItems = computed(() => [
     label: 'Export Result Archive',
     icon: 'pi pi-download',
     items: [
-      { label: 'CKL (STIG Viewer v2)', icon: 'pi pi-download', command: () => emit('export-archive', { format: 'ckl', mode: 'mono' }) },
-      { label: 'CKLB (STIG Viewer v3)', icon: 'pi pi-download', command: () => emit('export-archive', { format: 'cklb', mode: 'mono' }) },
-      { label: 'XCCDF', icon: 'pi pi-download', command: () => emit('export-archive', { format: 'xccdf', mode: null }) },
+      { label: 'CKL (STIG Viewer v2)', icon: 'pi pi-download', tooltip: TOOLTIPS.collectionReview.archiveCkl, command: () => emit('export-archive', { format: 'ckl', mode: 'mono' }) },
+      { label: 'CKLB (STIG Viewer v3)', icon: 'pi pi-download', tooltip: TOOLTIPS.collectionReview.archiveCklb, command: () => emit('export-archive', { format: 'cklb', mode: 'mono' }) },
+      { label: 'XCCDF', icon: 'pi pi-download', tooltip: TOOLTIPS.collectionReview.archiveXccdf, command: () => emit('export-archive', { format: 'xccdf', mode: null }) },
     ],
   },
 ])
@@ -99,6 +100,7 @@ const checklistMenuPT = {
   root: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 4px; box-shadow: 0 6px 24px rgba(0,0,0,0.6); padding: 0.25rem 0; min-width: 12rem;' },
   menu: { style: 'background: transparent; outline: none;' },
   menuitem: { style: 'margin: 0;' },
+  item: ({ context }) => ({ title: context.item.tooltip }),
   content: { style: 'padding: 0.4rem 0.8rem; color: var(--color-text-primary); border-radius: 0; transition: background-color 0.1s; display: flex; align-items: center;' },
   icon: { style: 'color: var(--color-text-dim); margin-right: 0.5rem; font-size: var(--text-md);' },
   label: { style: 'font-size: var(--text-md);' },

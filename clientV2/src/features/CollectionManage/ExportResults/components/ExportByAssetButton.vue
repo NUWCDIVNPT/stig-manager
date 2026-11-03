@@ -1,9 +1,9 @@
 <script setup>
 import { computed, ref } from 'vue'
 import ActionButton from '../../../../components/common/ActionButton.vue'
+import ArchiveProgressDialog from '../../../../components/common/ArchiveProgressDialog.vue'
+import { useArchiveProgress } from '../../../../shared/composables/useArchiveProgress.js'
 import { useCollectionExportProgressStore } from '../../../../shared/stores/collectionExportProgressStore.js'
-import { useArchiveProgress } from '../composables/useArchiveProgress.js'
-import ArchiveProgressDialog from './ArchiveProgressDialog.vue'
 import ExportByAssetModal from './ExportByAssetModal.vue'
 
 const props = defineProps({

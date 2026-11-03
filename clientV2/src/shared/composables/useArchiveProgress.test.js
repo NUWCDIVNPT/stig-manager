@@ -1,16 +1,22 @@
 import { saveAs } from 'file-saver-es'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { downloadArchive } from '../api/exportResultsApi.js'
-import { useArchiveProgress } from '../composables/useArchiveProgress.js'
+import { downloadArchive } from '../api/archiveApi.js'
+import { useArchiveProgress } from './useArchiveProgress.js'
+import { useGlobalError } from './useGlobalError.js'
 
+vi.mock('./useGlobalError.js', () => ({ useGlobalError: vi.fn() }))
 vi.mock('file-saver-es', () => ({ saveAs: vi.fn() }))
-vi.mock('../api/exportResultsApi.js', () => ({ downloadArchive: vi.fn() }))
+vi.mock('../api/archiveApi.js', () => ({ archiveFilename: vi.fn(() => 'My Coll_ckl.zip'), downloadArchive: vi.fn() }))
 
 const args = { collectionId: '21', collectionName: 'My Coll', format: 'ckl', mode: 'mono', selections: [{ assetId: '1' }] }
 
 describe('useArchiveProgress.download', () => {
+  let triggerError
+
   beforeEach(() => {
     vi.clearAllMocks()
+    triggerError = vi.fn()
+    useGlobalError.mockReturnValue({ triggerError })
   })
 
   it('shows no dialog for a service-worker download', async () => {
@@ -53,7 +59,32 @@ describe('useArchiveProgress.download', () => {
 
     expect(archive.progress.active).toBe(false)
     expect(archive.progress.log.at(-1)).toBe('Error: boom')
+    expect(triggerError).toHaveBeenCalledWith(expect.objectContaining({ message: 'boom' }))
     archive.close()
     expect(archive.progress.visible).toBe(false)
+  })
+
+  it('hides on close mid-stream and reopens on a repeat request instead of starting another', async () => {
+    let finish
+    downloadArchive.mockImplementation(({ onStreamStart }) => {
+      onStreamStart()
+      return new Promise((resolve) => {
+        finish = resolve
+      })
+    })
+    const archive = useArchiveProgress()
+
+    const running = archive.download(args)
+    archive.close()
+    expect(archive.progress.visible).toBe(false)
+    expect(archive.progress.active).toBe(true)
+
+    await archive.download(args)
+    expect(downloadArchive).toHaveBeenCalledTimes(1)
+    expect(archive.progress.visible).toBe(true)
+
+    finish({ via: 'stream', filename: 'U_My Coll-CKL_x.zip' })
+    await running
+    expect(archive.progress.log.at(-1)).toBe('Streaming is complete.')
   })
 })
