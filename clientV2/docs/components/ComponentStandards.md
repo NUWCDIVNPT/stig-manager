@@ -63,7 +63,7 @@ const dialogPt = {
 Sizes come from the type scale and the rem row-height tokens; see [Typography and Sizing](TypographyAndSizing.md). In short: `font-size: var(--text-md)` (never a literal), `var(--font-mono)` for identifiers and code, `rowHeightPx(kind)` or `useGridDensity(gridKey)` for virtual scroller rows, and rem for column widths.
 
 ### ❌ What NOT To Do:
-*   **Deep Selectors:** Avoid `::v-deep` or `>>>` to hack external component styles. It is brittle and breaks easily with library updates. Use the exposed `pt` API instead.
+*   **Deep Selectors:** Prefer the exposed `pt` API for styling PrimeVue internals. Use `:deep()` only for layout rules `pt` cannot reach (e.g. the row-pinning selectors in [Typography and Sizing](TypographyAndSizing.md)); never `::v-deep` or `>>>`.
 *   **Global Styles:** Never write styles without `scoped` in a component file.
 *   **Literal Sizes:** No `font-size: 0.9rem`, no px row heights, no named font stacks. The convention tests reject them.
 *   **Literal Colors:** Every color is a theme token from `style.css` (`var(--color-warning-yellow)`, `var(--color-border-default)`, ...), in scoped CSS, PT objects and `color-mix()` alike. No hex, rgb or named colors, and no fallback value in `var()`: a fallback is a second, unthemed color that hides a missing token instead of failing visibly. If no token fits, add one to `style.css` (with its dark-theme value) rather than writing the color inline.

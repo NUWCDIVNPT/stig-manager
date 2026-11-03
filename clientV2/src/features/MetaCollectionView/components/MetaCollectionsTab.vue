@@ -95,7 +95,6 @@ function handleStigAction(rowData) {
   })
 }
 function handleAssetStigAction(rowData) {
-  console.log(rowData)
   router.push({
     name: 'collection-asset-review',
     params: {

@@ -59,7 +59,7 @@ const { inventory } = useCollectionStats(metrics)
 
 ### ❌ What NOT To Do:
 *   **Megacomponents:** Don't write 500 lines of setup code in your component. If it deals with "Stats Logic", move it to `useStats.js`.
-*   **Global Event Bus:** Do not use a global event bus for communication. Use Props/Emits for parent-child, and Pinia stores for global app state.
+*   **Global Event Bus:** Do not use a global event bus for communication. Use Props/Emits for parent-child, and the `reactive()` modules in `src/shared/stores` for global app state.
 
 ## 3. Reactivity
 Pass `Ref`s or getters to composables, not raw values, if you want them to react to changes.

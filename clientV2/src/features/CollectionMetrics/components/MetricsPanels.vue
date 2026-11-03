@@ -30,10 +30,6 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
-  showDetailsAction: {
-    type: Boolean,
-    default: true,
-  },
 })
 
 defineEmits(['export'])
@@ -52,7 +48,7 @@ const { pending, progressStats, coraData, inventory, findings, ages } = useMetri
       <Cora :cora-data="coraData" :pending="pending" />
       <div class="stats-column">
         <InventoryStats :inventory="inventory" :show-export-action="showExportAction" @export="$emit('export')" />
-        <FindingsStats :findings="findings" :show-details-action="showDetailsAction" />
+        <FindingsStats :findings="findings" />
         <ReviewAgesStats :ages="ages" />
       </div>
       <slot />

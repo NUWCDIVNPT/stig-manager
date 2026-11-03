@@ -63,10 +63,6 @@ try {
 
   app.use(router)
   app.provide('worker', STIGMAN.oidcWorker)
-  // Debug: log current route after router is ready
-  console.log('window.location.pathname', window.location.pathname)
-  console.log('router base', router.options.history.base)
-  console.log('router.currentRoute.value', router.currentRoute.value)
   setupStateHandler() // set up state worker message handling
   setupOidcHandler() // set up OIDC worker message handling
   app.mount('#app')

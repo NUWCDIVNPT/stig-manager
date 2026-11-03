@@ -1,6 +1,6 @@
 # Reusable Components
 
-Component patterns for the new client. Candidates for implementation as we develop.
+Where shared UI lives in the new client, and the conventions that keep grids consistent.
 
 **Legend:**
 - **Native** - PrimeVue handles this; just use `#body` template + helper function
@@ -9,28 +9,31 @@ Component patterns for the new client. Candidates for implementation as we devel
 
 ---
 
-## Proposed Structure
+## Structure
 
 ```
 src/
 ├── components/
-│   ├── common/          # Small reusable pieces
+│   ├── common/          # Shared pieces used by more than one feature
 │   │   ├── Label.vue            # Shared: one label chip (LabelChip); every chip renders through it
-│   │   ├── SeverityBadge.vue    # Shared: Cat I/II/III styled badge
-│   │   ├── CORABadge.vue        # Shared: risk rating with color
-│   │   └── ...
-│   ├── columns/         # Reusable table columns
-│   │   ├── DurationColumn.vue
-│   │   ├── PercentageColumn.vue
-│   │   ├── AssetWithLabelsColumn.vue
-│   │   ├── LabelsRow.vue        # Shared: label chips with overflow, built from LabelChip
-│   │   └── ...
-│   └── global/          # App-wide singletons (Banner, Overlays, error messages)
-├── shared/
-│   └── lib/             # Helper functions
-│       ├── formatters.js        # formatDuration, formatPercent
-│       └── severity.js          # getSeverityColor, getCoraSeverity
+│   │   ├── CatBadge.vue         # Shared: CAT I/II/III badge
+│   │   ├── CoraPctBadge.vue     # Shared: CORA risk rating with color
+│   │   ├── ResultBadge.vue, StatusBadge.vue, EngineBadge.vue, ...
+│   │   ├── GridToolbar.vue, GridSearch.vue, GridFilterButton.vue, ColumnToggle.vue, StatusFooter.vue
+│   │   ├── PickList*.vue        # Dual-pane assignment UI (grants, labels, STIGs, group membership)
+│   │   ├── BreadcrumbFilter.vue, PillsTrigger.vue, LabelFilterPicker.vue, LabelFilterPills.vue
+│   │   └── pillsPicker.css / pillsPicker.js
+│   └── columns/         # Reusable table columns
+│       ├── CountColumn.vue, DurationColumn.vue, PercentageColumn.vue, TextColumn.vue
+│       ├── AssetColumn.vue, BenchmarkColumn.vue, CollectionColumn.vue
+│       ├── CatColumn.vue, CoraColumn.vue, LabelsColumn.vue
+│       └── LabelsRow.vue        # Shared: label chips with overflow, built from LabelChip
+└── shared/
+    ├── lib.js           # formatPercent and other small helpers
+    └── lib/             # numberFormat.js (dashZero), exportCells.js, csv.js, textWidth.js, ...
 ```
+
+Feature-specific components stay inside their feature (see [FeatureStructure](components/FeatureStructure.md)); a component moves to `components/common` or `components/columns` once a second feature needs it.
 
 ---
 
@@ -43,54 +46,25 @@ These don't need wrapper components—just inline templates with helper function
 | Pattern | Template Example | Helper Needed |
 |---------|------------------|---------------|
 | Count with own header slot | `{{ dashZero(data.count) }}` (use `CountColumn` when the column has no custom slots) | `dashZero()` |
-| CountWithTooltip | `<span v-tooltip="itemList">{{ count }}</span>` | `formatTooltipList()` |
-| IconColumn | `<i :class="getIcon(data)" v-tooltip="label" />` | `getIconClass()` |
-| ResponseCodeColumn | `<Tag :severity="getHttpSeverity(code)">{{ code }}</Tag>` | `getHttpSeverity()` |
-| ResultColumn | `<Tag :severity="getResultSeverity(result)">{{ result }}</Tag>` | `getResultSeverity()` |
-| ReviewStatusColumn | `<i :class="getStatusIcon(status)" />` | `getStatusIcon()` |
+| IconColumn | `<i :class="getIcon(data)" v-tooltip="label" />` | per-feature |
 | BadgeColumn | `<Tag v-for="item in items" ...>` | none |
 | DataWithBadgeColumn | `{{ name }} <Tag>{{ classification }}</Tag>` | none |
 | ListInline | `{{ items.join(', ') }}` | none |
 | ListNewline | `<div v-for="item in items">{{ item }}</div>` | none |
 | ActionColumn | `<Button icon="pi pi-pencil" @click="edit" />...` | none |
 
-### Wrapper Components (Custom Column components)
-
-These warrant dedicated `.vue` files for reuse and consistency.
+### Wrapper Components (`src/components/columns/`)
 
 | Column | Why Wrapper | Shared Sub-components |
 |--------|-------------|----------------------|
 | **CountColumn** | Zero/missing counts render as `-` so tallies of nothing read as blank; accepts dotted field paths. Needs a `key` when used directly (DataTable finds wrapped Columns by vnode key) | `dashZero()` helper |
-| **DurationColumn** | Complex relative time logic ("5 d", "2 h", "now") | `formatDuration()` helper |
-| **PercentageColumn** | Custom thermometer visualization | none |
-| **SeverityCountColumn** | Count + severity-appropriate color styling | `SeverityBadge` |
-| **CORAColumn** | Risk badge with color + explanatory tooltip | `CORABadge` |
-| **AssetWithLabelsColumn** | Asset name + labels sub-row | `LabelsRow` |
-| **UserWithEmailColumn** | Username + email sub-row | none (or generic `SubRowColumn`) |
-| **LabelsColumn** | Label badges with "+N" overflow tooltip | `LabelsRow` |
-| **SingleLabelColumn** | Single styled label badge | `LabelBadge` |
-| **ResultOriginColumn** | Icon + color + popover (more than just icon) | none |
-
-### Multi-Row Pattern
-
-For columns with main content + sub-row, consider a generic pattern:
-
-```vue
-<!-- SubRowColumn.vue -->
-<Column :field="field" :header="header">
-  <template #body="{ data }">
-    <div class="main-row">{{ getMain(data) }}</div>
-    <div class="sub-row text-muted">{{ getSub(data) }}</div>
-  </template>
-</Column>
-```
-
-Usage examples:
-- Asset + Labels
-- User + Email
-- Username + Display Name
-- Label + STIG (ACL rules)
-- Asset + STIG (ACL rules)
+| **DurationColumn** | Relative time logic ("5 d", "2 h", "now") | none |
+| **PercentageColumn** | Thermometer visualization | none |
+| **TextColumn** | Plain text that highlights the grid's search term | `HighlightText` |
+| **AssetColumn**, **BenchmarkColumn**, **CollectionColumn** | Entity name with search highlighting and, where the grid needs it, an inline per-row action (e.g. the shield link on `AssetColumn`) | `HighlightText` |
+| **CatColumn** | CAT badge | `CatBadge` |
+| **CoraColumn** | CORA badge with color + explanatory tooltip | `CoraPctBadge` |
+| **LabelsColumn** | Label chips with "+N" overflow tooltip | `LabelsRow` |
 
 ---
 
@@ -100,11 +74,13 @@ Small pieces used inside columns AND in other contexts (dashboards, panels).
 
 | Component | Description | Used By |
 |-----------|-------------|---------|
-| **LabelsRow** | Label badges, "+N" overflow with tooltip | LabelsColumn, AssetWithLabelsColumn, dashboard panels |
-| **SeverityBadge** | Cat I/II/III with appropriate color | SeverityColumn, SeverityCountColumn, rule displays |
-| **CORABadge** | Risk rating (Very Low → Very High) with color | CORAColumn, dashboard Overview panel |
+| **LabelsRow** | Label chips, "+N" overflow with tooltip; chip geometry derives from rem so it tracks the root font-size | LabelsColumn, asset grids, dashboard panels |
 | **LabelChip** (`Label.vue`) | One label chip: normalises the hex colour, picks contrast text, highlights a search term | LabelsRow, label pickers and forms, ACL and aging-rule tables |
-| **ClassificationBadge** | Security classification styling | DataWithBadgeColumn (benchmarks) |
+| **CatBadge** | CAT I/II/III with appropriate color | CatColumn, rule displays, findings |
+| **CoraPctBadge** | CORA risk rating with color | CoraColumn, dashboard Overview panel |
+| **ResultBadge**, **StatusBadge**, **EngineBadge**, **ManualBadge**, **OverrideBadge**, **ResultEngineBadges** | Review result / status / origin badges | Review grids, checklist grids, CSV export display text |
+| **ClassificationBadge** | Security classification styling | Benchmark grids |
+| **HighlightText** | Wraps the matched search term in a highlight span | Text columns, pick lists |
 
 ---
 
@@ -153,7 +129,6 @@ Columns must be:
 - hidable (native PrimeVue)
 - transportable across tables
 - agnostic to data source (use props for field names)
--
 
 ### Header Options (Native PrimeVue)
 - Sorting: `sortable` prop
@@ -218,149 +193,18 @@ field and header rules above.
 
 ---
 
-## Badges & Icons (Shared Components)
-
-| Component | Variants | Usage Context |
-|-----------|----------|---------------|
-| SeverityBadge | Cat I (high), Cat II (medium), Cat III (low) | Rules, findings, metrics |
-| SeverityCount | Count styled for severity level | Metrics columns |
-| CORABadge | Very Low, Low, Moderate, High, Very High | Dashboard, metrics |
-| ClassificationBadge | U, CUI, C, S, TS, etc. | Benchmarks |
-| ResultBadge | Pass, Fail, Other, etc. | Reviews |
-| StatusIcon | Saved, Submitted, Accepted, Rejected | Reviews |
-| OriginIcon | Manual, Automated | Reviews |
-
----
-
 ## Assignment Interfaces
 
-Dual-panel patterns for managing relationships.
-
-| Pattern | Left Panel | Right Panel | Usage |
-|---------|------------|-------------|-------|
-| Group membership | Users grid | Groups grid (or inverse) | User group management |
-| STIG assignment | Assets grid | STIGs grid | Collection settings |
-| Grants | Collection users | Available users | Collection grants |
-| ACL rules | Nav tree | Rules grid | Access control |
+Dual-pane relationship editing is the `PickList` family in `components/common`
+(`PickList.vue`, `PickListLayout.vue`, `PickListPane.vue`, `PickListTable.vue`,
+`PickListControls.vue`, `usePickListModel.js`). Used for user-group membership, STIG
+assignment, and grant management.
 
 ---
 
-## Panels
+## Data Fetching
 
-### Rule/Check Panels
-- **RuleCheckPanel** - Manual check/fix text
-- **RuleInfoPanel** - Discussion, documentable flag, CCIs/controls
-- **DetailedChangesPanel** - Diff view for rule comparison
-
-### JSON Display Panel
-- **JsonPanel** - Formatted JSON with syntax highlighting (token, appInfo, logStream)
-
-### Action Panels
-- **ImportProgress** - CKL/SCAP import progress
-- **InventoryPanel** - Export/manage actions
-- **FindingsPanel** - Finding details
-
----
-
-## Helper Functions (`src/shared/lib/`)
-
-```javascript
-// formatters.js
-formatDuration(date) // → "5 d", "2 h", "now"
-formatPercent(value) // → "< 1%", "50%", "> 99%"
-formatTooltipList(items) // → "Item1, Item2, +3 more"
-
-// severity.js
-getSeverityColor(cat) // Cat I/II/III → color
-getCoraSeverity(rating) // Very Low → success, Very High → danger
-getHttpSeverity(code) // 200 → success, 500 → danger
-getResultSeverity(result) // Pass → success, Fail → danger
-getStatusIcon(status) // Saved → pi-save, etc.
-```
-
----
-
-## Data Fetching Pattern (No Caching)
-
-Since metrics must be live (no stale data), use simple fetch composables instead of TanStack Query:
-
-### Basic Pattern
-
-```javascript
-// composables/useCollectionAssets.js
-import { onUnmounted, ref, watch } from 'vue'
-import { fetchCollectionAssets } from '../queries/collectionApi'
-
-export function useCollectionAssets(collectionId, token) {
-  const assets = ref([])
-  const isLoading = ref(false)
-  const error = ref(null)
-
-  async function fetch() {
-    isLoading.value = true
-    error.value = null
-    try {
-      const res = await fetchCollectionAssets(collectionId.value, token.value)
-      assets.value = res
-    }
-    catch (e) {
-      error.value = e.message || 'Failed to load assets'
-    }
-    finally {
-      isLoading.value = false
-    }
-  }
-
-  // Auto-fetch when dependencies change
-  watch([collectionId, token], () => {
-    if (collectionId.value && token.value) { fetch() }
-  }, { immediate: true })
-
-  return { assets, isLoading, error, refetch: fetch }
-}
-```
-
-### With Polling (for live updates)
-
-```javascript
-export function useCollectionAssets(collectionId, token, options = {}) {
-  const { pollingInterval = 0 } = options // 0 = no polling
-  // ... same refs as above ...
-
-  let pollTimer = null
-
-  function startPolling() {
-    if (pollingInterval > 0 && !pollTimer) {
-      pollTimer = setInterval(fetch, pollingInterval)
-    }
-  }
-
-  function stopPolling() {
-    if (pollTimer) {
-      clearInterval(pollTimer)
-      pollTimer = null
-    }
-  }
-
-  // Cleanup on unmount
-  onUnmounted(() => stopPolling())
-
-  return {
-    assets,
-    isLoading,
-    error,
-    refetch: fetch,
-    startPolling,
-    stopPolling
-  }
-}
-```
-
-### Key Principles
-
-- Wrap fetch in composable with `ref` for data, loading, error
-- Watch dependencies and auto-fetch on change
-- Return `refetch()` for manual refresh
-- For live updates: polling interval or SSE (if API supports)
-- Always cleanup intervals in `onUnmounted`
-- Keep token injection via thin wrapper composables
+Components do not hand-roll loading/error state. API modules throw; `useAsyncState`
+turns that into reactive state. See
+[fetching-asyncDataOperations-ErrorHandling](architecture/fetching-asyncDataOperations-ErrorHandling.md)
+and [LogicExtraction](components/LogicExtraction.md).
