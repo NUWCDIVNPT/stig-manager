@@ -1,9 +1,9 @@
 // PrimeVue Select styling matching the App Data page's dark dropdowns.
 export const selectPt = {
   root: { style: 'background-color: var(--color-background-light); border: 1px solid var(--color-border-default); border-radius: 6px; color: var(--color-text-primary); width: 100%;' },
-  label: { style: 'padding: 0.5rem 0.75rem; font-size: 1rem; color: var(--color-text-primary);' },
+  label: { style: 'padding: 0.5rem 0.75rem; font-size: var(--text-md); color: var(--color-text-primary);' },
   overlay: { style: 'background-color: var(--color-background-light) !important; border: 1px solid var(--color-border-default) !important;' },
-  option: { style: 'color: var(--color-text-primary); font-size: 1rem; padding: 0.5rem 0.75rem;' },
+  option: { style: 'color: var(--color-text-primary); font-size: var(--text-md); padding: 0.5rem 0.75rem;' },
 }
 
 // Vertical divider between DataTable header cells, shared by all three grids.

@@ -8,6 +8,7 @@ import { computed, ref, watch } from 'vue'
 import LabelChip from '../../../../components/common/Label.vue'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
 import { normalizeColor } from '../../../../shared/lib/colorUtils.js'
+import { LABEL_NAME_MAX_LENGTH } from '../../../../shared/lib/labelFilters.js'
 import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { createCollectionLabel, patchCollectionLabel } from '../../api/labelManageApi.js'
 import { DEFAULT_LABEL_COLOR, LABEL_COLOR_PALETTE, validateLabelName } from './labelPalette.js'
@@ -67,8 +68,6 @@ const isValid = computed(() => {
   return validateLabelName(form.value.name, props.labels, props.label?.labelId ?? null) === true
 })
 
-const previewColor = computed(() => normalizeColor(form.value.color, '#cccccc'))
-
 const availablePalette = computed(() => {
   let custom = props.label?.color?.toUpperCase()
   if (custom) {
@@ -127,11 +126,11 @@ const dialogPt = {
 }
 
 const inputTextPt = {
-  root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: 1rem; padding: 0.6rem 0.8rem; width: 100%;' },
+  root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: var(--text-md); padding: 0.6rem 0.8rem; width: 100%;' },
 }
 
 const textareaPt = {
-  root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: 1rem; padding: 0.6rem 0.8rem; width: 100%; resize: none;' },
+  root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: var(--text-md); padding: 0.6rem 0.8rem; width: 100%; resize: none;' },
 }
 </script>
 
@@ -140,7 +139,7 @@ const textareaPt = {
     v-model:visible="localVisible"
     modal
     :draggable="false"
-    :style="{ width: '540px', height: '310px', maxWidth: '95vw', maxHeight: '90vh' }"
+    :style="{ width: '49rem', maxWidth: '95vw', maxHeight: '90vh' }"
     :pt="dialogPt"
   >
     <template #header>
@@ -165,7 +164,7 @@ const textareaPt = {
           v-model="form.name"
           :invalid="!!nameError"
           :pt="inputTextPt"
-          maxlength="16"
+          :maxlength="LABEL_NAME_MAX_LENGTH"
           placeholder="Label name"
           @blur="touched = true"
         />
@@ -194,7 +193,7 @@ const textareaPt = {
         <div class="field-header-row">
           <span class="flabel">Color</span>
           <div class="preview-chip-container">
-            <LabelChip :value="form.name || 'Preview'" :color="previewColor" />
+            <LabelChip :value="form.name || 'Preview'" :color="form.color" />
           </div>
         </div>
         <div class="palette-row" style="margin-top: 0.2rem;">
@@ -251,7 +250,7 @@ const textareaPt = {
 }
 
 .modal-header-title {
-  font-size: 1.05rem;
+  font-size: var(--text-xl);
   font-weight: 700;
   color: var(--color-text-bright);
 }
@@ -276,7 +275,7 @@ const textareaPt = {
 }
 
 .flabel {
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   font-weight: 600;
   color: var(--color-text-primary);
 }
@@ -286,12 +285,12 @@ const textareaPt = {
 }
 
 .char-count {
-  font-size: 0.8rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
 }
 
 .field-error {
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   line-height: 1.2;
   min-height: 1.2em;
   color: var(--color-text-error);
@@ -305,7 +304,7 @@ const textareaPt = {
 }
 
 .preview-chip-container {
-  width: 150px;
+  width: 13.5rem;
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -330,7 +329,7 @@ const textareaPt = {
   align-items: center;
   justify-content: center;
   color: #080808;
-  font-size: 0.8rem;
+  font-size: var(--icon-xs);
   transition: transform 0.1s, box-shadow 0.1s;
 }
 

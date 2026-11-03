@@ -31,8 +31,8 @@ vi.mock('primevue/tieredmenu', () => ({
     },
     template: `
       <div>
-        <div v-for="group in model" :key="group.label">
-          <button v-for="item in group.items" :key="item.label" @click="item.command && item.command()">
+        <div v-for="group in model" :key="group.label" :data-group="group.label" :data-disabled="String(!!group.disabled)">
+          <button v-for="item in group.items" :key="item.label" :data-icon="item.icon" :title="item.tooltip" @click="item.command && item.command()">
             {{ item.label }}
           </button>
         </div>
@@ -50,7 +50,8 @@ describe('checklistGridHeader.vue', () => {
 
   beforeEach(() => {
     mockDensityState = {
-      lineClamp: 2,
+      canIncrease: true,
+      canDecrease: true,
       increaseRowHeight: vi.fn(),
       decreaseRowHeight: vi.fn(),
     }
@@ -69,7 +70,7 @@ describe('checklistGridHeader.vue', () => {
     searchFilter: '',
     toggleableColumns: [{ field: 'col1', header: 'Col 1' }],
     selectedColumns: [{ field: 'col1', header: 'Col 1' }],
-    displayMode: 'groupRule',
+    activePreset: 'groupRule',
   }
 
   function createWrapper(props = {}) {
@@ -140,25 +141,25 @@ describe('checklistGridHeader.vue', () => {
       const { emitted } = createWrapper()
       const input = screen.getByPlaceholderText('Search...')
 
-      expect(screen.queryByLabelText('Clear review search')).not.toBeInTheDocument()
+      expect(screen.queryByLabelText('Clear search')).not.toBeInTheDocument()
 
       await fireEvent.update(input, 'test')
+      await vi.advanceTimersByTimeAsync(250)
 
-      const clearBtn = screen.getByLabelText('Clear review search')
+      const clearBtn = screen.getByLabelText('Clear search')
       expect(clearBtn).toBeInTheDocument()
 
       await fireEvent.click(clearBtn)
 
       expect(input).toHaveValue('')
-
-      vi.advanceTimersByTime(250)
+      expect(screen.queryByLabelText('Clear search')).not.toBeInTheDocument()
       const emits = emitted()['update:searchFilter']
       expect(emits[emits.length - 1]).toEqual([''])
     })
   })
 
-  describe('checklist Menu (Display Mode)', () => {
-    it('updates displayMode when menu items are clicked', async () => {
+  describe('checklist Menu (Display presets)', () => {
+    it('emits apply-preset when menu items are clicked', async () => {
       const { emitted } = createWrapper()
 
       const menuBtn = screen.getByRole('button', { name: /Checklist/i })
@@ -166,16 +167,45 @@ describe('checklistGridHeader.vue', () => {
 
       vi.advanceTimersByTime(500)
 
-      const groupGroupItem = screen.getByText('Group ID and Group Title')
-      await fireEvent.click(groupGroupItem)
+      await fireEvent.click(screen.getByText('Group ID and Group Title'))
+      expect(emitted()['apply-preset'][0]).toEqual(['groupGroup'])
 
-      expect(emitted()['update:displayMode']).toBeTruthy()
-      expect(emitted()['update:displayMode'][0]).toEqual(['groupGroup'])
+      await fireEvent.click(screen.getByText('Rule ID and Rule Title'))
+      expect(emitted()['apply-preset'][1]).toEqual(['ruleRule'])
+    })
 
-      const ruleRuleItem = screen.getByText('Rule ID and Rule Title')
-      await fireEvent.click(ruleRuleItem)
+    it('emits export-archive per format and shows the legacy tooltips', async () => {
+      const { emitted } = createWrapper()
 
-      expect(emitted()['update:displayMode'][1]).toEqual(['ruleRule'])
+      await fireEvent.click(screen.getByText('CKL (STIG Viewer v2)'))
+      await fireEvent.click(screen.getByText('CKLB (STIG Viewer v3)'))
+      await fireEvent.click(screen.getByText('XCCDF'))
+
+      expect(emitted()['export-archive']).toEqual([
+        [{ format: 'ckl', mode: 'mono' }],
+        [{ format: 'cklb', mode: 'mono' }],
+        [{ format: 'xccdf', mode: null }],
+      ])
+      expect(screen.getByText('XCCDF').closest('button').title)
+        .toBe('Download an archive with results in XCCDF format for each asset in the collection')
+    })
+
+    it('disables Export Result Archive when the parent says it cannot export', () => {
+      const { container } = createWrapper({ canExportArchive: false })
+      expect(container.querySelector('[data-group="Export Result Archive"]').dataset.disabled).toBe('true')
+    })
+
+    it('fills the circle only for the active preset', () => {
+      createWrapper({ activePreset: 'ruleRule' })
+      expect(screen.getByText('Rule ID and Rule Title').dataset.icon).toBe('pi pi-circle-fill')
+      expect(screen.getByText('Group ID and Rule Title').dataset.icon).toBe('pi pi-circle')
+    })
+
+    it('fills no circle when the columns match no preset', () => {
+      createWrapper({ activePreset: null })
+      for (const label of ['Group ID and Rule Title', 'Group ID and Group Title', 'Rule ID and Rule Title']) {
+        expect(screen.getByText(label).dataset.icon).toBe('pi pi-circle')
+      }
     })
   })
 
@@ -196,16 +226,16 @@ describe('checklistGridHeader.vue', () => {
       expect(mockDensityState.increaseRowHeight).toHaveBeenCalledOnce()
     })
 
-    it('disables decrease button when lineClamp is <= 1', () => {
-      mockDensityState.lineClamp = 1
+    it('disables decrease button at the grid minimum', () => {
+      mockDensityState.canDecrease = false
       useGridDensity.mockReturnValue(mockDensityState)
       createWrapper()
       const decreaseBtn = screen.getByTitle('Decrease row height')
       expect(decreaseBtn).toBeDisabled()
     })
 
-    it('disables increase button when lineClamp is >= 10', () => {
-      mockDensityState.lineClamp = 10
+    it('disables increase button at the maximum', () => {
+      mockDensityState.canIncrease = false
       useGridDensity.mockReturnValue(mockDensityState)
       createWrapper()
       const increaseBtn = screen.getByTitle('Increase row height')

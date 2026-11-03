@@ -99,7 +99,7 @@ const oidcTextClass = computed(() => (oidc.value ? 'online' : 'offline'))
 
 h1 {
   margin: 8px 0 6px;
-  font-size: 4.75rem;
+  font-size: var(--text-display-xl);
   color: var(--color-text-primary);
 }
 
@@ -110,7 +110,7 @@ h1 {
 
 .deps {
   margin: 12px 0;
-  font-size: 1.5rem;
+  font-size: var(--text-2xl);
 }
 
 .deps span {
@@ -129,6 +129,6 @@ h1 {
 .ts {
   margin-top: 18px;
   color: var(--color-text-dim);
-  font-size: 1.2rem;
+  font-size: var(--text-xl);
 }
 </style>

@@ -1,8 +1,9 @@
 <script setup>
 import { severityMap } from '../../shared/lib/checklistUtils.js'
 import CatBadge from './CatBadge.vue'
+import HighlightText from './HighlightText.vue'
 
-const props = defineProps({
+defineProps({
   ruleContent: {
     type: Object,
     default: null,
@@ -15,13 +16,31 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  /** Slimmer frame and a single-row header, for panes that sit beside other panels. */
+  compact: {
+    type: Boolean,
+    default: false,
+  },
+  /**
+   * Search terms to mark in the content, keyed by field: ruleId, version, title,
+   * discussion, check, fix, ccis. Empty by default, so callers without a search are unaffected.
+   */
+  highlight: {
+    type: Object,
+    default: () => ({}),
+  },
+  /** Shown when no rule is selected. */
+  emptyText: {
+    type: String,
+    default: 'Select a rule from the checklist to view its content.',
+  },
 })
 
 const emit = defineEmits(['retry'])
 </script>
 
 <template>
-  <div class="rule-info">
+  <div class="rule-info" :class="{ 'rule-info--compact': compact }">
     <div class="rule-info__panel-header">
       <span v-if="ruleContent" class="rule-info__panel-title">
         Rule for Group {{ ruleContent.groupId }}
@@ -45,22 +64,22 @@ const emit = defineEmits(['retry'])
     </div>
 
     <div v-else-if="!ruleContent" class="rule-info__empty">
-      Select a rule from the checklist to view its content.
+      {{ emptyText }}
     </div>
 
     <div v-else-if="ruleContent" class="rule-info__content">
       <div class="rule-info__header">
         <div class="rule-info__header-row">
-          <span class="rule-info__rule-id">{{ ruleContent.ruleId }}</span>
+          <span class="rule-info__rule-id"><HighlightText :text="ruleContent.ruleId" :term="highlight.ruleId" /></span>
           <div class="rule-info__cat-badge">
             <CatBadge :category="severityMap[ruleContent.severity]" variant="label" />
           </div>
         </div>
         <div v-if="ruleContent.version" class="rule-info__version">
-          {{ ruleContent.version }}
+          <HighlightText :text="ruleContent.version" :term="highlight.version" />
         </div>
         <div class="rule-info__title">
-          {{ ruleContent.title }}
+          <HighlightText :text="ruleContent.title" :term="highlight.title" />
         </div>
       </div>
 
@@ -69,14 +88,14 @@ const emit = defineEmits(['retry'])
           <h4 class="rule-info__section-title">
             Manual Check
           </h4>
-          <pre class="rule-info__pre">{{ ruleContent.check.content }}</pre>
+          <pre class="rule-info__pre"><HighlightText :text="ruleContent.check.content" :term="highlight.check" /></pre>
         </div>
 
         <div v-if="ruleContent.fix?.text" class="rule-info__card-section">
           <h4 class="rule-info__section-title">
             Fix
           </h4>
-          <pre class="rule-info__pre">{{ ruleContent.fix.text }}</pre>
+          <pre class="rule-info__pre"><HighlightText :text="ruleContent.fix.text" :term="highlight.fix" /></pre>
         </div>
       </div>
 
@@ -87,7 +106,7 @@ const emit = defineEmits(['retry'])
 
         <div v-if="ruleContent.detail?.vulnDiscussion" class="rule-info__card-section">
           <span class="rule-info__sub-label">Vulnerability Discussion</span>
-          <pre class="rule-info__pre">{{ ruleContent.detail.vulnDiscussion }}</pre>
+          <pre class="rule-info__pre"><HighlightText :text="ruleContent.detail.vulnDiscussion" :term="highlight.discussion" /></pre>
         </div>
 
         <div v-if="ruleContent.detail?.documentable !== undefined" class="rule-info__field-inline">
@@ -112,7 +131,7 @@ const emit = defineEmits(['retry'])
             </thead>
             <tbody>
               <tr v-for="cci in ruleContent.ccis" :key="cci.cci">
-                <td>{{ cci.cci }}</td>
+                <td><HighlightText :text="cci.cci" :term="highlight.ccis" /></td>
                 <td>{{ cci.apAcronym || '-' }}</td>
                 <td>{{ cci.control || '-' }}</td>
               </tr>
@@ -139,16 +158,29 @@ const emit = defineEmits(['retry'])
   display: flex;
   align-items: center;
   padding: 0.7rem 0.9rem;
-  background: linear-gradient(180deg, var(--color-background-light), var(--color-background-dark));
+  background: var(--color-background-dark);
   border-bottom: 1px solid var(--color-border-default);
   transition: background 0.15s ease;
   flex-shrink: 0;
   height: 7.28rem;
 }
 
+/* The default header height is sized for the multi-row headers of the Asset /
+   Collection Review workspaces; compact panes align it with their siblings. */
+.rule-info--compact {
+  border-color: var(--color-border-default);
+  border-radius: 6px;
+}
+
+.rule-info--compact .rule-info__panel-header {
+  height: auto;
+  min-height: 2.9rem;
+  padding: 0.5rem 0.75rem;
+}
+
 .rule-info__panel-title {
   font-weight: 600;
-  font-size: 1.15rem;
+  font-size: var(--text-lg);
   color: var(--color-text-primary);
 }
 
@@ -203,7 +235,7 @@ const emit = defineEmits(['retry'])
 }
 
 .rule-info__fetch-error .pi {
-  font-size: 1.5rem;
+  font-size: var(--text-2xl);
   opacity: 0.8;
 }
 
@@ -214,7 +246,7 @@ const emit = defineEmits(['retry'])
   border-radius: 4px;
   padding: 0.2rem 0.8rem;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: var(--text-md);
   opacity: 0.85;
   transition: opacity 0.15s;
 }
@@ -237,7 +269,7 @@ const emit = defineEmits(['retry'])
 }
 
 .rule-info__rule-id {
-  font-size: 2rem;
+  font-size: var(--text-display);
   font-weight: 700;
   color: var(--color-text-primary);
 }
@@ -252,7 +284,7 @@ const emit = defineEmits(['retry'])
 }
 
 .rule-info__title {
-  font-size: 1.45rem;
+  font-size: var(--text-2xl);
   font-weight: 600;
   color: var(--color-text-primary);
   line-height: 1.4;
@@ -277,7 +309,7 @@ const emit = defineEmits(['retry'])
 
 .rule-info__section-title {
   margin: 0 0 0.35rem 0;
-  font-size: 1.2rem;
+  font-size: var(--text-xl);
   font-weight: 700;
   color: var(--color-action-blue);
 }
@@ -296,7 +328,7 @@ const emit = defineEmits(['retry'])
   word-break: break-word;
   line-height: 1.4;
   font-family: inherit;
-  font-size: 1.08rem;
+  font-size: var(--text-lg);
   margin: 0;
   padding: 0 1.25rem;
 }

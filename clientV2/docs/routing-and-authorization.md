@@ -40,7 +40,7 @@ A single composable replaces the scattered `inject('worker')` + token-parsing pa
 - `getCollectionRoleId(collectionId)` — returns the `roleId` (1-4) or `null`
 - `refreshUser()` — re-fetches `GET /user`, updates the store. Used for stale grant recovery (see below)
 
-**Replaces** direct token parsing in: NavTree.vue, NavTreeContent.vue, CustomCards.vue, CollectionSelection.vue.
+**Replaces** direct token parsing in: NavTree.vue, NavTreeContent.vue, CollectionSelection.vue.
 
 ---
 

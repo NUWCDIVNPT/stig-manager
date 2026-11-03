@@ -14,15 +14,15 @@ describe('resourceParts', () => {
     ])
   })
 
-  it('maps a label rule and normalizes the color (prefixes #)', () => {
+  it('maps a label rule and passes the label color through unchanged', () => {
     expect(resourceParts({ labelName: 'Prod', label: { color: 'ff0000' } })).toEqual([
-      { type: 'label', text: 'Prod', color: '#ff0000' },
+      { type: 'label', text: 'Prod', color: 'ff0000' },
     ])
   })
 
-  it('falls back to a default color when a label has none', () => {
-    const [part] = resourceParts({ labelName: 'Prod' })
-    expect(part.color).toBe('#cccccc')
+  it('falls back to the rule-level color when the label object is absent', () => {
+    const [part] = resourceParts({ labelName: 'Prod', color: 'abcdef' })
+    expect(part.color).toBe('abcdef')
   })
 
   it('combines an asset scope with an optional STIG (no collection part)', () => {

@@ -45,7 +45,7 @@ Every STIG Manager deployment consists of:
 **MySQL Database** (Data Persistence, deployer-provided)
   - Stores all application data
   - Supports TLS and mutual TLS authentication
-  - Version 8.4+ recommended for optimal performance
+  - Version 8.4.0 or later required
   - Deployer responsible for backups and security
 
 .. important::

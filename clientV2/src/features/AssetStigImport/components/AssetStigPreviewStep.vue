@@ -3,9 +3,20 @@ import Checkbox from 'primevue/checkbox'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref } from 'vue'
+import ActionToolbar from '../../../components/common/ActionToolbar.vue'
+import CatBadge from '../../../components/common/CatBadge.vue'
+import DensityControls from '../../../components/common/DensityControls.vue'
+import GridFilterButton from '../../../components/common/GridFilterButton.vue'
+import GridSearch from '../../../components/common/GridSearch.vue'
+import HighlightText from '../../../components/common/HighlightText.vue'
 import ResultBadge from '../../../components/common/ResultBadge.vue'
+import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
-import { severitySortValue } from '../../../shared/lib/gridSorts.js'
+import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
+import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
+import { severityMap } from '../../../shared/lib/checklistUtils.js'
+import { catLabel, statusText } from '../../../shared/lib/exportCells.js'
+import { resultSortValue, severitySortValue, statusSortValue } from '../../../shared/lib/gridSorts.js'
 
 const props = defineProps({
   matched: { type: Array, required: true },
@@ -16,6 +27,9 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:updatedOnly'])
+
+// Density grows rows so long titles, details and comments can show in full
+const { itemSize, gridStyle } = useGridDensity('asset-stig-import-preview')
 
 const RESULT_TO_STATUS = {
   fail: 'O',
@@ -41,15 +55,33 @@ const previewRows = computed(() =>
 
 const dtRef = ref()
 
-function onFooterAction(action) {
-  if (action === 'export') {
-    dtRef.value?.exportCSV()
-  }
-}
-
 function badgeFor(result) {
   return result ? RESULT_TO_STATUS[result] ?? 'NR' : null
 }
+
+const {
+  term: searchTerm,
+  filters: gridFilters,
+  filteredRows,
+  isFiltered,
+  filterColumns,
+  valueOptions,
+  highlightTerm,
+} = useGridSearch(previewRows, [
+  { field: 'ruleId', header: 'Rule' },
+  { field: 'title', header: 'Title' },
+  { field: 'groupId', header: 'Group' },
+  { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false },
+  { field: 'currentResult', header: 'Current', filterValues: r => badgeFor(r.currentResult) ?? '', quickSearch: false },
+  { field: 'newResult', header: 'New', filterValues: r => badgeFor(r.newResult) ?? '', quickSearch: false },
+  { field: 'newDetail', header: 'New Detail' },
+  { field: 'newComment', header: 'New Comment' },
+  { field: 'newStatus', header: 'New Status', filterValues: r => statusText(r.newStatus), quickSearch: false },
+])
+const exportResult = ({ data }) => badgeFor(data) ?? ''
+const exportStatus = ({ data }) => statusText(data)
+
+const centerHeaderPt = { columnHeaderContent: { style: 'justify-content: center;' } }
 </script>
 
 <template>
@@ -59,6 +91,9 @@ function badgeFor(result) {
         Review the items that will be imported into the current checklist. Items that are not matched, or that are
         marked Not Reviewed in the file, are listed below the import preview and will not be imported.
       </p>
+    </div>
+
+    <ActionToolbar class="preview-toolbar">
       <div class="preview-filter">
         <Checkbox
           input-id="updatedOnly"
@@ -66,72 +101,91 @@ function badgeFor(result) {
           binary
           @update:model-value="emit('update:updatedOnly', $event)"
         />
-        <label for="updatedOnly">Show only changed results</label>
+        <label for="updatedOnly">Only changed results</label>
       </div>
-    </div>
+      <div class="toolbar-spacer" />
+      <GridSearch v-model="searchTerm" class="preview-search" label="Search preview" placeholder="Search rules..." />
+      <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
+      <div class="toolbar-divider" />
+      <DensityControls grid-key="asset-stig-import-preview" />
+    </ActionToolbar>
 
-    <div class="preview-table-wrapper">
+    <div class="preview-table-wrapper" :style="gridStyle">
       <DataTable
         ref="dtRef"
-        :value="previewRows"
+        :value="filteredRows"
         export-filename="asset-stig-import-preview"
         scrollable
         scroll-height="flex"
         resizable-columns
         striped-rows
-        :virtual-scroller-options="{ itemSize: 38 }"
+        :virtual-scroller-options="{ itemSize }"
         :pt="{ table: { style: 'table-layout: fixed; width: 100%' } }"
       >
-        <Column field="ruleId" header="Rule" style="min-width: 130px" sortable />
-        <Column field="title" header="Title" style="min-width: 220px" sortable>
+        <Column field="ruleId" header="Rule" style="min-width: 11.75rem" sortable>
           <template #body="{ data }">
-            <span :title="data.title">{{ data.title }}</span>
+            <HighlightText :text="data.ruleId" :term="highlightTerm('ruleId')" />
           </template>
         </Column>
-        <Column field="groupId" header="Group" style="width: 110px" sortable />
-        <Column field="severity" :sort-field="severitySortValue" header="Severity" style="width: 100px" sortable />
-        <Column header="Current" style="width: 80px; text-align: center" :sort-field="r => r.currentResult ?? ''" sortable>
+        <Column field="title" header="Title" style="min-width: 20rem" sortable>
+          <template #body="{ data }">
+            <span class="cell-text--clamped" :title="data.title"><HighlightText :text="data.title" :term="highlightTerm('title')" /></span>
+          </template>
+        </Column>
+        <Column field="groupId" header="Group" style="width: 10rem" sortable>
+          <template #body="{ data }">
+            <HighlightText :text="data.groupId" :term="highlightTerm('groupId')" />
+          </template>
+        </Column>
+        <Column field="severity" :sort-field="severitySortValue" header="CAT" style="width: 6.5rem; text-align: center" :pt="centerHeaderPt" sortable>
+          <template #body="{ data }">
+            <CatBadge v-if="severityMap[data.severity]" :category="severityMap[data.severity]" variant="label" centered />
+            <span v-else class="status-empty">—</span>
+          </template>
+        </Column>
+        <Column header="Current" field="currentResult" :export-value="exportResult" style="width: 7.25rem; text-align: center" :pt="centerHeaderPt" :sort-field="r => resultSortValue(r.currentResult)" sortable>
           <template #body="{ data }">
             <ResultBadge v-if="badgeFor(data.currentResult)" :status="badgeFor(data.currentResult)" />
             <span v-else>—</span>
           </template>
         </Column>
-        <Column header="New" style="width: 80px; text-align: center" :sort-field="r => r.newResult ?? ''" sortable>
+        <Column header="New" field="newResult" :export-value="exportResult" style="width: 7.25rem; text-align: center" :pt="centerHeaderPt" :sort-field="r => resultSortValue(r.newResult)" sortable>
           <template #body="{ data }">
             <ResultBadge v-if="badgeFor(data.newResult)" :status="badgeFor(data.newResult)" />
             <span v-else>—</span>
           </template>
         </Column>
-        <Column field="newDetail" header="New Detail" style="min-width: 200px">
+        <Column field="newDetail" header="New Detail" style="min-width: 18.25rem">
           <template #body="{ data }">
-            <span class="ellipsis" :title="data.newDetail">{{ data.newDetail }}</span>
+            <span class="cell-text--clamped" :title="data.newDetail"><HighlightText :text="data.newDetail" :term="highlightTerm('newDetail')" /></span>
           </template>
         </Column>
-        <Column field="newComment" header="New Comment" style="min-width: 200px">
+        <Column field="newComment" header="New Comment" style="min-width: 18.25rem">
           <template #body="{ data }">
-            <span class="ellipsis" :title="data.newComment">{{ data.newComment }}</span>
+            <span class="cell-text--clamped" :title="data.newComment"><HighlightText :text="data.newComment" :term="highlightTerm('newComment')" /></span>
           </template>
         </Column>
-        <Column field="newStatus" header="New Status" style="width: 110px" sortable>
+        <Column field="newStatus" header="New Status" :export-value="exportStatus" style="width: 9rem; text-align: center" :pt="centerHeaderPt" :sort-field="r => statusSortValue({ status: r.newStatus })" sortable>
           <template #body="{ data }">
-            <span v-if="data.newStatus" class="status-pill">{{ data.newStatus }}</span>
+            <StatusBadge v-if="data.newStatus" :status="data.newStatus" />
             <span v-else class="status-empty">—</span>
           </template>
         </Column>
         <template #empty>
           <div class="preview-empty">
             <i class="pi pi-info-circle" />
-            <span>No matched, reviewed rules to import.</span>
+            <span>{{ isFiltered && previewRows.length ? 'No rules match the search.' : 'No matched, reviewed rules to import.' }}</span>
           </div>
         </template>
       </DataTable>
       <StatusFooter
         :total-count="previewRows.length"
+        :filtered-count="isFiltered ? filteredRows.length : null"
         :show-refresh="false"
         :show-export="true"
+        :dt="dtRef"
         total-label="rules"
         total-icon="pi pi-list"
-        @action="onFooterAction"
       />
     </div>
 
@@ -193,12 +247,21 @@ function badgeFor(result) {
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  color: var(--color-text-dim);
-  font-size: 0.9rem;
+  color: var(--color-text-primary);
+  font-size: var(--text-md);
+  white-space: nowrap;
   flex-shrink: 0;
 }
 
-.preview-filter label { cursor: pointer; }
+.preview-toolbar {
+  --checklist-control-height: 2rem;
+  flex-shrink: 0;
+}
+
+.preview-search {
+  flex: 0 1 20rem;
+  min-width: 10rem;
+}
 
 .preview-table-wrapper {
   display: flex;
@@ -219,12 +282,18 @@ function badgeFor(result) {
   padding: 0.75rem 1rem;
 }
 
-.ellipsis {
-  display: inline-block;
-  max-width: 100%;
+/* Font and line height come from useGridDensity, so N clamped lines fill the row exactly. */
+.cell-text--clamped {
+  display: -webkit-box;
+  line-clamp: var(--line-clamp, 1);
+  -webkit-line-clamp: var(--line-clamp, 1);
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: var(--cell-font-size);
+  line-height: var(--cell-line-height, 1.3);
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .excluded-grid {
@@ -263,7 +332,7 @@ function badgeFor(result) {
 .excluded-desc {
   margin: 0;
   color: var(--color-text-dim);
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   line-height: 1.4;
 }
 
@@ -276,24 +345,13 @@ function badgeFor(result) {
 }
 
 .excluded-chip {
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   padding: 0.1rem 0.45rem;
   border-radius: 999px;
   background: var(--color-background-darkest);
   color: var(--color-text-dim);
   border: 1px solid var(--color-border-default);
-  font-family: ui-monospace, monospace;
-}
-
-.status-pill {
-  display: inline-block;
-  padding: 0.05rem 0.5rem;
-  border-radius: 999px;
-  background: var(--color-background-darkest);
-  color: var(--color-text-primary);
-  border: 1px solid var(--color-border-default);
-  font-size: 0.78rem;
-  text-transform: capitalize;
+  font-family: var(--font-mono);
 }
 
 .status-empty {

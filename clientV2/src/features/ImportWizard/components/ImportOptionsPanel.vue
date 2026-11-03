@@ -61,7 +61,7 @@ const selectPt = {
     style: 'background-color: var(--color-background-darkest) !important; border-color: var(--color-border-default) !important; height: 28px; min-width: 150px; display: inline-flex; align-items: center;',
   },
   label: {
-    style: 'padding: 0 8px; color: var(--color-text-primary); font-size: 0.9rem;',
+    style: 'padding: 0 8px; color: var(--color-text-primary); font-size: var(--text-md);',
   },
 }
 
@@ -229,7 +229,7 @@ const checkboxPt = {
 .panel-title {
   font-weight: 600;
   color: var(--color-text-bright);
-  font-size: 0.95rem;
+  font-size: var(--text-md);
 }
 
 .customize-toggle {
@@ -242,11 +242,11 @@ const checkboxPt = {
 .customize-toggle label {
   cursor: pointer;
   color: var(--color-text-dim);
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 
 .readonly-badge {
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
   color: var(--color-text-dim);
   font-style: italic;
 }
@@ -276,7 +276,7 @@ const checkboxPt = {
 }
 
 .section-title {
-  font-size: 0.88rem;
+  font-size: var(--text-md);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--color-text-dim);
@@ -297,7 +297,7 @@ const checkboxPt = {
 
 .mapping-item label {
   color: var(--color-text-dim);
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   white-space: nowrap;
 
 }
@@ -312,7 +312,7 @@ const checkboxPt = {
 .options-row label {
   width: 220px;
   color: var(--color-text-dim);
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   text-align: center;
 }
 
@@ -335,7 +335,7 @@ const checkboxPt = {
   align-items: center;
   gap: 0.5rem;
   color: var(--color-text-dim);
-  font-size: 0.88rem;
+  font-size: var(--text-md);
   font-style: italic;
 }
 </style>

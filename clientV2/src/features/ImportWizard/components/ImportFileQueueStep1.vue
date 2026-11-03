@@ -2,8 +2,10 @@
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref } from 'vue'
+import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
-import { formatDateTimeString } from '../../../shared/lib.js'
+import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
+import { fileExtension, formatDateTimeString } from '../../../shared/lib.js'
 import './style.css'
 
 const props = defineProps({
@@ -11,6 +13,9 @@ const props = defineProps({
   selectedRows: { type: Array, required: true },
   isDragOver: { type: Boolean, default: false },
   singleFile: { type: Boolean, default: false },
+  accept: { type: String, default: '.ckl,.cklb,.xml' },
+  note: { type: String, default: '' },
+  busy: { type: Boolean, default: false },
 })
 
 const emit = defineEmits([
@@ -29,11 +34,39 @@ const selectedRowsModel = computed({
   set: next => emit('update:selectedRows', next),
 })
 
+const fileType = name => fileExtension(name ?? '').toUpperCase()
+
+const { filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions } = useGridSearch(() => props.sourceFiles, [
+  { field: 'name', header: 'Filename' },
+  { field: 'type', header: 'Type', filterValues: r => fileType(r.name) },
+], { selection: selectedRowsModel, dataKey: '_queueId' })
+
+const acceptsZip = computed(() => props.accept.split(',').includes('.zip'))
+
+const addButtonLabel = computed(() => {
+  if (!props.singleFile) {
+    return 'Add files to queue...'
+  }
+  return props.sourceFiles.length > 0 ? 'Replace file...' : 'Add file...'
+})
+
+const emptyHint = computed(() => {
+  if (isFiltered.value && props.sourceFiles.length) {
+    return 'No files match the filters.'
+  }
+  if (props.singleFile) {
+    return 'You may drop a file here'
+  }
+  return acceptsZip.value ? 'You may drop files, folders or ZIP archives here' : 'You may drop files or folders here'
+})
+
 function onFilePicked(event) {
   const files = Array.from(event.target.files)
   emit('add-files', files)
   event.target.value = ''
 }
+
+const centerPt = { columnHeaderContent: { style: 'justify-content: center;' }, bodyCell: { style: 'text-align: center;' } }
 </script>
 
 <template>
@@ -51,17 +84,26 @@ function onFilePicked(event) {
         @click="fileInputRef?.click()"
       >
         <span :class="`pi ${singleFile && sourceFiles.length > 0 ? 'pi-refresh' : 'pi-plus'} toolbar-btn__icon-font`" />
-        <span class="toolbar-btn__label">{{ singleFile && sourceFiles.length > 0 ? 'Replace file...' : singleFile ? 'Add file...' : 'Add files to queue...' }}</span>
+        <span class="toolbar-btn__label">{{ addButtonLabel }}</span>
       </button>
       <input
         ref="fileInputRef"
         type="file"
-        accept=".ckl,.cklb,.xml"
+        :accept="accept"
         :multiple="!singleFile"
         style="display: none"
         @change="onFilePicked"
       >
+      <span v-if="busy" class="queue-busy">
+        <i class="pi pi-spin pi-spinner" />
+        Reading files…
+      </span>
+      <span v-else-if="note" class="queue-note">
+        <i class="pi pi-exclamation-triangle" />
+        {{ note }}
+      </span>
       <span class="queue-toolbar-spacer" />
+      <GridFilterButton v-if="!singleFile" v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
       <button
         type="button"
         class="toolbar-btn"
@@ -75,7 +117,8 @@ function onFilePicked(event) {
 
     <div class="queue-table-flex">
       <DataTable
-        :value="sourceFiles"
+        v-model:selection="selectedRowsModel"
+        :value="filteredRows"
         data-key="_queueId"
         scrollable
         scroll-height="flex"
@@ -83,28 +126,32 @@ function onFilePicked(event) {
         striped-rows
         selection-mode="multiple"
         class="queue-table clickable-rows"
-        v-model:selection="selectedRowsModel"
       >
         <Column selection-mode="multiple" style="width: 3rem; flex-shrink: 0" />
-        <Column field="name" header="Filename" sortable />
-        <Column field="size" header="Size" style="width: 90px" sortable>
+        <Column field="name" header="Filename" sortable>
+          <template #body="{ data }">
+            <span :title="data.fullPath">{{ data.name }}</span>
+          </template>
+        </Column>
+        <Column field="size" header="Size" style="width: 8.25rem" :pt="centerPt" sortable>
           <template #body="{ data }">
             {{ (data.size / 1024).toFixed(1) }} KB
           </template>
         </Column>
-        <Column field="lastModifiedDate" header="Last Modified" style="min-width: 120px" sortable>
+        <Column field="lastModifiedDate" header="Last Modified" style="min-width: 11rem" sortable>
           <template #body="{ data }">
             {{ formatDateTimeString(data.lastModifiedDate) }}
           </template>
         </Column>
         <template #empty>
-          <span class="queue-empty-hint">You may drop files here</span>
+          <span class="queue-empty-hint">{{ emptyHint }}</span>
         </template>
       </DataTable>
     </div>
 
     <StatusFooter
       :total-count="sourceFiles.length"
+      :filtered-count="isFiltered ? filteredRows.length : null"
       :show-refresh="false"
       :show-export="false"
       total-label="files"
@@ -114,6 +161,19 @@ function onFilePicked(event) {
 </template>
 
 <style scoped>
+.queue-note,
+.queue-busy {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  font-size: var(--text-md);
+}
+
+.queue-note {
+  color: var(--color-warning-yellow);
+}
+
 .queue-table-wrapper {
   display: flex;
   flex-direction: column;
@@ -131,6 +191,7 @@ function onFilePicked(event) {
 }
 
 .queue-toolbar {
+  --checklist-control-height: 32px;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -146,7 +207,7 @@ function onFilePicked(event) {
 }
 
 .queue-single-badge {
-  font-size: 0.75rem;
+  font-size: var(--text-sm);
   color: var(--color-text-dim);
   background: var(--color-background-dark);
   border: 1px solid var(--color-border-default);
@@ -175,6 +236,6 @@ function onFilePicked(event) {
 .queue-empty-hint {
   color: var(--color-text-dim);
   font-style: italic;
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 </style>

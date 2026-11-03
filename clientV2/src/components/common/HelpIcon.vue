@@ -28,7 +28,7 @@ const binding = computed(() => ({
 
 <style scoped>
 .sm-help-icon {
-  font-size: 1.2rem;
+  font-size: var(--text-xl);
   color: var(--color-text-dim);
   margin-left: 0.4rem;
   cursor: pointer;

@@ -17,9 +17,7 @@ export function severitySortValue(row) {
 
 // Review status sorts alphabetically on status.label (accepted < rejected <
 // saved < submitted); rank by workflow order instead. Handles both row shapes
-// (status as object with .label, or as a bare string). Not wired in yet — see
-// the Findings TODO; candidates are the status columns in
-// AssetChecklistGridTable and RuleTableGrid (currently sort-field="status.label").
+// (status as object with .label, or as a bare string).
 const statusRank = { saved: 1, submitted: 2, rejected: 3, accepted: 4 }
 export function statusSortValue(row) {
   const label = (row.status?.label ?? row.status ?? '').toLowerCase()
@@ -31,9 +29,7 @@ export function statusSortValue(row) {
 // the columns display; rank by display order instead: O, NF, NA, NR, I.
 // Takes the result value (not the row) because the field varies by grid
 // (result / currentResult / newResult) — pass as
-// :sort-field="r => resultSortValue(r.currentResult)". Not wired in yet — see
-// the Findings TODO; candidates are the Current/New columns in
-// AssetStigPreviewStep.
+// :sort-field="r => resultSortValue(r.currentResult)".
 const resultRank = {
   fail: 1, // O
   pass: 2, // NF

@@ -331,7 +331,7 @@ const textareaPt = collectionTextareaPt
 
 .warning-icon {
   color: var(--color-warning-yellow);
-  font-size: 1.25rem;
+  font-size: var(--text-xl);
 }
 
 .options-grid {
@@ -351,7 +351,7 @@ const textareaPt = collectionTextareaPt
 
 .option-col h4 {
   margin: 0 0 0.25rem 0;
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   color: var(--color-text-bright);
 }
 
@@ -360,7 +360,7 @@ const textareaPt = collectionTextareaPt
   align-items: center;
   gap: 0.5rem;
   color: var(--color-text-primary);
-  font-size: 0.95rem;
+  font-size: var(--text-md);
 }
 
 .action-submit {
@@ -378,7 +378,7 @@ const textareaPt = collectionTextareaPt
 }
 
 .field-error {
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   color: var(--color-text-error);
 }
 
@@ -387,7 +387,7 @@ const textareaPt = collectionTextareaPt
   flex-direction: column;
   gap: 1rem;
   color: var(--color-text-primary);
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   line-height: 1.5;
 }
 
@@ -412,7 +412,7 @@ const textareaPt = collectionTextareaPt
 
 .warning-header-icon {
   color: var(--color-warning-yellow);
-  font-size: 1.35rem;
+  font-size: var(--text-xl);
 }
 
 .text-danger {

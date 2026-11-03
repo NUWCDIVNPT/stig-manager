@@ -1,11 +1,12 @@
 <script setup>
 import { computed } from 'vue'
+import { CLASSIFICATION_CODES } from '../../shared/lib/classification.js'
 
 const props = defineProps({
   level: {
     type: String,
     required: true,
-    validator: value => ['U', 'CUI', 'FOUO', 'C', 'S', 'TS', 'SCI'].includes(value),
+    validator: value => CLASSIFICATION_CODES.includes(value),
   },
 })
 
@@ -38,7 +39,7 @@ const badgeClass = computed(() => LEVEL_TO_CLASS[props.level])
   align-items: center;
   padding: 0 0.45rem;
   border-radius: 3px;
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-weight: 700;
   letter-spacing: 0.05em;
   line-height: 1.5;

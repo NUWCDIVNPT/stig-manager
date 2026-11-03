@@ -1,9 +1,10 @@
-// Centralized copy for substantial, explanatory tooltips / help popovers.
+// Centralized text for substantial, explanatory tooltips / help popovers, plus
+// the shared v-tooltip option presets (TOOLTIP_OPTS, listTooltip).
 //
-// This is for the longer, content-rich help text — multi-sentence explanations
-// and HTML help blocks — that benefits from living in one place. It is NOT for
-// short icon-button labels (those stay as inline `title` attributes on the
-// element) or for dynamic, data-driven tooltip builders.
+// The TOOLTIPS strings are the longer, content-rich help text — multi-sentence
+// explanations and HTML help blocks — that benefits from living in one place.
+// They are NOT for short icon-button labels (those stay as inline `title`
+// attributes on the element).
 //
 // Convention: group by domain, camelCase keys.
 
@@ -16,6 +17,23 @@ export const TOOLTIP_OPTS = Object.freeze({
   hideDelay: 300,
   pt: { root: { style: { maxWidth: '40rem' } } },
 })
+
+// v-tooltip pt for a newline-joined list (e.g. STIG names): one item per line,
+// never wrapped. Long lists scroll inside the tooltip instead of overflowing the
+// viewport (PrimeVue has no overflow fallback once both .top and .bottom miss).
+const LIST_TOOLTIP_PT = Object.freeze({
+  root: { style: { maxWidth: 'none' } },
+  text: { style: { whiteSpace: 'pre', maxHeight: '50vh', overflowY: 'auto' } },
+})
+
+// v-tooltip value for a list of strings, or null (directive no-ops) when empty.
+// `autoHide: false` keeps the tooltip open while the pointer scrolls inside it.
+export function listTooltip(items) {
+  if (!items?.length) {
+    return null
+  }
+  return { value: items.join('\n'), pt: LIST_TOOLTIP_PT, autoHide: false, hideDelay: 150 }
+}
 
 export const TOOLTIPS = Object.freeze({
   // Grant role explanations shown next to the role picker (HelpIcon / RolePopover).
@@ -141,6 +159,21 @@ The claims presented by the authentication provider the last time this User auth
     experimental: `This feature is experimental and may change or be removed. It is only available when the API's <code>STIGMAN_EXPERIMENTAL_APPDATA</code> setting is enabled.`,
     export: `Exports data as a stream of newline-delimited JSON. This is an administrative migration/restore format, not a general-purpose interchange format, and is not a substitute for a database backup.`,
     import: `Replacing application data truncates and rewrites most database tables from the uploaded file. Migration-owned, reference, configuration, and service-job tables are not affected. The file is analyzed locally in your browser before anything is uploaded.`,
+  }),
+
+  // Collection Review breadcrumb STIG picker and empty checklist, when the label filter excludes the STIG.
+  collectionReview: Object.freeze({
+    stigNotInLabelFilter: `No Assets matching the label filter have this STIG. Change the filter or choose another STIG.`,
+    archiveCkl: `Download an archive with results in DISA STIG Viewer format for each asset in the collection`,
+    archiveCklb: `Download an archive with results in DISA STIG Viewer v3 format for each asset in the collection`,
+    archiveXccdf: `Download an archive with results in XCCDF format for each asset in the collection`,
+  }),
+
+  // Breadcrumb STIG/revision pickers, when the current value isn't among the options.
+  breadcrumb: Object.freeze({
+    stigNotInCollection: `This STIG is not assigned to any Asset in this Collection. Choose another STIG.`,
+    stigNotOnAsset: `This STIG is not assigned to this Asset. Choose another STIG.`,
+    revisionNotFound: `This revision is not available for this STIG. Choose another revision.`,
   }),
 
   // App Management "Log Stream" page.

@@ -208,7 +208,7 @@ function onUsersModelUpdate(tuple) {
 
 <style scoped>
 .field-error {
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   line-height: 1.2;
   color: var(--color-text-error);
 }

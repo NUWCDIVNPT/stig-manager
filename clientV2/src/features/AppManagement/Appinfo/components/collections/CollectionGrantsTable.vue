@@ -23,8 +23,7 @@ const COLUMNS = [
     title="Grants"
     :rows="rows"
     :columns="COLUMNS"
-    :key-column="{ field: 'granteeName', header: 'Grantee', searchPlaceholder: 'Search grantee...', width: '14rem' }"
-    :category-filter="{ field: 'role' }"
+    :key-column="{ field: 'granteeName', header: 'Grantee', width: '14rem' }"
     data-key="grantId"
     sort-field="granteeName"
     export-filename="appinfo-collection-grants"
@@ -57,7 +56,7 @@ const COLUMNS = [
 
 .grantee-icon {
   color: var(--color-text-dim);
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   flex-shrink: 0;
 }
 </style>

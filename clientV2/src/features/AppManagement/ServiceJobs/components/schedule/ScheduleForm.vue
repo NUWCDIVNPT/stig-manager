@@ -115,7 +115,7 @@ const summaryText = computed(() => {
 
 .block-label,
 .flabel {
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -139,7 +139,7 @@ const summaryText = computed(() => {
   border: 1px solid var(--color-border-default);
   border-radius: 8px;
   color: var(--color-text-primary);
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-weight: 600;
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s, color 0.15s;
@@ -150,7 +150,7 @@ const summaryText = computed(() => {
 }
 
 .freq-option i {
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
 }
 
@@ -202,13 +202,13 @@ const summaryText = computed(() => {
 }
 
 .toggle-title {
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-weight: 600;
   color: var(--color-text-primary);
 }
 
 .toggle-hint {
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
 }
 
@@ -221,13 +221,13 @@ const summaryText = computed(() => {
   background: color-mix(in srgb, var(--color-primary-highlight) 8%, transparent);
   border: 1px solid color-mix(in srgb, var(--color-primary-highlight) 25%, transparent);
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-primary);
 }
 
 .schedule-summary i {
   color: var(--color-primary-highlight);
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   flex-shrink: 0;
 }
 

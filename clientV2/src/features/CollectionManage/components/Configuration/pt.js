@@ -27,12 +27,12 @@ export const collectionInputTextPt = (invalid = false) => {
     ? 'color-mix(in srgb, var(--color-text-error) 15%, var(--color-background-dark))'
     : 'var(--color-background-dark)'
   return {
-    root: { style: `background: ${bg}; color: var(--color-text-primary); border-color: var(--color-border-default); font-size: 1rem; padding: 0.6rem 0.8rem; width: 100%; transition: background 0.2s ease;` },
+    root: { style: `background: ${bg}; color: var(--color-text-primary); border-color: var(--color-border-default); font-size: var(--text-md); padding: 0.6rem 0.8rem; width: 100%; transition: background 0.2s ease;` },
   }
 }
 
 export const collectionTextareaPt = {
-  root: { style: 'background: var(--color-background-dark); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: 1rem; padding: 0.6rem 0.8rem; width: 100%; resize: none;' },
+  root: { style: 'background: var(--color-background-dark); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: var(--text-md); padding: 0.6rem 0.8rem; width: 100%; resize: none;' },
 }
 
 export const collectionDialogPt = {

@@ -20,9 +20,7 @@ defineEmits([
   'collection-export-progress',
   'collection-export-complete',
   'collection-export-error',
-  'archive-export-progress',
-  'archive-export-complete',
-  'archive-export-error',
+  'archive-export',
 ])
 
 const { triggerError } = useGlobalError()
@@ -85,9 +83,7 @@ watch(() => props.visible, (open) => {
     @collection-export-progress="$emit('collection-export-progress', $event)"
     @collection-export-complete="$emit('collection-export-complete', $event)"
     @collection-export-error="$emit('collection-export-error', $event)"
-    @archive-export-progress="$emit('archive-export-progress', $event)"
-    @archive-export-complete="$emit('archive-export-complete', $event)"
-    @archive-export-error="$emit('archive-export-error', $event)"
+    @archive-export="$emit('archive-export', $event)"
   >
     <div v-if="loadingTree" class="loading-state">
       <i class="pi pi-spin pi-spinner" />
@@ -113,11 +109,11 @@ watch(() => props.visible, (open) => {
   gap: 0.6rem;
   padding: 1rem;
   color: var(--color-text-dim);
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 
 .empty {
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
   padding: 1rem;
   text-align: center;

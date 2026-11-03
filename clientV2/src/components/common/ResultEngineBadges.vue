@@ -82,7 +82,7 @@ const overrideTooltipHtml = computed(() => {
   display: inline-flex;
   align-items: center;
   padding: 0.15rem 0.5rem;
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-weight: 600;
   border-radius: 4px;
   cursor: default;

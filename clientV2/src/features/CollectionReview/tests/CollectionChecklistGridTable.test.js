@@ -35,7 +35,6 @@ describe('CollectionChecklistGridTable', () => {
     gridData: [],
     isLoading: false,
     selectedRow: null,
-    searchFilter: '',
     assetCount: 2,
     visibleFields: new Set(['groupId', 'ruleId', 'fail', 'pass', 'submitted', 'oldest']),
     itemSize: 30,
@@ -43,7 +42,7 @@ describe('CollectionChecklistGridTable', () => {
 
   function createWrapper(props = {}) {
     return renderWithProviders(CollectionChecklistGridTable, {
-      props: { ...defaultProps, ...props },
+      props: { ...defaultProps, totalCount: props.gridData?.length ?? 0, ...props },
     })
   }
 
@@ -71,6 +70,17 @@ describe('CollectionChecklistGridTable', () => {
     it('renders empty state message when gridData is empty', () => {
       createWrapper({ gridData: [] })
       expect(screen.getByText('No checklist items found.')).toBeInTheDocument()
+    })
+
+    it('shows the parent-supplied empty message when the checklist is empty', () => {
+      createWrapper({ gridData: [], emptyMessage: 'Nothing here.' })
+      expect(screen.getByText('Nothing here.')).toBeInTheDocument()
+    })
+
+    it('prefers the search/filter message over the parent-supplied one', () => {
+      createWrapper({ gridData: [], totalCount: 3, isFiltered: true, emptyMessage: 'Nothing here.' })
+      expect(screen.getByText('No rules match the current search and filters.')).toBeInTheDocument()
+      expect(screen.queryByText('Nothing here.')).not.toBeInTheDocument()
     })
   })
 

@@ -6,11 +6,14 @@ import { computed, ref, watch } from 'vue'
 import targetSvg from '../../../../assets/target.svg'
 import { roleMap } from '../../../../components/common/grants/roleOptions.js'
 import RolePopover from '../../../../components/common/grants/RolePopover.vue'
+import GridFilterButton from '../../../../components/common/GridFilterButton.vue'
+import PanelTitle from '../../../../components/common/PanelTitle.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { fetchCollectionUsers } from '../../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
-import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
+import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
+import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import { getEffectiveUserDisplay } from '../../lib/grantsUsers.js'
 import EffectiveAclModal from './EffectiveAclModal.vue'
 
@@ -20,6 +23,8 @@ const props = defineProps({
     required: true,
   },
 })
+
+const ROW_HEIGHT = rowHeightPx('twoLine')
 
 const { state: users, isLoading, execute: reload } = useAsyncState(
   () => fetchCollectionUsers(props.collectionId),
@@ -41,15 +46,19 @@ const displayUsers = computed(() => (users.value ?? []).map((row) => {
   }
 }))
 
-const { onFooterAction } = useTableFooterActions(usersDt, { onRefresh: reload })
+const { filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions } = useGridSearch(displayUsers, [
+  { field: 'displayName', header: 'User', searchText: r => `${r.displayName ?? ''} ${r.username ?? ''}` },
+  { field: 'granteeText', header: 'Grantee', filterValues: r => r.granteeLabels, multiple: true },
+  { field: 'role', header: 'Role', filterValues: r => r.role },
+])
 
 // compact table pt for footer actions and compact table
-const baseTablePt = compactTablePt({ bodyFontSize: '1.05rem' })
+const baseTablePt = compactTablePt()
 const tablePt = {
   ...baseTablePt,
   column: {
     ...baseTablePt.column,
-    headerCell: { style: 'font-size: 1.1rem; font-weight: 600;' },
+    headerCell: { style: 'font-size: var(--text-lg); font-weight: 600;' },
   },
 }
 
@@ -70,20 +79,26 @@ defineExpose({ reload })
 <template>
   <div class="manage-users">
     <div class="users-table-wrapper">
+      <PanelTitle title="Effective Users" icon="pi pi-users">
+        <template #end>
+          <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
+        </template>
+      </PanelTitle>
       <DataTable
         ref="usersDt"
-        :value="displayUsers"
+        :value="filteredRows"
         :loading="isLoading"
         sort-field="displayName"
         :sort-order="1"
         size="medium"
         scrollable
         scroll-height="flex"
-        :virtual-scroller-options="{ itemSize: 49, delay: 0 }"
+        :virtual-scroller-options="{ itemSize: ROW_HEIGHT, delay: 0 }"
+        export-filename="CollectionUsers"
         :pt="tablePt"
       >
         <template #empty>
-          No effective users.
+          {{ isFiltered && displayUsers.length ? 'No users match the filters.' : 'No effective users.' }}
         </template>
 
         <Column field="displayName" header="User" sortable>
@@ -113,14 +128,14 @@ defineExpose({ reload })
           </template>
         </Column>
 
-        <Column field="role" sort-field="roleId" sortable>
+        <Column field="role" export-header="Role" sort-field="roleId" sortable>
           <template #header>
             <span class="role-header">Role</span>
             <RolePopover />
           </template>
         </Column>
 
-        <Column style="text-align: right">
+        <Column :exportable="false" style="text-align: right">
           <template #body="{ data }">
             <div class="row-actions">
               <Button
@@ -138,11 +153,13 @@ defineExpose({ reload })
 
         <template #footer>
           <StatusFooter
+            :dt="usersDt"
             :refresh-loading="isLoading"
             :total-count="displayUsers.length"
+            :filtered-count="isFiltered ? filteredRows.length : null"
             total-label="users"
             total-icon="pi pi-users"
-            @action="onFooterAction"
+            @refresh="reload"
           />
         </template>
       </DataTable>
@@ -188,12 +205,12 @@ defineExpose({ reload })
 
 .primary-text {
   font-weight: 600;
-  font-size: 1.05rem;
+  font-size: var(--text-md);
 }
 
 .secondary-text {
   color: var(--color-text-dim);
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 
 .grantee-list {
@@ -207,7 +224,7 @@ defineExpose({ reload })
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 1.05rem;
+  font-size: var(--text-md);
 }
 
 .role-header {

@@ -10,6 +10,12 @@ const h = vi.hoisted(() => ({
   triggerError: vi.fn(),
 }))
 
+vi.mock('../../../../shared/stores/useEnv.js', () => ({
+  useEnv: () => ({
+    oauth: { claims: { scopeList: ['scope'] } },
+  }),
+}))
+
 vi.mock('../api/usersAdminApi.js', () => ({
   fetchUserAdmin: vi.fn(() => Promise.resolve(h.detailUser)),
   patchUserAdmin: vi.fn(() => Promise.resolve(h.detailUser)),

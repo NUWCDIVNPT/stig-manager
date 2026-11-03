@@ -21,7 +21,7 @@ vi.mock('primevue/tieredmenu', () => ({
     template: `
       <div>
         <div v-for="group in model" :key="group.label">
-          <button v-for="item in group.items" :key="item.label" @click="item.command && item.command()">
+          <button v-for="item in group.items" :key="item.label" :data-icon="item.icon" @click="item.command && item.command()">
             {{ item.label }}
           </button>
         </div>
@@ -35,7 +35,8 @@ describe('checklistGridHeader.vue', () => {
 
   beforeEach(() => {
     mockDensityState = {
-      lineClamp: 2,
+      canIncrease: true,
+      canDecrease: true,
       increaseRowHeight: vi.fn(),
       decreaseRowHeight: vi.fn(),
     }
@@ -52,7 +53,7 @@ describe('checklistGridHeader.vue', () => {
     searchFilter: '',
     toggleableColumns: [{ field: 'col1', header: 'Col 1' }],
     selectedColumns: [{ field: 'col1', header: 'Col 1' }],
-    displayMode: 'groupRule',
+    activePreset: 'groupRule',
   }
 
   function createWrapper(props = {}) {
@@ -76,13 +77,44 @@ describe('checklistGridHeader.vue', () => {
       expect(screen.getByText('V1R2')).toBeInTheDocument()
     })
 
-    it('renders asset info when provided', () => {
-      createWrapper({
-        asset: { name: 'Test Asset', assetId: 'A123', ip: '10.0.0.1' },
-      })
+    it('renders the asset name in the title row', () => {
+      createWrapper({ asset: { name: 'Test Asset', assetId: 'A123' } })
       expect(screen.getByText('Test Asset')).toBeInTheDocument()
-      expect(screen.getByText('ID: A123')).toBeInTheDocument()
-      expect(screen.getByText('IP: 10.0.0.1')).toBeInTheDocument()
+    })
+
+    it('shows asset properties in the details popover', async () => {
+      createWrapper({
+        asset: {
+          name: 'Test Asset',
+          assetId: 'A123',
+          ip: '10.0.0.1',
+          fqdn: 'host.example.com',
+          mac: 'AB-12-AB-12-AB-12',
+          noncomputing: true,
+          description: 'Lab box',
+        },
+      })
+      expect(screen.queryByText('host.example.com')).not.toBeInTheDocument()
+      await fireEvent.click(screen.getByRole('button', { name: /Test Asset/ }))
+      for (const [label, value] of [['ID', 'A123'], ['IP', '10.0.0.1'], ['FQDN', 'host.example.com'], ['MAC', 'AB-12-AB-12-AB-12'], ['Non-computing', 'Yes'], ['Description', 'Lab box']]) {
+        expect(screen.getByText(label)).toBeInTheDocument()
+        expect(screen.getByText(value)).toBeInTheDocument()
+      }
+    })
+
+    it('leaves metadata out of the details popover', async () => {
+      createWrapper({ asset: { name: 'Test Asset', assetId: 'A123', metadata: { owner: 'ops' } } })
+      await fireEvent.click(screen.getByRole('button', { name: /Test Asset/ }))
+      expect(screen.queryByText('owner')).not.toBeInTheDocument()
+    })
+
+    it('skips empty asset properties in the details popover', async () => {
+      createWrapper({ asset: { name: 'Test Asset', assetId: 'A123', ip: '', fqdn: null, mac: '' } })
+      await fireEvent.click(screen.getByRole('button', { name: /Test Asset/ }))
+      expect(screen.getByText('A123')).toBeInTheDocument()
+      for (const label of ['IP', 'FQDN', 'MAC', 'Non-computing', 'Description']) {
+        expect(screen.queryByText(label)).not.toBeInTheDocument()
+      }
     })
 
     it('renders Writable access mode', () => {
@@ -97,14 +129,17 @@ describe('checklistGridHeader.vue', () => {
   })
 
   describe('search Functionality', () => {
-    it('emits update:searchFilter immediately on input', async () => {
+    it('emits update:searchFilter after the debounce', async () => {
       const { emitted } = createWrapper()
       const input = screen.getByPlaceholderText('Search reviews...')
 
       await fireEvent.update(input, 'test')
 
       expect(input).toHaveValue('test')
-      expect(emitted()['update:searchFilter']).toBeTruthy()
+      expect(emitted()['update:searchFilter']).toBeFalsy()
+
+      vi.advanceTimersByTime(250)
+
       const emits = emitted()['update:searchFilter']
       expect(emits[emits.length - 1]).toEqual(['test'])
     })
@@ -113,39 +148,48 @@ describe('checklistGridHeader.vue', () => {
       const { emitted } = createWrapper()
       const input = screen.getByPlaceholderText('Search reviews...')
 
-      expect(screen.queryByLabelText('Clear review search')).not.toBeInTheDocument()
+      expect(screen.queryByLabelText('Clear search')).not.toBeInTheDocument()
 
       await fireEvent.update(input, 'test')
+      await vi.advanceTimersByTimeAsync(250)
 
-      const clearBtn = screen.getByLabelText('Clear review search')
+      const clearBtn = screen.getByLabelText('Clear search')
       expect(clearBtn).toBeInTheDocument()
 
       await fireEvent.click(clearBtn)
 
-      // Vue Test Utils update cycle might need flushPromises or vi.advanceTimersByTime(0) for DOM updates if it's asynchronous, but typically click triggers it right away.
-      expect(emitted()['update:searchFilter']).toBeTruthy()
+      expect(input).toHaveValue('')
+      expect(screen.queryByLabelText('Clear search')).not.toBeInTheDocument()
       const emits = emitted()['update:searchFilter']
       expect(emits[emits.length - 1]).toEqual([''])
     })
   })
 
-  describe('checklist Menu (Display Mode)', () => {
-    it('updates displayMode when menu items are clicked', async () => {
+  describe('checklist Menu (Display presets)', () => {
+    it('emits apply-preset when menu items are clicked', async () => {
       const { emitted } = createWrapper()
 
       const menuBtn = screen.getByRole('button', { name: /Checklist/i })
       await fireEvent.click(menuBtn)
 
-      const groupGroupItem = screen.getByText('Group ID and Group Title')
-      await fireEvent.click(groupGroupItem)
+      await fireEvent.click(screen.getByText('Group ID and Group Title'))
+      expect(emitted()['apply-preset'][0]).toEqual(['groupGroup'])
 
-      expect(emitted()['update:displayMode']).toBeTruthy()
-      expect(emitted()['update:displayMode'][0]).toEqual(['groupGroup'])
+      await fireEvent.click(screen.getByText('Rule ID and Rule Title'))
+      expect(emitted()['apply-preset'][1]).toEqual(['ruleRule'])
+    })
 
-      const ruleRuleItem = screen.getByText('Rule ID and Rule Title')
-      await fireEvent.click(ruleRuleItem)
+    it('fills the circle only for the active preset', () => {
+      createWrapper({ activePreset: 'ruleRule' })
+      expect(screen.getByText('Rule ID and Rule Title').dataset.icon).toBe('pi pi-circle-fill')
+      expect(screen.getByText('Group ID and Rule Title').dataset.icon).toBe('pi pi-circle')
+    })
 
-      expect(emitted()['update:displayMode'][1]).toEqual(['ruleRule'])
+    it('fills no circle when the columns match no preset', () => {
+      createWrapper({ activePreset: null })
+      for (const label of ['Group ID and Rule Title', 'Group ID and Group Title', 'Rule ID and Rule Title']) {
+        expect(screen.getByText(label).dataset.icon).toBe('pi pi-circle')
+      }
     })
   })
 
@@ -166,16 +210,16 @@ describe('checklistGridHeader.vue', () => {
       expect(mockDensityState.increaseRowHeight).toHaveBeenCalledOnce()
     })
 
-    it('disables decrease button when lineClamp is <= 1', () => {
-      mockDensityState.lineClamp = 1
+    it('disables decrease button at the grid minimum', () => {
+      mockDensityState.canDecrease = false
       useGridDensity.mockReturnValue(mockDensityState)
       createWrapper()
       const decreaseBtn = screen.getByTitle('Decrease row height')
       expect(decreaseBtn).toBeDisabled()
     })
 
-    it('disables increase button when lineClamp is >= 10', () => {
-      mockDensityState.lineClamp = 10
+    it('disables increase button at the maximum', () => {
+      mockDensityState.canIncrease = false
       useGridDensity.mockReturnValue(mockDensityState)
       createWrapper()
       const increaseBtn = screen.getByTitle('Increase row height')

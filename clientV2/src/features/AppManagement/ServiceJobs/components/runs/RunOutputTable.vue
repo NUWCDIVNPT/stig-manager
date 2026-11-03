@@ -3,7 +3,6 @@ import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { ref } from 'vue'
 import StatusFooter from '../../../../../components/common/StatusFooter.vue'
-import { useTableFooterActions } from '../../../../../shared/composables/useTableFooterActions.js'
 import { compactTablePt } from '../../../../../shared/lib/dataTablePt.js'
 import { formatDateTime } from '../../lib/serviceJobsFormat.js'
 import { borderPt } from '../../lib/serviceJobsPt.js'
@@ -14,9 +13,7 @@ defineProps({
 })
 
 const dataTableRef = ref(null)
-const tablePt = compactTablePt({ bodyFontSize: '1rem', footer: 'divider', headerPadding: '0.3rem 0.6rem' })
-
-const { onFooterAction } = useTableFooterActions(dataTableRef)
+const tablePt = compactTablePt({ footer: 'divider', headerPadding: '0.3rem 0.6rem' })
 </script>
 
 <template>
@@ -34,7 +31,7 @@ const { onFooterAction } = useTableFooterActions(dataTableRef)
         :sort-order="-1"
         scrollable
         scroll-height="flex"
-        export-filename="stig-manager-job-run-output"
+        export-filename="Job-Run-Output"
         class="flex-fill"
         :table-style="{ 'min-width': '40rem' }"
         :pt="tablePt"
@@ -43,7 +40,7 @@ const { onFooterAction } = useTableFooterActions(dataTableRef)
           No output to display.
         </template>
 
-        <Column field="seq" sortable :pt="borderPt" style="width: 8%; text-align: center;">
+        <Column field="seq" export-header="Seq" sortable :pt="borderPt" style="width: 8%; text-align: center;">
           <template #header>
             <span class="center-label">Seq</span>
           </template>
@@ -67,11 +64,11 @@ const { onFooterAction } = useTableFooterActions(dataTableRef)
 
         <template #footer>
           <StatusFooter
+            :dt="dataTableRef"
             :show-refresh="false"
             :total-count="output.length"
             total-label="lines"
             total-icon="pi pi-align-left"
-            @action="onFooterAction"
           />
         </template>
       </DataTable>
@@ -97,7 +94,7 @@ const { onFooterAction } = useTableFooterActions(dataTableRef)
   align-items: center;
   gap: 0.4rem;
   padding: 0.45rem 0.75rem;
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   font-weight: 700;
   color: var(--color-text-bright);
   background: var(--color-background-subtle);

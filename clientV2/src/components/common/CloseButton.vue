@@ -28,7 +28,7 @@ function handleClick() {
   outline: none;
   background: transparent;
   color: var(--color-text-primary);
-  font-size: 2.2rem;
+  font-size: var(--text-display);
   line-height: 1;
   cursor: pointer;
   display: flex;

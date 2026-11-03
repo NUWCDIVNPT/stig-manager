@@ -1,9 +1,8 @@
 <script setup>
 import ActionButton from '../../../../components/common/ActionButton.vue'
 import ActionToolbar from '../../../../components/common/ActionToolbar.vue'
-import ExportByStigButton from '../../ExportResults/components/ExportByStigButton.vue'
+import ExportResultsButton from '../../ExportResults/components/ExportResultsButton.vue'
 import AssignStigButton from './AssignStigButton.vue'
-import ModifyStig from './ModifyStig.vue'
 import UnassignStigButton from './UnassignStigButton.vue'
 
 const props = defineProps({
@@ -29,7 +28,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['clear-selection', 'stigs-changed'])
+const emit = defineEmits(['clear-selection', 'stigs-changed', 'modify-stig'])
 </script>
 
 <template>
@@ -46,17 +45,15 @@ const emit = defineEmits(['clear-selection', 'stigs-changed'])
       @unassigned="emit('stigs-changed')"
     />
     <div class="toolbar-divider" />
-    <ModifyStig
-      :collection-id="props.collectionId"
-      :selected-stigs="props.selectedStigs"
-      :disabled="!singleSelection"
-      @stigs-changed="emit('stigs-changed')"
-    />
+    <ActionButton icon="pi pi-pencil icon-grey" :disabled="!singleSelection" @click="emit('modify-stig')">
+      Modify
+    </ActionButton>
     <div class="toolbar-divider" />
-    <ExportByStigButton
+    <ExportResultsButton
+      by="stig"
       :collection-id="props.collectionId"
       :collection-name="props.collectionName"
-      :selected-stigs="props.selectedStigs"
+      :selected="props.selectedStigs"
     />
     <div class="toolbar-spacer" />
     <ActionButton variant="clear" :disabled="!hasSelection" @click="emit('clear-selection')">
@@ -71,6 +68,6 @@ const emit = defineEmits(['clear-selection', 'stigs-changed'])
 }
 
 .clear-x {
-  font-size: 0.65rem;
+  font-size: var(--icon-xs);
 }
 </style>

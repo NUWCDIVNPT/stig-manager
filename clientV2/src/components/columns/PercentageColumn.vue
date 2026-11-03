@@ -4,6 +4,7 @@ import Column from 'primevue/column'
 defineProps({
   field: String,
   header: String,
+  pt: Object,
 })
 
 function renderPct(v) {
@@ -22,7 +23,7 @@ function renderPct(v) {
 </script>
 
 <template>
-  <Column :field="field" :header="header">
+  <Column :field="field" :header="header" :pt="pt">
     <template #body="slotProps">
       <span v-html="renderPct(slotProps.data[slotProps.field])" />
     </template>

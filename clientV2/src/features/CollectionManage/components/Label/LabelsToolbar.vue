@@ -22,7 +22,7 @@ const emit = defineEmits(['create-label', 'edit-label', 'tag-assets', 'delete-la
       Create
     </ActionButton>
     <div class="toolbar-divider" />
-    <ActionButton icon="pi pi-pencil icon-blue" :disabled="!props.singleSelection" @click="emit('edit-label')">
+    <ActionButton icon="pi pi-pencil icon-grey" :disabled="!props.singleSelection" @click="emit('edit-label')">
       Edit
     </ActionButton>
     <div class="toolbar-divider" />
@@ -46,6 +46,6 @@ const emit = defineEmits(['create-label', 'edit-label', 'tag-assets', 'delete-la
 }
 
 .clear-x {
-  font-size: 0.65rem;
+  font-size: var(--icon-xs);
 }
 </style>

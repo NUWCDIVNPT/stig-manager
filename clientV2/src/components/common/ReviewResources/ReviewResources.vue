@@ -4,9 +4,8 @@ import TabList from 'primevue/tablist'
 import TabPanel from 'primevue/tabpanel'
 import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
-import { ref, watch } from 'vue'
+import { provide, ref, watch } from 'vue'
 
-import ReviewAttachmentsTab from './ReviewAttachmentsTab.vue'
 import ReviewHistoryTab from './ReviewHistoryTab.vue'
 import ReviewOtherAssetsTab from './ReviewOtherAssetsTab.vue'
 import ReviewStatusTextTab from './ReviewStatusTextTab.vue'
@@ -34,13 +33,17 @@ const props = defineProps({
   },
   enabledTabs: {
     type: Array,
-    default: () => ['history', 'statusText', 'otherAssets', 'attachments'],
+    default: () => ['history', 'statusText', 'otherAssets'],
   },
 })
 
 const emit = defineEmits(['apply-review'])
 
 const activeTab = ref(props.enabledTabs[0] ?? 'history')
+
+// Right end of the tab bar; the active tab teleports its Filter button here
+const tabBarEnd = ref(null)
+provide('reviewTabBarEnd', tabBarEnd)
 
 watch(() => props.enabledTabs, (tabs) => {
   if (!tabs.includes(activeTab.value)) {
@@ -110,7 +113,7 @@ const tabPt = {
   root: ({ context }) => ({
     style: {
       padding: '0.75rem 1.15rem',
-      fontSize: '0.95rem',
+      fontSize: 'var(--text-md)',
       fontWeight: context.active ? '700' : '600',
       color: context.active ? 'var(--color-text-bright)' : 'var(--color-text-dim)',
       background: 'transparent',
@@ -135,9 +138,7 @@ const tabPt = {
         <Tab v-if="enabledTabs.includes('otherAssets')" value="otherAssets" :pt="tabPt">
           Other Assets
         </Tab>
-        <Tab v-if="enabledTabs.includes('attachments')" value="attachments" :pt="tabPt" disabled>
-          Attachments
-        </Tab>
+        <div ref="tabBarEnd" class="tab-bar-end" />
       </TabList>
 
       <TabPanels :pt="tabPanelsPt">
@@ -168,16 +169,19 @@ const tabPt = {
             @apply-review="emit('apply-review', $event)"
           />
         </TabPanel>
-
-        <TabPanel v-if="enabledTabs.includes('attachments')" value="attachments" :pt="tabPanelPt">
-          <ReviewAttachmentsTab />
-        </TabPanel>
       </TabPanels>
     </Tabs>
   </div>
 </template>
 
 <style scoped>
+.tab-bar-end {
+  --checklist-control-height: 1.9rem;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
 .review-resources {
   height: 100%;
   display: flex;

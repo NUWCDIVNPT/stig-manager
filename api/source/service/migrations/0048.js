@@ -249,9 +249,9 @@ module.exports = {
     try {
       logger.writeInfo('mysql', 'migration', {status: 'start', direction: 'up', name: migrationName})
       connection = await pool.getConnection()
-      // Defensive: a pool-borrowed connection may have namedPlaceholders left
-      // enabled from a prior service call, which breaks stored-procedure
-      // bodies containing `:label` syntax if a replay ever hits one.
+      // Named placeholders must stay off here so stored-procedure bodies containing
+      // `:label` syntax are not rewritten as placeholders. Since mysql2 3.23.3 each pooled
+      // connection has its own config and services set namedPlaceholders per query, so this is a guard.
       connection.config.namedPlaceholders = false
 
       // Snapshot pre-migration default_rev so we can identify which benchmarks

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { calculateCora } from '../../../shared/lib.js'
 import { renderWithProviders } from '../../../testUtils/utils'
 import Cora from '../components/Cora.vue'
+import { EMPTY_METRICS, PENDING_PLACEHOLDER } from '../emptyMetrics.js'
 
 describe('cora component', () => {
   const mockCoraData = {
@@ -49,14 +50,14 @@ describe('cora component', () => {
     expect(screen.getByText('VERY HIGH')).toBeInTheDocument()
   })
 
-  it('renders the help icon and CAT brackets when coraData is provided', () => {
+  it('renders the help icon and CAT rows when coraData is provided', () => {
     const { container } = renderWithProviders(Cora, {
       props: { coraData: mockCoraData },
     })
     expect(container.querySelector('.sm-help-icon')).toBeInTheDocument()
-    expect(container.querySelector('.sm-cat1-bracket')).toBeInTheDocument()
-    expect(container.querySelector('.sm-cat2-bracket')).toBeInTheDocument()
-    expect(container.querySelector('.sm-cat3-bracket')).toBeInTheDocument()
+    expect(container.querySelector('.sm-cat1-row')).toBeInTheDocument()
+    expect(container.querySelector('.sm-cat2-row')).toBeInTheDocument()
+    expect(container.querySelector('.sm-cat3-row')).toBeInTheDocument()
   })
 
   it.each([
@@ -85,5 +86,16 @@ describe('cora component', () => {
     })
     expect(screen.getByText('50.0%')).toBeInTheDocument()
     expect(container.querySelector('.cora-risk-card')).toHaveClass('sm-cora-risk-very-high')
+  })
+
+  it('shows placeholders and no risk colour while pending', () => {
+    const { container } = renderWithProviders(Cora, {
+      props: { coraData: calculateCora(EMPTY_METRICS.metrics), pending: true },
+    })
+    expect(container.querySelector('.cora-content')).toBeInTheDocument()
+    expect(screen.queryByText('VERY LOW')).not.toBeInTheDocument()
+    expect(screen.queryByText('0.0%')).not.toBeInTheDocument()
+    expect(container.querySelector('.cora-risk-card').className).toBe('cora-risk-card')
+    expect(screen.getAllByText(PENDING_PLACEHOLDER).length).toBeGreaterThanOrEqual(5)
   })
 })

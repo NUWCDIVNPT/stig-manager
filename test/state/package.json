@@ -4,7 +4,7 @@
     "test": "mocha --reporter mochawesome --showFailed --exit './mocha/**/*.test.js'"
   },
   "overrides": {
-    "serialize-javascript": "^7.0.5",
+    "serialize-javascript": "^7.1.4",
     "diff": "^8.0.3",
     "uuid": "^14.0.0"
   },    

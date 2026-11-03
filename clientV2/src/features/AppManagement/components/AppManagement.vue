@@ -52,7 +52,7 @@ const { appManagementItems } = useAppManagementItems()
   border-radius: 6px;
   text-decoration: none;
   color: var(--color-text-primary);
-  font-size: 1rem;
+  font-size: var(--text-md);
   transition: background-color 0.15s ease;
 }
 

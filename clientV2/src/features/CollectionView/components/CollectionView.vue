@@ -11,6 +11,9 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
+import { useLabelFilterQuery } from '../../../shared/composables/useLabelFilterQuery.js'
+import { useTours } from '../../../shared/composables/useTours.js'
+import { viewTabListPt, viewTabPt, viewTabsPt } from '../../../shared/lib/tabPt.js'
 import CollectionManage from '../../CollectionManage/components/CollectionManage.vue'
 import CollectionExportMetrics from '../../CollectionMetrics/components/CollectionExportMetrics.vue'
 import CollectionImportResults from '../../CollectionMetrics/components/CollectionImportResults.vue'
@@ -31,6 +34,7 @@ const props = defineProps({
 
 const route = useRoute()
 const router = useRouter()
+const { offerTourWhen } = useTours()
 const { removeView } = useRecentViews()
 const { triggerError } = useGlobalError()
 const { addView } = useRecentViews()
@@ -60,8 +64,11 @@ const { state: collection, execute: loadCollection } = useAsyncState(
 
 const collectionName = computed(() => collection.value?.name || 'Collection')
 
-// Track Recent Views on data load and route change
-watch([collection, () => route.name], ([col, routeName]) => {
+// Label filter (set from the breadcrumb) shared by the dashboard metrics and every tab.
+const { selectedLabelNames, labelFilterParams } = useLabelFilterQuery()
+
+// Track Recent Views on data load, route change and label filter change
+watch([collection, () => route.name, selectedLabelNames], ([col, routeName]) => {
   if (col?.name && routeName?.startsWith('collection')) {
     let label = col.name
     let key = `collection:${props.collectionId}`
@@ -90,6 +97,15 @@ watch([() => props.collectionId], () => {
   loadCollection()
 }, { immediate: true })
 
+// Children stay mounted (no layout flash) but hold their fetches until the
+// collection itself has loaded, so a deleted or revoked collection only fails
+// through the fetchCollection error path above.
+const collectionReady = computed(() => Boolean(collection.value))
+
+// The tour points at the dashboard and the label filter, which the Management
+// route hides, so it waits for a view that shows them.
+offerTourWhen('collection', () => collectionReady.value && Boolean(route.meta.labelFilter))
+
 // Map route name to tab value
 const routeToTab = {
   'collection-stigs': 'stigs',
@@ -113,10 +129,11 @@ const activeTab = computed({
   set: (newTab) => {
     const routeName = tabToRoute[newTab]
     if (routeName) {
-      router.push({
-        name: routeName,
-        params: { collectionId: props.collectionId },
-      })
+      const target = { name: routeName, params: { collectionId: props.collectionId } }
+      // A tab that hides the label filter (meta.labelFilter false, i.e. Management)
+      // does not carry it either, so the filter is never applied invisibly
+      const carriesLabelFilter = router.resolve(target).meta.labelFilter !== false
+      router.push(carriesLabelFilter ? { ...target, query: labelFilterParams.value } : target)
     }
   },
 })
@@ -136,19 +153,20 @@ watch(isManagement, () => {
 // (and fetch) unvisited in the new one.
 const visitedTabs = ref(new Set([activeTab.value]))
 watch(activeTab, tab => visitedTabs.value.add(tab))
+
+// Hidden tabs keep the label filter they last saw, so a filter change refetches only
+// the visible tab; the others pick it up (and refetch) when next activated.
+const tabLabelNames = ref({})
+watch([activeTab, selectedLabelNames], ([tab, names]) => {
+  // selectedLabelNames is a fresh array per filter change, so compare contents:
+  // a filter that changed and reverted while this tab was hidden is not a change
+  if (JSON.stringify(tabLabelNames.value[tab]) !== JSON.stringify(names)) {
+    tabLabelNames.value[tab] = names
+  }
+}, { immediate: true })
 watch(() => props.collectionId, () => {
   visitedTabs.value = new Set([activeTab.value])
 })
-
-const tabsPt = {
-  root: {
-    style: {
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100%',
-    },
-  },
-}
 
 const tabPanelsPt = {
   root: {
@@ -175,7 +193,6 @@ const tabPanelPt = {
 // Dashboard sidebar state (collapsed/expanded)
 const DASHBOARD_STORAGE_KEY = 'stigman:collectionDashboardCollapsed'
 const dashboardCollapsed = ref(localStorage.getItem(DASHBOARD_STORAGE_KEY) === 'true')
-const selectedLabelIds = ref([])
 const isAnimating = ref(false)
 const refreshKey = ref(0)
 
@@ -201,7 +218,7 @@ function toggleDashboardSidebar() {
 </script>
 
 <template>
-  <div v-if="collection" class="collection-view">
+  <div class="collection-view">
     <Splitter
       :pt="{
         gutter: { style: isManagement ? 'display: none' : 'background: var(--color-border-dark)' },
@@ -210,11 +227,11 @@ function toggleDashboardSidebar() {
     >
       <!-- Dashboard Sidebar -->
       <SplitterPanel
-        :size="14"
+        :size="18"
         :min-size="4"
-        :pt="{ root: { class: { 'sidebar-panel--collapsed': dashboardCollapsed, 'sidebar-panel--animating': isAnimating || sidebarTransitioning, 'sidebar-panel--hidden': isManagement }, style: isManagement ? '' : 'min-width: 330px; max-width: 600px;' } }"
+        :pt="{ root: { class: { 'sidebar-panel--collapsed': dashboardCollapsed, 'sidebar-panel--animating': isAnimating || sidebarTransitioning, 'sidebar-panel--hidden': isManagement }, style: isManagement ? '' : 'min-width: 320px; max-width: 460px;' } }"
       >
-        <aside class="dashboard-sidebar">
+        <aside class="dashboard-sidebar" data-tour="collection-dashboard">
           <button
             class="sidebar-toggle"
             :aria-label="dashboardCollapsed ? 'Expand Dashboard' : 'Collapse Dashboard'"
@@ -231,10 +248,11 @@ function toggleDashboardSidebar() {
           </div>
           <div v-show="!dashboardCollapsed" class="sidebar-content">
             <CollectionMetrics
-              v-model:selected-label-ids="selectedLabelIds"
+              :selected-label-names="selectedLabelNames"
               :collection-id="collectionId"
               :collection-name="collectionName"
               :refresh-key="refreshKey"
+              :ready="collectionReady"
               vertical
             />
             <div class="sidebar-export">
@@ -252,25 +270,25 @@ function toggleDashboardSidebar() {
       </SplitterPanel>
 
       <!-- Right Panel: Tabs + Content -->
-      <SplitterPanel :size="86">
+      <SplitterPanel :size="82">
         <div class="right-panel">
-          <Tabs v-model:value="activeTab" :pt="tabsPt">
-            <TabList>
-              <Tab value="stigs">
+          <Tabs v-model:value="activeTab" :pt="viewTabsPt">
+            <TabList :pt="viewTabListPt" data-tour="collection-tabs">
+              <Tab value="stigs" :pt="viewTabPt">
                 STIGs
               </Tab>
-              <Tab value="assets">
+              <Tab value="assets" :pt="viewTabPt">
                 Assets
               </Tab>
-              <Tab value="labels">
+              <Tab value="labels" :pt="viewTabPt">
                 Labels
               </Tab>
-              <Tab value="findings">
+              <Tab value="findings" :pt="viewTabPt">
                 Findings
               </Tab>
               <template v-if="canManage">
                 <div class="tab-separator" />
-                <Tab value="management">
+                <Tab value="management" :pt="viewTabPt" data-tour="collection-tab-management">
                   <i class="pi pi-cog tab-icon" />
                   Management
                 </Tab>
@@ -279,20 +297,20 @@ function toggleDashboardSidebar() {
 
             <TabPanels :pt="tabPanelsPt">
               <TabPanel value="stigs" :pt="tabPanelPt">
-                <CollectionStigsTab v-if="visitedTabs.has('stigs')" :collection-id="collectionId" :selected-label-ids="selectedLabelIds" :refresh-key="refreshKey" />
+                <CollectionStigsTab v-if="visitedTabs.has('stigs')" :collection-id="collectionId" :selected-label-names="tabLabelNames.stigs" :refresh-key="refreshKey" :ready="collectionReady" />
               </TabPanel>
               <TabPanel value="assets" :pt="tabPanelPt">
-                <CollectionAssetsTab v-if="visitedTabs.has('assets')" :collection-id="collectionId" :selected-label-ids="selectedLabelIds" :refresh-key="refreshKey" />
+                <CollectionAssetsTab v-if="visitedTabs.has('assets')" :collection-id="collectionId" :selected-label-names="tabLabelNames.assets" :refresh-key="refreshKey" :ready="collectionReady" />
               </TabPanel>
               <TabPanel value="labels" :pt="tabPanelPt">
-                <CollectionLabelsTab v-if="visitedTabs.has('labels')" :collection-id="collectionId" :selected-label-ids="selectedLabelIds" />
+                <CollectionLabelsTab v-if="visitedTabs.has('labels')" :collection-id="collectionId" :selected-label-names="tabLabelNames.labels" :ready="collectionReady" />
               </TabPanel>
               <TabPanel value="findings" :pt="tabPanelPt">
-                <Findings v-if="visitedTabs.has('findings')" :collection-id="collectionId" :selected-label-ids="selectedLabelIds" />
+                <Findings v-if="visitedTabs.has('findings')" :collection-id="collectionId" :selected-label-names="tabLabelNames.findings" :ready="collectionReady" />
               </TabPanel>
               <TabPanel v-if="canManage" value="management" :pt="tabPanelPt">
                 <Transition name="management-fade">
-                  <CollectionManage v-if="isManagement" :collection-id="collectionId" @imported="handleImported" />
+                  <CollectionManage v-if="isManagement && collectionReady" :collection-id="collectionId" @imported="handleImported" />
                 </Transition>
               </TabPanel>
             </TabPanels>
@@ -346,7 +364,7 @@ function toggleDashboardSidebar() {
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: 3.25rem;
+  height: var(--panel-header-height);
   background: none;
   border: none;
   border-bottom: 1px solid var(--color-border-default);
@@ -420,7 +438,7 @@ function toggleDashboardSidebar() {
 }
 
 .tab-icon {
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   opacity: 0.6;
   margin-right: 0.25rem;
 }

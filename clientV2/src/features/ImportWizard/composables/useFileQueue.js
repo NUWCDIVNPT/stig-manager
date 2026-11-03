@@ -1,17 +1,69 @@
 import { computed, ref } from 'vue'
+import { fileExtension, formatExtensionList } from '../../../shared/lib.js'
+import { extractFilesFromZip } from '../../../shared/lib/zipFiles.js'
+
+const RESULT_EXTENSIONS = ['ckl', 'cklb', 'xml']
+const QUEUEABLE_EXTENSIONS = new Set([...RESULT_EXTENSIONS, 'zip'])
+const ACCEPT_ATTR = [...QUEUEABLE_EXTENSIONS].map(ext => `.${ext}`).join(',')
+const RESULT_EXTENSION_LIST = formatExtensionList(RESULT_EXTENSIONS, 'or')
+const isZip = name => fileExtension(name) === 'zip'
+const isQueueable = name => QUEUEABLE_EXTENSIONS.has(fileExtension(name))
 
 export function useFileQueue() {
   const sourceFiles = ref([])
   const selectedQueueRows = ref([])
   const isDragOver = ref(false)
-  const canContinue = computed(() => sourceFiles.value.length > 0)
+  const queueNote = ref('')
+  const pendingAdds = ref(0)
+  const isAdding = computed(() => pendingAdds.value > 0)
+  const canContinue = computed(() => sourceFiles.value.length > 0 && !isAdding.value)
 
-  function _queueId(file) { return `${file.name}-${file.size}-${file.lastModified}` }
+  function _queueId(file) {
+    return `${file.name}-${file.size}-${file.lastModified}`
+  }
+
+  // Runs `work` with isAdding raised, so Continue is disabled while files are
+  // still being read or extracted
+  async function _whileAdding(work) {
+    pendingAdds.value++
+    try {
+      await work()
+    }
+    finally {
+      pendingAdds.value--
+    }
+  }
 
   function addFilesToQueue(files) {
+    return _whileAdding(() => _expandAndAdd(files))
+  }
+
+  async function _expandAndAdd(files) {
+    const expanded = []
+    const notes = []
+    const onSkip = (path, reason) => notes.push(`Skipped nested archive ${path} (${reason})`)
     for (const file of files) {
+      if (!isZip(file.name)) {
+        expanded.push(file)
+        continue
+      }
+      try {
+        const inner = await extractFilesFromZip(file, RESULT_EXTENSIONS, { onSkip })
+        if (!inner.length) {
+          notes.push(`No ${RESULT_EXTENSION_LIST} files found in ${file.name}`)
+        }
+        expanded.push(...inner)
+      }
+      catch {
+        notes.push(`Could not open ZIP archive ${file.name}`)
+      }
+    }
+    queueNote.value = notes.join('; ')
+    const queued = new Set(sourceFiles.value.map(f => f._queueId))
+    for (const file of expanded) {
       const id = _queueId(file)
-      if (!sourceFiles.value.some(f => f._queueId === id)) {
+      if (!queued.has(id)) {
+        queued.add(id)
         file._queueId = id
         sourceFiles.value.push(file)
       }
@@ -31,9 +83,11 @@ export function useFileQueue() {
     isDragOver.value = false
     const items = event.dataTransfer?.items
     if (!items) { return }
-    const entries = await _getAllFileEntries(items)
-    const files = await Promise.all(entries.map(_entryFilePromise))
-    addFilesToQueue(files)
+    await _whileAdding(async () => {
+      const entries = await _getAllFileEntries(items)
+      const files = await Promise.all(entries.map(_entryFilePromise))
+      await _expandAndAdd(files)
+    })
   }
 
   async function _getAllFileEntries(dataTransferItemList) {
@@ -45,8 +99,7 @@ export function useFileQueue() {
     }
     while (queue.length > 0) {
       const entry = queue.shift()
-      const lower = entry.name.toLowerCase()
-      if (entry.isFile && (lower.endsWith('.ckl') || lower.endsWith('.cklb') || lower.endsWith('.xml'))) {
+      if (entry.isFile && isQueueable(entry.name)) {
         fileEntries.push(entry)
       }
       else if (entry.isDirectory) {
@@ -77,13 +130,17 @@ export function useFileQueue() {
     sourceFiles.value = []
     selectedQueueRows.value = []
     isDragOver.value = false
+    queueNote.value = ''
   }
 
   return {
     sourceFiles,
     selectedQueueRows,
     isDragOver,
+    queueNote,
+    isAdding,
     canContinue,
+    acceptAttr: ACCEPT_ATTR,
     addFilesToQueue,
     removeSelectedFromQueue,
     onDragOver,

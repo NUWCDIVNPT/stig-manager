@@ -21,7 +21,7 @@ here corrupts everything downstream. They take an hour or two each.
 ### 1. `src/shared/csv.js`
 - `escapeCsv(value)` — null/undefined → empty; quote/comma/newline triggers
   quoting; embedded quotes get doubled. Classic CSV escape edge cases.
-- `generateCsv(data, columns, listDelimiter)` — array values, the
+- `generateCsv(data, columns, { listDelimiter, marking })` — array values, the
   `delimitedProperty` extraction branch, missing properties → empty cells,
   header ordering preserved.
 - `mapAssetToLabel(assets, labels)` — labelIds → label names, missing
@@ -79,16 +79,17 @@ Several pure formatters with off-by-one risk. Most are easy wins.
 ### 6. `src/shared/composables/useGridDensity.js`
 - Per-`gridKey` state isolation (two calls with the same key share state; two
   with different keys do not).
-- `increaseRowHeight` caps at 10; `decreaseRowHeight` floors at 1.
-- `itemSize` reflects the multiplier formula.
+- `increaseRowHeight` caps at 10; `decreaseRowHeight` floors at the grid `minLineClamp` (default 1).
+- `itemSize` reflects the geometry table (`lineRem × clamp + padRem`, floored at `minRem`, scaled by the root font size).
 - **Why P0:** trivial to test, used in multiple grids, the clamp boundaries are
   easy to get wrong.
 
-### 7. `src/features/AssetReview/lib/labels.js`
-- `getContrastColor(hex)` — null/undefined → white, dark color → white, light
-  color → near-black, YIQ threshold at 128 (pin two values that straddle it).
-- `useResolvedLabels(asset, labels)` — missing labelIds, missing labels, label
-  not in collection filtered out, color fallback to `#3b82f6`.
+### 7. `src/shared/lib/colorUtils.js`
+- `normalizeColor(color, default)` — prefixes a bare hex, passes `#`-prefixed
+  through, falls back to the default for null/empty.
+- `getContrastColor(hex, dark, light)` — 3- and 6-digit hex, unparsable → dark,
+  luminance threshold at 0.5 (pin two values that straddle it). Every label
+  chip now routes through these via `common/Label.vue`.
 
 ### 8. `src/features/STIGLibrary/lastVisited.js`
 - Trivial getter/setter, but worth a 5-line test pinning the contract so the

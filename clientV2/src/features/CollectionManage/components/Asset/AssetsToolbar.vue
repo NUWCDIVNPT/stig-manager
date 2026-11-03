@@ -1,8 +1,7 @@
 <script setup>
-import targetIcon from '../../../../assets/target.svg'
 import ActionButton from '../../../../components/common/ActionButton.vue'
 import ActionToolbar from '../../../../components/common/ActionToolbar.vue'
-import ExportByAssetButton from '../../ExportResults/components/ExportByAssetButton.vue'
+import ExportResultsButton from '../../ExportResults/components/ExportResultsButton.vue'
 import ExportAssetsCsvButton from './ExportAssetsCsvButton.vue'
 import ImportAssetsCsvButton from './ImportAssetsCsvButton.vue'
 import ImportResultsButton from './ImportResultsButton.vue'
@@ -53,10 +52,11 @@ const emit = defineEmits(['imported', 'clear-selection', 'create-asset', 'modify
     <div class="toolbar-divider" />
     <ImportResultsButton :collection-id="props.collectionId" @imported="emit('imported')" />
     <div class="toolbar-divider" />
-    <ExportByAssetButton
+    <ExportResultsButton
+      by="asset"
       :collection-id="props.collectionId"
       :collection-name="props.collectionName"
-      :selected-assets="props.selectedAssets"
+      :selected="props.selectedAssets"
     />
     <div class="toolbar-divider" />
     <ActionButton icon="pi pi-trash icon-red" :disabled="!hasSelection" @click="emit('delete-assets')">
@@ -70,8 +70,8 @@ const emit = defineEmits(['imported', 'clear-selection', 'create-asset', 'modify
       @assets-transferred="emit('assets-transferred', $event)"
     />
     <div class="toolbar-divider" />
-    <ActionButton :disabled="!singleSelection" @click="emit('modify-asset')">
-      <img :src="targetIcon" class="btn-icon"> Modify
+    <ActionButton icon="pi pi-pencil icon-grey" :disabled="!singleSelection" @click="emit('modify-asset')">
+      Modify
     </ActionButton>
     <div class="toolbar-spacer" />
     <ActionButton variant="clear" :disabled="!hasSelection" @click="emit('clear-selection')">
@@ -86,16 +86,6 @@ const emit = defineEmits(['imported', 'clear-selection', 'create-asset', 'modify
 }
 
 .clear-x {
-  font-size: 0.65rem;
-}
-
-.btn-icon {
-  width: 1rem;
-  height: 1rem;
-  opacity: 0.6;
-}
-
-.action-btn:hover .btn-icon {
-  opacity: 1;
+  font-size: var(--icon-xs);
 }
 </style>

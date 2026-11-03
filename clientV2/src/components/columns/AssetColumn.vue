@@ -1,10 +1,15 @@
 <script setup>
 import Column from 'primevue/column'
 import shieldGreenCheck from '../../assets/shield-green-check.svg'
+import HighlightText from '../common/HighlightText.vue'
 
 const props = defineProps({
   field: String,
   header: String,
+  searchTerm: {
+    type: String,
+    default: '',
+  },
   showShield: {
     type: Boolean,
     default: false,
@@ -27,7 +32,7 @@ function handleShieldClick(rowData) {
     <template #body="slotProps">
       <div class="sm-grid-cell-with-toolbar">
         <div class="sm-info">
-          {{ slotProps.data.assetName }}
+          <HighlightText :text="slotProps.data.assetName" :term="searchTerm" />
         </div>
         <button
           v-if="showShield"
@@ -42,38 +47,3 @@ function handleShieldClick(rowData) {
     </template>
   </Column>
 </template>
-
-<style scoped>
-.sm-grid-cell-with-toolbar {
-  display: flex;
-  align-items: center;
-}
-
-.sm-info {
-  flex: 1;
-}
-
-.shield-action {
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  opacity: 0.5;
-  transition: opacity 0.15s, transform 0.15s, background-color 0.15s;
-}
-
-.shield-action:hover {
-  opacity: 1;
-  transform: scale(1.2);
-  background-color: var(--color-button-hover-bg);
-}
-
-.shield-action img {
-  pointer-events: none;
-}
-</style>

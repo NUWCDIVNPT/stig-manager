@@ -1,25 +1,38 @@
 <script setup>
-import { FilterMatchMode } from '@primevue/core/api'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import assessmentIcon from '../../../assets/assessment.svg'
 import shieldGreenCheck from '../../../assets/shield-green-check.svg'
 import targetIcon from '../../../assets/target.svg'
 import CatBadge from '../../../components/common/CatBadge.vue'
-import ColumnFilter from '../../../components/common/ColumnFilter.vue'
+import HighlightText from '../../../components/common/HighlightText.vue'
 import ResultBadge from '../../../components/common/ResultBadge.vue'
 import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { durationToNow } from '../../../shared/lib.js'
 import { severityMap } from '../../../shared/lib/checklistUtils.js'
+import { gridColumnPt } from '../../../shared/lib/dataTablePt.js'
 import { severitySortValue } from '../../../shared/lib/gridSorts.js'
-import { fieldMatches, highlightText } from '../../../shared/lib/searchUtils.js'
+import { dashZero } from '../../../shared/lib/numberFormat.js'
 
 const props = defineProps({
+  // Rows after search and filters
   gridData: {
     type: Array,
     default: () => [],
+  },
+  totalCount: {
+    type: Number,
+    default: 0,
+  },
+  isFiltered: {
+    type: Boolean,
+    default: false,
+  },
+  highlightTerm: {
+    type: Function,
+    default: () => '',
   },
   isLoading: {
     type: Boolean,
@@ -29,13 +42,15 @@ const props = defineProps({
     type: Object,
     default: null,
   },
-  searchFilter: {
-    type: String,
-    default: '',
-  },
   assetCount: {
     type: Number,
     default: 0,
+  },
+  // Shown when the unfiltered checklist is empty; the parent knows why
+  // (label filter, load failure), the grid only knows that it is empty.
+  emptyMessage: {
+    type: String,
+    default: 'No checklist items found.',
   },
   visibleFields: {
     type: Set,
@@ -45,40 +60,16 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  // CSV export basename; the parent passes the benchmarkId (legacy convention).
+  exportFilename: {
+    type: String,
+    default: 'Checklist',
+  },
 })
 
 const emit = defineEmits(['update:selectedRow', 'refresh'])
 
 const dataTableRef = ref(null)
-
-function onFooterAction(key) {
-  if (key === 'export') {
-    dataTableRef.value?.exportCSV()
-  }
-  else if (key === 'refresh') {
-    emit('refresh')
-  }
-}
-
-const filters = ref({
-  global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  severity: { value: null, matchMode: FilterMatchMode.IN },
-})
-
-const globalFilterFields = ['groupId', 'groupTitle', 'version', 'ruleId', 'ruleTitle']
-
-watch(() => props.searchFilter, (val) => {
-  filters.value.global.value = val || null
-})
-
-const filteredData = ref(null)
-
-function onFilter(event) {
-  filteredData.value = event.filteredValue
-}
-
-const visibleData = computed(() => filteredData.value ?? props.gridData)
-const isFiltered = computed(() => filteredData.value !== null && filteredData.value.length !== props.gridData.length)
 
 function sumCounts(data) {
   const results = { fail: 0, pass: 0, notapplicable: 0, other: 0 }
@@ -104,63 +95,23 @@ function sumCounts(data) {
   return { results, statuses }
 }
 
-const footerStats = computed(() => sumCounts(visibleData.value))
+const footerStats = computed(() => sumCounts(props.gridData))
 
-const requiredAssessments = computed(() => visibleData.value.length * props.assetCount)
+const requiredAssessments = computed(() => props.gridData.length * props.assetCount)
 
 const footerMetrics = computed(() => [
   { key: 'assets', value: props.assetCount, label: 'assets', iconSrc: targetIcon },
   { key: 'assessments', value: requiredAssessments.value, label: 'assessments', iconSrc: assessmentIcon },
 ])
 
-const catOptions = computed(() => {
-  const severities = new Set(props.gridData.map(item => item.severity).filter(Boolean))
-  return Array.from(severities).map(val => ({
-    value: val,
-    label: `Cat ${severityMap[val] ?? val}`,
-  })).sort((a, b) => a.label.localeCompare(b.label))
-})
-
-function getColumnPt(alignment = 'left') {
-  const isCenter = alignment === 'center'
-  return {
-    headerCell: {
-      style: { borderRight: '1px solid var(--color-border-light)' },
-      class: isCenter ? 'column-header-center' : 'column-header-left',
-    },
-    columnHeaderContent: {
-      style: {
-        fontSize: '1rem',
-        color: 'var(--color-text-primary)',
-        justifyContent: isCenter ? 'center' : 'flex-start',
-        textAlign: isCenter ? 'center' : 'left',
-      },
-    },
-    bodyCell: {
-      style: {
-        verticalAlign: 'top',
-        padding: '0.15rem 0.35rem',
-        overflow: 'hidden',
-        textAlign: isCenter ? 'center' : 'left',
-      },
-      class: isCenter ? 'column-body-center' : 'column-body-left',
-    },
-    bodyCellContent: {
-      style: {
-        display: 'flex',
-        justifyContent: isCenter ? 'center' : 'flex-start',
-        alignItems: 'flex-start',
-        width: '100%',
-      },
-    },
-  }
-}
-
 const columnPt = {
-  center: getColumnPt('center'),
-  left: getColumnPt('left'),
+  center: gridColumnPt('center'),
+  left: gridColumnPt('left'),
+  // Badge-only headers whose one action is sorting
 }
 
+// Fixed layout: every column declares a width except Rule Title, which as
+// the only auto column takes all spare table width.
 const dataTablePt = {
   tableContainer: { style: { height: '100%' } },
   table: { style: { tableLayout: 'fixed', minWidth: '100%' } },
@@ -173,12 +124,11 @@ const dataTablePt = {
 <template>
   <DataTable
     ref="dataTableRef"
-    v-model:filters="filters"
-    :global-filter-fields="globalFilterFields"
     :value="gridData"
     :loading="isLoading"
     :selection="selectedRow"
     selection-mode="single"
+    :export-filename="exportFilename"
     data-key="ruleId"
     scrollable
     scroll-height="flex"
@@ -188,145 +138,115 @@ const dataTablePt = {
     class="checklist-grid__table"
     :pt="dataTablePt"
     @update:selection="(val) => emit('update:selectedRow', val)"
-    @filter="onFilter"
   >
-    <Column field="severity" :sort-field="severitySortValue" filter-field="severity" sortable :style="{ width: '3rem', minWidth: '3rem' }" :pt="columnPt.center">
-      <template #header>
-        <div class="column-header-with-filter">
-          Cat
-          <ColumnFilter v-model="filters.severity.value" :options="catOptions">
-            <template #option="{ option }">
-              <CatBadge :category="severityMap[option.value]" variant="label" />
-            </template>
-          </ColumnFilter>
-        </div>
-      </template>
+    <Column field="severity" header="CAT" :sort-field="severitySortValue" sortable :style="{ width: '5.5rem', minWidth: '5.5rem' }" :pt="columnPt.center">
       <template #body="{ data }">
         <div class="cell-center">
           <CatBadge :category="severityMap[data.severity]" variant="label" />
         </div>
       </template>
     </Column>
-    <Column v-if="visibleFields.has('groupId')" field="groupId" header="Group" sortable :style="{ width: '5rem', minWidth: '5rem' }" :pt="columnPt.left">
+    <Column v-if="visibleFields.has('groupId')" field="groupId" header="Group" sortable :style="{ width: '6.5rem', minWidth: '6.5rem' }" :pt="columnPt.left">
       <template #body="{ data }">
-        <span class="cell-text" :class="{ 'cell--match': searchFilter && fieldMatches(data.groupId, searchFilter) }">
-          <span v-if="searchFilter" v-html="highlightText(data.groupId, searchFilter)" />
-          <template v-else>{{ data.groupId }}</template>
-        </span>
+        <span class="cell-text"><HighlightText :text="data.groupId" :term="highlightTerm('groupId')" /></span>
       </template>
     </Column>
     <Column v-if="visibleFields.has('groupTitle')" field="groupTitle" header="Group Title" sortable :style="{ width: '14rem', minWidth: '14rem' }" :pt="columnPt.left">
       <template #body="{ data }">
         <div class="cell-text-field">
-          <span
-            class="cell-text cell-text--clamped"
-            :class="{ 'cell--match': searchFilter && fieldMatches(data.groupTitle, searchFilter) }"
-            :title="data.groupTitle"
-          >
-            <span v-if="searchFilter" v-html="highlightText(data.groupTitle, searchFilter)" />
-            <template v-else>{{ data.groupTitle }}</template>
+          <span class="cell-text cell-text--clamped" :title="data.groupTitle">
+            <HighlightText :text="data.groupTitle" :term="highlightTerm('groupTitle')" />
           </span>
         </div>
       </template>
     </Column>
     <Column v-if="visibleFields.has('version')" field="version" header="STIG Id" sortable :style="{ width: '6rem', minWidth: '6rem' }" :pt="columnPt.left">
       <template #body="{ data }">
-        <span class="cell-text" :class="{ 'cell--match': searchFilter && fieldMatches(data.version, searchFilter) }">
-          <span v-if="searchFilter" v-html="highlightText(data.version, searchFilter)" />
-          <template v-else>{{ data.version }}</template>
-        </span>
+        <span class="cell-text"><HighlightText :text="data.version" :term="highlightTerm('version')" /></span>
       </template>
     </Column>
     <Column v-if="visibleFields.has('ruleId')" field="ruleId" header="Rule Id" sortable :style="{ width: '13rem', minWidth: '10rem' }" :pt="columnPt.left">
       <template #body="{ data }">
-        <span class="cell-text" :class="{ 'cell--match': searchFilter && fieldMatches(data.ruleId, searchFilter) }">
-          <span v-if="searchFilter" v-html="highlightText(data.ruleId, searchFilter)" />
-          <template v-else>{{ data.ruleId }}</template>
-        </span>
+        <span class="cell-text"><HighlightText :text="data.ruleId" :term="highlightTerm('ruleId')" /></span>
       </template>
     </Column>
-    <Column v-if="visibleFields.has('ruleTitle')" field="ruleTitle" header="Rule Title" sortable :style="{ width: '40%', minWidth: '18rem' }" :pt="columnPt.left">
+    <Column v-if="visibleFields.has('ruleTitle')" field="ruleTitle" header="Rule Title" sortable :style="{ minWidth: '18rem' }" :pt="columnPt.left">
       <template #body="{ data }">
         <div class="cell-text-field">
-          <span
-            class="cell-text cell-text--clamped cell-text--clickable"
-            :class="{ 'cell--match': searchFilter && fieldMatches(data.ruleTitle, searchFilter) }"
-            :title="data.ruleTitle"
-          >
-            <span v-if="searchFilter" v-html="highlightText(data.ruleTitle, searchFilter)" />
-            <template v-else>{{ data.ruleTitle }}</template>
+          <span class="cell-text cell-text--clamped cell-text--clickable" :title="data.ruleTitle">
+            <HighlightText :text="data.ruleTitle" :term="highlightTerm('ruleTitle')" />
           </span>
         </div>
       </template>
     </Column>
 
     <!-- Count Columns -->
-    <Column v-if="visibleFields.has('fail')" field="counts.results.fail" sortable :style="{ width: '2.5rem', minWidth: '2.5rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('fail')" field="counts.results.fail" export-header="O" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.center">
       <template #header>
         <ResultBadge status="O" />
       </template>
       <template #body="{ data }">
-        <span class="cell-text">{{ data.counts?.results?.fail ?? 0 }}</span>
+        <span class="cell-text">{{ dashZero(data.counts?.results?.fail) }}</span>
       </template>
     </Column>
-    <Column v-if="visibleFields.has('pass')" field="counts.results.pass" sortable :style="{ width: '2.5rem', minWidth: '2.5rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('pass')" field="counts.results.pass" export-header="NF" sortable :style="{ width: '4.5rem', minWidth: '4.5rem' }" :pt="columnPt.center">
       <template #header>
         <ResultBadge status="NF" />
       </template>
       <template #body="{ data }">
-        <span class="cell-text">{{ data.counts?.results?.pass ?? 0 }}</span>
+        <span class="cell-text">{{ dashZero(data.counts?.results?.pass) }}</span>
       </template>
     </Column>
-    <Column v-if="visibleFields.has('notapplicable')" field="counts.results.notapplicable" sortable :style="{ width: '2.5rem', minWidth: '2.5rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('notapplicable')" field="counts.results.notapplicable" export-header="NA" sortable :style="{ width: '4.5rem', minWidth: '4.5rem' }" :pt="columnPt.center">
       <template #header>
         <ResultBadge status="NA" />
       </template>
       <template #body="{ data }">
-        <span class="cell-text">{{ data.counts?.results?.notapplicable ?? 0 }}</span>
+        <span class="cell-text">{{ dashZero(data.counts?.results?.notapplicable) }}</span>
       </template>
     </Column>
-    <Column v-if="visibleFields.has('other')" field="counts.results.other" sortable :style="{ width: '2.5rem', minWidth: '2.5rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('other')" field="counts.results.other" export-header="NR+" sortable :style="{ width: '5rem', minWidth: '5rem' }" :pt="columnPt.center">
       <template #header>
         <ResultBadge status="NR+" />
       </template>
       <template #body="{ data }">
-        <span class="cell-text">{{ data.counts?.results?.other ?? 0 }}</span>
+        <span class="cell-text">{{ dashZero(data.counts?.results?.other) }}</span>
       </template>
     </Column>
 
     <!-- Status Icons -->
-    <Column v-if="visibleFields.has('submitted')" field="counts.statuses.submitted" sortable :style="{ width: '3rem', minWidth: '3rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('submitted')" field="counts.statuses.submitted" export-header="Submitted" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.center">
       <template #header>
         <StatusBadge status="submitted" />
       </template>
       <template #body="{ data }">
-        <span class="cell-text">{{ data.counts?.statuses?.submitted ?? 0 }}</span>
+        <span class="cell-text">{{ dashZero(data.counts?.statuses?.submitted) }}</span>
       </template>
     </Column>
-    <Column v-if="visibleFields.has('rejected')" field="counts.statuses.rejected" sortable :style="{ width: '3rem', minWidth: '3rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('rejected')" field="counts.statuses.rejected" export-header="Rejected" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.center">
       <template #header>
         <StatusBadge status="rejected" />
       </template>
       <template #body="{ data }">
-        <span class="cell-text">{{ data.counts?.statuses?.rejected ?? 0 }}</span>
+        <span class="cell-text">{{ dashZero(data.counts?.statuses?.rejected) }}</span>
       </template>
     </Column>
-    <Column v-if="visibleFields.has('accepted')" field="counts.statuses.accepted" sortable :style="{ width: '3rem', minWidth: '3rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('accepted')" field="counts.statuses.accepted" export-header="Accepted" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.center">
       <template #header>
         <StatusBadge status="accepted" />
       </template>
       <template #body="{ data }">
-        <span class="cell-text">{{ data.counts?.statuses?.accepted ?? 0 }}</span>
+        <span class="cell-text">{{ dashZero(data.counts?.statuses?.accepted) }}</span>
       </template>
     </Column>
 
     <!-- Timestamp Columns -->
-    <Column v-if="visibleFields.has('oldest')" field="timestamps.ts.min" header="Oldest" sortable :style="{ width: '3rem', minWidth: '3rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('oldest')" field="timestamps.ts.min" header="Oldest" sortable :style="{ width: '5.5rem', minWidth: '5.5rem' }" :pt="columnPt.center">
       <template #body="{ data }">
         <span v-if="data.timestamps?.ts?.min" class="cell-text" :title="data.timestamps.ts.min">{{ durationToNow(data.timestamps.ts.min) }}</span>
       </template>
     </Column>
-    <Column v-if="visibleFields.has('newest')" field="timestamps.ts.max" header="Newest" sortable :style="{ width: '3rem', minWidth: '3rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('newest')" field="timestamps.ts.max" header="Newest" sortable :style="{ width: '5.5rem', minWidth: '5.5rem' }" :pt="columnPt.center">
       <template #body="{ data }">
         <span v-if="data.timestamps?.ts?.max" class="cell-text" :title="data.timestamps.ts.max">{{ durationToNow(data.timestamps.ts.max) }}</span>
       </template>
@@ -334,7 +254,7 @@ const dataTablePt = {
 
     <template #empty>
       <div class="agg-grid-empty-state">
-        No checklist items found.
+        {{ isFiltered && totalCount ? 'No rules match the current search and filters.' : emptyMessage }}
       </div>
     </template>
 
@@ -342,13 +262,14 @@ const dataTablePt = {
       <StatusFooter
         class="collection-review-footer"
         :metrics="footerMetrics"
-        :total-count="gridData.length"
-        :filtered-count="isFiltered ? visibleData.length : null"
+        :total-count="totalCount"
+        :filtered-count="isFiltered ? gridData.length : null"
         total-label="rules"
         :total-icon-src="shieldGreenCheck"
+        :dt="dataTableRef"
         :show-refresh="true"
         :show-export="true"
-        @action="onFooterAction"
+        @refresh="emit('refresh')"
       >
         <template #right-extra>
           <ResultBadge status="O" :count="footerStats.results.fail" />
@@ -366,22 +287,16 @@ const dataTablePt = {
 </template>
 
 <style scoped>
-.column-header-with-filter {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.1rem;
-  width: 100%;
-}
-
 .checklist-grid__table {
   flex: 1;
   min-height: 0;
 }
 
+/* Size and line height come from the grid geometry (useGridDensity textSize),
+   so N clamped lines fill exactly N rows. */
 .cell-text {
-  font-size: 1.1rem;
-  line-height: 1.3;
+  font-size: var(--cell-font-size);
+  line-height: var(--cell-line-height, 1.3);
   color: var(--color-text-primary);
 }
 
@@ -430,7 +345,7 @@ const dataTablePt = {
 :deep(.p-datatable-thead > tr > th) {
   background: var(--color-background-dark);
   color: var(--color-text-dim);
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   text-transform: none;
   border-bottom: 1px solid var(--color-border-default);
@@ -441,18 +356,6 @@ const dataTablePt = {
 
 :deep(.p-datatable-tbody > tr:hover) {
   background: var(--color-background-light) !important;
-}
-
-.cell--match {
-  background-color: color-mix(in srgb, var(--color-warning-yellow, #f59e0b) 8%, transparent);
-  border-radius: 2px;
-}
-
-:deep(.search-highlight) {
-  background-color: color-mix(in srgb, var(--color-warning-yellow, #f59e0b) 40%, transparent);
-  color: inherit;
-  border-radius: 1px;
-  padding: 0 1px;
 }
 
 .agg-grid-empty-state {

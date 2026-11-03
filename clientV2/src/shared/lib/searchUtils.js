@@ -38,29 +38,3 @@ export function fieldMatches(value, term) {
   }
   return value.toLowerCase().includes(term)
 }
-
-/**
- * Given a row object, an array of field definitions, and a search term,
- * return an array of human-readable labels for fields that match.
- *
- * Each field def has:
- *   - `label` (string) — display name
- *   - `key` (string, optional) — direct property name on the row
- *   - `getter` (function, optional) — custom accessor for nested fields
- *
- * @param {object} row - The data row to inspect
- * @param {Array<{label: string, key?: string, getter?: Function}>} fieldDefs
- * @param {string} term - The search term (already lowercased/trimmed)
- * @returns {string[]} Array of matched field labels
- */
-export function getMatchedFields(row, fieldDefs, term) {
-  if (!term) {
-    return []
-  }
-  return fieldDefs
-    .filter((f) => {
-      const value = f.getter ? f.getter(row) : row[f.key]
-      return value?.toLowerCase().includes(term)
-    })
-    .map(f => f.label)
-}

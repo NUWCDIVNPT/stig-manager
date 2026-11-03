@@ -128,7 +128,7 @@ const checkboxPt = {
 .modal-intro {
   margin: 0;
   color: var(--color-text-primary);
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
 }
 
 .target-list {
@@ -144,7 +144,7 @@ const checkboxPt = {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   color: var(--color-text-primary);
 }
 
@@ -168,14 +168,14 @@ const checkboxPt = {
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   color: var(--color-text-primary);
   line-height: 1.4;
 }
 
 .force-warning__icon {
   color: var(--color-action-red);
-  font-size: 1.15rem;
+  font-size: var(--text-lg);
   flex-shrink: 0;
   margin-top: 0.1rem;
 }
@@ -188,7 +188,7 @@ const checkboxPt = {
 }
 
 .force-check-label {
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-secondary);
   cursor: pointer;
   line-height: 1.4;

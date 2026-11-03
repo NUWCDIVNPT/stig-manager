@@ -1,6 +1,6 @@
 babel==2.16.0
 build==1.2.2.post1
-certifi==2024.12.14
+certifi==2026.10.19
 chardet==5.2.0
 charset-normalizer==3.4.1
 click==8.1.8
@@ -42,4 +42,4 @@ sphinxcontrib-jsmath==1.0.1
 sphinxcontrib-qthelp==2.0.0
 sphinxcontrib-serializinghtml==2.0.0
 terminaltables==3.1.10
-urllib3==2.7.0
+urllib3==2.8.0

@@ -3,18 +3,24 @@ import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref, watch } from 'vue'
 
+import CountColumn from '../../../../components/columns/CountColumn.vue'
 import DurationColumn from '../../../../components/columns/DurationColumn.vue'
 import LabelsRow from '../../../../components/columns/LabelsRow.vue'
 import PercentageColumn from '../../../../components/columns/PercentageColumn.vue'
-import ColumnFilter from '../../../../components/common/ColumnFilter.vue'
-import ColumnSearchFilter from '../../../../components/common/ColumnSearchFilter.vue'
+import ColumnToggle from '../../../../components/common/ColumnToggle.vue'
 import DeleteModal from '../../../../components/common/DeleteModal.vue'
+import GridFilterButton from '../../../../components/common/GridFilterButton.vue'
+import GridSearch from '../../../../components/common/GridSearch.vue'
+import GridToolbar from '../../../../components/common/GridToolbar.vue'
+import HighlightText from '../../../../components/common/HighlightText.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { fetchCollectionAssetSummary } from '../../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
+import { useColumnVisibility } from '../../../../shared/composables/useColumnVisibility.js'
 import { useCurrentUser } from '../../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
-import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
+import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
+import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import { deleteAssets } from '../../api/assetManageApi.js'
 import { useAssetTable } from '../../composables/useAssetTable.js'
 import AssetFormModal from './AssetFormModal.vue'
@@ -26,6 +32,8 @@ const props = defineProps({
     required: true,
   },
 })
+
+const ROW_HEIGHT = rowHeightPx('dense')
 
 const dataTableRef = ref(null)
 
@@ -43,30 +51,51 @@ const { state: assets, isLoading, execute: loadAssets } = useAsyncState(
 watch(() => props.collectionId, loadAssets, { immediate: true })
 
 const {
-  assetFilter,
-  labelFilter,
-  labelOptions,
-  filteredData,
+  tableData,
   applyAssetCreated,
   applyAssetChanged,
   applyAssetsTransferred,
 } = useAssetTable(assets)
 
 const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-border-default)' } }
+// Percentage headers sit left, over the start of the bar and its percentage text
+const leftHeaderBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-content: flex-start;' } }
 const tablePt = { footer: { style: 'padding: 0; border: none;' } }
 
-const columns = [
-  { field: 'stigCnt', header: 'STIGs', component: Column, width: '30px', pt: borderPt },
-  { field: 'checks', header: 'Rules', component: Column, width: '30px', pt: borderPt },
-  { field: 'oldest', header: 'Oldest', component: DurationColumn, width: '30px', pt: borderPt },
-  { field: 'newest', header: 'Newest', component: DurationColumn, width: '30px', pt: borderPt },
-  { field: 'assessedPct', header: 'Assessed', component: PercentageColumn, width: '60px', pt: borderPt },
-  { field: 'submittedPct', header: 'Submitted', component: PercentageColumn, width: '60px', pt: borderPt },
-  { field: 'acceptedPct', header: 'Accepted', component: PercentageColumn, width: '60px', pt: borderPt },
-  { field: 'rejectedPct', header: 'Rejected', component: PercentageColumn, width: '60px', pt: borderPt },
+const metricColumns = [
+  { field: 'stigCnt', header: 'STIGs', component: CountColumn, tooltipValues: r => r.benchmarkIds, width: '2.75rem', pt: borderPt },
+  { field: 'checks', header: 'Rules', component: CountColumn, width: '2.75rem', pt: borderPt },
+  { field: 'oldest', header: 'Oldest', component: DurationColumn, width: '2.75rem', pt: borderPt },
+  { field: 'newest', header: 'Newest', component: DurationColumn, width: '2.75rem', pt: borderPt },
+  { field: 'assessedPct', header: 'Assessed', component: PercentageColumn, width: '5.5rem', pt: leftHeaderBorderPt },
+  { field: 'submittedPct', header: 'Submitted', component: PercentageColumn, width: '5.5rem', pt: leftHeaderBorderPt },
+  { field: 'acceptedPct', header: 'Accepted', component: PercentageColumn, width: '5.5rem', pt: leftHeaderBorderPt },
+  { field: 'rejectedPct', header: 'Rejected', component: PercentageColumn, width: '5.5rem', pt: leftHeaderBorderPt },
 ]
 
+const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibility([
+  { field: 'assetName', header: 'Asset', locked: true },
+  { field: 'labels', header: 'Labels' },
+  ...metricColumns.map(({ field, header }) => ({ field, header })),
+], 'manageAssets.columns')
+
 const selectedAssets = ref([])
+
+const visibleMetricColumns = computed(() => metricColumns.filter(c => visibleFields.value.has(c.field)))
+
+const {
+  term: searchTerm,
+  filters: gridFilters,
+  filteredRows,
+  isFiltered,
+  filterColumns,
+  valueOptions,
+  highlightTerm,
+} = useGridSearch(tableData, [
+  { field: 'assetName', header: 'Asset' },
+  { field: 'labels', header: 'Labels', filterValues: r => r.labels, multiple: true },
+  { field: 'benchmarkIds', header: 'STIG', filterValues: r => r.benchmarkIds, multiple: true, quickSearch: false },
+], { visibleFields, selection: selectedAssets, dataKey: 'assetId' })
 
 function clearSelection() {
   selectedAssets.value = []
@@ -102,14 +131,6 @@ async function onDeleteConfirmed() {
     triggerError(err)
   }
 }
-
-function onAssetsTransferred(transferredIds) {
-  const idSet = new Set(transferredIds)
-  applyAssetsTransferred(transferredIds)
-  selectedAssets.value = selectedAssets.value.filter(a => !idSet.has(a.assetId))
-}
-
-const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: loadAssets })
 </script>
 
 <template>
@@ -125,7 +146,7 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: load
       @create-asset="openCreateModal"
       @modify-asset="openEditModal(selectedAssets[0].assetId)"
       @delete-assets="onDeleteAssets"
-      @assets-transferred="onAssetsTransferred"
+      @assets-transferred="applyAssetsTransferred"
     />
 
     <AssetFormModal
@@ -144,10 +165,17 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: load
     />
 
     <div class="table-container">
+      <GridToolbar compact>
+        <GridSearch v-model="searchTerm" label="Search assets" placeholder="Search assets..." />
+        <template #end>
+          <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
+          <ColumnToggle v-model="selectedColumns" :columns="toggleableColumns" />
+        </template>
+      </GridToolbar>
       <DataTable
         ref="dataTableRef"
         v-model:selection="selectedAssets"
-        :value="filteredData"
+        :value="filteredRows"
         data-key="assetId"
         scrollable
         scroll-height="flex"
@@ -155,24 +183,24 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: load
         column-resize-mode="fit"
         selection-mode="multiple"
         :loading="isLoading"
-        :virtual-scroller-options="{ itemSize: 27, delay: 0 }"
+        :virtual-scroller-options="{ itemSize: ROW_HEIGHT, delay: 0 }"
+        :style="{ '--item-size': `${ROW_HEIGHT}px` }"
+        export-filename="Assets"
         class="flex-fill clickable-rows"
         :table-style="{ 'table-layout': 'fixed' }"
         :pt="tablePt"
       >
-        <Column selection-mode="multiple" style="width: 1rem; height: 27px; padding: 0 0.5rem;" />
+        <Column selection-mode="multiple" style="width: 1rem; height: var(--item-size); padding: 0 0.5rem;" />
 
-        <Column field="assetName" sortable :pt="borderPt" style="width: 60px; height: 27px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
-          <template #header>
-            <div class="column-header-with-filter">
-              Asset
-              <ColumnSearchFilter v-model="assetFilter" placeholder="Search asset..." />
-            </div>
-          </template>
+        <template #empty>
+          {{ isFiltered && tableData.length ? 'No assets match the search.' : 'No assets found.' }}
+        </template>
+
+        <Column field="assetName" header="Asset" sortable :pt="borderPt" style="width: 5.5rem; height: var(--item-size); padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           <template #body="{ data }">
             <div class="sm-grid-cell-with-toolbar">
               <div class="sm-info">
-                {{ data.assetName }}
+                <HighlightText :text="data.assetName" :term="highlightTerm('assetName')" />
               </div>
               <button
                 type="button"
@@ -186,30 +214,26 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: load
           </template>
         </Column>
 
-        <Column field="labels" sortable :pt="borderPt" style="width: 100px; height: 27px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
-          <template #header>
-            <div class="column-header-with-filter">
-              Labels
-              <ColumnFilter v-model="labelFilter" :options="labelOptions" />
-            </div>
-          </template>
+        <Column v-if="visibleFields.has('labels')" field="labels" header="Labels" sortable :pt="borderPt" style="width: 9rem; height: var(--item-size); padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
           <template #body="{ data }">
-            <LabelsRow :labels="data.labels" compact />
+            <LabelsRow :labels="data.labels" :search-term="highlightTerm('labels')" compact />
           </template>
         </Column>
 
-        <template v-for="col in columns" :key="col.field">
-          <component :is="col.component" v-bind="col" sortable :style="`width: ${col.width}; height: 27px; padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;`" />
+        <template v-for="col in visibleMetricColumns" :key="col.field">
+          <component :is="col.component" v-bind="col" sortable header-class="metric-col" body-class="metric-col" :style="`width: ${col.width}; height: var(--item-size); padding: 0 0.5rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;`" />
         </template>
 
         <template #footer>
           <StatusFooter
+            :dt="dataTableRef"
             :refresh-loading="isLoading"
-            :total-count="filteredData.length"
+            :total-count="tableData.length"
+            :filtered-count="isFiltered ? filteredRows.length : null"
             :show-selected="selectedAssets.length > 0"
             :selected-items="selectedAssets"
             total-label="assets"
-            @action="onFooterAction"
+            @refresh="loadAssets"
           />
         </template>
       </DataTable>
@@ -248,54 +272,11 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: load
   cursor: pointer;
 }
 
-.column-header-with-filter {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.sm-grid-cell-with-toolbar {
-  display: flex;
-  align-items: center;
-}
-
-.sm-info {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.row-edit-btn {
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-  color: var(--color-text-dim);
-  font-size: 0.7rem;
-  opacity: 0;
-  transition: opacity 0.15s, color 0.15s, background 0.15s;
-  flex-shrink: 0;
-}
-
-:deep(tr:hover) .row-edit-btn {
-  opacity: 1;
-}
-
-.row-edit-btn:hover {
-  color: var(--color-text-bright);
-}
-
-:deep(th:nth-child(n+4) .p-datatable-column-header-content) {
+:deep(th.metric-col .p-datatable-column-header-content) {
   justify-content: center;
 }
 
-:deep(td:nth-child(n+4)) {
+:deep(td.metric-col) {
   text-align: center;
 }
 </style>

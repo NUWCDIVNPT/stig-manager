@@ -974,7 +974,17 @@ paths:
       tags:
         - Collection
       summary: Return the Checklist for the supplied Collection and STIG
+      description: |
+        Returns each Rule of the STIG revision with Review counts and timestamps aggregated across the Collection's
+        Assets that are assigned the STIG. The optional label parameters restrict the aggregation to the matching
+        Assets; multiple label parameters are OR'd and an Asset that matches more than one is counted once. If no
+        Assets match, including when a labelId or labelName does not exist in the Collection, the response is an
+        empty array.
       operationId: getChecklistByCollectionStig
+      parameters:
+        - $ref: '#/components/parameters/LabelIdQuery'
+        - $ref: '#/components/parameters/LabelNameQuery'
+        - $ref: '#/components/parameters/LabelMatchQuery'
       responses:
         '200':
           description: ChecklistCollectionStig response
@@ -7821,14 +7831,16 @@ components:
       additionalProperties: false
       type: object
       properties:
+        seq:
+          type: integer
         type:
           type: string
         message:
           type: string
         task:
-          $ref: "#/components/schemas/String45"
+          $ref: "#/components/schemas/String45Nullable"
         taskId:
-          $ref: "#/components/schemas/JobTaskId"
+          $ref: "#/components/schemas/StringIntIdNullable"
         ts:
           $ref: '#/components/schemas/StringDateTime'
       required: [message, type, task, ts]
@@ -7969,7 +7981,7 @@ components:
         triggerInterval:
           type: integer
           description: Interval in seconds
-          minimum: 0
+          minimum: 3600
           maximum: 2147483647
         triggerAction:
           type: string
@@ -7997,7 +8009,7 @@ components:
         triggerInterval:
           type: integer
           description: Interval in seconds
-          minimum: 0
+          minimum: 3600
           maximum: 2147483647
         triggerAction:
           type: string
@@ -8031,7 +8043,7 @@ components:
         triggerInterval:
           type: integer
           description: Interval in seconds
-          minimum: 0
+          minimum: 3600
           maximum: 2147483647
         triggerAction:
           type: string
@@ -8063,7 +8075,7 @@ components:
         triggerInterval:
           type: integer
           description: Interval in seconds
-          minimum: 0
+          minimum: 3600
           maximum: 2147483647
         triggerAction:
           type: string
@@ -8091,7 +8103,7 @@ components:
         triggerInterval:
           type: integer
           description: Interval in seconds
-          minimum: 0
+          minimum: 3600
           maximum: 2147483647
         triggerAction:
           type: string
@@ -8125,7 +8137,7 @@ components:
         triggerInterval:
           type: integer
           description: Interval in seconds
-          minimum: 0
+          minimum: 3600
           maximum: 2147483647
         triggerAction:
           type: string
@@ -10182,6 +10194,12 @@ components:
         lastWhatsNew:
           type: string
           format: date
+        tours:
+          description: The version date of each client tour the user has seen, keyed by tour id
+          type: object
+          additionalProperties:
+            type: string
+            format: date
       additionalProperties: false
       required:
         - darkMode
@@ -10194,6 +10212,13 @@ components:
         lastWhatsNew:
           type: string
           format: date
+        tours:
+          description: The version date of each client tour the user has seen, keyed by tour id. A null date forgets that tour, so the client offers it again.
+          type: object
+          additionalProperties:
+            type: string
+            format: date
+            nullable: true
       additionalProperties: false
       minProperties: 1
     Version:
@@ -10526,6 +10551,7 @@ components:
       name: labelName
       in: query
       description: Selectes Assets by label name
+      allowReserved: true
       schema:
         type: array
         uniqueItems: true

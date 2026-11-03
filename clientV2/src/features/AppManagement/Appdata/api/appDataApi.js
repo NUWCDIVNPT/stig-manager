@@ -1,25 +1,7 @@
 import { saveAs } from 'file-saver-es'
-import { apiCall, apiFetch } from '../../../../shared/api/apiClient.js'
+import { apiCall, apiFetch, getAuthToken, getBaseUrl } from '../../../../shared/api/apiClient.js'
 import { filenameFromContentDisposition } from '../../../../shared/lib/contentDisposition.js'
 import { getDownloadUrl } from '../../../../shared/serviceWorker.js'
-
-function apiBase() {
-  try {
-    return STIGMAN.Env.apiBase
-  }
-  catch {
-    return import.meta.env.VITE_API_BASE_URL ?? '/api'
-  }
-}
-
-function bearerToken() {
-  try {
-    return STIGMAN.oidcWorker?.token
-  }
-  catch {
-    return null
-  }
-}
 
 export const APPDATA_GZIP_CONTENT_TYPE = 'application/gzip'
 export const APPDATA_X_GZIP_CONTENT_TYPE = 'application/x-gzip'
@@ -33,16 +15,16 @@ export function fetchAppDataConfig() {
 
 // Exported data has no known final size up front (the doc is explicit that a
 // consumer must show indeterminate progress, not a percentage), so this
-// mirrors CollectionManage's downloadArchive(): prefer the service worker's
+// mirrors shared/api/archiveApi.js downloadArchive(): prefer the service worker's
 // direct-to-disk proxy (streams without buffering the whole export in JS
 // memory) and fall back to a buffered blob download when it's unavailable.
 export async function downloadAppData({ format = 'gzip', onStreamStart, signal } = {}) {
-  const url = `${apiBase()}/op/appdata?format=${encodeURIComponent(format)}&elevate=true`
+  const url = `${getBaseUrl()}/op/appdata?format=${encodeURIComponent(format)}&elevate=true`
   const init = {
     url,
     method: 'GET',
     headers: {
-      Authorization: `Bearer ${bearerToken()}`,
+      Authorization: `Bearer ${getAuthToken()}`,
     },
   }
 

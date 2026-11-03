@@ -1,4 +1,5 @@
 import activityHandler from './auth/ActivityHandler.js'
+import { resolveDocsUrl } from './shared/lib/docsUrl.js'
 
 // Same global console gate as the legacy client (client/src/js/init.js):
 // production deployments are silent unless STIGMAN_CLIENT_CONSOLE_MODE=development
@@ -12,7 +13,8 @@ if (!consoleEnabled) {
 
 console.log('import.meta.env:', import.meta.env)
 if (import.meta.env.DEV) {
-  STIGMAN.Env.apiBase = `${import.meta.env.VITE_API_ORIGIN}/api`
+  // vite proxies /api to VITE_API_ORIGIN, keeping API calls same-origin
+  STIGMAN.Env.apiBase = `${window.location.origin}/api`
 }
 else if (STIGMAN.Env.pathPrefix) {
   STIGMAN.Env.apiBase = `${window.location.origin}${STIGMAN.Env.pathPrefix}api`
@@ -21,6 +23,7 @@ else {
   STIGMAN.Env.apiBase = new URL(`../api`, window.location.href).toString() // change when nextgen client is served from root instead of /client-v2
 }
 STIGMAN.Env.apiUrl = STIGMAN.Env.apiBase
+STIGMAN.Env.docsUrl = resolveDocsUrl(STIGMAN.Env.apiUrl, STIGMAN.Env.docsDisabled)
 
 const statusEl = document.getElementById('loading-text')
 let OW // aka STIGMAN.oidcWorker, created in setupOidcWorker()

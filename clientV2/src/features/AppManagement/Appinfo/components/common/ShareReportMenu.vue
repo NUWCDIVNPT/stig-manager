@@ -82,7 +82,7 @@ defineExpose({ toggle })
 }
 
 .share-form-title {
-  font-size: 1.15rem;
+  font-size: var(--text-lg);
   font-weight: 700;
   color: var(--color-text-bright);
 }
@@ -92,7 +92,7 @@ defineExpose({ toggle })
   align-items: center;
   gap: 0.6rem;
   color: var(--color-text-primary);
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   cursor: pointer;
 }
 

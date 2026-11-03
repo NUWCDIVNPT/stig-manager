@@ -16,6 +16,8 @@ const props = defineProps({
     default: 'count',
     validator: value => ['count', 'label'].includes(value),
   },
+  // Center the badge in a block container (e.g. a centered table cell)
+  centered: Boolean,
 })
 
 const badgeClass = computed(() => {
@@ -23,6 +25,7 @@ const badgeClass = computed(() => {
   return {
     [`cat-${cat}`]: true,
     'cat-badge--label': props.variant === 'label',
+    'cat-badge--centered': props.centered,
   }
 })
 
@@ -46,9 +49,10 @@ const title = computed(() => `CAT ${props.category}`)
 <style scoped>
 .cat-badge {
   border-radius: 5px;
+  color: var(--color-text-dark);
   width: fit-content;
   min-width: 4.1rem;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -69,10 +73,14 @@ const title = computed(() => `CAT ${props.category}`)
   background-color: var(--color-cat3);
 }
 
+.cat-badge--centered {
+  margin-inline: auto;
+}
+
 .cat-badge--label {
   background-color: transparent;
   padding: 0 0.4rem;
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-weight: 700;
 }
 

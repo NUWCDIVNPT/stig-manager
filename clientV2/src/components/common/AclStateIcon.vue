@@ -51,7 +51,7 @@ const label = computed(() => {
   gap: 0.4rem;
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   font-weight: 600;
   color: var(--color-text-bright);
   background: var(--color-background-light);
@@ -61,7 +61,7 @@ const label = computed(() => {
 
 .acl-state-icon i,
 .acl-state-icon .svg-icon {
-  font-size: 1rem;
+  font-size: var(--text-md);
   width: 1rem;
   height: 1rem;
   object-fit: contain;

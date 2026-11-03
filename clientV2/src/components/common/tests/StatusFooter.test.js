@@ -1,8 +1,12 @@
 import { userEvent } from '@testing-library/user-event'
 import { screen } from '@testing-library/vue'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '../../../testUtils/utils'
 import StatusFooter from '../StatusFooter.vue'
+
+vi.mock('../../../shared/csv.js', () => ({ exportDataTableCsv: vi.fn() }))
+
+const { exportDataTableCsv } = await import('../../../shared/csv.js')
 
 describe('statusFooter.vue', () => {
   const defaultProps = {
@@ -65,7 +69,7 @@ describe('statusFooter.vue', () => {
     expect(screen.getByTitle('Settings')).toBeInTheDocument()
   })
 
-  it('emits action event when clicked', async () => {
+  it('emits refresh event when refresh is clicked', async () => {
     const { emitted, container } = renderWithProviders(StatusFooter, {
       props: {
         ...defaultProps,
@@ -78,8 +82,54 @@ describe('statusFooter.vue', () => {
     // Click the button containing the icon
     await user.click(refreshIcon)
 
+    expect(emitted().refresh).toBeTruthy()
+    expect(emitted().action).toBeFalsy()
+  })
+
+  it('exports through the dt instance when export is clicked and dt is provided', async () => {
+    const dt = { columns: [], processedData: [] }
+    const { emitted } = renderWithProviders(StatusFooter, {
+      props: {
+        ...defaultProps,
+        dt,
+      },
+    })
+    const user = userEvent.setup()
+
+    await user.click(screen.getByText('CSV'))
+
+    expect(exportDataTableCsv).toHaveBeenCalledWith(dt)
+    expect(emitted().action).toBeFalsy()
+  })
+
+  it('does not emit an action event for export when no dt is provided', async () => {
+    // Export always routes to exportDataTableCsv (which no-ops gracefully on a
+    // null dt) rather than emitting an unhandled 'action' event.
+    const { emitted } = renderWithProviders(StatusFooter, {
+      props: defaultProps,
+    })
+    const user = userEvent.setup()
+
+    await user.click(screen.getByText('CSV'))
+
+    expect(emitted().action).toBeFalsy()
+  })
+
+  it('emits action event for custom actions', async () => {
+    const { emitted } = renderWithProviders(StatusFooter, {
+      props: {
+        ...defaultProps,
+        showRefresh: false,
+        showExport: false,
+        actions: [{ key: 'custom1', icon: 'pi pi-user', label: 'User' }],
+      },
+    })
+    const user = userEvent.setup()
+
+    await user.click(screen.getByText('User'))
+
     expect(emitted().action).toBeTruthy()
-    expect(emitted().action[0]).toEqual(['refresh'])
+    expect(emitted().action[0]).toEqual(['custom1'])
   })
 
   it('renders custom metrics with styles and classes', () => {

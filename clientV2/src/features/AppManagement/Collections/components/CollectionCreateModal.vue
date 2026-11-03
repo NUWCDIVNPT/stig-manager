@@ -5,10 +5,17 @@ import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import { computed, ref, watch } from 'vue'
 import GrantsPickList from '../../../../components/common/grants/GrantsPickList.vue'
+import { isDuplicateEntryError } from '../../../../shared/api/apiErrors.js'
 import { fetchUserGroups, fetchUsers } from '../../../../shared/api/userApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
 import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
+import { inputTextPt, textareaPt } from '../../../../shared/lib/formPt.js'
+import {
+  COLLECTION_DESCRIPTION_MAX_LENGTH,
+  COLLECTION_NAME_MAX_LENGTH,
+  validateCollectionName,
+} from '../../../CollectionManage/components/Configuration/collectionValidation.js'
 import { granteeToGrantPayload, normalizeAvailableGrantees } from '../../../CollectionManage/lib/grantsUsers.js'
 import { createCollection } from '../api/collectionsAdminApi.js'
 
@@ -28,6 +35,7 @@ const localVisible = computed({
 const form = ref({ name: '', description: '' })
 const saving = ref(false)
 const touched = ref(false)
+const duplicateName = ref(null)
 
 const pendingGrantees = ref([])
 
@@ -49,18 +57,25 @@ watch(() => props.visible, (open) => {
     form.value = { name: '', description: '' }
     pendingGrantees.value = []
     touched.value = false
+    duplicateName.value = null
     loadGrantees()
   }
 })
 
 const nameError = computed(() => {
-  if (!touched.value) {
+  const name = form.value.name.trim()
+  // Case-insensitive to match the collation of the unique index on name
+  if (name.toLowerCase() === duplicateName.value) {
+    return 'A Collection with this name already exists'
+  }
+  // Do not flag the empty field until the user has interacted with it
+  if (!touched.value && !name) {
     return null
   }
-  return form.value.name.trim() ? null : 'Name is required'
+  return validateCollectionName(name)
 })
 
-const isValid = computed(() => !!form.value.name.trim())
+const isValid = computed(() => !!form.value.name.trim() && !nameError.value)
 
 function close() {
   emit('update:visible', false)
@@ -72,12 +87,13 @@ async function onSave() {
     return
   }
   saving.value = true
+  const name = form.value.name.trim()
   try {
     // `grants` is required by the CollectionCreateOrReplace schema. Elevated
     // requests may not set settings, labels, or metadata, so we omit them.
     const body = {
-      name: form.value.name.trim(),
-      description: form.value.description?.trim() || undefined,
+      name,
+      description: form.value.description.trim() || undefined,
       grants: pendingGrantees.value.map(granteeToGrantPayload),
     }
     const created = await createCollection(body)
@@ -85,7 +101,12 @@ async function onSave() {
     close()
   }
   catch (err) {
-    triggerError(err)
+    if (isDuplicateEntryError(err)) {
+      duplicateName.value = name.toLowerCase()
+    }
+    else {
+      triggerError(err)
+    }
   }
   finally {
     saving.value = false
@@ -99,14 +120,6 @@ const dialogPt = {
   footer: { style: 'flex-shrink: 0; padding: 0; border: none;' },
   closeButton: { style: 'color: var(--color-text-dim);' },
 }
-
-const inputTextPt = {
-  root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: 1rem; padding: 0.6rem 0.8rem; width: 100%;' },
-}
-
-const textareaPt = {
-  root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: 1rem; padding: 0.6rem 0.8rem; width: 100%; resize: none;' },
-}
 </script>
 
 <template>
@@ -119,9 +132,7 @@ const textareaPt = {
   >
     <template #header>
       <div class="modal-header">
-        <div class="modal-header-icon">
-          <i class="pi pi-folder" />
-        </div>
+        <span class="icon-collection-new icon-collection-new--lg" />
         <div class="modal-header-title">
           Create Collection
         </div>
@@ -138,7 +149,7 @@ const textareaPt = {
           v-model="form.name"
           :invalid="!!nameError"
           :pt="inputTextPt"
-          maxlength="255"
+          :maxlength="COLLECTION_NAME_MAX_LENGTH"
           placeholder="Collection name"
           autocomplete="off"
           @blur="touched = true"
@@ -158,7 +169,7 @@ const textareaPt = {
           v-model="form.description"
           :pt="textareaPt"
           rows="3"
-          maxlength="255"
+          :maxlength="COLLECTION_DESCRIPTION_MAX_LENGTH"
           auto-resize
           placeholder="Optional description"
         />
@@ -207,21 +218,8 @@ const textareaPt = {
   padding: 1rem 1.1rem;
 }
 
-.modal-header-icon {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--color-action-blue-dark) 20%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-action-blue-dark) 40%, transparent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-action-blue-dark);
-  flex-shrink: 0;
-}
-
 .modal-header-title {
-  font-size: 1.05rem;
+  font-size: var(--text-xl);
   font-weight: 700;
   color: var(--color-text-bright);
 }
@@ -248,7 +246,7 @@ const textareaPt = {
 }
 
 .flabel {
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   font-weight: 600;
   color: var(--color-text-primary);
 }
@@ -258,7 +256,7 @@ const textareaPt = {
 }
 
 .field-error {
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   line-height: 1.2;
   min-height: 1.2em;
   color: var(--color-text-error);
@@ -277,7 +275,7 @@ const textareaPt = {
   justify-content: center;
   gap: 0.5rem;
   flex: 1;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   color: var(--color-text-dim);
 }
 

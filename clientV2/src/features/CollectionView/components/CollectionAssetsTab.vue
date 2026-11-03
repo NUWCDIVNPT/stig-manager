@@ -1,26 +1,31 @@
 <script setup>
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MetricsSummaryGrid from '../../../components/common/MetricsSummaryGrid.vue'
+import { fetchCollectionAssetSummary } from '../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { buildLabelFilterParams } from '../../../shared/lib/labelFilters.js'
 import { fetchCollectionAssetStigs } from '../api/collectionApi.js'
-import { fetchCollectionAssetSummary } from '../../../shared/api/collectionsApi.js'
 
 const props = defineProps({
   collectionId: {
     type: [String, Number],
     required: true,
   },
-  selectedLabelIds: {
+  selectedLabelNames: {
     type: Array,
     default: () => [],
   },
   refreshKey: {
     type: Number,
     default: 0,
+  },
+  // Gated by CollectionView.collectionReady
+  ready: {
+    type: Boolean,
+    default: true,
   },
 })
 
@@ -30,24 +35,28 @@ const router = useRouter()
 const fetchAssets = () => {
   return fetchCollectionAssetSummary(
     props.collectionId,
-    buildLabelFilterParams(props.selectedLabelIds),
+    buildLabelFilterParams(props.selectedLabelNames),
   )
 }
 
-const { state: assets, isLoading: assetsLoading, error: assetsError, execute: loadAssets } = useAsyncState(
+const { state: assets, isLoading: assetsLoading, execute: loadAssets } = useAsyncState(
   fetchAssets,
   { initialState: [], immediate: false },
 )
 
 const selectedAssetId = ref(null)
+const selectedAssetName = computed(() => assets.value?.find(a => a.assetId === selectedAssetId.value)?.name ?? '')
 
-const { state: selectedAssetStigs, isLoading: selectedAssetStigsLoading, error: selectedAssetStigsError, execute: loadSelectedAssetStigs } = useAsyncState(
+const { state: selectedAssetStigs, isLoading: selectedAssetStigsLoading, execute: loadSelectedAssetStigs } = useAsyncState(
   () => fetchCollectionAssetStigs(props.collectionId, selectedAssetId.value),
   { initialState: [], immediate: false },
 )
 
 // Initial Load
-watch([() => props.collectionId, () => props.selectedLabelIds, () => props.refreshKey], () => {
+watch([() => props.ready, () => props.collectionId, () => props.selectedLabelNames, () => props.refreshKey], () => {
+  if (!props.ready) {
+    return
+  }
   loadAssets()
   selectedAssetId.value = null
 }, { immediate: true, deep: true })
@@ -103,7 +112,6 @@ function handleShieldClick(rowData) {
               :api-metrics-summary="assets"
               agg-type="asset"
               :is-loading="assetsLoading"
-              :error-message="assetsError?.message || assetsError"
               :selected-key="selectedAssetId"
               selectable
               data-key="assetId"
@@ -116,16 +124,10 @@ function handleShieldClick(rowData) {
 
       <SplitterPanel :size="50" :min-size="15">
         <div class="panel-content">
-          <div class="panel-header">
-            <h3>Checklists</h3>
-            <span v-if="selectedAssetId" class="badge">Asset {{ selectedAssetId }}</span>
-          </div>
           <div class="grid-container">
-            <div v-if="selectedAssetStigsError" class="error-state">
-              {{ selectedAssetStigsError?.message || selectedAssetStigsError }}
-            </div>
             <MetricsSummaryGrid
-              v-else
+              title="Checklists"
+              :badge="selectedAssetName"
               :api-metrics-summary="selectedAssetStigs"
               agg-type="unagg"
               :is-loading="selectedAssetStigsLoading"

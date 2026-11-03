@@ -31,7 +31,7 @@ const chipClass = computed(() => {
   align-items: center;
   padding: 0.05rem 0.6rem;
   border-radius: 3px;
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   border: 1px solid var(--color-chip-default-border);
   background-color: var(--color-chip-default-bg);

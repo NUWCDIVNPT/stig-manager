@@ -350,6 +350,18 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
                 expanded: false,
               }
             )
+            content.push(
+              {
+                id: 'client-v2-preview',
+                text: 'Try the new UI <span class="sm-navtree-sprite">preview</span>',
+                iconCls: 'sm-preview-icon',
+                qtip: 'Open a preview of the next STIG Manager interface in a new tab',
+                // Relative href keeps the link correct behind a path prefix
+                href: 'client-v2/',
+                hrefTarget: '_blank',
+                leaf: true
+              }
+            )
             cb(content, { status: true })
             return
           } else if (node === 'library-root') {

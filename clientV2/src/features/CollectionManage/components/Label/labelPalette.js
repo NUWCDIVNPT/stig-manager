@@ -1,3 +1,5 @@
+import { LABEL_NAME_MAX_LENGTH } from '../../../../shared/lib/labelFilters.js'
+
 export const LABEL_COLOR_PALETTE = [
   '4568F2',
   '7000FF',
@@ -20,8 +22,8 @@ export function validateLabelName(name, labels, currentLabelId = null) {
   if (!value) {
     return 'Blank values not allowed'
   }
-  if (value.length > 16) {
-    return 'Label names must be 16 characters or less'
+  if (value.length > LABEL_NAME_MAX_LENGTH) {
+    return `Label names must be ${LABEL_NAME_MAX_LENGTH} characters or less`
   }
 
   const duplicate = labels.find(label =>

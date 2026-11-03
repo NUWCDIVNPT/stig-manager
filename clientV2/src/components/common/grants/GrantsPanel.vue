@@ -13,8 +13,11 @@ import { fetchUserGroups, fetchUsers } from '../../../shared/api/userApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
+import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 import { compactTablePt } from '../../../shared/lib/dataTablePt.js'
+import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 import DeleteModal from '../DeleteModal.vue'
+import GridFilterButton from '../GridFilterButton.vue'
 import StatusFooter from '../StatusFooter.vue'
 import EditGrantModal from './EditGrantModal.vue'
 import GrantsPickList from './GrantsPickList.vue'
@@ -37,6 +40,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['updated', 'open-acl'])
+
+const ROW_HEIGHT = rowHeightPx('twoLine')
 
 const { triggerError } = useGlobalError()
 const { user: currentUser, getCollectionRoleId, refreshUser } = useCurrentUser()
@@ -65,15 +70,6 @@ const { state: grants, isLoading: grantsLoading, execute: loadGrants } = useAsyn
 watch(() => props.collectionId, id => id && loadGrants(), { immediate: true })
 
 const grantsDt = ref()
-
-const onFooterAction = (key) => {
-  if (key === 'refresh') {
-    loadGrants()
-  }
-  else if (key === 'export') {
-    grantsDt.value.exportCSV()
-  }
-}
 
 async function fetchSystemGrantees() {
   const [users, groups] = await Promise.all([
@@ -210,14 +206,22 @@ const userGroupSortValue = data =>
   data.user
     ? (data.user.displayName || data.user.username || '')
     : (data.userGroup?.name || '')
+const { filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions } = useGridSearch(() => grants.value ?? [], [
+  { field: 'roleId', header: 'Role', filterValues: r => getRoleLabel(r.roleId) },
+  { field: 'grantee', header: 'User or Group', searchText: r => r.user ? `${r.user.displayName ?? ''} ${r.user.username ?? ''}` : `${r.userGroup?.name ?? ''} ${r.userGroup?.description ?? ''}` },
+  { field: 'granteeType', header: 'Grantee type', filterValues: r => (r.user ? 'User' : 'Group') },
+])
+
+const exportRole = ({ data }) => getRoleLabel(data)
+const exportUserGroup = ({ record }) => userGroupSortValue(record)
 // Compact, flush-footer table styling via PassThrough (no scoped ::v-deep).
 // Shared base, with a slightly larger header than the compact default.
-const baseTablePt = compactTablePt({ bodyFontSize: '1.05rem' })
+const baseTablePt = compactTablePt()
 const tablePt = {
   ...baseTablePt,
   column: {
     ...baseTablePt.column,
-    headerCell: { style: 'font-size: 1.1rem; font-weight: 600;' },
+    headerCell: { style: 'font-size: var(--text-lg); font-weight: 600;' },
   },
 }
 </script>
@@ -237,23 +241,27 @@ const tablePt = {
             <i class="pi pi-plus-circle icon-green" /> Add Grants...
           </button>
         </template>
+        <template #end>
+          <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
+        </template>
       </Toolbar>
       <DataTable
         ref="grantsDt"
-        :value="grants"
+        :value="filteredRows"
         :loading="grantsLoading"
         sort-field="roleId"
         :sort-order="-1"
+        export-filename="CollectionGrants"
         size="medium"
         scrollable
         scroll-height="flex"
-        :virtual-scroller-options="{ itemSize: 49, delay: 0 }"
+        :virtual-scroller-options="{ itemSize: ROW_HEIGHT, delay: 0 }"
         :pt="tablePt"
       >
         <template #empty>
-          No grants.
+          {{ isFiltered && grants?.length ? 'No grants match the filters.' : 'No grants.' }}
         </template>
-        <Column field="roleId" sortable>
+        <Column field="roleId" export-header="Role" :export-value="exportRole" sortable>
           <template #header>
             <div class="role-header-container">
               Role
@@ -264,7 +272,7 @@ const tablePt = {
             {{ getRoleLabel(data.roleId) }}
           </template>
         </Column>
-        <Column header="User or Group" sortable :sort-field="userGroupSortValue">
+        <Column header="User or Group" :export-value="exportUserGroup" sortable :sort-field="userGroupSortValue">
           <template #body="{ data }">
             <div v-if="data.user" class="user-group-cell">
               <i class="pi pi-user" />
@@ -282,7 +290,7 @@ const tablePt = {
             </div>
           </template>
         </Column>
-        <Column style="text-align: right">
+        <Column :exportable="false" style="text-align: right">
           <template #body="{ data }">
             <div class="row-actions">
               <Button
@@ -321,11 +329,13 @@ const tablePt = {
         </Column>
         <template #footer>
           <StatusFooter
+            :dt="grantsDt"
             :refresh-loading="grantsLoading"
             :total-count="grants ? grants.length : 0"
+            :filtered-count="isFiltered ? filteredRows.length : null"
             total-label="grants"
             :total-icon-src="lockSvg"
-            @action="onFooterAction"
+            @refresh="loadGrants"
           />
         </template>
       </DataTable>
@@ -384,7 +394,7 @@ const tablePt = {
 }
 
 .section-title {
-  font-size: 0.99rem;
+  font-size: var(--text-md);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -402,6 +412,7 @@ const tablePt = {
 }
 
 .grants-toolbar {
+  --checklist-control-height: 2rem;
   padding: 0.5rem;
   border-bottom: 1px solid var(--color-border-default);
   background: transparent;
@@ -418,7 +429,7 @@ const tablePt = {
   background: transparent;
   border: none;
   color: var(--color-text-default);
-  font-size: 0.98rem;
+  font-size: var(--text-md);
   font-weight: 500;
   cursor: pointer;
   padding: 0.45rem 0.7rem;
@@ -453,12 +464,12 @@ const tablePt = {
 
 .primary-text {
   font-weight: 600;
-  font-size: 1.05rem;
+  font-size: var(--text-md);
 }
 
 .secondary-text {
   color: var(--color-text-dim);
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 
 .row-actions {

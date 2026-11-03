@@ -15,11 +15,14 @@ import IndividualFindingsGrid from './IndividualFindingsGrid.vue'
 
 const props = defineProps({
   collectionId: { type: [String, Number], required: true },
-  selectedLabelIds: { type: Array, default: () => [] },
+  selectedLabelNames: { type: Array, default: () => [] },
+  // Gated by CollectionView.collectionReady
+  ready: { type: Boolean, default: true },
 })
 
-const collectionId = toRef(props, 'collectionId')
-const labelIds = toRef(props, 'selectedLabelIds')
+// Null until ready: every fetch composable below skips a null collection id
+const collectionId = computed(() => (props.ready ? props.collectionId : null))
+const labelNames = toRef(props, 'selectedLabelNames')
 
 const route = useRoute()
 const router = useRouter()
@@ -84,27 +87,24 @@ watch([selectedBenchmarkId, aggregator, selectedFinding], ([stig, agg, sel]) => 
 })
 
 // Per-STIG metrics + collection totals. Drives both the popover STIG list and
-// the "Overall" CAT 1/2/3 totals in the AggregatedFindingsGrid header. The
-// metrics endpoint accepts label filters server-side, so this view is the only
-// one that currently honors `labelIds` (see useFindings/useFindingReviews).
+// the "Overall" CAT 1/2/3 totals in the AggregatedFindingsGrid header. Like
+// useFindings/useFindingReviews below, honors `labelNames` server-side.
 const {
   stigs,
   totals,
   isLoading: isStigsLoading,
   error: stigsError,
   retry: retryStigs,
-} = useCollectionStigSummary({ collectionId, labelIds })
+} = useCollectionStigSummary({ collectionId, labelNames })
 
 // Middle pane: aggregated findings, optionally scoped to one STIG.
-// TODO(label-filter): /collections/{id}/findings does not accept label params
-// server-side — see docs/todos/pending-api-enhancements.md #1.
 const {
   findings,
   isLoading: isFindingsLoading,
   error: findingsError,
   retry: retryFindings,
   totalOccurrences,
-} = useFindings({ collectionId, aggregator, benchmarkId: selectedBenchmarkId })
+} = useFindings({ collectionId, aggregator, benchmarkId: selectedBenchmarkId, labelNames })
 
 // Restore the ?sel= selection once the first findings load completes. One-shot:
 // pending is consumed on the first load regardless of outcome, so subsequent
@@ -126,15 +126,13 @@ const visibleColumns = useFindingsColumns(aggregator, isAllStigsMode)
 
 // Right pane: per-asset failed reviews backing the currently selected
 // aggregated row. selectedFinding === null → returns [] without fetching.
-// TODO(label-filter): same caveat as useFindings — see
-// docs/todos/pending-api-enhancements.md #2.
 const {
   reviews,
   isLoading: isReviewsLoading,
   error: reviewsError,
   retry: retryReviews,
   statusCounts,
-} = useFindingReviews({ collectionId, selectedFinding, aggregator })
+} = useFindingReviews({ collectionId, selectedFinding, aggregator, labelNames })
 
 // Labels for decorating review rows. The reviews payload includes assetLabelIds
 // only; this endpoint supplies the full {name, color} objects LabelsRow needs.
@@ -182,7 +180,7 @@ function onSelectFinding(row) {
     >
       <SplitterPanel :size="40" :min-size="30" class="findings__panel">
         <AggregatedFindingsGrid
-          :collection-id="collectionId"
+          :collection-id="props.collectionId"
           :rows="findings ?? []"
           :visible-columns="visibleColumns"
           :is-loading="isFindingsLoading"
@@ -211,7 +209,7 @@ function onSelectFinding(row) {
           :selected-aggregated="selectedFinding"
           :status-counts="statusCounts"
           :label-map="labelMap"
-          :collection-id="collectionId"
+          :collection-id="props.collectionId"
           :selected-benchmark-id="selectedBenchmarkId"
           @retry="retryReviews"
         />

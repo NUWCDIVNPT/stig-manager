@@ -43,12 +43,6 @@ watch(() => props.visible, (open) => {
   }
 })
 
-function handleFooterAction(action) {
-  if (action === 'refresh') {
-    loadOutput()
-  }
-}
-
 const dialogPt = {
   root: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 8px; color: var(--color-text-primary); display: flex; flex-direction: column; overflow: hidden;' },
   header: { style: 'background: var(--color-background-dark); padding: 0; border-bottom: 1px solid var(--color-border-default); flex-shrink: 0;' },
@@ -100,19 +94,19 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
         class="flex-fill"
         :pt="tablePt"
       >
-        <Column field="seq" header="Seq" sortable :pt="borderPt" style="width: 56px;" />
-        <Column field="ts" header="Timestamp" sortable :pt="borderPt" style="width: 170px;">
+        <Column field="seq" header="Seq" sortable :pt="borderPt" style="width: 5rem;" />
+        <Column field="ts" header="Timestamp" sortable :pt="borderPt" style="width: 15.5rem;">
           <template #body="{ data }">
             {{ formatDateTimeString(data.ts) }}
           </template>
         </Column>
-        <Column field="task" header="Task" sortable :pt="borderPt" style="width: 140px;" />
-        <Column field="type" header="Type" sortable :pt="borderPt" style="width: 90px;">
+        <Column field="task" header="Task" sortable :pt="borderPt" style="width: 12.75rem;" />
+        <Column field="type" header="Type" sortable :pt="borderPt" style="width: 8.25rem;">
           <template #body="{ data }">
             {{ data.type }}
           </template>
         </Column>
-        <Column field="message" header="Message" :pt="borderPt" style="min-width: 320px;">
+        <Column field="message" header="Message" :pt="borderPt" style="min-width: 29rem;">
           <template #body="{ data }">
             <span class="message-cell" :title="data.message">{{ data.message }}</span>
           </template>
@@ -128,7 +122,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
             :total-count="output.length"
             :show-export="false"
             total-label="entries"
-            @action="handleFooterAction"
+            @refresh="loadOutput"
           />
         </template>
       </DataTable>
@@ -164,7 +158,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 }
 
 .modal-header-title {
-  font-size: 1.05rem;
+  font-size: var(--text-xl);
   font-weight: 700;
   color: var(--color-text-bright);
   line-height: 1.25;

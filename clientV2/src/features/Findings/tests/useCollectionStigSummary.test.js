@@ -1,3 +1,4 @@
+import { flushPromises } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
 import { buildLabelFilterParams } from '../../../shared/lib/labelFilters.js'
@@ -10,8 +11,6 @@ vi.mock('../api/findingsApi.js', () => ({
 
 const { fetchCollectionStigSummary } = await import('../api/findingsApi.js')
 
-const flushPromises = () => new Promise(resolve => setTimeout(resolve, 0))
-
 function stig(benchmarkId, { high = 0, medium = 0, low = 0 } = {}) {
   return { benchmarkId, title: `${benchmarkId} title`, metrics: { findings: { high, medium, low } } }
 }
@@ -20,10 +19,10 @@ describe('useCollectionStigSummary', () => {
   it('fetches with the collection id and label filter params', async () => {
     fetchCollectionStigSummary.mockClear()
     fetchCollectionStigSummary.mockResolvedValue([])
-    const labelIds = ['abc-123']
-    useCollectionStigSummary({ collectionId: ref('17'), labelIds: ref(labelIds) })
+    const labelNames = ['abc-123']
+    useCollectionStigSummary({ collectionId: ref('17'), labelNames: ref(labelNames) })
     await flushPromises()
-    expect(fetchCollectionStigSummary).toHaveBeenCalledWith('17', buildLabelFilterParams(labelIds))
+    expect(fetchCollectionStigSummary).toHaveBeenCalledWith('17', buildLabelFilterParams(labelNames), { signal: expect.any(AbortSignal) })
   })
 
   it('filters out STIGs with no open findings', async () => {
@@ -32,7 +31,7 @@ describe('useCollectionStigSummary', () => {
       stig('CLEAN_STIG'),
       stig('B_STIG', { low: 1 }),
     ])
-    const { stigs } = useCollectionStigSummary({ collectionId: ref('17'), labelIds: ref([]) })
+    const { stigs } = useCollectionStigSummary({ collectionId: ref('17'), labelNames: ref([]) })
     await flushPromises()
     expect(stigs.value.map(s => s.benchmarkId)).toEqual(['A_STIG', 'B_STIG'])
   })
@@ -42,7 +41,7 @@ describe('useCollectionStigSummary', () => {
       stig('A_STIG', { high: 2, medium: 3, low: 1 }),
       stig('B_STIG', { medium: 4 }),
     ])
-    const { totals } = useCollectionStigSummary({ collectionId: ref('17'), labelIds: ref([]) })
+    const { totals } = useCollectionStigSummary({ collectionId: ref('17'), labelNames: ref([]) })
     await flushPromises()
     expect(totals.value).toEqual({
       cat1: 2,
@@ -56,11 +55,11 @@ describe('useCollectionStigSummary', () => {
   it('refetches when the label filter changes', async () => {
     fetchCollectionStigSummary.mockClear()
     fetchCollectionStigSummary.mockResolvedValue([])
-    const labelIds = ref([])
-    useCollectionStigSummary({ collectionId: ref('17'), labelIds })
+    const labelNames = ref([])
+    useCollectionStigSummary({ collectionId: ref('17'), labelNames })
     await flushPromises()
     expect(fetchCollectionStigSummary).toHaveBeenCalledTimes(1)
-    labelIds.value = ['abc-123']
+    labelNames.value = ['abc-123']
     await flushPromises()
     expect(fetchCollectionStigSummary).toHaveBeenCalledTimes(2)
   })

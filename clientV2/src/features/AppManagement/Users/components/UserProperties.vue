@@ -217,7 +217,7 @@ function onGroupsModelUpdate(tuple) {
   background: color-mix(in srgb, var(--color-action-red) 8%, transparent);
   border: 1px solid color-mix(in srgb, var(--color-action-red) 25%, transparent);
   border-radius: 6px;
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   color: var(--color-text-primary);
 }
 

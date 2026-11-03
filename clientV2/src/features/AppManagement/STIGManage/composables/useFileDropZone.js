@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { fileExtension, formatExtensionList } from '../../../../shared/lib.js'
 
 // Recursively collects File objects from a dropped file/directory entry
 async function collectFilesFromEntry(entry, out) {
@@ -17,11 +18,6 @@ async function collectFilesFromEntry(entry, out) {
   }
 }
 
-function formatExtensionList(extensions) {
-  const list = extensions.map(ext => `.${ext}`)
-  return list.length <= 1 ? (list[0] ?? '') : `${list.slice(0, -1).join(', ')} and ${list.at(-1)}`
-}
-
 /**
  * A drop zone that accepts files and folders (dropped folders are scanned
  * recursively for matching files) plus a plain <input type="file"> fallback,
@@ -38,8 +34,7 @@ export function useFileDropZone(acceptedExtensions) {
   function addFiles(fileList) {
     let rejected = 0
     for (const file of fileList) {
-      const ext = file.name.split('.').pop().toLowerCase()
-      if (!accepted.has(ext)) {
+      if (!accepted.has(fileExtension(file.name))) {
         rejected++
         continue
       }

@@ -39,7 +39,7 @@ const highlightClass = computed(() => `rule-id-diff__hash--${props.side}`)
 
 <style scoped>
 .rule-id-diff {
-  font-family: monospace;
+  font-family: var(--font-mono);
   word-break: break-all;
 }
 

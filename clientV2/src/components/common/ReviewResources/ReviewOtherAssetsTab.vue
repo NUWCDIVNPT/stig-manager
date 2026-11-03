@@ -1,32 +1,28 @@
 <script setup>
-import { FilterMatchMode, FilterService } from '@primevue/core/api'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, inject, ref, toRefs, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import engineIcon from '../../../assets/bot2.svg'
-
-import overrideIcon from '../../../assets/override2.svg'
-import manualIcon from '../../../assets/user.svg'
 import { fetchOtherReviews } from '../../../shared/api/reviewsApi.js'
 
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 import { durationToNow } from '../../../shared/lib.js'
 import { getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
-import { normalizeColor } from '../../../shared/lib/colorUtils.js'
+import { gridColumnPt } from '../../../shared/lib/dataTablePt.js'
+import { capitalize } from '../../../shared/lib/exportCells.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
+import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import LabelsRow from '../../columns/LabelsRow.vue'
-import ColumnFilter from '../ColumnFilter.vue'
-import ColumnSearchFilter from '../ColumnSearchFilter.vue'
 import EngineBadge from '../EngineBadge.vue'
-
+import GridFilterButton from '../GridFilterButton.vue'
 import LongTextPopover from '../LongTextPopover.vue'
 import ManualBadge from '../ManualBadge.vue'
 import OverrideBadge from '../OverrideBadge.vue'
 import ResultBadge from '../ResultBadge.vue'
 import StatusBadge from '../StatusBadge.vue'
 import StatusFooter from '../StatusFooter.vue'
+import { reviewResourcesTablePt } from './tablePt.js'
 
 const props = defineProps({
   active: {
@@ -68,41 +64,21 @@ const {
 } = reviewEditForm
 const editable = computed(() => accessMode.value === 'rw' && (!currentReview.value?.status?.label || currentReview.value.status.label === 'saved' || currentReview.value.status.label === 'rejected'))
 
-FilterService.register('labelContainsAny', (value, filter) => {
-  if (!filter || filter.length === 0) {
-    return true
-  }
-  if (!value || value.length === 0) {
-    return false
-  }
-  return value.some(label => filter.includes(label.name))
-})
+// Single-line rows at a fixed height, so cells centre vertically.
+const cellOptions = { verticalAlign: 'middle' }
+const columnPt = {
+  center: gridColumnPt('center', cellOptions),
+  left: gridColumnPt('left', cellOptions),
+}
 
-const ROW_HEIGHT = 36
+const ROW_HEIGHT = rowHeightPx('standard')
 
 const dataTableRef = ref(null)
-
-function onFooterAction(key) {
-  if (key === 'export') {
-    dataTableRef.value?.exportCSV()
-  }
-}
 
 const longTextPopover = ref(null)
 const showLongText = (event, label, text) => {
   longTextPopover.value?.show(event, label, text)
 }
-
-const filters = ref({
-  global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  assetName: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  detail: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  comment: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  username: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  result: { value: null, matchMode: FilterMatchMode.IN },
-  _engineDisplay: { value: null, matchMode: FilterMatchMode.IN },
-  assetLabels: { value: null, matchMode: 'labelContainsAny' },
-})
 
 const isAlreadyApplied = (data) => {
   return data.result === formResult.value
@@ -132,43 +108,20 @@ const filteredOtherReviews = computed(() => {
   return otherReviews.value.filter(review => review.assetId !== assetId.value)
 })
 
-const processedOtherReviews = computed(() => {
-  return filteredOtherReviews.value.map(item => ({
-    ...item,
-    _engineDisplay: getEngineDisplay(item),
-  }))
-})
+const tabBarEnd = inject('reviewTabBarEnd', null)
 
-const resultOptions = computed(() => {
-  const results = new Set(filteredOtherReviews.value.map(item => item.result).filter(Boolean))
-  return Array.from(results).map(val => ({
-    value: val,
-    label: getResultDisplay(val),
-  })).sort((a, b) => a.label.localeCompare(b.label))
-})
+const { filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, clear: clearFilters } = useGridSearch(filteredOtherReviews, [
+  { field: 'assetName', header: 'Asset' },
+  { field: 'assetLabels', header: 'Labels', filterValues: r => r.assetLabels, multiple: true },
+  { field: 'result', header: 'Result', filterValues: r => getResultDisplay(r.result) ?? '' },
+  { field: 'engine', header: 'Engine', filterValues: r => capitalize(getEngineDisplay(r)) },
+  { field: 'detail', header: 'Detail' },
+  { field: 'comment', header: 'Comment' },
+  { field: 'status', header: 'Status', filterValues: r => capitalize(r.status?.label ?? '') },
+  { field: 'username', header: 'User', filterValues: r => r.username },
+])
 
-const engineOptions = computed(() => {
-  const engines = new Set(filteredOtherReviews.value.map(item => getEngineDisplay(item)).filter(Boolean))
-  return Array.from(engines).map(val => ({
-    value: val,
-    label: val === 'engine' ? 'Engine' : val === 'override' ? 'Override' : 'Manual',
-    image: val === 'engine' ? engineIcon : val === 'override' ? overrideIcon : manualIcon,
-  }))
-})
-
-const labelOptions = computed(() => {
-  const seen = new Map()
-  for (const item of filteredOtherReviews.value) {
-    for (const label of (item.assetLabels || [])) {
-      if (!seen.has(label.name)) {
-        seen.set(label.name, label)
-      }
-    }
-  }
-  return Array.from(seen.values())
-    .map(label => ({ value: label.name, label: label.name, color: label.color }))
-    .sort((a, b) => a.label.localeCompare(b.label))
-})
+watch([() => ruleId.value, () => collectionId.value], clearFilters)
 
 const otherAssetsStats = computed(() => {
   const reviews = filteredOtherReviews.value || []
@@ -227,85 +180,27 @@ watch([() => ruleId.value, () => collectionId.value], () => {
     loadOtherReviews()
   }
 }, { immediate: true })
-
-const route = useRoute()
-
-const resetFilters = () => {
-  filters.value.global.value = null
-  filters.value.assetName.value = null
-  filters.value.detail.value = null
-  filters.value.comment.value = null
-  filters.value.username.value = null
-  filters.value.result.value = null
-  filters.value._engineDisplay.value = null
-  filters.value.assetLabels.value = null
-}
-
-watch([
-  () => route.params.collectionId,
-  () => route.params.assetId,
-  () => route.params.benchmarkId,
-  () => route.params.revisionStr,
-], () => {
-  resetFilters()
-})
-
-const otherTablePt = {
-  root: { class: 'sm-scrollbar-thin', style: { backgroundColor: 'var(--color-background-dark)' } },
-  header: { style: { background: 'transparent', border: 'none', padding: '0' } },
-  table: { style: { borderCollapse: 'separate', borderSpacing: '0', background: 'var(--color-background-darkest)' } },
-  thead: {
-    style: {
-      background: 'var(--color-background-dark)',
-      position: 'sticky',
-      top: '0',
-      zIndex: '1',
-    },
-  },
-  headerCell: {
-    style: {
-      background: 'var(--color-background-dark)',
-      borderBottom: '1px solid var(--color-border-default)',
-      color: 'var(--color-text-dim)',
-      fontWeight: '700',
-      fontSize: '0.9rem',
-      textTransform: 'uppercase',
-      letterSpacing: '0.04em',
-      padding: '0.3rem 0.4rem',
-    },
-  },
-  bodyRow: {
-    style: {
-      background: 'var(--color-background-dark)',
-      transition: 'background-color 0.1s ease',
-    },
-  },
-  footer: { style: { padding: '0', border: 'none', background: 'transparent' } },
-}
 </script>
 
 <template>
   <div class="other-assets-wrapper">
+    <Teleport v-if="tabBarEnd" :to="tabBarEnd">
+      <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
+    </Teleport>
     <DataTable
       ref="dataTableRef"
-      v-model:filters="filters"
-      :value="processedOtherReviews"
+      :value="filteredRows"
       :loading="isLoading"
       data-key="assetId"
+      export-filename="Other-Reviews"
       scrollable
       scroll-height="flex"
       :virtual-scroller-options="{ itemSize: ROW_HEIGHT, showLoader: true }"
       striped-rows
       class="other-assets-table"
-      :pt="otherTablePt"
+      :pt="reviewResourcesTablePt"
     >
-      <Column field="assetName" sortable :style="{ width: '100px' }">
-        <template #header>
-          <div class="column-header-with-filter">
-            Asset
-            <ColumnSearchFilter v-model="filters.assetName.value" placeholder="Search asset..." />
-          </div>
-        </template>
+      <Column field="assetName" header="Asset" sortable :style="{ width: '9rem' }" :pt="columnPt.left">
         <template #body="{ data }">
           <span
             class="cell-text--ellipsis"
@@ -315,52 +210,26 @@ const otherTablePt = {
         </template>
       </Column>
 
-      <Column field="assetLabels" filter-field="assetLabels" :style="{ width: '100px' }">
-        <template #header>
-          <div class="column-header-with-filter">
-            Labels
-            <ColumnFilter v-model="filters.assetLabels.value" :options="labelOptions">
-              <template #option="{ option }">
-                <span
-                  class="label-filter-chip"
-                  :style="{ backgroundColor: normalizeColor(option.color, '#cccccc') }"
-                >{{ option.label }}</span>
-              </template>
-            </ColumnFilter>
-          </div>
-        </template>
+      <Column field="assetLabels" header="Labels" :style="{ width: '9rem' }" :pt="columnPt.left">
         <template #body="{ data }">
           <LabelsRow :labels="data.assetLabels" compact />
         </template>
       </Column>
 
-      <Column field="result" :style="{ width: '65px', textAlign: 'center' }">
-        <template #header>
-          <div class="column-header-with-filter">
-            Result
-            <ColumnFilter v-model="filters.result.value" :options="resultOptions">
-              <template #option="{ option }">
-                <ResultBadge :status="option.label" />
-              </template>
-            </ColumnFilter>
-          </div>
-        </template>
+      <Column field="result" header="Result" :style="{ width: '6rem' }" :pt="columnPt.center">
         <template #body="{ data }">
           <ResultBadge v-if="getResultDisplay(data.result)" :status="getResultDisplay(data.result)" />
         </template>
       </Column>
 
-      <Column field="resultEngine" filter-field="_engineDisplay" :style="{ width: '50px', textAlign: 'center' }">
+      <Column field="resultEngine" export-header="Engine" :style="{ width: '4.5rem' }" :pt="columnPt.center">
         <template #header>
-          <div class="column-header-with-filter">
-            <img
-              src="../../../assets/bot2.svg"
-              alt="Engine"
-              class="engine-header-icon"
-              title="Result engine"
-            >
-            <ColumnFilter v-model="filters._engineDisplay.value" :options="engineOptions" />
-          </div>
+          <img
+            src="../../../assets/bot2.svg"
+            alt="Engine"
+            class="engine-header-icon"
+            title="Result engine"
+          >
         </template>
         <template #body="{ data }">
           <img
@@ -387,13 +256,7 @@ const otherTablePt = {
         </template>
       </Column>
 
-      <Column field="detail" :style="{ width: '150px' }">
-        <template #header>
-          <div class="column-header-with-filter">
-            Detail
-            <ColumnSearchFilter v-model="filters.detail.value" placeholder="Search detail..." />
-          </div>
-        </template>
+      <Column field="detail" header="Detail" :style="{ width: '13.75rem' }" :pt="columnPt.left">
         <template #body="{ data }">
           <span
             v-if="data.detail"
@@ -407,13 +270,7 @@ const otherTablePt = {
         </template>
       </Column>
 
-      <Column field="comment" :style="{ width: '150px' }">
-        <template #header>
-          <div class="column-header-with-filter">
-            Comment
-            <ColumnSearchFilter v-model="filters.comment.value" placeholder="Search comment..." />
-          </div>
-        </template>
+      <Column field="comment" header="Comment" :style="{ width: '13.75rem' }" :pt="columnPt.left">
         <template #body="{ data }">
           <span
             v-if="data.comment"
@@ -427,26 +284,17 @@ const otherTablePt = {
         </template>
       </Column>
 
-      <Column header="Evaluated" field="ts" sortable :style="{ width: '80px' }">
-        <template #body="{ data }">
-          <span class="cell-text--mono" :title="formatReviewDate(data.ts)">{{ durationToNow(data.ts) }}</span>
+      <Column field="touchTs" export-header="Last action" sortable :style="{ width: '4.5rem' }" :pt="columnPt.center">
+        <template #header>
+          <i class="pi pi-clock last-action-header-icon" title="Last action" />
         </template>
-      </Column>
-
-      <Column header="Statused" field="touchTs" sortable :style="{ width: '80px' }">
         <template #body="{ data }">
           <span v-if="data.touchTs" class="cell-text--mono" :title="formatReviewDate(data.touchTs)">{{ durationToNow(data.touchTs) }}</span>
           <span v-else class="cell-text--empty">---</span>
         </template>
       </Column>
 
-      <Column field="username" :style="{ width: '80px' }">
-        <template #header>
-          <div class="column-header-with-filter">
-            User
-            <ColumnSearchFilter v-model="filters.username.value" placeholder="Search user..." />
-          </div>
-        </template>
+      <Column field="username" header="User" :style="{ width: '7.25rem' }" :pt="columnPt.left">
         <template #body="{ data }">
           <span
             v-if="data.username"
@@ -458,7 +306,7 @@ const otherTablePt = {
         </template>
       </Column>
 
-      <Column header="Apply" :style="{ width: '40px', textAlign: 'center' }">
+      <Column header="Apply" :exportable="false" :style="{ width: '3.75rem' }" :pt="columnPt.center">
         <template #body="{ data }">
           <button
             class="apply-review-icon-btn"
@@ -473,16 +321,17 @@ const otherTablePt = {
 
       <template #empty>
         <div class="other-table__empty">
-          {{ isLoading ? 'Loading...' : 'No reviews found for this rule on other assets.' }}
+          {{ isLoading ? 'Loading...' : isFiltered && filteredOtherReviews.length ? 'No reviews match the filters.' : 'No reviews found for this rule on other assets.' }}
         </div>
       </template>
 
       <template v-if="otherAssetsStats" #footer>
         <StatusFooter
+          :dt="dataTableRef"
           :show-refresh="false"
           :show-export="true"
           :total-count="otherAssetsStats.total"
-          @action="onFooterAction"
+          :filtered-count="isFiltered ? filteredRows.length : null"
         >
           <template #right-extra>
             <ResultBadge status="O" :count="otherAssetsStats.results.fail" />
@@ -522,12 +371,6 @@ const otherTablePt = {
   border-top: none;
 }
 
-.column-header-with-filter {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
 /* Allow table to expand and scroll horizontally if needed. */
 :deep(.p-datatable-table) {
   table-layout: fixed;
@@ -539,16 +382,9 @@ const otherTablePt = {
 }
 
 :deep(.p-datatable-tbody > tr > td) {
-  padding: 0.2rem 0.4rem;
-  vertical-align: middle;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   border-bottom: 1px solid var(--color-border-light);
   color: var(--color-text-primary);
-  overflow: hidden;
-}
-
-:deep(.p-datatable-thead > tr > th) {
-  border-right: 1px solid var(--color-border-light) !important;
 }
 
 :deep(.p-datatable-thead > tr > th:last-child) {
@@ -556,9 +392,9 @@ const otherTablePt = {
 }
 
 .cell-text--mono {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
   color: var(--color-text-dim);
-  font-size: 1rem;
+  font-size: var(--text-md);
 }
 
 .cell-text--ellipsis {
@@ -566,7 +402,7 @@ const otherTablePt = {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   line-height: 1.3;
   color: var(--color-text-primary);
   cursor: pointer;
@@ -583,12 +419,17 @@ const otherTablePt = {
   color: var(--color-text-dim);
   opacity: 0.5;
   font-style: italic;
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 
 .engine-header-icon {
   width: 14px;
   height: 14px;
+  opacity: 0.7;
+}
+
+.last-action-header-icon {
+  font-size: var(--text-md);
   opacity: 0.7;
 }
 
@@ -601,15 +442,6 @@ const otherTablePt = {
 .other-table__empty {
   font-style: italic;
   color: var(--color-text-dim);
-}
-
-.label-filter-chip {
-  display: inline-block;
-  font-size: 0.8rem;
-  font-weight: 600;
-  padding: 1px 6px;
-  border-radius: 6px;
-  white-space: nowrap;
 }
 
 .apply-review-icon-btn {
@@ -641,12 +473,12 @@ const otherTablePt = {
 }
 
 .apply-review-icon-btn i {
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 
 .footer-divider {
   color: var(--color-text-dim);
   opacity: 0.4;
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 </style>

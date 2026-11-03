@@ -13,6 +13,7 @@ import CommonPickList from '../../../../components/common/PickList.vue'
 
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
 import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
+import { pickListVirtualScrollerOptions } from '../../../../shared/lib/pickListPt.js'
 import { useAssetForm } from '../../composables/useAssetForm.js'
 
 const props = defineProps({
@@ -22,6 +23,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:visible', 'asset-created', 'asset-changed'])
+
+const VIRTUAL_SCROLLER_OPTIONS = pickListVirtualScrollerOptions()
 
 const localVisible = computed({
   get: () => props.visible,
@@ -54,7 +57,6 @@ const {
   labelFilter,
   filteredLabels,
   allFilteredSelected,
-  labelColor,
   isLabelSelected,
   toggleLabel,
   toggleAllFiltered,
@@ -91,30 +93,13 @@ const dialogPt = {
 }
 
 const inputTextPt = {
-  root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: 1rem; padding: 0.6rem 0.8rem;' },
+  root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: var(--text-md); padding: 0.6rem 0.8rem;' },
 }
 
 const checkboxPt = {
   box: ({ context }) => ({
     style: `background-color: transparent; border-color: var(--color-border-hover); ${context.checked ? 'background-color: var(--color-primary-highlight); border-color: var(--color-primary-highlight);' : ''}`,
   }),
-}
-
-const pickListPt = {
-  sourceFilterInput: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border: 1px solid var(--color-border-default); border-radius: 4px; font-size: 0.95rem; padding: 0.35rem 0.6rem; width: 100%;' },
-  targetFilterInput: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border: 1px solid var(--color-border-default); border-radius: 4px; font-size: 0.95rem; padding: 0.35rem 0.6rem; width: 100%;' },
-  sourceControls: {
-    moveUpButton: { root: { style: 'border-radius: 4px;' } },
-    moveDownButton: { root: { style: 'border-radius: 4px;' } },
-    moveTopButton: { root: { style: 'border-radius: 4px;' } },
-    moveBottomButton: { root: { style: 'border-radius: 4px;' } },
-  },
-  transferControls: {
-    moveToTargetButton: { root: { style: 'border-radius: 4px;' } },
-    moveAllToTargetButton: { root: { style: 'border-radius: 4px;' } },
-    moveToSourceButton: { root: { style: 'border-radius: 4px;' } },
-    moveAllToSourceButton: { root: { style: 'border-radius: 4px;' } },
-  },
 }
 </script>
 
@@ -141,13 +126,13 @@ const pickListPt = {
 
     <!-- Loading -->
     <div v-if="isLoading" class="loading-state">
-      <i class="pi pi-spin pi-spinner" style="font-size: 2rem; color: var(--color-text-dim)" />
+      <i class="pi pi-spin pi-spinner" style="font-size: var(--text-display); color: var(--color-text-dim)" />
     </div>
 
     <div v-else class="form-body">
       <!-- ── Asset details ────────────────────────────────────────────────────── -->
       <div class="form-section">
-        <!-- Name + noncomputing -->
+        <!-- Name + description -->
         <div class="row row--name">
           <div class="labeled-field field--grow">
             <label class="flabel" for="am-name">Name <span class="req-star">*</span></label>
@@ -159,29 +144,40 @@ const pickListPt = {
               style="width: 100%"
             />
           </div>
-          <label class="noncomputing-label">
-            <Checkbox v-model="form.noncomputing" :binary="true" :pt="checkboxPt" />
-            <span>Non-computing</span>
-          </label>
+          <div class="labeled-field field--grow">
+            <label class="flabel" for="am-description">Description</label>
+            <InputText
+              id="am-description"
+              v-model="form.description"
+              placeholder="Enter description"
+              maxlength="255"
+              :pt="inputTextPt"
+              style="width: 100%"
+            />
+          </div>
         </div>
         <div v-if="nameError" class="name-error">
           {{ nameError }}
         </div>
 
-        <!-- FQDN / IP / MAC -->
+        <!-- FQDN / IP / MAC + noncomputing -->
         <div class="row row--3col">
           <div class="labeled-field">
-            <span class="flabel">FQDN <span class="opt-tag">optional</span></span>
+            <span class="flabel">FQDN</span>
             <InputText v-model="form.fqdn" placeholder="Enter FQDN" :pt="inputTextPt" class="fi" />
           </div>
           <div class="labeled-field">
-            <span class="flabel">IP address <span class="opt-tag">optional</span></span>
+            <span class="flabel">IP address</span>
             <InputText v-model="form.ip" placeholder="Enter IP address" :pt="inputTextPt" class="fi" />
           </div>
           <div class="labeled-field">
-            <span class="flabel">MAC address <span class="opt-tag">optional</span></span>
+            <span class="flabel">MAC address</span>
             <InputText v-model="form.mac" placeholder="Enter MAC address" :pt="inputTextPt" class="fi" />
           </div>
+          <label class="noncomputing-label">
+            <Checkbox v-model="form.noncomputing" :binary="true" :pt="checkboxPt" />
+            <span>Non-computing</span>
+          </label>
         </div>
 
         <!-- Labels + Metadata side by side -->
@@ -193,11 +189,7 @@ const pickListPt = {
               <span class="field-hint">{{ form.labelIds.length }} of {{ collectionLabels.length }} selected</span>
             </div>
 
-            <div v-if="collectionLabels.length === 0" class="no-labels-hint">
-              No labels defined for this collection.
-            </div>
-
-            <div v-else class="label-picker">
+            <div class="label-picker">
               <div class="label-picker-toolbar">
                 <span class="label-search">
                   <i class="pi pi-search" />
@@ -234,9 +226,9 @@ const pickListPt = {
                     @click.stop
                     @update:model-value="toggleLabel(label.labelId)"
                   />
-                  <LabelChip :value="label.name" :color="labelColor(label)" />
+                  <LabelChip :value="label.name" :color="label.color" />
                 </div>
-                <div v-if="filteredLabels.length === 0" class="label-empty">
+                <div v-if="labelFilter && filteredLabels.length === 0" class="label-empty">
                   No labels match "{{ labelFilter }}"
                 </div>
               </div>
@@ -262,8 +254,7 @@ const pickListPt = {
           filter-by="benchmarkId"
           source-filter-placeholder="Search STIGs..."
           target-filter-placeholder="Search assigned..."
-          :virtual-scroller-options="{ itemSize: 30 }"
-          :pt="pickListPt"
+          :virtual-scroller-options="VIRTUAL_SCROLLER_OPTIONS"
         >
           <template #sourceheader>
             Available
@@ -318,7 +309,7 @@ const pickListPt = {
   justify-content: center;
   flex-shrink: 0;
   color: var(--color-action-blue-dark);
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
 }
 
 .modal-header-text {
@@ -327,7 +318,7 @@ const pickListPt = {
 }
 
 .modal-header-title {
-  font-size: 1.35rem;
+  font-size: var(--text-xl);
   font-weight: 700;
   color: var(--color-text-bright);
   line-height: 1.3;
@@ -371,9 +362,9 @@ const pickListPt = {
 
 .row--3col {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, 1fr) auto;
   gap: 0.75rem;
-  align-items: start;
+  align-items: end;
 }
 
 .row--labels-meta {
@@ -394,7 +385,7 @@ const pickListPt = {
   align-items: center;
   gap: 0.5rem;
   white-space: nowrap;
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-text-primary);
   cursor: pointer;
   flex-shrink: 0;
@@ -404,11 +395,11 @@ const pickListPt = {
 
 .req-star {
   color: var(--color-action-red);
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 
 .name-error {
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   color: var(--color-text-error);
   margin-top: -0.5rem;
 }
@@ -427,42 +418,25 @@ const pickListPt = {
 }
 
 .flabel {
-  font-size: 1.15rem;
+  font-size: var(--text-lg);
   font-weight: 600;
   color: var(--color-text-primary);
   text-transform: none;
   letter-spacing: normal;
 }
 
-.opt-tag {
-  font-size: 0.95rem;
-  font-weight: 400;
-  color: var(--color-text-dim);
-  opacity: 0.85;
-  margin-left: 0.2rem;
-  text-transform: none;
-  letter-spacing: 0;
-}
-
 .field-hint {
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
   opacity: 0.85;
 }
 
 .fi {
   width: 100%;
-  font-size: 1rem;
+  font-size: var(--text-md);
 }
 
 /* Labels */
-.no-labels-hint {
-  font-size: 0.95rem;
-  color: var(--color-text-dim);
-  opacity: 0.7;
-  padding: 0.4rem 0;
-}
-
 .label-picker {
   border: 1px solid var(--color-border-default);
   border-radius: 4px;
@@ -492,7 +466,7 @@ const pickListPt = {
 }
 
 .label-search .pi-search {
-  font-size: 0.8rem;
+  font-size: var(--icon-xs);
   color: var(--color-text-dim);
   flex-shrink: 0;
 }
@@ -504,7 +478,7 @@ const pickListPt = {
   border: none;
   outline: none;
   color: var(--color-text-primary);
-  font-size: 0.98rem;
+  font-size: var(--text-md);
   padding: 0.15rem 0;
 }
 
@@ -518,7 +492,7 @@ const pickListPt = {
   border: none;
   cursor: pointer;
   color: var(--color-text-dim);
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   line-height: 1;
   padding: 0 0.2rem;
   flex-shrink: 0;
@@ -532,7 +506,7 @@ const pickListPt = {
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   color: var(--color-text-primary);
   cursor: pointer;
   white-space: nowrap;
@@ -575,7 +549,7 @@ const pickListPt = {
 
 .label-empty {
   padding: 0.6rem 0.5rem;
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
   text-align: center;
 }
@@ -599,7 +573,7 @@ const pickListPt = {
 }
 
 .stig-section-title {
-  font-size: 1.25rem;
+  font-size: var(--text-xl);
   font-weight: 700;
   color: var(--color-text-primary);
   text-transform: none;
@@ -624,7 +598,7 @@ const pickListPt = {
 }
 
 .stig-item-label {
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-weight: 600;
   color: var(--color-text-primary);
   white-space: nowrap;

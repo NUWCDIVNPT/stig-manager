@@ -62,7 +62,7 @@ function mountFindings({ query = {} } = {}) {
   replace = vi.fn()
   useRouter.mockReturnValue({ replace })
   return renderWithProviders(Findings, {
-    props: { collectionId: '17', selectedLabelIds: [] },
+    props: { collectionId: '17', selectedLabelNames: [] },
   })
 }
 
@@ -97,7 +97,7 @@ describe('findings URL state', () => {
     expect(fetchFailedReviews).toHaveBeenCalledWith('17', {
       aggregator: 'groupId',
       aggregatorValue: 'V-219150',
-    })
+    }, { signal: expect.any(AbortSignal) })
   })
 
   it('restores nothing when ?sel= matches no loaded row', async () => {
@@ -129,6 +129,6 @@ describe('findings URL state', () => {
     expect(fetchFindings).toHaveBeenCalledWith('17', {
       aggregator: 'cci',
       benchmarkId: undefined,
-    })
+    }, { signal: expect.any(AbortSignal) })
   })
 })

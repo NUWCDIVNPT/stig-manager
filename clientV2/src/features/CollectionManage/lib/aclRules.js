@@ -1,5 +1,3 @@
-import { normalizeColor } from '../../../shared/lib/colorUtils.js'
-
 // gets the default access for a role everoyne has rw access except restricted users who only have no access by default restrectied number is 1
 export function getDefaultAccessForRole(roleId) {
   return Number(roleId) === 1 ? 'none' : 'rw'
@@ -15,6 +13,12 @@ export function getAllowedAclAccessOptions(roleId) {
     options.push({ label: 'No Access', value: 'none' })
   }
   return options
+}
+
+const ACCESS_LABELS = { rw: 'Read/Write', r: 'Read Only', none: 'No Access' }
+
+export function accessLabel(access) {
+  return ACCESS_LABELS[access] ?? access
 }
 
 export function normalizeAclRule(rule) {
@@ -63,12 +67,18 @@ export function resourceParts(rule) {
     parts.push({ type: 'asset', text: rule.assetName })
   }
   if (rule.labelName) {
-    parts.push({ type: 'label', text: rule.labelName, color: normalizeColor(rule.label?.color ?? rule.color) })
+    parts.push({ type: 'label', text: rule.labelName, color: rule.label?.color ?? rule.color })
   }
   if (rule.benchmarkId) {
     parts.push({ type: 'stig', text: rule.benchmarkId })
   }
   return parts
+}
+
+const RESOURCE_TYPE_LABELS = { collection: 'Collection', asset: 'Asset', label: 'Label', stig: 'STIG' }
+
+export function resourceTypes(rule) {
+  return resourceParts(rule).map(part => RESOURCE_TYPE_LABELS[part.type])
 }
 
 export function resourceSortKey(rule) {

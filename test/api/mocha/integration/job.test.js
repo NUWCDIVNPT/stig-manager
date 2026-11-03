@@ -390,7 +390,7 @@ describe('Job endpoint tests', function () {
       await new Promise(resolve => setTimeout(resolve, 1000)) // wait 1 second between runs to ensure different timestamps
       await runImmediateJob(jobId)
 
-      const runsRes = await utils.executeRequest(`${config.baseUrl}/jobs/${jobId}/runs?elevate=true`, 'GET', user.token)
+      const runsRes = await pollUntil(`${config.baseUrl}/jobs/${jobId}/runs?elevate=true`, res => res.body.length >= 2)
       expect(runsRes.status).to.eql(200)
       expect(runsRes.body).to.be.an('array')
       expect(runsRes.body.length).to.be.at.least(2)
@@ -409,6 +409,7 @@ describe('Job endpoint tests', function () {
 
   describe('GET - getRunById - /jobs/runs/{runId}', function () {
     it('should get a specific run by ID', async function () {
+      this.timeout(60_000)
       const createJobRes = await utils.executeRequest(`${config.baseUrl}/jobs?elevate=true`, 'POST', user.token, {
         name: "Test Job to Get Specific Run",
         tasks: ["1"],
@@ -418,7 +419,7 @@ describe('Job endpoint tests', function () {
 
       const runId = await runImmediateJob(jobId)
 
-      const runRes = await utils.executeRequest(`${config.baseUrl}/jobs/runs/${runId}?elevate=true`, 'GET', user.token)
+      const runRes = await pollUntil(`${config.baseUrl}/jobs/runs/${runId}?elevate=true`, res => res.status === 200)
       expect(runRes.status).to.eql(200)
       expect(runRes.body).to.be.an('object')
       expect(runRes.body).to.have.property('runId', runId)
@@ -434,6 +435,7 @@ describe('Job endpoint tests', function () {
 
   describe('DELETE - deleteRunById - /jobs/runs/{runId}', function () {
     it('should delete a specific run by ID', async function () {
+      this.timeout(60_000)
       const createJobRes = await utils.executeRequest(`${config.baseUrl}/jobs?elevate=true`, 'POST', user.token, {
         name: "Test Job to Delete Specific Run",
         tasks: ["1"],
@@ -442,7 +444,8 @@ describe('Job endpoint tests', function () {
       const jobId = createJobRes.body.jobId
 
       const runId = await runImmediateJob(jobId)
-      await new Promise(resolve => setTimeout(resolve, 1000)) // wait a second to ensure run is created before attempting delete
+      // wait for the run to finish so the delete does not race the still-executing run_job procedure
+      await waitForRunFinish(runId)
 
       // Now delete the run
       const deleteRes = await utils.executeRequest(`${config.baseUrl}/jobs/runs/${runId}?elevate=true`, 'DELETE', user.token)
@@ -461,6 +464,7 @@ describe('Job endpoint tests', function () {
 }) 
 
 describe('Task tests', function () {
+  this.timeout(60_000)
   beforeEach(async function () {
       await utils.loadAppData()
   })
@@ -595,7 +599,7 @@ describe('Task tests', function () {
 
       await runAgingWithConfig([{
         triggerField: 'ts',
-        triggerInterval: 0,
+        triggerInterval: 3600,
         triggerAction: 'update',
         updateField: 'status',
         updateValue: 'saved',
@@ -660,7 +664,57 @@ describe('Task tests', function () {
       }
     })
 
-    it('should delete matching reviews (triggerAction:delete, triggerInterval:0)', async function () {
+    it('should refresh metrics for every checklist when a review maps to more than one STIG', async function () {
+      this.timeout(60_000)
+      // VPN_SRG_SHARED carries the same rule versions and check content as VPN_SRG_TEST under
+      // different rule IDs, so once both are assigned to asset 42 each VPN review belongs to two checklists
+      const assetId = '42'
+      const sharedBenchmarkId = 'VPN_SRG_SHARED'
+      const metricsUrl = `${config.baseUrl}/collections/${collectionId}/metrics/detail?assetId=${assetId}`
+
+      await utils.uploadTestStig('U_VPN_SRG-SHARED_V1R1_Manual-xccdf.xml')
+      const assetRes = await utils.executeRequest(`${config.baseUrl}/assets/${assetId}?projection=stigs`, 'GET', user.token)
+      expect(assetRes.status).to.eql(200)
+      const patchRes = await utils.executeRequest(`${config.baseUrl}/assets/${assetId}`, 'PATCH', user.token, {
+        stigs: [...assetRes.body.stigs.map(s => s.benchmarkId), sharedBenchmarkId]
+      })
+      expect(patchRes.status).to.eql(200)
+
+      const beforeRes = await utils.executeRequest(metricsUrl, 'GET', user.token)
+      expect(beforeRes.status).to.eql(200)
+      const before = Object.fromEntries(beforeRes.body.map(r => [r.benchmarkId, r.metrics.statuses]))
+      expect(before).to.have.property('VPN_SRG_TEST')
+      expect(before[sharedBenchmarkId].submitted.total).to.be.greaterThan(0)
+
+      const runId = await runAgingWithConfig([{
+        triggerField: 'ts',
+        triggerInterval: 3600,
+        triggerAction: 'update',
+        updateField: 'status',
+        updateValue: 'saved',
+        enabled: true
+      }])
+
+      const outputRes = await utils.executeRequest(`${config.baseUrl}/jobs/runs/${runId}/output?elevate=true`, 'GET', user.token)
+      expect(outputRes.status).to.eql(200)
+      const errors = outputRes.body.filter(o => o.type === 'error').map(o => o.message)
+      expect(errors, 'run output errors').to.eql([])
+
+      const afterRes = await utils.executeRequest(metricsUrl, 'GET', user.token)
+      expect(afterRes.status).to.eql(200)
+      expect(afterRes.body.length).to.eql(beforeRes.body.length)
+      for (const row of afterRes.body) {
+        const b = before[row.benchmarkId]
+        const s = row.metrics.statuses
+        const reviewed = b.saved.total + b.submitted.total + b.accepted.total + b.rejected.total
+        expect(
+          { saved: s.saved.total, submitted: s.submitted.total, accepted: s.accepted.total, rejected: s.rejected.total },
+          row.benchmarkId
+        ).to.eql({ saved: reviewed, submitted: 0, accepted: 0, rejected: 0 })
+      }
+    })
+
+    it('should delete matching reviews (triggerAction:delete, triggerInterval:3600)', async function () {
       this.timeout(60_000)
       const reviewsBefore = await utils.executeRequest(
         `${config.baseUrl}/collections/${collectionId}/reviews`,
@@ -670,7 +724,7 @@ describe('Task tests', function () {
 
       await runAgingWithConfig([{
         triggerField: 'ts',
-        triggerInterval: 0,
+        triggerInterval: 3600,
         triggerAction: 'delete',
         enabled: true
       }])
@@ -689,7 +743,7 @@ describe('Task tests', function () {
       const otherAssetId = "62"
       await runAgingWithConfig([{
         triggerField: 'ts',
-        triggerInterval: 0,
+        triggerInterval: 3600,
         triggerAction: 'update',
         updateField: 'status',
         updateValue: 'saved',
@@ -727,7 +781,7 @@ describe('Task tests', function () {
       const untargetedAssetId = "154"
       await runAgingWithConfig([{
         triggerField: 'ts',
-        triggerInterval: 0,
+        triggerInterval: 3600,
         triggerAction: 'update',
         updateField: 'status',
         updateValue: 'saved',
@@ -778,7 +832,7 @@ describe('Task tests', function () {
 
       await runAgingWithConfig([{
         triggerField: 'ts',
-        triggerInterval: 0,
+        triggerInterval: 3600,
         triggerAction: 'update',
         updateField: 'status',
         updateValue: 'saved',
@@ -805,6 +859,62 @@ describe('Task tests', function () {
         .map(r => ({ ruleId: r.ruleId, status: r.status.label }))
       expect(win10After).to.deep.equal(win10Before)
     })
+    it('should not affect reviews on assets not assigned the targeted STIG when the rule is shared with another STIG', async function () {
+      this.timeout(60_000)
+      // VPN_SRG_SHARED carries the same rule versions and check content as VPN_SRG_TEST, so asset 42's
+      // VPN reviews also match its rules by content. Asset 42 is assigned VPN_SRG_TEST only; assigning
+      // VPN_SRG_SHARED to asset 62 makes it a STIG of the collection without putting it on asset 42.
+      // A rule targeting VPN_SRG_SHARED must leave asset 42's VPN reviews alone.
+      const unassignedAssetId = '42'
+      const assignedAssetId = '62'
+      const sharedBenchmarkId = 'VPN_SRG_SHARED'
+      const vpnRuleIds = ['SV-106179r1_rule', 'SV-106181r1_rule', 'SV-106183r1_rule', 'SV-106185r1_rule', 'SV-106187r1_rule']
+
+      await utils.uploadTestStig('U_VPN_SRG-SHARED_V1R1_Manual-xccdf.xml')
+      const assetRes = await utils.executeRequest(`${config.baseUrl}/assets/${assignedAssetId}?projection=stigs`, 'GET', user.token)
+      expect(assetRes.status).to.eql(200)
+      const patchRes = await utils.executeRequest(`${config.baseUrl}/assets/${assignedAssetId}`, 'PATCH', user.token, {
+        stigs: [...assetRes.body.stigs.map(s => s.benchmarkId), sharedBenchmarkId]
+      })
+      expect(patchRes.status).to.eql(200)
+
+      const beforeRes = await utils.executeRequest(
+        `${config.baseUrl}/collections/${collectionId}/reviews/${unassignedAssetId}`,
+        'GET', user.token
+      )
+      expect(beforeRes.status).to.eql(200)
+      const vpnBefore = beforeRes.body
+        .filter(r => vpnRuleIds.includes(r.ruleId))
+        .map(r => ({ ruleId: r.ruleId, status: r.status.label }))
+      expect(vpnBefore.length).to.be.greaterThan(0)
+      expect(vpnBefore.some(r => r.status !== 'saved'), 'baseline has reviews the rule would change').to.be.true
+
+      const runId = await runAgingWithConfig([{
+        triggerField: 'ts',
+        triggerInterval: 3600,
+        triggerAction: 'update',
+        updateField: 'status',
+        updateValue: 'saved',
+        target: { benchmarkId: sharedBenchmarkId },
+        enabled: true
+      }])
+
+      const outputRes = await utils.executeRequest(`${config.baseUrl}/jobs/runs/${runId}/output?elevate=true`, 'GET', user.token)
+      expect(outputRes.status).to.eql(200)
+      const errors = outputRes.body.filter(o => o.type === 'error').map(o => o.message)
+      expect(errors, 'run output errors').to.eql([])
+
+      const afterRes = await utils.executeRequest(
+        `${config.baseUrl}/collections/${collectionId}/reviews/${unassignedAssetId}`,
+        'GET', user.token
+      )
+      expect(afterRes.status).to.eql(200)
+      const vpnAfter = afterRes.body
+        .filter(r => vpnRuleIds.includes(r.ruleId))
+        .map(r => ({ ruleId: r.ruleId, status: r.status.label }))
+      expect(vpnAfter).to.deep.equal(vpnBefore)
+    })
+
 
     it('should restrict to a specific asset+benchmark combination using target', async function () {
       this.timeout(60_000)
@@ -824,7 +934,7 @@ describe('Task tests', function () {
 
       await runAgingWithConfig([{
         triggerField: 'ts',
-        triggerInterval: 0,
+        triggerInterval: 3600,
         triggerAction: 'update',
         updateField: 'status',
         updateValue: 'saved',
@@ -860,11 +970,11 @@ describe('Task tests', function () {
       expect(savedOn62).to.be.lessThan(asset62Res.body.length)
     })
 
-    it('should update review status to saved for all reviews (triggerInterval:0)', async function () {
+    it('should update review status to saved for all reviews (triggerInterval:3600)', async function () {
       this.timeout(60_000)
       await runAgingWithConfig([{
         triggerField: 'ts',
-        triggerInterval: 0,
+        triggerInterval: 3600,
         triggerAction: 'update',
         updateField: 'status',
         updateValue: 'saved',
@@ -881,11 +991,11 @@ describe('Task tests', function () {
       }
     })
 
-    it('should update review result to notchecked for all reviews (triggerInterval:0, updateField:result)', async function () {
+    it('should update review result to notchecked for all reviews (triggerInterval:3600, updateField:result)', async function () {
       this.timeout(60_000)
       await runAgingWithConfig([{
         triggerField: 'ts',
-        triggerInterval: 0,
+        triggerInterval: 3600,
         triggerAction: 'update',
         updateField: 'result',
         updateValue: 'notchecked',
@@ -938,17 +1048,23 @@ async function deleteTestJobs() {
   }
 }
 
-async function waitForRunFinish(runId, timeoutSeconds = 30) {
-  let attempts = 0
-  await new Promise(resolve => setTimeout(resolve, 1000)) // wait 1 second before checking again
-  while (attempts < timeoutSeconds) {
-    const runRes = await utils.executeRequest(`${config.baseUrl}/jobs/runs/${runId}?elevate=true`, 'GET', user.token)
-    expect(runRes.status).to.eql(200)
-    if (['completed', 'failed'].includes(runRes.body.state)) {
-      return runRes.body.state
+// Job runs are created and advanced asynchronously by the MySQL event scheduler.
+// Polls `url` once per second until `done(res)` is truthy and returns that response.
+// Throws if timeoutSeconds elapses first, reporting the last response.
+async function pollUntil(url, done, timeoutSeconds = 30) {
+  const deadline = Date.now() + timeoutSeconds * 1000
+  for (;;) {
+    const res = await utils.executeRequest(url, 'GET', user.token)
+    if (done(res)) return res
+    if (Date.now() >= deadline) {
+      throw new Error(`Timed out after ${timeoutSeconds}s polling ${url}; last response ${res.status} ${JSON.stringify(res.body)}`)
     }
-    await new Promise(resolve => setTimeout(resolve, 1000)) // wait 1 second before checking again
-    attempts++
+    await utils.wait(1000)
   }
-  return 'timeout'
+}
+
+async function waitForRunFinish(runId, timeoutSeconds = 30) {
+  const isFinished = res => res.status === 200 && ['completed', 'failed'].includes(res.body.state)
+  const runRes = await pollUntil(`${config.baseUrl}/jobs/runs/${runId}?elevate=true`, isFinished, timeoutSeconds)
+  return runRes.body.state
 }

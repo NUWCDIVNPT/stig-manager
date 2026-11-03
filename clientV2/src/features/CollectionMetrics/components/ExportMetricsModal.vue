@@ -118,7 +118,7 @@ const commonPt = {
       style: 'color: var(--color-text-dim);',
     },
     title: {
-      style: 'font-size: 1.5rem; font-weight: 600;',
+      style: 'font-size: var(--text-xl); font-weight: 600;',
     },
   },
 }
@@ -137,7 +137,7 @@ const dialogPt = {
     style: 'color: var(--color-text-dim);',
   },
   title: {
-    style: 'font-size: 1.5rem; font-weight: 600;',
+    style: 'font-size: var(--text-xl); font-weight: 600;',
   },
 }
 
@@ -257,14 +257,14 @@ async function handleDownload() {
 <style scoped>
 .warning-message {
   color: #ff0000;
-  font-size: 0.8rem;
+  font-size: var(--text-md);
 }
 
 .export-modal-content {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  font-size: 0.95rem;
+  font-size: var(--text-md);
 }
 
 .form-row {
@@ -307,7 +307,7 @@ async function handleDownload() {
   background-color: var(--color-background-dark);
   padding: 0 0.5rem;
   color: var(--color-text-dim);
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   font-weight: 500;
 }
 

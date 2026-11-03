@@ -483,7 +483,6 @@ from
   let connection
   try {
     connection = await dbUtils.pool.getConnection()
-    connection.config.namedPlaceholders = false
 
     const sqlVariables = `set @collectionId = ?, @userId = ?, @review = ?`
     await connection.query(sqlVariables, [parseInt(collectionId), parseInt(userId), JSON.stringify(source.review)])

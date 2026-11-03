@@ -1,10 +1,35 @@
 <script setup>
+import { useTours } from '../../shared/composables/useTours.js'
+
 defineProps({
   features: {
     type: Array,
     required: true,
   },
+  // false lets an outer container own the scrollbar (the page view)
+  scrollable: {
+    type: Boolean,
+    default: true,
+  },
 })
+
+// Fired after a feature body's "take the tour" link starts a tour, so a
+// containing dialog can get out of the way.
+const emit = defineEmits(['tour-started'])
+
+const { startTour } = useTours()
+
+// Feature bodies are HTML strings, so a link in one starts a tour through
+// delegation: <a href="#" data-tour-start="<tour id>">.
+function onBodyClick(event) {
+  const link = event.target.closest?.('[data-tour-start]')
+  if (!link) {
+    return
+  }
+  event.preventDefault()
+  startTour(link.dataset.tourStart)
+  emit('tour-started')
+}
 </script>
 
 <template>
@@ -13,7 +38,7 @@ defineProps({
       <div class="feedback-box-title">
         Have a Feature Request?
       </div>
-      <div style="font-size: 1.1rem;">
+      <div style="font-size: var(--text-lg);">
         New features in STIG Manager are primarily driven by user requests.
         Have an idea or feature request? We'd love to hear from you!
         Please submit your suggestions by opening an issue on our
@@ -21,7 +46,7 @@ defineProps({
       </div>
     </div>
 
-    <div class="features-scroll">
+    <div class="features-scroll" :class="{ scrollable }">
       <div class="whats-new-title">
         New Features in the STIG Manager App
       </div>
@@ -33,7 +58,7 @@ defineProps({
             {{ feature.header }}
             <span class="feature-date">({{ feature.date }})</span>
           </div>
-          <div class="feature-body" v-html="feature.body" />
+          <div class="feature-body" @click="onBodyClick" v-html="feature.body" />
         </div>
         <hr v-if="index < features.length - 1" class="whats-new-divider">
       </template>
@@ -50,18 +75,21 @@ defineProps({
 
 .features-scroll {
   flex: 1;
-  overflow-y: auto;
   min-height: 0;
+}
+
+.features-scroll.scrollable {
+  overflow-y: auto;
 }
 
 .feature-text {
   padding: 10px;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   word-wrap: break-word;
 }
 
 .whats-new-title {
-  font-size: 2rem;
+  font-size: var(--text-display);
   font-weight: bold;
   color: var(--color-primary-highlight);
 }
@@ -69,7 +97,7 @@ defineProps({
 .feature-subtitle {
   padding-top: 3px;
   padding-bottom: 3px;
-  font-size: 1.4rem;
+  font-size: var(--text-2xl);
   font-weight: bold;
   color: var(--color-primary-highlight);
 }
@@ -116,7 +144,7 @@ defineProps({
 }
 
 .feature-date {
-  font-size: 70%;
+  font-size: var(--text-sm);
   font-style: italic;
   font-weight: normal;
 }

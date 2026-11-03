@@ -5,12 +5,12 @@ import Select from 'primevue/select'
 import { ref } from 'vue'
 import AclStateIcon from '../../../../components/common/AclStateIcon.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
-import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
+import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import { resourceSortKey } from '../../lib/aclRules.js'
 import AclResourceDisplay from './AclResourceDisplay.vue'
 
-defineProps({
+const props = defineProps({
   // rules is the items in the table
   rules: {
     type: Array,
@@ -25,15 +25,28 @@ defineProps({
     type: Boolean,
     default: false,
   },
+  // Unfiltered count and filter state from the modal, for the footer
+  totalCount: {
+    type: Number,
+    default: null,
+  },
+  filtered: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['accessChange'])
 
+const ROW_HEIGHT = rowHeightPx('control')
+
+const exportResource = ({ record }) => resourceSortKey(record)
+const exportAccess = ({ data }) => props.accessOptions.find(o => o.value === data)?.label ?? data
+
 const selectedRules = defineModel('selection', { type: Array, default: () => [] })
 
 const rulesDt = ref()
-const { onFooterAction } = useTableFooterActions(rulesDt)
-const tablePt = compactTablePt({ bodyFontSize: '0.9rem', footer: 'divider' })
+const tablePt = compactTablePt({ footer: 'divider' })
 </script>
 
 <template>
@@ -44,24 +57,25 @@ const tablePt = compactTablePt({ bodyFontSize: '0.9rem', footer: 'divider' })
     :loading="loading"
     selection-mode="multiple"
     :meta-key-selection="false"
+    export-filename="Collection ACL"
     size="small"
     scrollable
     scroll-height="flex"
     :sort-field="resourceSortKey"
     :sort-order="1"
-    :virtual-scroller-options="{ itemSize: 41, delay: 0 }"
+    :virtual-scroller-options="{ itemSize: ROW_HEIGHT, delay: 0 }"
     class="rules-table"
     :pt="tablePt"
   >
     <template #empty>
-      No ACL rules.
+      {{ filtered ? 'No rules match the filters.' : 'No ACL rules.' }}
     </template>
-    <Column header="Resource" sortable :sort-field="resourceSortKey" :export-field="resourceSortKey">
+    <Column header="Resource" :export-value="exportResource" sortable :sort-field="resourceSortKey">
       <template #body="{ data }">
         <AclResourceDisplay :rule="data" />
       </template>
     </Column>
-    <Column header="Access" field="access" sortable style="width: 140px">
+    <Column header="Access" field="access" :export-value="exportAccess" sortable style="width: 12.75rem">
       <template #body="{ data }">
         <Select
           :model-value="data.access"
@@ -84,10 +98,11 @@ const tablePt = compactTablePt({ bodyFontSize: '0.9rem', footer: 'divider' })
     </Column>
     <template #footer>
       <StatusFooter
+        :dt="rulesDt"
         :show-refresh="false"
-        :total-count="rules.length"
+        :total-count="totalCount ?? rules.length"
+        :filtered-count="filtered ? rules.length : null"
         total-label="rules"
-        @action="onFooterAction"
       />
     </template>
   </DataTable>

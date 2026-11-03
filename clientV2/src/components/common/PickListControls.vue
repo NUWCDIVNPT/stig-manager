@@ -3,8 +3,9 @@ import Button from 'primevue/button'
 
 /**
  * The Add / Add All / Remove / Remove All column shared by the dual-list
- * pickers (PickList, CollectionGrantPickList). Emits carry the click event so
- * consumers can anchor popups (e.g. a role menu) to the pressed button.
+ * pickers (PickList, PickListTable, GrantsPickList, CollectionGrantPickList).
+ * Emits carry the click event so consumers can anchor popups (e.g. a role
+ * menu) to the pressed button.
  */
 defineProps({
   addDisabled: {
@@ -77,6 +78,6 @@ const removeIconPt = { icon: ({ context }) => ({ style: context?.disabled ? {} :
 .control-btn {
   min-width: 8rem;
   padding: 0.6rem 1rem;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
 }
 </style>

@@ -6,10 +6,16 @@ import Select from 'primevue/select'
 import { computed, nextTick, ref } from 'vue'
 import CatBadge from '../../../components/common/CatBadge.vue'
 import DensityControls from '../../../components/common/DensityControls.vue'
+import GridFilterButton from '../../../components/common/GridFilterButton.vue'
+import GridSearch from '../../../components/common/GridSearch.vue'
+import GridToolbar from '../../../components/common/GridToolbar.vue'
+import HighlightText from '../../../components/common/HighlightText.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
+import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 import { severityMap } from '../../../shared/lib/checklistUtils.js'
 import { compactTablePt } from '../../../shared/lib/dataTablePt.js'
+import { catLabel } from '../../../shared/lib/exportCells.js'
 import { severitySortValue } from '../../../shared/lib/gridSorts.js'
 import { FINDINGS_AGGREGATOR_OPTIONS, FINDINGS_AGGREGATORS } from '../constants.js'
 import PoamExport from './PoamExport.vue'
@@ -81,11 +87,10 @@ function onPopoverSelectStig(benchmarkId) {
   stigPopover.value?.hide()
 }
 
-// Same geometry as AssetChecklistGrid: 15px per rendered line of clamped text
-// (1.05rem × 1.3 line-height at the 11px root) + 6px cell padding. itemSize
-// drives the virtual scroller; rows are pinned to it via --item-size below so
-// the scroller's position math (n × itemSize) stays correct.
-const { lineClamp, itemSize } = useGridDensity('findings-aggregated', 2, 6, 15)
+// Row geometry lives in useGridDensity's table. itemSize drives the virtual
+// scroller; rows are pinned to it via --item-size and the clamped text reads
+// --cell-line-height, so the scroller's position math (n × itemSize) holds.
+const { itemSize, gridStyle } = useGridDensity('findings-aggregated')
 
 const poamDialogVisible = ref(false)
 
@@ -107,25 +112,37 @@ const footerActions = computed(() => [
 ])
 
 function onFooterAction(key) {
-  if (key === 'export') {
-    dataTableRef.value?.exportCSV()
-  }
-  else if (key === 'refresh') {
-    emit('retry')
-  }
-  else if (key === 'poam') {
+  if (key === 'poam') {
     poamDialogVisible.value = true
   }
 }
+
+// Keyed like visibleColumns so the searchable columns follow the aggregator
+const stigIds = r => (r.stigs ?? []).map(s => s.benchmarkId)
+const SEARCH_COLUMNS = {
+  cat: { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false },
+  group: { field: 'groupId', header: 'Group' },
+  rule: { field: 'ruleId', header: 'Rule' },
+  cci: { field: 'cci', header: 'CCI' },
+  apAcronym: { field: 'apAcronym', header: 'AP Acronym', filterValues: r => r.apAcronym },
+  title: { field: 'title', header: 'Title' },
+  definition: { field: 'definition', header: 'Definition' },
+  stigs: { field: 'stigs', header: 'STIGs', filterValues: stigIds, multiple: true },
+}
+const searchColumns = computed(() => Object.entries(SEARCH_COLUMNS)
+  .filter(([key]) => props.visibleColumns.has(key))
+  .map(([, col]) => col))
+
+const { term: searchTerm, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(() => props.rows, searchColumns)
 
 function onRowSelect(event) {
   emit('select-finding', event.data)
 }
 
 const dataTablePt = {
-  // Body font size is the single source of truth for row text (cells inherit
-  // it); the itemSize geometry below is derived from this 1.05rem × 1.3.
-  ...compactTablePt({ bodyFontSize: '1rem' }),
+  // Body font size for the unclamped cells; the clamped .cell-text cells take
+  // theirs from the grid geometry via --cell-font-size.
+  ...compactTablePt(),
   tableContainer: { style: 'background: var(--p-datatable-row-background); height: 100%;' },
   table: { style: { tableLayout: 'fixed', width: '100%' } },
   bodyRow: { style: { cursor: 'pointer', height: 'var(--item-size)', overflow: 'hidden' } },
@@ -135,6 +152,8 @@ const cellPt = {
   bodyCell: { style: { padding: '0.15rem 0.5rem', verticalAlign: 'top' } },
   headerCell: { style: { padding: '0.4rem 0.5rem', borderRight: '1px solid var(--color-border-default)' } },
 }
+
+const centerCellPt = { ...cellPt, columnHeaderContent: { style: { justifyContent: 'center' } } }
 
 const flexCellPt = {
   bodyCell: {
@@ -197,8 +216,15 @@ const flexCellPt = {
           />
         </label>
 
-        <DensityControls grid-key="findings-aggregated" :default-line-clamp="2" :min="2" class="agg-grid-panel__density" />
+        <DensityControls grid-key="findings-aggregated" class="agg-grid-panel__density" />
       </header>
+
+      <GridToolbar>
+        <GridSearch v-model="searchTerm" label="Search findings" placeholder="Search findings..." />
+        <template #end>
+          <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
+        </template>
+      </GridToolbar>
 
       <Popover ref="stigPopover" :pt="stigPopoverPt" @show="onPopoverShow">
         <div class="stig-dropdown-content">
@@ -225,10 +251,11 @@ const flexCellPt = {
       <div v-else class="table-container">
         <DataTable
           ref="dataTableRef"
-          :value="rows"
+          :value="filteredRows"
           :loading="isLoading"
           :selection="selectedRow"
           selection-mode="single"
+          export-filename="Findings"
           :data-key="aggregator"
           sort-field="assetCount"
           :sort-order="-1"
@@ -239,43 +266,43 @@ const flexCellPt = {
           :virtual-scroller-options="{ itemSize }"
           striped-rows
           class="agg-grid-panel__table"
-          :style="{ '--line-clamp': lineClamp, '--item-size': `${itemSize}px` }"
+          :style="gridStyle"
           :pt="dataTablePt"
           @row-select="onRowSelect"
         >
-          <Column v-if="visibleColumns.has('cat')" field="severity" :sort-field="severitySortValue" header="CAT" sortable :style="{ width: '5rem', minWidth: '4.5rem' }" :pt="cellPt">
+          <Column v-if="visibleColumns.has('cat')" field="severity" :sort-field="severitySortValue" header="CAT" sortable :style="{ width: '5rem', minWidth: '4.5rem' }" :pt="centerCellPt">
             <template #body="{ data }">
-              <CatBadge :category="severityMap[data.severity] ?? 2" variant="label" />
+              <CatBadge :category="severityMap[data.severity] ?? 2" variant="label" centered />
             </template>
           </Column>
           <Column v-if="visibleColumns.has('group')" field="groupId" header="Group" sortable :style="{ width: '8rem', minWidth: '6rem' }" :pt="cellPt">
             <template #body="{ data }">
-              <span class="cell-text">{{ data.groupId }}</span>
+              <span class="cell-text"><HighlightText :text="data.groupId" :term="highlightTerm('groupId')" /></span>
             </template>
           </Column>
           <Column v-if="visibleColumns.has('rule')" field="ruleId" header="Rule" sortable :style="{ width: '15rem', minWidth: '13rem' }" :pt="cellPt">
             <template #body="{ data }">
-              <span class="cell-text">{{ data.ruleId }}</span>
+              <span class="cell-text"><HighlightText :text="data.ruleId" :term="highlightTerm('ruleId')" /></span>
             </template>
           </Column>
           <Column v-if="visibleColumns.has('cci')" field="cci" header="CCI" sortable :style="{ width: '8rem', minWidth: '7rem' }" :pt="cellPt">
             <template #body="{ data }">
-              <span class="cell-text">{{ data.cci }}</span>
+              <span class="cell-text"><HighlightText :text="data.cci" :term="highlightTerm('cci')" /></span>
             </template>
           </Column>
           <Column v-if="visibleColumns.has('apAcronym')" field="apAcronym" header="AP Acronym" sortable :style="{ width: '11rem', minWidth: '9rem' }" :pt="cellPt">
             <template #body="{ data }">
-              <span class="cell-text">{{ data.apAcronym }}</span>
+              <span class="cell-text"><HighlightText :text="data.apAcronym" :term="highlightTerm('apAcronym')" /></span>
             </template>
           </Column>
           <Column v-if="visibleColumns.has('title')" field="title" header="Title" sortable :style="{ width: '14rem', minWidth: '5rem' }" :pt="flexCellPt">
             <template #body="{ data }">
-              <span class="cell-text cell-text--clamped" :title="data.title">{{ data.title }}</span>
+              <span class="cell-text cell-text--clamped" :title="data.title"><HighlightText :text="data.title" :term="highlightTerm('title')" /></span>
             </template>
           </Column>
           <Column v-if="visibleColumns.has('definition')" field="definition" header="Definition" sortable :style="{ minWidth: '12rem' }" :pt="flexCellPt">
             <template #body="{ data }">
-              <span class="cell-text cell-text--clamped" :title="data.definition">{{ data.definition }}</span>
+              <span class="cell-text cell-text--clamped" :title="data.definition"><HighlightText :text="data.definition" :term="highlightTerm('definition')" /></span>
             </template>
           </Column>
           <Column field="assetCount" header="Assets" sortable :style="{ width: '7rem', minWidth: '6.5rem' }" :pt="cellPt">
@@ -283,26 +310,29 @@ const flexCellPt = {
               <span class="cell-asset-count">{{ data.assetCount }}</span>
             </template>
           </Column>
-          <Column v-if="visibleColumns.has('stigs')" header="STIGs" :style="{ minWidth: '16rem' }" :pt="flexCellPt">
+          <Column v-if="visibleColumns.has('stigs')" header="STIGs" field="stigs" :style="{ minWidth: '16rem' }" :pt="flexCellPt">
             <template #body="{ data }">
-              <span class="cell-text cell-text--clamped" :title="(data.stigs ?? []).map(s => s.benchmarkId).join(', ')">{{ (data.stigs ?? []).map(s => s.benchmarkId).join(', ') || '—' }}</span>
+              <span class="cell-text cell-text--clamped" :title="(data.stigs ?? []).map(s => s.benchmarkId).join(', ')"><HighlightText :text="(data.stigs ?? []).map(s => s.benchmarkId).join(', ') || '—'" :term="highlightTerm('stigs')" /></span>
             </template>
           </Column>
 
           <template #empty>
             <div class="agg-grid-empty">
-              No findings match the current scope.
+              {{ isFiltered && rows.length ? 'No findings match the current search and filters.' : 'No findings match the current scope.' }}
             </div>
           </template>
 
           <template #footer>
             <StatusFooter
+              :dt="dataTableRef"
               :metrics="[]"
               :total-count="rows.length"
+              :filtered-count="isFiltered ? filteredRows.length : null"
               total-label="findings"
               :show-refresh="true"
               :show-export="true"
               :actions="footerActions"
+              @refresh="emit('retry')"
               @action="onFooterAction"
             >
               <template #right-extra>
@@ -374,7 +404,7 @@ const flexCellPt = {
   flex-wrap: nowrap;
   gap: 0.6rem;
   padding: 0.5rem 0.75rem;
-  background: linear-gradient(180deg, var(--color-background-light), var(--color-background-dark));
+  background: var(--color-background-dark);
   border-bottom: 1px solid var(--color-border-default);
   flex-shrink: 0;
 }
@@ -400,7 +430,7 @@ const flexCellPt = {
 
 .agg-grid-panel__title-icon {
   color: var(--color-primary-highlight);
-  font-size: 0.9em;
+  font-size: var(--text-md);
   margin-right: 0.35rem;
 }
 
@@ -420,7 +450,7 @@ const flexCellPt = {
   min-width: 1.7rem;
   padding: 0.1rem 0.4rem;
   border-radius: 3px;
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--color-text-dark);
@@ -462,7 +492,7 @@ const flexCellPt = {
 .cat-total--3 { border-color: var(--color-cat3); }
 
 .cat-total__label {
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   font-weight: 700;
   letter-spacing: 0.03em;
 }
@@ -472,7 +502,7 @@ const flexCellPt = {
 .cat-total--3 .cat-total__label { color: var(--color-cat3); }
 
 .cat-total__value {
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--color-text-bright);
@@ -489,7 +519,7 @@ const flexCellPt = {
   display: inline-flex;
   align-items: center;
   margin: 0;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-weight: 700;
   color: var(--color-text-bright);
   letter-spacing: 0.02em;
@@ -501,7 +531,7 @@ const flexCellPt = {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   color: var(--color-text-primary);
   background: var(--color-background-light);
   border: 1px solid var(--color-border-default);
@@ -544,7 +574,7 @@ const flexCellPt = {
 }
 
 .agg-grid-panel__scope-caret {
-  font-size: 0.75em;
+  font-size: var(--icon-xs);
   color: var(--color-text-dim);
   flex-shrink: 0;
   margin-left: 0.1rem;
@@ -561,7 +591,7 @@ const flexCellPt = {
   padding: 1rem;
   text-align: center;
   color: var(--color-text-error);
-  font-size: 1rem;
+  font-size: var(--text-md);
 }
 
 .agg-grid-panel__retry {
@@ -586,7 +616,7 @@ const flexCellPt = {
 .toolbar-field__label {
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-weight: 700;
   white-space: nowrap;
 }
@@ -609,11 +639,11 @@ const flexCellPt = {
   min-height: 0;
 }
 
-/* line-height is load-bearing: font-size (bodyFontSize) × this ≈ the density
-   sizeMultiplier (15px/line), so N clamped lines fill exactly N rows. Retune
-   all three together (see useGridDensity). */
+/* Size and line height come from the grid geometry (useGridDensity textSize),
+   so N clamped lines fill exactly N rows. */
 .cell-text {
-  line-height: 1.3;
+  font-size: var(--cell-font-size);
+  line-height: var(--cell-line-height, 1.3);
   color: var(--color-text-primary);
 }
 
@@ -634,7 +664,7 @@ const flexCellPt = {
   display: inline-block;
   width: 100%;
   text-align: center;
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-variant-numeric: tabular-nums;
   font-weight: 600;
   color: var(--color-text-bright);
@@ -648,7 +678,7 @@ const flexCellPt = {
   background: color-mix(in srgb, var(--color-primary-highlight) 8%, transparent);
   border: 1px solid color-mix(in srgb, var(--color-primary-highlight) 14%, transparent);
   border-radius: 2px;
-  font-size: 1rem;
+  font-size: var(--text-md);
   flex-shrink: 0;
   white-space: nowrap;
 }

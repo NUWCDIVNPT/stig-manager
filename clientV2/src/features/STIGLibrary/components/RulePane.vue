@@ -1,5 +1,7 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
+import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
+import { catLabel } from '../../../shared/lib/exportCells.js'
 import DiffRuleTable from './DiffRuleTable.vue'
 import RulePaneHeader from './RulePaneHeader.vue'
 import RulePaneToolbar from './RulePaneToolbar.vue'
@@ -8,6 +10,10 @@ import ViewRuleTable from './ViewRuleTable.vue'
 const props = defineProps({
   benchmark: {
     type: Object,
+    default: null,
+  },
+  benchmarkId: {
+    type: String,
     default: null,
   },
   viewRev: {
@@ -68,6 +74,7 @@ const emit = defineEmits([
   'close',
   'retry-rules',
   'retry-diff',
+  'update:highlight',
 ])
 
 const diffMode = computed(() => !!props.compareRev)
@@ -98,95 +105,105 @@ const bodyState = computed(() => {
 })
 
 const bodyError = computed(() => (diffMode.value ? props.diffError : props.rulesError))
+
+// One search for whichever table is showing; rules on a column the other mode lacks are dropped.
+// The rules arrive with the detail, check, fix and ccis projections, so the view-mode search
+// also reads the rule content that only the detail pane renders.
+const viewColumns = [
+  { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false },
+  { field: 'version', header: 'STIG ID' },
+  { field: 'groupId', header: 'Group' },
+  { field: 'ruleId', header: 'Rule Id' },
+  { field: 'title', header: 'Rule Title' },
+  { field: 'discussion', header: 'Discussion', searchText: r => r.detail?.vulnDiscussion },
+  { field: 'check', header: 'Check', searchText: r => r.check?.content },
+  { field: 'fix', header: 'Fix', searchText: r => r.fix?.text },
+  { field: 'ccis', header: 'CCIs', searchText: r => (r.ccis ?? []).map(c => c.cci).join(' ') },
+]
+const diffColumns = computed(() => [
+  { field: 'stigId', header: 'STIG ID' },
+  { field: 'leftRule', header: `Rule in ${props.compareRev ?? 'compared'}` },
+  { field: 'rightRule', header: `Rule in ${props.viewRev ?? 'viewed'}` },
+  { field: 'cat', header: 'CAT', filterValues: r => catLabel(r.cat) ?? '', quickSearch: false },
+  { field: 'changed', header: 'Changed properties', filterValues: r => r.changed, multiple: true },
+])
+
+const tableRows = computed(() => (diffMode.value ? props.diffRows : props.rules) ?? [])
+const {
+  term: searchTerm,
+  filters: gridFilters,
+  filteredRows,
+  isFiltered,
+  filterColumns,
+  valueOptions,
+  highlightTerm,
+} = useGridSearch(tableRows, () => (diffMode.value ? diffColumns.value : viewColumns))
+
+// Per-field terms for the detail pane, so a match that only lives in the rule content is still visible
+const DETAIL_FIELDS = ['ruleId', 'version', 'title', 'discussion', 'check', 'fix', 'ccis']
+const detailHighlight = computed(() => diffMode.value
+  ? {}
+  : Object.fromEntries(DETAIL_FIELDS.map(f => [f, highlightTerm(f)]).filter(([, term]) => term)))
+watch(detailHighlight, v => emit('update:highlight', v), { immediate: true })
 </script>
 
 <template>
-  <section class="rule-pane">
-    <RulePaneHeader :benchmark="benchmark" @close="emit('close')" />
+  <section class="stiglib-panel">
+    <RulePaneHeader :benchmark="benchmark" :benchmark-id="benchmarkId" @close="emit('close')" />
     <RulePaneToolbar
+      v-model:search="searchTerm"
+      v-model:filters="gridFilters"
       :revisions="revisions"
       :revisions-loading="revisionsLoading"
       :view-rev="viewRev"
       :compare-rev="compareRev"
+      :filter-columns="filterColumns"
+      :value-options="valueOptions"
       @change-view-rev="rev => emit('change-view-rev', rev)"
       @change-compare-rev="rev => emit('change-compare-rev', rev)"
     />
-    <div class="rule-pane__body">
-      <div v-if="bodyState === 'loading'" class="rule-pane__state">
+    <div class="stiglib-panel__body">
+      <div v-if="bodyState === 'loading'" class="stiglib-state">
         <i class="pi pi-spin pi-spinner" />
         <span>Loading…</span>
       </div>
-      <div v-else-if="bodyState === 'error'" class="rule-pane__state rule-pane__state--error">
+      <div v-else-if="bodyState === 'error'" class="stiglib-state stiglib-state--error">
         <i class="pi pi-exclamation-triangle" />
         <span>{{ bodyError?.message ?? 'Could not load rules.' }}</span>
         <button
           type="button"
-          class="rule-pane__retry"
+          class="stiglib-retry"
           @click="emit(diffMode ? 'retry-diff' : 'retry-rules')"
         >
           Retry
         </button>
       </div>
-      <div v-else-if="bodyState === 'empty'" class="rule-pane__state">
+      <div v-else-if="bodyState === 'empty'" class="stiglib-state">
         <span>No rules in this revision.</span>
       </div>
       <template v-else>
         <DiffRuleTable
           v-if="diffMode"
-          :rows="diffRows"
+          :rows="filteredRows"
+          :total-count="diffRows.length"
+          :filtered="isFiltered"
+          :highlight-term="highlightTerm"
+          :view-rev="viewRev"
+          :compare-rev="compareRev"
           :selected-key="selectedDiffRowKey"
           @select-row="row => emit('select-diff-row', row)"
         />
         <ViewRuleTable
           v-else
-          :rules="rules"
+          :rules="filteredRows"
+          :total-count="rules.length"
+          :filtered="isFiltered"
+          :highlight-term="highlightTerm"
           :selected-rule-id="selectedRuleId"
+          :export-filename="benchmark?.benchmarkId ?? 'Rules'"
           @select-rule="rule => emit('select-rule', rule)"
         />
       </template>
     </div>
   </section>
 </template>
-
-<style scoped>
-.rule-pane {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 0;
-}
-
-.rule-pane__body {
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.rule-pane__state {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 1rem;
-  color: var(--color-text-dim);
-  font-style: italic;
-}
-
-.rule-pane__state--error {
-  color: var(--color-text-error);
-}
-
-.rule-pane__retry {
-  margin-left: 0.5rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: 3px;
-  border: 1px solid var(--color-border-default);
-  background-color: var(--color-background-subtle);
-  color: var(--color-text-primary);
-  cursor: pointer;
-  font-style: normal;
-}
-
-.rule-pane__retry:hover {
-  background-color: var(--color-bg-hover);
-}
-</style>

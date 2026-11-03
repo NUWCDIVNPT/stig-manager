@@ -1,7 +1,10 @@
 <script setup>
 import Popover from 'primevue/popover'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { getContrastColor, normalizeColor } from '../../shared/lib/colorUtils.js'
+import { rootFontSizePx } from '../../shared/lib/remToPx.js'
+import { TEXT_SCALE_REM } from '../../shared/lib/textScale.js'
+import { bodyFontFamily, measureTextWidth } from '../../shared/lib/textWidth.js'
+import LabelChip from '../common/Label.vue'
 
 const props = defineProps({
   labels: {
@@ -13,17 +16,24 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  searchTerm: {
+    type: String,
+    default: '',
+  },
 })
 
 const popoverRef = ref()
 let hideTimeout = null
 
-// Constants for label size estimation - use tighter values when compact
-const CHAR_WIDTH = computed(() => props.compact ? 5.5 : 6.5)
-const LABEL_PADDING = computed(() => props.compact ? 10 : 12)
-const LABEL_GAP = 3
-const OVERFLOW_BADGE_WIDTH = 8
-const RIGHT_MARGIN = computed(() => props.compact ? 0 : 8)
+// Chip geometry in px derived from rem so it tracks the root font-size along
+// with the chip CSS. Padding, gap and font (--text-md) mirror the global
+// .label-tag (style.css) and .labels-row below exactly; the +N badge is a chip
+// too and is measured the same way. `compact` only drops the trailing margin.
+const root = rootFontSizePx()
+const LABEL_FONT = `600 ${TEXT_SCALE_REM.md * root}px ${bodyFontFamily()}`
+const LABEL_PADDING = 0.9 * root
+const LABEL_GAP = 0.25 * root
+const RIGHT_MARGIN = computed(() => props.compact ? 0 : 0.75 * root)
 
 // Container ref and width
 const containerRef = ref(null)
@@ -54,11 +64,9 @@ onBeforeUnmount(() => {
   }
 })
 
-
-
-// Estimate the width of a label based on its text
+// Rendered width of a chip for the given text
 function estimateLabelWidth(text) {
-  return (String(text).length * CHAR_WIDTH.value) + LABEL_PADDING.value
+  return measureTextWidth(String(text), LABEL_FONT) + LABEL_PADDING
 }
 
 // Computed: which labels to show based on container width
@@ -66,13 +74,10 @@ const visibleLabelsData = computed(() => {
   const labels = props.labels
   const width = containerWidth.value
 
-  if (!labels || labels.length === 0) {
-    return { visible: [], overflow: [], overflowCount: 0 }
-  }
-
-  // If we don't have width yet, show all (will recalculate after mount)
-  if (!width || width <= 0) {
-    return { visible: labels, overflow: [], overflowCount: 0 }
+  // Render nothing until the container is measured. Rendering every label
+  // first would widen an auto-layout column and flash before collapsing.
+  if (!labels?.length || !(width > 0)) {
+    return { visible: [], overflow: [] }
   }
 
   const availableWidth = width - RIGHT_MARGIN.value
@@ -86,7 +91,7 @@ const visibleLabelsData = computed(() => {
     // Check if we need room for overflow badge
     const remainingLabels = labels.length - i - 1
     const needsOverflowBadge = remainingLabels > 0
-    const reservedWidth = needsOverflowBadge ? OVERFLOW_BADGE_WIDTH + LABEL_GAP : 0
+    const reservedWidth = needsOverflowBadge ? estimateLabelWidth(`+${remainingLabels}`) + LABEL_GAP : 0
 
     if (usedWidth + labelWidth + reservedWidth <= availableWidth) {
       visible.push(label)
@@ -102,13 +107,7 @@ const visibleLabelsData = computed(() => {
     visible.push(labels[0])
   }
 
-  const overflow = labels.slice(visible.length)
-
-  return {
-    visible,
-    overflow,
-    overflowCount: overflow.length,
-  }
+  return { visible, overflow: labels.slice(visible.length) }
 })
 
 function showPopover(event) {
@@ -142,57 +141,52 @@ function hidePopover() {
 
 <template>
   <div ref="containerRef" class="labels-row">
-    <span
+    <LabelChip
       v-for="label in visibleLabelsData.visible"
       :key="label.labelId"
-      :style="{ backgroundColor: normalizeColor(label.color, '#cccccc'), color: getContrastColor(label.color, '#000000', 'var(--color-text-primary)') }"
-      class="label-tag"
-    >
-      {{ label.name }}
-    </span>
+      :value="label.name"
+      :color="label.color"
+      :search-term="searchTerm"
+    />
     <span
-      v-if="visibleLabelsData.overflowCount > 0"
+      v-if="visibleLabelsData.overflow.length > 0"
       class="label-tag label-overflow"
       @mouseenter="showPopover"
       @mouseleave="scheduleHide"
     >
-      +{{ visibleLabelsData.overflowCount }}
+      +{{ visibleLabelsData.overflow.length }}
     </span>
 
-    <Popover ref="popoverRef">
+    <!-- Only mounted when there is something to show: a row per virtual
+         scroller item would otherwise carry an idle Popover + Portal each. -->
+    <Popover v-if="visibleLabelsData.overflow.length > 0" ref="popoverRef">
       <div
         class="overflow-labels-popover"
         @mouseenter="cancelHide"
         @mouseleave="hidePopover"
       >
-        <span
+        <LabelChip
           v-for="label in visibleLabelsData.overflow"
           :key="label.labelId"
-          :style="{ backgroundColor: normalizeColor(label.color, '#cccccc'), color: getContrastColor(label.color, '#000000', 'var(--color-text-primary)') }"
-          class="label-tag"
-        >
-          {{ label.name }}
-        </span>
+          :value="label.name"
+          :color="label.color"
+          :search-term="searchTerm"
+        />
       </div>
     </Popover>
   </div>
 </template>
 
 <style scoped>
+/* inline-size containment keeps the rendered chips from feeding back into an
+   auto-layout column's width, so the row is sized by its cell, not the
+   reverse. */
 .labels-row {
   display: flex;
   flex-wrap: nowrap;
-  gap: 3px;
+  gap: 0.25rem;
   align-items: center;
-}
-
-.label-tag {
-  display: inline-block;
-  font-size: 0.9rem;
-  font-weight: 600;
-  padding: 1px 5px;
-  border-radius: 6px;
-  white-space: nowrap;
+  contain: inline-size;
 }
 
 .label-overflow {

@@ -13,13 +13,18 @@ const props = defineProps({
     type: [String, Number],
     required: true,
   },
-  selectedLabelIds: {
+  selectedLabelNames: {
     type: Array,
     default: () => [],
   },
   refreshKey: {
     type: Number,
     default: 0,
+  },
+  // Gated by CollectionView.collectionReady
+  ready: {
+    type: Boolean,
+    default: true,
   },
 })
 
@@ -29,18 +34,18 @@ const router = useRouter()
 const fetchStigs = () => {
   return fetchCollectionStigSummary(
     props.collectionId,
-    buildLabelFilterParams(props.selectedLabelIds),
+    buildLabelFilterParams(props.selectedLabelNames),
   )
 }
 
-const { state: stigs, isLoading: stigsLoading, error: stigsError, execute: loadStigs } = useAsyncState(
+const { state: stigs, isLoading: stigsLoading, execute: loadStigs } = useAsyncState(
   fetchStigs,
   { initialState: [], immediate: false },
 )
 
 const selectedBenchmarkId = ref(null)
 
-const { state: checklistAssets, isLoading: checklistAssetsLoading, error: checklistAssetsError, execute: loadChecklistAssets } = useAsyncState(
+const { state: checklistAssets, isLoading: checklistAssetsLoading, execute: loadChecklistAssets } = useAsyncState(
   () => {
     if (!selectedBenchmarkId.value) {
       return []
@@ -48,14 +53,17 @@ const { state: checklistAssets, isLoading: checklistAssetsLoading, error: checkl
     return fetchCollectionChecklistAssets(
       props.collectionId,
       selectedBenchmarkId.value,
-      buildLabelFilterParams(props.selectedLabelIds),
+      buildLabelFilterParams(props.selectedLabelNames),
     )
   },
   { initialState: [], immediate: false },
 )
 
 // Initial Load
-watch([() => props.collectionId, () => props.selectedLabelIds, () => props.refreshKey], () => {
+watch([() => props.ready, () => props.collectionId, () => props.selectedLabelNames, () => props.refreshKey], () => {
+  if (!props.ready) {
+    return
+  }
   loadStigs()
   selectedBenchmarkId.value = null
 }, { immediate: true, deep: true })
@@ -93,6 +101,8 @@ function handleChecklistAssetAction(rowData) {
   })
 }
 
+// Carries the dashboard label filter along so Collection Review opens scoped
+// to the same Assets the grid was showing.
 function handleStigShieldClick(rowData) {
   router.push({
     name: 'collection-benchmark-review',
@@ -101,6 +111,7 @@ function handleStigShieldClick(rowData) {
       benchmarkId: rowData.benchmarkId,
       revisionStr: rowData.revisionStr,
     },
+    query: buildLabelFilterParams(props.selectedLabelNames),
   })
 }
 </script>
@@ -122,7 +133,6 @@ function handleStigShieldClick(rowData) {
               :api-metrics-summary="stigs"
               agg-type="stig"
               :is-loading="stigsLoading"
-              :error-message="stigsError?.message || stigsError"
               :selected-key="selectedBenchmarkId"
               selectable
               data-key="benchmarkId"
@@ -137,16 +147,10 @@ function handleStigShieldClick(rowData) {
 
       <SplitterPanel :size="50" :min-size="15">
         <div class="panel-content">
-          <div class="panel-header">
-            <h3>Checklists</h3>
-            <span v-if="selectedBenchmarkId" class="badge">{{ selectedBenchmarkId }}</span>
-          </div>
           <div class="grid-container">
-            <div v-if="checklistAssetsError" class="error-state">
-              {{ checklistAssetsError?.message || checklistAssetsError }}
-            </div>
             <MetricsSummaryGrid
-              v-else
+              title="Checklists"
+              :badge="selectedBenchmarkId"
               :api-metrics-summary="checklistAssets"
               agg-type="unagg"
               :is-loading="checklistAssetsLoading"

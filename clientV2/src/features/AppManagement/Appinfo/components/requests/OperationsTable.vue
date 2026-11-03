@@ -42,10 +42,11 @@ const COLUMNS = [
 
 <template>
   <ReportTableBase
+    searchable
     title="API Operations"
     :rows="rows"
     :columns="COLUMNS"
-    :key-column="{ field: 'operationId', header: 'Operation', searchPlaceholder: 'Search operation...', width: '12rem' }"
+    :key-column="{ field: 'operationId', header: 'Operation', width: '12rem' }"
     export-filename="appinfo-operations"
     noun="operation"
     table-min-width="100rem"

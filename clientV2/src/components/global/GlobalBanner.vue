@@ -1,58 +1,15 @@
 <script setup>
-import { computed } from 'vue'
+import { classificationBanner } from '../../shared/lib/classification.js'
 import { useGlobalAppStore } from '../../shared/stores/globalAppStore.js'
 
-const globalAppState = useGlobalAppStore()
-const classification = computed(() => globalAppState.classification || 'NONE')
-
-class Classification {
-  constructor(apiClassification) {
-    this.showBanner = true
-    switch (apiClassification) {
-      case 'U':
-        this.classificationCls = 'unclassified'
-        this.classificationText = 'UNCLASSIFIED (U)'
-        break
-      case 'CUI':
-        this.classificationCls = 'cui'
-        this.classificationText = 'CONTROLLED (CUI)'
-        break
-      case 'FOUO':
-        // FOUO is treated as controlled but uses its own color class
-        this.classificationCls = 'fouo'
-        this.classificationText = 'CONTROLLED (FOUO)'
-        break
-      case 'C':
-        this.classificationCls = 'confidential'
-        this.classificationText = 'CONFIDENTIAL (C)'
-        break
-      case 'S':
-        this.classificationCls = 'secret'
-        this.classificationText = 'SECRET (S)'
-        break
-      case 'TS':
-        this.classificationCls = 'topsecret'
-        this.classificationText = 'TOP SECRET (TS)'
-        break
-      case 'SCI':
-        this.classificationCls = 'sci'
-        this.classificationText = 'TOP SECRET / SCI (TS/SCI)'
-        break
-      case 'NONE':
-      default:
-        this.showBanner = false
-        break
-    }
-  }
-}
-
-const cls = new Classification(classification.value)
+// Read once at setup; classification is fixed for the app lifetime.
+const banner = classificationBanner(useGlobalAppStore().classification)
 </script>
 
 <template>
-  <div v-if="cls.showBanner" class="sm-banner" :class="[`sm-banner-${cls.classificationCls}`]">
+  <div v-if="banner" class="sm-banner" :class="[`sm-banner-${banner.cls}`]">
     <div class="sm-banner-body-text">
-      {{ cls.classificationText }}
+      {{ banner.text }}
     </div>
   </div>
 </template>
@@ -61,16 +18,13 @@ const cls = new Classification(classification.value)
 .sm-banner {
   width: 100%;
   box-sizing: border-box;
+  height: var(--classification-banner-height);
 }
 .sm-banner-body-text {
   text-align: center;
-  font:
-    bold 11px Open Sans,
-    helvetica,
-    sans-serif;
-  padding-top: 1px;
-  height: 12px;
-  line-height: 12px;
+  font-weight: bold;
+  font-size: var(--text-md);
+  line-height: var(--classification-banner-height);
 }
 .sm-banner-unclassified {
   background-color: var(--color-marking-unclassified);

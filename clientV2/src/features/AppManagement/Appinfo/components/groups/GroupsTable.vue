@@ -17,10 +17,11 @@ const COLUMNS = [
 
 <template>
   <ReportTableBase
+    searchable
     title="Group details"
     :rows="rows"
     :columns="COLUMNS"
-    :key-column="{ field: 'name', header: 'Group Name', searchPlaceholder: 'Search name...', width: '14rem' }"
+    :key-column="{ field: 'name', header: 'Group Name', width: '14rem' }"
     data-key="userGroupId"
     export-filename="appinfo-groups"
     noun="group"

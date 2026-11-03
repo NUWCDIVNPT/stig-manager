@@ -1,12 +1,32 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   ASSET_FIELDS,
+  csvMarking,
+  dataTableCellText,
+  dataTableCsv,
   escapeCsv,
+  exportDataTableCsv,
   formatAssetsForCsv,
   generateCsv,
   mapAssetToLabel,
+  serializeCsvValue,
   STIG_FIELDS,
 } from '../csv.js'
+import { useGlobalAppStore } from '../stores/globalAppStore.js'
+
+vi.mock('file-saver-es', () => ({ saveAs: vi.fn() }))
+
+const { saveAs } = await import('file-saver-es')
+
+// jsdom's Blob has no .text(), so read the saved blob through FileReader.
+function savedCsvText() {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result.replace(/^\uFEFF/, ''))
+    reader.onerror = reject
+    reader.readAsText(saveAs.mock.calls.at(-1)[0])
+  })
+}
 
 describe('escapeCsv', () => {
   it('returns empty string for null and undefined', () => {
@@ -59,6 +79,27 @@ describe('escapeCsv', () => {
   })
 })
 
+describe('csvMarking', () => {
+  const appStore = useGlobalAppStore()
+  afterEach(() => appStore.setClassification(null))
+
+  it('wraps the classification code in parentheses', () => {
+    appStore.setClassification('U')
+    expect(csvMarking()).toBe('(U)')
+    appStore.setClassification('CUI')
+    expect(csvMarking()).toBe('(CUI)')
+  })
+
+  it('marks NONE deployments as (NONE), like the legacy client', () => {
+    appStore.setClassification('NONE')
+    expect(csvMarking()).toBe('(NONE)')
+  })
+
+  it('marks an unset classification as (NONE)', () => {
+    expect(csvMarking()).toBe('(NONE)')
+  })
+})
+
 describe('generateCsv', () => {
   const cols = [
     { apiProperty: 'name', header: 'Name' },
@@ -72,6 +113,12 @@ describe('generateCsv', () => {
   it('preserves column order regardless of data-key order', () => {
     const data = [{ ip: '1.2.3.4', name: 'srv' }]
     expect(generateCsv(data, cols)).toBe('Name,IP\nsrv,1.2.3.4')
+  })
+
+  it('adds a leading Marking column only when asked', () => {
+    const data = [{ name: 'srv', ip: '1.2.3.4' }, { name: 'srv2' }]
+    expect(generateCsv(data, cols, { marking: '(U)' })).toBe('Marking,Name,IP\n(U),srv,1.2.3.4\n(U),srv2,')
+    expect(generateCsv(data, cols, {})).toBe('Name,IP\nsrv,1.2.3.4\nsrv2,')
   })
 
   it('emits empty cells when an apiProperty is missing on the data row', () => {
@@ -93,7 +140,7 @@ describe('generateCsv', () => {
 
   it('joins array values with a custom listDelimiter', () => {
     const data = [{ tags: ['a', 'b'] }]
-    expect(generateCsv(data, [{ apiProperty: 'tags', header: 'Tags' }], '\n'))
+    expect(generateCsv(data, [{ apiProperty: 'tags', header: 'Tags' }], { listDelimiter: '\n' }))
       .toBe('Tags\n"a\nb"')
   })
 
@@ -229,12 +276,222 @@ describe('formatAssetsForCsv', () => {
     }]
     const labels = [{ labelId: 'l1', name: 'prod' }]
     const rows = formatAssetsForCsv(mapAssetToLabel(assets, labels))
-    const csv = generateCsv(rows, ASSET_FIELDS, '\n')
+    const csv = generateCsv(rows, ASSET_FIELDS, { listDelimiter: '\n' })
     expect(csv).toContain('Name,Description,IP,FQDN,MAC,Non-Computing,STIGs,Labels,Metadata')
     expect(csv).toContain('srv1')
     expect(csv).toContain('False')
     expect(csv).toContain('"B1\nB2"')
     expect(csv).toContain('prod')
     expect(csv).toContain('"{""env"":""prod""}"')
+  })
+})
+
+describe('serializeCsvValue', () => {
+  it('returns empty string for null and undefined', () => {
+    expect(serializeCsvValue(null)).toBe('')
+    expect(serializeCsvValue(undefined)).toBe('')
+  })
+
+  it('stringifies scalars', () => {
+    expect(serializeCsvValue('a')).toBe('a')
+    expect(serializeCsvValue(0)).toBe('0')
+    expect(serializeCsvValue(false)).toBe('false')
+  })
+
+  it('serializes plain objects as JSON instead of [object Object]', () => {
+    expect(serializeCsvValue({ type: 'once', enabled: true })).toBe('{"type":"once","enabled":true}')
+  })
+
+  it('joins arrays of scalars with a comma-space', () => {
+    expect(serializeCsvValue(['a', 'b'])).toBe('a, b')
+  })
+
+  it('serializes object items inside arrays as JSON', () => {
+    expect(serializeCsvValue([{ name: 't1' }, { name: 't2' }])).toBe('{"name":"t1"}, {"name":"t2"}')
+  })
+})
+
+describe('exportDataTableCsv', () => {
+  const appStore = useGlobalAppStore()
+  beforeEach(() => appStore.setClassification('U'))
+  afterEach(() => appStore.setClassification(null))
+
+  // Fake PrimeVue DataTable instance: columnProp reads props straight off the
+  // fake column objects, matching how the real method reads Column vnodes.
+  function fakeDt(overrides = {}) {
+    return {
+      columns: [
+        { field: 'name', header: 'Name' },
+        { field: 'stats.count', header: 'Count' },
+        { field: 'tasks', header: 'Tasks' },
+        { header: 'Actions' }, // no field → skipped
+        { field: 'secret', header: 'Secret', exportable: false },
+      ],
+      processedData: [
+        { name: 'row1', stats: { count: 3 }, tasks: [{ name: 't1' }], secret: 'x' },
+        { name: '=cmd()', stats: {}, tasks: [], secret: 'y' },
+      ],
+      columnProp: (col, prop) => col[prop],
+      exportFilename: 'test-export',
+      exportFunction: null,
+      ...overrides,
+    }
+  }
+
+  it('exports headers and rows, resolving dot paths and serializing arrays', async () => {
+    exportDataTableCsv(fakeDt())
+
+    const csv = await savedCsvText()
+    const lines = csv.split('\n')
+    expect(lines[0]).toBe('Marking,Name,Count,Tasks')
+    expect(lines[1]).toBe('(U),row1,3,"{""name"":""t1""}"')
+    // Legacy naming: basename_compactUtcTimestamp.csv, e.g. test-export_2026-09-03T1105Z.csv
+    expect(saveAs.mock.calls.at(-1)[1]).toMatch(/^test-export_\d{4}-\d{2}-\d{2}T\d{4}Z\.csv$/)
+  })
+
+  it('guards formula injection via escapeCsv', async () => {
+    exportDataTableCsv(fakeDt())
+
+    const csv = await savedCsvText()
+    expect(csv).toContain('"\t=cmd()"')
+  })
+
+  it('skips field-less and exportable=false columns', async () => {
+    exportDataTableCsv(fakeDt())
+
+    const csv = await savedCsvText()
+    expect(csv).not.toContain('Actions')
+    expect(csv).not.toContain('Secret')
+    expect(csv).not.toContain('secret')
+  })
+
+  it('honors the table exportFunction when set, passing the whole record and null cells', async () => {
+    const seen = []
+    exportDataTableCsv(fakeDt({
+      columns: [{ field: 'name', header: 'Name' }, { field: 'missing', header: 'Missing' }],
+      exportFunction: ({ data, field, record }) => {
+        seen.push([field, data, record.name])
+        return field === 'missing' ? `derived-${record.name}` : data
+      },
+    }))
+
+    const csv = await savedCsvText()
+    expect(csv.split('\n')[1]).toBe('(U),row1,derived-row1')
+    expect(seen).toContainEqual(['missing', undefined, 'row1'])
+  })
+
+  it('prefers a column export-value over the table function and lets it export without a field', async () => {
+    exportDataTableCsv(fakeDt({
+      columns: [
+        { field: 'name', header: 'Name', props: { exportValue: ({ data, record }) => `${data}!${record.stats.count}` } },
+        { header: 'Derived', props: { 'export-value': ({ data, record }) => `${data === undefined}:${record.name}` } },
+        { header: 'Ignored', props: { exportValue: 'not a function' } },
+      ],
+      exportFunction: () => 'table',
+    }))
+
+    const csv = await savedCsvText()
+    expect(csv.split('\n').slice(0, 2)).toEqual(['Marking,Name,Derived', '(U),row1!3,true:row1'])
+  })
+
+  it('applies exportDisplayValue by default so cells export as the grid displays them', async () => {
+    exportDataTableCsv(fakeDt({
+      columns: [
+        { field: 'resultEngine', exportHeader: 'Engine' },
+        { field: 'status', header: 'Status' },
+        { field: 'result', header: 'Result' },
+        { field: 'severity', exportHeader: 'CAT' },
+        { field: 'assetLabels', exportHeader: 'Labels' },
+      ],
+      processedData: [{
+        resultEngine: null,
+        status: { label: 'submitted', ts: 'x' },
+        result: 'pass',
+        severity: 'medium',
+        assetLabels: [{ name: 'label-1', color: 'fff' }, { name: 'label-2' }],
+      }],
+    }))
+
+    const csv = await savedCsvText()
+    expect(csv.split('\n')).toEqual([
+      'Marking,Engine,Status,Result,CAT,Labels',
+      '(U),manual,Submitted,NF,CAT 2,"label-1, label-2"',
+    ])
+  })
+
+  it('serializes Date cells as ISO strings without extra quoting', async () => {
+    exportDataTableCsv(fakeDt({
+      columns: [{ field: 'when', header: 'When' }],
+      processedData: [{ when: new Date('2026-09-08T12:00:00Z') }],
+    }))
+
+    const csv = await savedCsvText()
+    expect(csv.split('\n')[1]).toBe('(U),2026-09-08T12:00:00.000Z')
+  })
+
+  it('leads every row with the classification marking, (NONE) included', async () => {
+    appStore.setClassification('NONE')
+    exportDataTableCsv(fakeDt())
+
+    const lines = (await savedCsvText()).split('\n')
+    expect(lines[0]).toBe('Marking,Name,Count,Tasks')
+    expect(lines.slice(1).every(line => line.startsWith('(NONE),'))).toBe(true)
+    expect(lines).toHaveLength(3)
+  })
+
+  it('no-ops when DataTable internals are unavailable or the table has no columns', () => {
+    saveAs.mockClear()
+    exportDataTableCsv(null)
+    exportDataTableCsv({})
+    exportDataTableCsv(fakeDt({ columns: null }))
+    expect(saveAs).not.toHaveBeenCalled()
+  })
+
+  describe('dataTableCsv', () => {
+    it('serializes the given rows (not processedData) with a header line', () => {
+      const dt = fakeDt()
+      const csv = dataTableCsv(dt, [dt.processedData[0]])
+      expect(csv).toBe('Name,Count,Tasks\nrow1,3,"{""name"":""t1""}"')
+    })
+
+    it('adds no marking unless asked, so row copies stay unmarked', () => {
+      const dt = fakeDt()
+      expect(dataTableCsv(dt, [dt.processedData[0]], {})).toBe('Name,Count,Tasks\nrow1,3,"{""name"":""t1""}"')
+    })
+
+    it('puts the marking column first, ahead of export-value columns', () => {
+      const dt = fakeDt({
+        columns: [
+          { field: 'secret', header: 'Secret', exportable: false },
+          { header: 'Derived', props: { exportValue: ({ record }) => `d-${record.name}` } },
+          { field: 'name', header: 'Name' },
+        ],
+      })
+      expect(dataTableCsv(dt, dt.processedData, { marking: '(CUI)' })).toBe(
+        'Marking,Derived,Name\n(CUI),d-row1,row1\n(CUI),d-=cmd(),"\t=cmd()"',
+      )
+    })
+
+    it('returns null when no column is exportable', () => {
+      const dt = fakeDt({ columns: [{ header: 'Rule' }, { header: '' }] })
+      expect(dataTableCsv(dt, dt.processedData)).toBeNull()
+    })
+
+    it('returns null when rows is not an array', () => {
+      expect(dataTableCsv(fakeDt(), undefined)).toBeNull()
+    })
+  })
+
+  describe('dataTableCellText', () => {
+    it('serializes one cell without CSV escaping', () => {
+      const dt = fakeDt()
+      expect(dataTableCellText(dt, dt.columns[0], { name: 'a,b' })).toBe('a,b')
+      expect(dataTableCellText(dt, dt.columns[1], { stats: { count: 3 } })).toBe('3')
+    })
+
+    it('returns null for a column with neither field nor export-value', () => {
+      const dt = fakeDt()
+      expect(dataTableCellText(dt, { header: 'Actions' }, {})).toBeNull()
+    })
   })
 })

@@ -155,7 +155,7 @@ function onGenerate() {
 }
 
 .poam-field__label {
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-weight: 600;
   color: var(--color-text-bright);
 }

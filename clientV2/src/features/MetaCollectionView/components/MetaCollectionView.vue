@@ -6,24 +6,21 @@ import TabList from 'primevue/tablist'
 import TabPanel from 'primevue/tabpanel'
 import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
-import { ref, watch } from 'vue'
+import { onUnmounted, ref } from 'vue'
+import { viewTabListPt, viewTabPt, viewTabsPt } from '../../../shared/lib/tabPt.js'
 import MetaCollectionMetrics from '../../CollectionMetrics/components/MetaCollectionMetrics.vue'
 import MetaExportMetrics from '../../CollectionMetrics/components/MetaExportMetrics.vue'
-import MetricsFilter from '../../CollectionMetrics/components/MetricsFilter.vue'
+import { useMetaCollectionFilter } from '../composables/useMetaCollectionFilter.js'
 import MetaCollectionsTab from './MetaCollectionsTab.vue'
 import MetaStigsTab from './MetaStigsTab.vue'
-
-const STORAGE_KEY = 'metaCollectionIds'
 
 const activeTab = ref('collections')
 const DASHBOARD_STORAGE_KEY = 'stigman:metaDashboardCollapsed'
 const dashboardCollapsed = ref(localStorage.getItem(DASHBOARD_STORAGE_KEY) === 'true')
-const selectedCollectionIds = ref(loadSelectedCollectionIds())
+// Set from the collection filter after the breadcrumb (MenuBar); each visit starts unfiltered
+const { selectedCollectionIds, reset: resetCollectionFilter } = useMetaCollectionFilter()
+onUnmounted(resetCollectionFilter)
 const isAnimating = ref(false)
-
-watch(selectedCollectionIds, (newIds) => {
-  persistSelectedCollectionIds(newIds)
-}, { deep: true })
 
 function toggleDashboardSidebar() {
   isAnimating.value = true
@@ -39,38 +36,6 @@ function toggleDashboardSidebar() {
   catch {
     // localStorage unavailable
   }
-}
-
-function loadSelectedCollectionIds() {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (!stored) {
-      return []
-    }
-    return JSON.parse(stored)
-  }
-  catch {
-    return []
-  }
-}
-
-function persistSelectedCollectionIds(ids) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(ids))
-  }
-  catch {
-    // localStorage unavailable
-  }
-}
-
-const tabsPt = {
-  root: {
-    style: {
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100%',
-    },
-  },
 }
 
 const tabPanelsPt = {
@@ -97,7 +62,7 @@ const tabPanelPt = {
 </script>
 
 <template>
-  <div class="meta-collection-view">
+  <div class="meta-collection-view" data-tour="meta-dashboard">
     <Splitter
       :pt="{
         gutter: { style: 'background: var(--color-border-dark)' },
@@ -106,9 +71,9 @@ const tabPanelPt = {
     >
       <!-- Dashboard Sidebar -->
       <SplitterPanel
-        :size="28"
+        :size="18"
         :min-size="4"
-        :pt="{ root: { class: { 'sidebar-panel--collapsed': dashboardCollapsed, 'sidebar-panel--animating': isAnimating }, style: 'min-width: 330px; max-width: 600px;' } }"
+        :pt="{ root: { class: { 'sidebar-panel--collapsed': dashboardCollapsed, 'sidebar-panel--animating': isAnimating }, style: 'min-width: 320px; max-width: 460px;' } }"
       >
         <aside class="dashboard-sidebar">
           <button
@@ -126,7 +91,10 @@ const tabPanelPt = {
             <span class="dot dot--rejected" title="Rejected" />
           </div>
           <div v-show="!dashboardCollapsed" class="sidebar-content">
-            <MetaCollectionMetrics vertical :selected-collection-ids="selectedCollectionIds" />
+            <MetaCollectionMetrics
+              :selected-collection-ids="selectedCollectionIds"
+              vertical
+            />
             <div class="sidebar-export">
               <MetaExportMetrics :selected-collection-ids="selectedCollectionIds" />
             </div>
@@ -135,21 +103,16 @@ const tabPanelPt = {
       </SplitterPanel>
 
       <!-- Right Panel: Tabs + Content -->
-      <SplitterPanel :size="72">
+      <SplitterPanel :size="82">
         <div class="right-panel">
-          <Tabs v-model:value="activeTab" :pt="tabsPt">
-            <TabList>
-              <Tab value="collections">
+          <Tabs v-model:value="activeTab" :pt="viewTabsPt">
+            <TabList :pt="viewTabListPt">
+              <Tab value="collections" :pt="viewTabPt">
                 Collections
               </Tab>
-              <Tab value="stigs">
+              <Tab value="stigs" :pt="viewTabPt">
                 STIGs
               </Tab>
-
-              <div class="tab-filter-container">
-                <span class="filter-label">FILTER:</span>
-                <MetricsFilter v-model="selectedCollectionIds" type="collection" />
-              </div>
             </TabList>
 
             <TabPanels :pt="tabPanelsPt">
@@ -169,8 +132,6 @@ const tabPanelPt = {
 
 <style scoped>
 .meta-collection-view {
-  --dashboard-sidebar-width: 33rem;
-  --dashboard-sidebar-collapsed-width: 2.5rem;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -203,7 +164,7 @@ const tabPanelPt = {
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: 3.25rem;
+  height: var(--panel-header-height);
   background: none;
   border: none;
   border-bottom: 1px solid var(--color-border-default);
@@ -257,20 +218,5 @@ const tabPanelPt = {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-}
-
-.tab-filter-container {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-left: auto;
-  padding-right: 1rem;
-}
-
-.filter-label {
-  font-size: 0.85rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  color: var(--color-text-dim);
 }
 </style>

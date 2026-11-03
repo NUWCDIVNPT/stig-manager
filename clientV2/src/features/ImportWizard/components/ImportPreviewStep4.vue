@@ -2,21 +2,34 @@
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { ref } from 'vue'
+import GridFilterButton from '../../../components/common/GridFilterButton.vue'
+import PanelTitle from '../../../components/common/PanelTitle.vue'
 import ResultBadge from '../../../components/common/ResultBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
+import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 import { formatDateTimeString } from '../../../shared/lib.js'
+import { dashZero } from '../../../shared/lib/numberFormat.js'
+import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 
 defineOptions({ inheritAttrs: false })
 
-defineProps({
+const props = defineProps({
   rows: { type: Array, required: true },
 })
 
+const { filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions } = useGridSearch(() => props.rows, [
+  { field: 'asset', header: 'Asset', searchText: r => r.taskAsset.assetProps.name },
+  { field: 'assetState', header: 'Asset is', filterValues: r => (r.taskAsset.assetProps.assetId ? 'Existing' : 'New') },
+  { field: 'stig', header: 'STIG', filterValues: r => r.checklist.benchmarkId },
+  { field: 'stigState', header: 'STIG assignment is', filterValues: r => (r.checklist.newAssignment ? 'New' : 'Existing') },
+  { field: 'file', header: 'File', searchText: r => r.checklist.sourceRef.fullPath ?? r.checklist.sourceRef.name },
+])
+
+const ROW_HEIGHT = rowHeightPx('spacious')
+
 const dtRef = ref()
 
-function onFooterAction(action) {
-  if (action === 'export') { dtRef.value.exportCSV() }
-}
+const centerHeaderPt = { columnHeaderContent: { style: 'justify-content: center;' } }
 </script>
 
 <template>
@@ -28,17 +41,25 @@ function onFooterAction(action) {
     </div>
 
     <div class="preview-table-wrapper">
+      <PanelTitle title="Results to import">
+        <template #end>
+          <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
+        </template>
+      </PanelTitle>
       <DataTable
         ref="dtRef"
-        :value="rows"
+        :value="filteredRows"
         export-filename="import-preview"
         scrollable
         scroll-height="flex"
         resizable-columns
         striped-rows
-        :virtual-scroller-options="{ itemSize: 46 }"
+        :virtual-scroller-options="{ itemSize: ROW_HEIGHT }"
         :pt="{ table: { style: 'table-layout: fixed; width: 100%' }, tableContainer: { style: 'overflow-x: hidden' } }"
       >
+        <template #empty>
+          {{ isFiltered && rows.length ? 'No results match the filters.' : 'Nothing to import.' }}
+        </template>
         <Column header="Asset" field="taskAsset.assetProps.name" style="width: 16%" sortable :sort-field="r => r.taskAsset.assetProps.name">
           <template #body="{ data }">
             <span :class="{ 'new-item': !data.taskAsset.assetProps.assetId }">
@@ -53,44 +74,44 @@ function onFooterAction(action) {
             </span>
           </template>
         </Column>
-        <Column field="checklist.stats.informational" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.informational ?? 0">
+        <Column field="checklist.stats.informational" export-header="I" style="width: 5%; text-align: center" :pt="centerHeaderPt" sortable :sort-field="r => r.checklist.stats?.informational ?? 0">
           <template #header>
             <ResultBadge status="I" />
           </template>
           <template #body="{ data }">
-            {{ data.checklist.stats?.informational ?? 0 }}
+            {{ dashZero(data.checklist.stats?.informational) }}
           </template>
         </Column>
-        <Column field="checklist.stats.notchecked" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.notchecked ?? 0">
+        <Column field="checklist.stats.notchecked" export-header="NR" style="width: 5%; text-align: center" :pt="centerHeaderPt" sortable :sort-field="r => r.checklist.stats?.notchecked ?? 0">
           <template #header>
             <ResultBadge status="NR" />
           </template>
           <template #body="{ data }">
-            {{ data.checklist.stats?.notchecked ?? 0 }}
+            {{ dashZero(data.checklist.stats?.notchecked) }}
           </template>
         </Column>
-        <Column field="checklist.stats.notapplicable" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.notapplicable ?? 0">
+        <Column field="checklist.stats.notapplicable" export-header="NA" style="width: 5%; text-align: center" :pt="centerHeaderPt" sortable :sort-field="r => r.checklist.stats?.notapplicable ?? 0">
           <template #header>
             <ResultBadge status="NA" />
           </template>
           <template #body="{ data }">
-            {{ data.checklist.stats?.notapplicable ?? 0 }}
+            {{ dashZero(data.checklist.stats?.notapplicable) }}
           </template>
         </Column>
-        <Column field="checklist.stats.pass" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.pass ?? 0">
+        <Column field="checklist.stats.pass" export-header="NF" style="width: 5%; text-align: center" :pt="centerHeaderPt" sortable :sort-field="r => r.checklist.stats?.pass ?? 0">
           <template #header>
             <ResultBadge status="NF" />
           </template>
           <template #body="{ data }">
-            {{ data.checklist.stats?.pass ?? 0 }}
+            {{ dashZero(data.checklist.stats?.pass) }}
           </template>
         </Column>
-        <Column field="checklist.stats.fail" style="width: 5%; text-align: center" sortable :sort-field="r => r.checklist.stats?.fail ?? 0">
+        <Column field="checklist.stats.fail" export-header="O" style="width: 5%; text-align: center" :pt="centerHeaderPt" sortable :sort-field="r => r.checklist.stats?.fail ?? 0">
           <template #header>
             <ResultBadge status="O" />
           </template>
           <template #body="{ data }">
-            {{ data.checklist.stats?.fail ?? 0 }}
+            {{ dashZero(data.checklist.stats?.fail) }}
           </template>
         </Column>
         <Column header="File" field="checklist.sourceRef.name" style="width: 25%" sortable :sort-field="r => r.checklist.sourceRef.name">
@@ -107,11 +128,12 @@ function onFooterAction(action) {
 
       <StatusFooter
         :total-count="rows.length"
+        :filtered-count="isFiltered ? filteredRows.length : null"
         :show-refresh="false"
         :show-export="true"
+        :dt="dtRef"
         total-label="files"
         total-icon="pi pi-file"
-        @action="onFooterAction"
       />
     </div>
   </div>
@@ -124,7 +146,7 @@ function onFooterAction(action) {
 }
 
 .step-title {
-  font-size: 1.6rem;
+  font-size: var(--text-2xl);
   font-weight: 600;
   margin: 0 0 0.5rem;
   color: var(--color-primary-highlight);

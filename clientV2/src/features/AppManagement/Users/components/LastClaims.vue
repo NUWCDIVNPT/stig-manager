@@ -3,6 +3,7 @@ import Tree from 'primevue/tree'
 import { computed, ref, watch } from 'vue'
 import HelpIcon from '../../../../components/common/HelpIcon.vue'
 import { TOOLTIPS } from '../../../../shared/lib/tooltips.js'
+import { useEnv } from '../../../../shared/stores/useEnv.js'
 import { formatDateTime, transformLastClaims } from '../lib/userDisplay.js'
 // TODO get a real tree json tools
 // Read-only diagnostic view of statistics.lastClaims — the claims presented
@@ -14,7 +15,8 @@ const props = defineProps({
   },
 })
 
-const claims = computed(() => transformLastClaims(props.lastClaims))
+const scopeClaims = useEnv()?.oauth?.claims?.scopeList
+const claims = computed(() => transformLastClaims(props.lastClaims, scopeClaims))
 const hasClaims = computed(() => Object.keys(claims.value).length > 0)
 
 function leafText(value) {
@@ -74,7 +76,7 @@ watch(nodes, (list) => {
 const treePt = {
   root: { style: 'background: transparent; border: none; padding: 0.25rem 0; color: var(--color-text-primary); overflow: auto; flex: 1 1 auto; min-height: 0;' },
   nodeContent: { style: 'padding: 0.1rem 0.25rem; background: transparent; color: var(--color-text-primary);' },
-  nodeLabel: { style: 'font-size: 1rem;' },
+  nodeLabel: { style: 'font-size: var(--text-md);' },
   nodeToggleButton: { style: 'width: 1.5rem; height: 1.5rem; color: var(--color-text-dim);' },
 }
 </script>
@@ -114,7 +116,7 @@ const treePt = {
   display: flex;
   align-items: center;
   padding: 0.6rem 0.85rem;
-  font-size: 1rem;
+  font-size: var(--text-md);
   font-weight: 600;
   color: var(--color-text-primary);
   background: var(--color-background-subtle);
@@ -127,6 +129,6 @@ const treePt = {
   gap: 0.5rem;
   padding: 0.85rem 1rem;
   color: var(--color-text-dim);
-  font-size: 1rem;
+  font-size: var(--text-md);
 }
 </style>

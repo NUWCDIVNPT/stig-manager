@@ -1,3 +1,38 @@
+1.6.18
+-------
+
+Changes:
+
+  - (API) Review aging rules now require a ``triggerInterval`` of at least 3600 seconds (one hour). Existing rules below the minimum are raised to 3600 seconds and disabled by a migration so the collection owner can review and re-enable them.
+  - (API) Fixed the review aging task failing for reviews whose rule appears in more than one STIG. Such reviews were selected once per STIG, which aborted the metrics refresh for the collection, and a failed collection left the task unable to process later collections in the same run. Benchmark-targeted rules now select only reviews on assets assigned that STIG.
+  - (API) Added the ``labelId``, ``labelName``, and ``labelMatch`` query parameters to the collection checklist endpoint (``getChecklistByCollectionStig``). When present, per-rule result and status counts include only the assets matching the filter.
+  - (API) The ``labelName`` query parameter now allows reserved characters in label names.
+  - (API) Job run output now includes a ``seq`` property, returns ``taskId`` as a string, and marks the task fields as nullable, matching the ``JobRunOutput`` schema to the actual output.
+  - (UI) The review aging rule editor no longer accepts a blank interval, which was saved as 0.
+  - (Tests) Added integration tests for the review aging interval minimum, the migration that disables sub-minimum rules, and metrics refresh for reviews shared across STIGs. Updated the API test suite to ``mocha`` v12 and ``mochawesome`` v8.
+  - (Dependencies) Updated ``undici`` to v8.12.3, ``multer`` to v2.5.0, and ``compression`` to v1.8.2. Various security and maintenance updates.
+
+Note 1: Review aging rules with a ``triggerInterval`` below 3600 seconds have been set to 3600 seconds and disabled. Collection owners should review these rules and re-enable them if the one-hour interval is intended.
+
+Note 2: This release includes a database migration to support the review aging changes.
+
+1.6.17
+-------
+
+Changes:
+
+  - (API) Raised the minimum supported MySQL release to 8.4.0. The API no longer starts when connected to a MySQL release older than 8.4.0, and the startup warning for untested 8.0.x releases was removed.
+  - (API) Named placeholders are now enabled per query instead of on the pooled connection, following the ``mysql2`` update in which each pooled connection has its own configuration.
+  - (API/UI) ``STIGMAN_JWT_SCOPE_CLAIM`` now accepts a comma-separated list of claim names, such as ``scp,roles``. The scopes found in each named claim are combined, and each claim may hold either a space-separated string or an array of strings. This allows one deployment to accept both interactive user tokens and service account tokens from providers that convey application permissions in a different claim, such as Azure Entra ID tokens issued through the client credentials flow.
+  - (UI) When an access token yields no scopes, the client error now lists each checked claim and describes the value found, instead of reporting only the first claim name.
+  - (Tests) Stabilized the job and log stream integration tests, which depend on asynchronous server behavior, and raised the default test timeout.
+  - (Tests) Added unit tests for scope claim parsing and state tests for token validation with multiple scope claims.
+  - (Docs) Updated the MySQL requirements to reflect the 8.4.0 minimum.
+  - (Docs) Documented the scope claim list
+  - (Dependencies) Updated ``mysql2`` to v3.24.3, ``multer`` to v2.3.0, ``js-yaml`` to v4.3.2, and ``qs`` to v6.16.0. Various security and maintenance updates.
+
+Note: MySQL 8.4.0 or later is now required. The API will not start when provided with a MySQL release older than 8.4.0. The MySQL 8.0.x series has reached end of life and is no longer supported; update to the latest MySQL 8.4.x release before upgrading to this version of STIG Manager.
+
 1.6.16
 -------
 
@@ -204,7 +239,7 @@ Changes:
   - (API/UI) feature: Bulk assignment of Collection Grants to User Groups
   - (UI) enhancement: Handle cross-origin OIDC with mTLS by pre-fetching openid-config from main thread
   - (UI) enhancement: handle state mismatch by auto redirecting to OIDC Provider for smoother reauth UX
- 
+
 Note: This release includes the new Log Stream feature. If STIGMan has been deployed behind a reverse proxy, additional configuration may be required for it to function correctly. Please refer to the [STIG Manager documentation](https://stig-manager.readthedocs.io/en/latest/installation-and-setup/reverse-proxy.html#proxy-requirements-for-streaming-sse-and-websocket-endpoints) for guidance on configuring your reverse proxy to support streaming endpoints and WebSockets. This feature can be disabled by setting the environment variable `STIGMAN_EXPERIMENTAL_LOGSTREAM` to `false` if necessary.
 
 1.5.14

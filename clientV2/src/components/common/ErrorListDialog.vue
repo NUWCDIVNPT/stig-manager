@@ -66,7 +66,7 @@ const visibleModel = computed({
 }
 
 .error-icon {
-  font-size: 2rem;
+  font-size: var(--text-display);
   color: var(--color-text-error, #f87171);
   flex-shrink: 0;
 }
@@ -102,6 +102,6 @@ const visibleModel = computed({
 
 .error-message {
   color: var(--color-text-dim);
-  font-size: 0.875rem;
+  font-size: var(--text-md);
 }
 </style>

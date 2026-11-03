@@ -12,7 +12,7 @@
 }
 
 .toolbar-btn__label {
-  font-size: 1.02rem;
+  font-size: var(--text-md);
   font-weight: 600;
 }
 
@@ -24,7 +24,7 @@
 }
 
 .toolbar-btn__icon-font {
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   margin-right: 0.3rem;
 }
 

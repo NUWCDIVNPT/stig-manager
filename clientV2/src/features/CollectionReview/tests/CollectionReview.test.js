@@ -1,19 +1,21 @@
 import { fireEvent, screen } from '@testing-library/vue'
 import { flushPromises } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 // API Mocks
 import { fetchCollection } from '../../../shared/api/collectionsApi.js'
 
 // Composables Mocks
+import { useArchiveProgress } from '../../../shared/composables/useArchiveProgress.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 
 import { renderWithProviders } from '../../../testUtils/utils.js'
 import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 
 import { fetchAssetsByCollectionStig, fetchCollectionChecklist, fetchReviewsByRule, fetchRule, postReviewBatch } from '../api/collectionReviewApi.js'
-import { useReviewActionAvailability } from '../composables/useReviewActionAvailability.js'
 import CollectionReview from '../components/CollectionReview.vue'
+import { useReviewActionAvailability } from '../composables/useReviewActionAvailability.js'
 
 vi.mock('../../../shared/api/collectionsApi.js', () => ({
   fetchCollection: vi.fn(),
@@ -25,6 +27,14 @@ vi.mock('../api/collectionReviewApi.js', () => ({
   fetchReviewsByRule: vi.fn(),
   fetchRule: vi.fn(),
   postReviewBatch: vi.fn(),
+}))
+
+vi.mock('../../../shared/composables/useArchiveProgress.js', () => ({
+  useArchiveProgress: vi.fn(),
+}))
+
+vi.mock('../../../components/common/ArchiveProgressDialog.vue', () => ({
+  default: { name: 'ArchiveProgressDialog', props: ['archive'], template: '<div />' },
 }))
 
 vi.mock('../../../shared/composables/useCurrentUser.js', () => ({
@@ -48,11 +58,12 @@ vi.mock('vue-router', () => ({
 vi.mock('../components/CollectionChecklistGrid.vue', () => ({
   default: {
     name: 'CollectionChecklistGrid',
-    props: ['gridData', 'isLoading', 'selectedRuleId', 'assetCount'],
+    props: ['gridData', 'isLoading', 'selectedRuleId', 'assetCount', 'emptyMessage', 'canExportArchive'],
     template: `
-      <div data-testid="mock-checklist-grid">
+      <div data-testid="mock-checklist-grid" :data-empty-message="emptyMessage" :data-can-export-archive="String(canExportArchive)">
         <button data-testid="emit-select-rule" @click="$emit('select-rule', 'V-456')">Select Rule</button>
         <button data-testid="emit-refresh" @click="$emit('refresh')">Refresh</button>
+        <button data-testid="emit-export-archive" @click="$emit('export-archive', { format: 'ckl', mode: 'mono' })">Export</button>
       </div>
     `,
   },
@@ -75,7 +86,11 @@ vi.mock('../components/RuleTable.vue', () => ({
 }))
 
 vi.mock('../../../components/common/RuleInfo.vue', () => ({
-  default: { name: 'RuleInfo', template: '<div data-testid="mock-rule-info"></div>' },
+  default: {
+    name: 'RuleInfo',
+    props: ['ruleContent'],
+    template: '<div data-testid="mock-rule-info" :data-has-rule="String(!!ruleContent)"></div>',
+  },
 }))
 
 vi.mock('../components/RejectReasonModal.vue', () => ({
@@ -108,25 +123,29 @@ vi.mock('primevue/splitter', () => ({ default: { name: 'Splitter', template: '<d
 vi.mock('primevue/splitterpanel', () => ({ default: { name: 'SplitterPanel', template: '<div><slot></slot></div>' } }))
 
 describe('collectionReview.vue', () => {
-  let mockRouterPush, mockAddView, mockRemoveView
+  let mockRouterPush, mockRouterReplace, mockAddView, mockRemoveView, mockDownload, routeState
 
   beforeEach(() => {
     vi.clearAllMocks()
 
     mockRouterPush = vi.fn()
+    mockRouterReplace = vi.fn()
     mockAddView = vi.fn()
     mockRemoveView = vi.fn()
 
-    useRouter.mockReturnValue({ push: mockRouterPush })
-    useRoute.mockReturnValue({
+    useRouter.mockReturnValue({ push: mockRouterPush, replace: mockRouterReplace })
+    // reactive so tests can change the query in place, as router.replace would
+    routeState = reactive({
       params: {
         collectionId: 'coll-1',
         benchmarkId: 'bench-1',
         revisionStr: 'rev-1',
       },
+      query: {},
       fullPath: '/collections/coll-1/bench-1/rev-1',
       path: '/collections/coll-1/bench-1/rev-1',
     })
+    useRoute.mockReturnValue(routeState)
 
     useCurrentUser.mockReturnValue({
       getCollectionRoleId: vi.fn().mockReturnValue(3),
@@ -136,6 +155,9 @@ describe('collectionReview.vue', () => {
       addView: mockAddView,
       removeView: mockRemoveView,
     })
+
+    mockDownload = vi.fn()
+    useArchiveProgress.mockReturnValue({ download: mockDownload })
 
     useReviewActionAvailability.mockReturnValue({
       actionStates: { submit: true },
@@ -167,8 +189,71 @@ describe('collectionReview.vue', () => {
       await flushPromises()
 
       expect(fetchCollection).toHaveBeenCalledWith('coll-1')
-      expect(fetchCollectionChecklist).toHaveBeenCalledWith('coll-1', 'bench-1', 'rev-1')
-      expect(fetchAssetsByCollectionStig).toHaveBeenCalledWith('coll-1', 'bench-1')
+      expect(fetchCollectionChecklist).toHaveBeenCalledWith('coll-1', 'bench-1', 'rev-1', {})
+      expect(fetchAssetsByCollectionStig).toHaveBeenCalledWith('coll-1', 'bench-1', {})
+    })
+
+    it('passes the label filter from the route query to the checklist and asset fetches', async () => {
+      routeState.query = { labelName: 'label-a', labelMatch: 'null' }
+      createWrapper()
+      await flushPromises()
+
+      const expected = { labelName: ['label-a'], labelMatch: 'null' }
+      expect(fetchCollectionChecklist).toHaveBeenCalledWith('coll-1', 'bench-1', 'rev-1', expected)
+      expect(fetchAssetsByCollectionStig).toHaveBeenCalledWith('coll-1', 'bench-1', expected)
+      expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-123', expected)
+    })
+
+    it('reloads checklist, assets and the selected rule reviews on a label change, and refreshes the recent view', async () => {
+      createWrapper()
+      await flushPromises()
+      vi.clearAllMocks()
+
+      routeState.query = { labelName: 'label-a' }
+      routeState.fullPath = '/collections/coll-1/bench-1/rev-1?labelName=label-a'
+      await flushPromises()
+
+      const expected = { labelName: ['label-a'] }
+      expect(fetchCollectionChecklist).toHaveBeenCalledTimes(1)
+      expect(fetchCollectionChecklist).toHaveBeenCalledWith('coll-1', 'bench-1', 'rev-1', expected)
+      expect(fetchAssetsByCollectionStig).toHaveBeenCalledTimes(1)
+      expect(fetchAssetsByCollectionStig).toHaveBeenCalledWith('coll-1', 'bench-1', expected)
+      expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-123', expected)
+      expect(mockAddView).toHaveBeenLastCalledWith(expect.objectContaining({
+        key: 'collection-review:coll-1:bench-1',
+        url: '/collections/coll-1/bench-1/rev-1?labelName=label-a',
+      }))
+    })
+
+    it('clears the rule panel when the filtered checklist comes back empty', async () => {
+      createWrapper()
+      await flushPromises()
+      expect(screen.getByTestId('mock-rule-info').dataset.hasRule).toBe('true')
+
+      fetchCollectionChecklist.mockResolvedValue([])
+      routeState.query = { labelName: 'no-asset-label' }
+      await flushPromises()
+
+      expect(screen.getByTestId('mock-rule-info').dataset.hasRule).toBe('false')
+    })
+
+    it('ignores a rule response that lands after the filtered checklist emptied the selection', async () => {
+      let resolveRule
+      fetchRule.mockReturnValue(new Promise((resolve) => {
+        resolveRule = resolve
+      }))
+      createWrapper()
+      await flushPromises()
+      expect(fetchRule).toHaveBeenCalledWith('bench-1', 'rev-1', 'V-123')
+
+      fetchCollectionChecklist.mockResolvedValue([])
+      routeState.query = { labelName: 'no-asset-label' }
+      await flushPromises()
+      expect(screen.getByTestId('mock-rule-info').dataset.hasRule).toBe('false')
+
+      resolveRule({ id: 'V-123', content: 'Test Rule Content' })
+      await flushPromises()
+      expect(screen.getByTestId('mock-rule-info').dataset.hasRule).toBe('false')
     })
 
     it('adds recent view entry when collection metadata loads', async () => {
@@ -202,6 +287,25 @@ describe('collectionReview.vue', () => {
 
       expect(mockRemoveView).toHaveBeenCalled()
     })
+
+    it('explains an empty checklist by the label filter', async () => {
+      routeState.query = { labelName: 'web' }
+      fetchCollectionChecklist.mockResolvedValue([])
+      createWrapper()
+      await flushPromises()
+
+      expect(screen.getByTestId('mock-checklist-grid').dataset.emptyMessage)
+        .toMatch(/No Assets matching the label filter have this STIG/)
+    })
+
+    it('does not blame the label filter when the checklist load fails', async () => {
+      routeState.query = { labelName: 'web' }
+      fetchCollectionChecklist.mockRejectedValue(new Error('Bad params'))
+      createWrapper()
+      await flushPromises()
+
+      expect(screen.getByTestId('mock-checklist-grid').dataset.emptyMessage).toBeUndefined()
+    })
   })
 
   describe('state Management', () => {
@@ -212,7 +316,7 @@ describe('collectionReview.vue', () => {
       // When the grid loads, V-123 should be selected.
       // This will trigger fetchRule and fetchReviewsByRule.
       expect(fetchRule).toHaveBeenCalledWith('bench-1', 'rev-1', 'V-123')
-      expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-123')
+      expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-123', {})
     })
 
     it('updates selectedRuleId and fetches new data on select-rule event', async () => {
@@ -226,7 +330,7 @@ describe('collectionReview.vue', () => {
       await flushPromises()
 
       expect(fetchRule).toHaveBeenCalledWith('bench-1', 'rev-1', 'V-456')
-      expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-456')
+      expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-456', {})
     })
   })
 
@@ -249,7 +353,7 @@ describe('collectionReview.vue', () => {
         rules: { ruleIds: ['V-123'] },
       })
       // Should reload reviews after bulk save
-      expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-123')
+      expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-123', {})
     })
 
     it('opens RejectReasonModal on reject, then calls postReviewBatch on confirm', async () => {
@@ -294,6 +398,60 @@ describe('collectionReview.vue', () => {
         assets: { assetIds: ['asset-1'] },
         rules: { ruleIds: ['V-123'] },
       })
+    })
+  })
+
+  describe('export result archive', () => {
+    const grid = () => screen.getByTestId('mock-checklist-grid')
+
+    it('exports every listed Asset at the route revision', async () => {
+      createWrapper()
+      await flushPromises()
+
+      expect(grid().dataset.canExportArchive).toBe('true')
+      await fireEvent.click(screen.getByTestId('emit-export-archive'))
+
+      expect(mockDownload).toHaveBeenCalledWith({
+        collectionId: 'coll-1',
+        collectionName: 'Test Collection',
+        format: 'ckl',
+        mode: 'mono',
+        selections: [{ assetId: 'asset-1', stigs: [{ benchmarkId: 'bench-1', revisionStr: 'rev-1' }] }],
+      })
+    })
+
+    it('cannot export when no Assets have the STIG', async () => {
+      fetchAssetsByCollectionStig.mockResolvedValue([])
+      createWrapper()
+      await flushPromises()
+
+      expect(grid().dataset.canExportArchive).toBe('false')
+      await fireEvent.click(screen.getByTestId('emit-export-archive'))
+      expect(mockDownload).not.toHaveBeenCalled()
+    })
+
+    it('cannot export the previous STIG\'s Assets while the new list loads', async () => {
+      createWrapper()
+      await flushPromises()
+
+      fetchAssetsByCollectionStig.mockReturnValue(new Promise(() => {}))
+      routeState.params.benchmarkId = 'bench-2'
+      await flushPromises()
+
+      expect(grid().dataset.canExportArchive).toBe('false')
+      await fireEvent.click(screen.getByTestId('emit-export-archive'))
+      expect(mockDownload).not.toHaveBeenCalled()
+    })
+
+    it('cannot export after the Asset list fails to reload', async () => {
+      createWrapper()
+      await flushPromises()
+
+      fetchAssetsByCollectionStig.mockRejectedValue(new Error('boom'))
+      routeState.params.benchmarkId = 'bench-2'
+      await flushPromises()
+
+      expect(grid().dataset.canExportArchive).toBe('false')
     })
   })
 })

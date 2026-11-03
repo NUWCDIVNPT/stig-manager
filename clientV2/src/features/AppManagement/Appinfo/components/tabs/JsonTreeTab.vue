@@ -28,7 +28,7 @@ function onNodeExpand(node) {
 const treePt = {
   root: { style: 'background: transparent; border: none; padding: 0.25rem 0; color: var(--color-text-primary); overflow: auto; flex: 1 1 auto; min-height: 0;' },
   nodeContent: { style: 'padding: 0.1rem 0.25rem; background: transparent; color: var(--color-text-primary);' },
-  nodeLabel: { style: 'font-size: 1rem;' },
+  nodeLabel: { style: 'font-size: var(--text-md);' },
   nodeToggleButton: { style: 'width: 1.5rem; height: 1.5rem; color: var(--color-text-dim);' },
 }
 </script>
@@ -68,7 +68,7 @@ const treePt = {
   flex-direction: column;
   overflow: hidden;
   padding: 0.25rem 0.5rem;
-  font-family: 'SF Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
 }
 
 .json-tree-empty {
@@ -77,7 +77,7 @@ const treePt = {
   gap: 0.5rem;
   padding: 0.85rem 1rem;
   color: var(--color-text-dim);
-  font-size: 1rem;
+  font-size: var(--text-md);
 }
 
 .json-line {
@@ -93,7 +93,7 @@ const treePt = {
 
 .json-size {
   color: var(--color-text-dim);
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 
 .json-separator {

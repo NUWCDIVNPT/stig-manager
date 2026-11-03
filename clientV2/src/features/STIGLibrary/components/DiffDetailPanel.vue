@@ -23,56 +23,58 @@ const props = defineProps({
     type: String,
     default: 'ready',
   },
-  error: {
-    type: Object,
-    default: null,
-  },
 })
 
+// A failed diff is reported (with Retry) by the rule pane body; this panel
+// just goes idle rather than showing a second error.
 const panelStatus = computed(() => {
-  if (props.status === 'loading' || props.status === 'error' || props.status === 'idle') {
-    return props.status
+  if (props.status === 'loading') {
+    return 'loading'
   }
-  return props.diffRow ? 'ready' : 'idle'
+  return props.status === 'ready' && props.diffRow ? 'ready' : 'idle'
 })
 
 const patches = computed(() => props.diffDetail ?? {})
 </script>
 
 <template>
-  <RuleDiffPanel
-    :patches="patches"
-    :status="panelStatus"
-    :error="error"
-  >
-    <template #header>
-      <div class="diff-detail-header">
-        <div class="diff-detail-header__title">
-          Detailed changes
-        </div>
-        <div v-if="diffRow" class="diff-detail-header__sub">
-          <span class="mono">{{ diffRow.stigId }}</span>
-        </div>
-      </div>
-    </template>
-  </RuleDiffPanel>
+  <div class="stiglib-panel">
+    <header class="stiglib-panel__header">
+      <i class="pi pi-file-edit diff-detail__icon" />
+      <span class="stiglib-panel__title">Detailed changes</span>
+      <span v-if="diffRow" class="stiglib-chip">{{ diffRow.stigId }}</span>
+      <div class="stiglib-panel__spacer" />
+      <span v-if="compareRev && viewRev" class="diff-detail__revs">
+        <span class="stiglib-rev stiglib-rev--del">{{ compareRev }}</span>
+        <i class="pi pi-arrow-right diff-detail__arrow" />
+        <span class="stiglib-rev stiglib-rev--add">{{ viewRev }}</span>
+      </span>
+    </header>
+
+    <div class="stiglib-panel__body stiglib-panel__body--scroll sm-scrollbar-thin">
+      <RuleDiffPanel
+        :patches="patches"
+        :status="panelStatus"
+      />
+    </div>
+  </div>
 </template>
 
 <style scoped>
-.diff-detail-header__title {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: var(--color-text-primary);
+.diff-detail__icon {
+  color: var(--color-primary-highlight);
+  flex-shrink: 0;
 }
-.diff-detail-header__sub {
-  font-size: 1.1rem;
+
+.diff-detail__revs {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.diff-detail__arrow {
   color: var(--color-text-dim);
-  margin-top: 0.25rem;
-}
-.mono {
-  font-family: monospace;
-}
-.sep {
-  margin: 0 0.5rem;
+  font-size: var(--text-md);
 }
 </style>

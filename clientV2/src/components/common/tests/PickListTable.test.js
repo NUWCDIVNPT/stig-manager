@@ -19,7 +19,8 @@ function renderPicker(props = {}) {
   })
 }
 
-// The move buttons are icon-only PrimeVue Buttons; find them by their icon class.
+// The move buttons come from PickListControls (labeled Add / Add All / Remove /
+// Remove All); find them by their direction icon class.
 function moveButton(container, iconClass) {
   return container.querySelector(`.${iconClass}`)?.closest('button')
 }

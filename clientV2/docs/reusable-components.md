@@ -15,7 +15,7 @@ Component patterns for the new client. Candidates for implementation as we devel
 src/
 ├── components/
 │   ├── common/          # Small reusable pieces
-│   │   ├── LabelsRow.vue        # Shared: label badges with overflow
+│   │   ├── Label.vue            # Shared: one label chip (LabelChip); every chip renders through it
 │   │   ├── SeverityBadge.vue    # Shared: Cat I/II/III styled badge
 │   │   ├── CORABadge.vue        # Shared: risk rating with color
 │   │   └── ...
@@ -23,6 +23,7 @@ src/
 │   │   ├── DurationColumn.vue
 │   │   ├── PercentageColumn.vue
 │   │   ├── AssetWithLabelsColumn.vue
+│   │   ├── LabelsRow.vue        # Shared: label chips with overflow, built from LabelChip
 │   │   └── ...
 │   └── global/          # App-wide singletons (Banner, Overlays, error messages)
 ├── shared/
@@ -41,7 +42,7 @@ These don't need wrapper components—just inline templates with helper function
 
 | Pattern | Template Example | Helper Needed |
 |---------|------------------|---------------|
-| CountColumn | `{{ data.count }}` | none |
+| Count with own header slot | `{{ dashZero(data.count) }}` (use `CountColumn` when the column has no custom slots) | `dashZero()` |
 | CountWithTooltip | `<span v-tooltip="itemList">{{ count }}</span>` | `formatTooltipList()` |
 | IconColumn | `<i :class="getIcon(data)" v-tooltip="label" />` | `getIconClass()` |
 | ResponseCodeColumn | `<Tag :severity="getHttpSeverity(code)">{{ code }}</Tag>` | `getHttpSeverity()` |
@@ -59,6 +60,7 @@ These warrant dedicated `.vue` files for reuse and consistency.
 
 | Column | Why Wrapper | Shared Sub-components |
 |--------|-------------|----------------------|
+| **CountColumn** | Zero/missing counts render as `-` so tallies of nothing read as blank; accepts dotted field paths. Needs a `key` when used directly (DataTable finds wrapped Columns by vnode key) | `dashZero()` helper |
 | **DurationColumn** | Complex relative time logic ("5 d", "2 h", "now") | `formatDuration()` helper |
 | **PercentageColumn** | Custom thermometer visualization | none |
 | **SeverityCountColumn** | Count + severity-appropriate color styling | `SeverityBadge` |
@@ -101,8 +103,25 @@ Small pieces used inside columns AND in other contexts (dashboards, panels).
 | **LabelsRow** | Label badges, "+N" overflow with tooltip | LabelsColumn, AssetWithLabelsColumn, dashboard panels |
 | **SeverityBadge** | Cat I/II/III with appropriate color | SeverityColumn, SeverityCountColumn, rule displays |
 | **CORABadge** | Risk rating (Very Low → Very High) with color | CORAColumn, dashboard Overview panel |
-| **LabelBadge** | Single styled label | SingleLabelColumn, various |
+| **LabelChip** (`Label.vue`) | One label chip: normalises the hex colour, picks contrast text, highlights a search term | LabelsRow, label pickers and forms, ACL and aging-rule tables |
 | **ClassificationBadge** | Security classification styling | DataWithBadgeColumn (benchmarks) |
+
+---
+
+## Breadcrumb Filters
+
+Filters that sit after the breadcrumb in the menu bar. A route opts in through its
+meta (`labelFilter` for Collection Labels, `collectionFilter` for the Collections page);
+MenuBar renders the matching pills component.
+
+| Component | Description | Used By |
+|-----------|-------------|---------|
+| **BreadcrumbFilter** | The filter box: a slot for the picker plus a clear button | LabelFilterPills, CollectionFilterPills |
+| **PillsTrigger** | MultiSelect `#value` chips: removable chips for applied options, "+N" overflow, chevron. Chip remove is hidden while the overlay is open | LabelFilterPicker, MetaMetricsFilter |
+| **LabelFilterPicker** | Collection Label picker with a "No label" option; refetches Labels on open and prunes names the Collection no longer has. Selection lives in the route query (`useLabelFilterQuery`) | LabelFilterPills |
+| **MetaMetricsFilter** | Include/exclude Collection picker; selection lives in `useMetaCollectionFilter` (in memory only) | CollectionFilterPills |
+
+Shared styling for the picker overlay is in `pillsPicker.css` / `pillsPicker.js`.
 
 ---
 
@@ -161,9 +180,41 @@ Columns must be:
 ## Table Footer
 
 - Refresh button: `#footer` template
-- CSV export: `#footer` template + export logic
+- CSV export: `#footer` template + `StatusFooter :dt="dataTableRef"`
 - Row count: `#footer` template with `{{ data.length }}`
 - Totals badges: `#footer` template with Tag components
+
+### CSV export
+
+`StatusFooter` exports the bound DataTable through `shared/csv.js` `exportDataTableCsv`,
+which reads only the Column props `field`, `header`, `export-header` and `exportable`.
+The legacy client exported each column's rendered text; the Vue equivalent is
+declarative, so every exporting table must:
+
+- Give each data column a `field`, even when a `#body` slot renders something derived
+  from the row. Add `:exportable="false"` to control columns (actions, apply buttons,
+  custom select-all checkboxes). PrimeVue selection/expander columns need nothing.
+- Add `export-header` to any column whose visible header is a `#header` slot; the
+  `header` prop cannot be used there because PrimeVue renders both.
+- Use a hidden column (`<Column field="labels" header="Labels" hidden />`) to export a
+  value the grid shows inside another cell. Hidden columns render nothing per row.
+
+Cell text comes from, in order: the column's `:export-value` function, the DataTable's
+`:export-function`, or `shared/lib/exportCells.js` `exportDisplayValue`. All receive
+`{ data, field, record }` for every cell, null included.
+
+- `exportDisplayValue` maps the field names shared across several grids
+  (`resultEngine`, `result`, `status`, `severity`, `labels`/`assetLabels`, `stigs`) to
+  the text the grid displays and passes everything else to `serializeCsvValue`. Add a
+  rule there only when an object-valued field recurs across grids.
+- A one-off column (a schedule object, a run duration computed from the row, a
+  role id) binds `:export-value` on the Column, usually a one-line arrow in the
+  component's script, e.g. `:export-value="({ record }) => resourceSortKey(record)"`.
+  A column with `export-value` needs no `field`; it is the declarative equivalent of
+  the legacy client's `exportvalue` attribute.
+
+`shared/tests/columnExportConventions.test.js` scans every exporting table for the
+field and header rules above.
 
 ---
 

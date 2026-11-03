@@ -222,13 +222,13 @@ onBeforeUnmount(() => {
 
 .page-header h2 {
   margin: 0;
-  font-size: 1.3rem;
+  font-size: var(--text-2xl);
   font-weight: 600;
   color: var(--color-text-bright);
 }
 
 .experimental-badge {
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.03em;

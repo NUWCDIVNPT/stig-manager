@@ -1,5 +1,6 @@
 import { screen } from '@testing-library/vue'
 import { describe, expect, it, vi } from 'vitest'
+import { nextTick } from 'vue'
 import { renderWithProviders } from '../../../testUtils/utils.js'
 import AssetChecklistGridTable from '../components/AssetChecklistGridTable.vue'
 
@@ -8,6 +9,10 @@ import AssetChecklistGridTable from '../components/AssetChecklistGridTable.vue'
 vi.mock('vue-router', () => ({
   useRoute: () => ({ query: {} }),
 }))
+
+vi.mock('../../../shared/csv.js', () => ({ exportDataTableCsv: vi.fn() }))
+
+const { exportDataTableCsv } = await import('../../../shared/csv.js')
 
 // Mock PrimeVue components to avoid JSDOM virtual scrolling issues
 vi.mock('primevue/datatable', () => ({
@@ -34,19 +39,18 @@ vi.mock('primevue/column', () => ({
   },
 }))
 
-describe('AssetChecklistGridTable', () => {
+describe('assetChecklistGridTable', () => {
   const defaultProps = {
     gridData: [],
     isLoading: false,
     selectedRow: null,
-    searchFilter: '',
     visibleFields: new Set(['groupId', 'ruleId', 'result', 'status', 'severity']),
     itemSize: 30,
   }
 
   function createWrapper(props = {}) {
     return renderWithProviders(AssetChecklistGridTable, {
-      props: { ...defaultProps, ...props },
+      props: { ...defaultProps, totalCount: props.gridData?.length ?? 0, ...props },
     })
   }
 
@@ -122,24 +126,32 @@ describe('AssetChecklistGridTable', () => {
       const refreshBtn = document.querySelector('.pi-refresh').closest('button')
       refreshBtn.click()
 
-      expect(emitted()['refresh']).toBeTruthy()
+      expect(emitted().refresh).toBeTruthy()
+    })
+
+    it('exports the DataTable through the shared CSV serializer and does not emit refresh', async () => {
+      const { emitted } = createWrapper()
+      // The DataTable template ref reaches StatusFooter's dt prop on the tick after mount.
+      await nextTick()
+
+      const exportBtn = document.querySelector('.pi-download').closest('button')
+      exportBtn.click()
+
+      expect(exportDataTableCsv).toHaveBeenCalledOnce()
+      expect(exportDataTableCsv.mock.calls[0][0]).toBeTruthy()
+      expect(emitted().refresh).toBeFalsy()
     })
   })
 
-  describe('visible rows', () => {
-    it('emits update:visible-rows with all rows on mount', () => {
-      const gridData = [{ ruleId: 'V-1' }, { ruleId: 'V-2' }]
-      const { emitted } = createWrapper({ gridData })
-      const events = emitted()['update:visible-rows']
-      expect(events).toBeTruthy()
-      expect(events[events.length - 1][0].map(r => r.ruleId)).toEqual(['V-1', 'V-2'])
+  describe('filtered rows', () => {
+    it('counts the filtered rows against the unfiltered total', () => {
+      createWrapper({ gridData: [{ ruleId: 'V-1' }], totalCount: 3, isFiltered: true })
+      expect(document.querySelector('.status-footer').textContent).toMatch(/1\D+3/)
     })
 
-    it('re-emits update:visible-rows when gridData changes', async () => {
-      const { emitted, rerender } = createWrapper({ gridData: [{ ruleId: 'V-1' }] })
-      await rerender({ ...defaultProps, gridData: [{ ruleId: 'V-1' }, { ruleId: 'V-2' }] })
-      const events = emitted()['update:visible-rows']
-      expect(events[events.length - 1][0].map(r => r.ruleId)).toEqual(['V-1', 'V-2'])
+    it('says so when search and filters hide every row', () => {
+      createWrapper({ gridData: [], totalCount: 3, isFiltered: true })
+      expect(screen.getByText('No rules match the current search and filters.')).toBeTruthy()
     })
   })
 })

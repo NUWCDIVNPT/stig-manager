@@ -2,6 +2,7 @@
 import { toRefs } from 'vue'
 import HelpIcon from '../../../components/common/HelpIcon.vue'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
+import { PENDING_PLACEHOLDER } from '../emptyMetrics.js'
 
 const props = defineProps({
   coraData: {
@@ -9,9 +10,17 @@ const props = defineProps({
     required: false,
     default: null,
   },
+  // True until the first metrics response: the card keeps its layout but shows
+  // placeholders instead of a rating computed from zeroed input.
+  pending: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const { coraData } = toRefs(props)
+
+const show = v => (props.pending ? PENDING_PLACEHOLDER : v)
 
 function getRiskClass(riskRating) {
   switch (riskRating) {
@@ -48,38 +57,35 @@ function getRiskClass(riskRating) {
           OPEN OR UNASSESSED
         </h3>
 
-        <div class="cora-row">
-          <div class="cora-bracket sm-cat1-bracket" />
+        <div class="cora-row sm-cat1-row">
           <div class="row-content">
             <span class="cora-cat-label">CAT 1</span>
-            <span class="cora-cat-count">{{ coraData.catI.toFixed(0) }}</span>
+            <span class="cora-cat-count">{{ show(coraData.catI.toFixed(0)) }}</span>
           </div>
         </div>
-        <div class="cora-row">
-          <div class="cora-bracket sm-cat2-bracket" />
+        <div class="cora-row sm-cat2-row">
           <div class="row-content">
             <span class="cora-cat-label">CAT 2</span>
-            <span class="cora-cat-count">{{ coraData.catII.toFixed(0) }}</span>
+            <span class="cora-cat-count">{{ show(coraData.catII.toFixed(0)) }}</span>
           </div>
         </div>
-        <div class="cora-row">
-          <div class="cora-bracket sm-cat3-bracket" />
+        <div class="cora-row sm-cat3-row">
           <div class="row-content">
             <span class="cora-cat-label">CAT 3</span>
-            <span class="cora-cat-count">{{ coraData.catIII.toFixed(0) }}</span>
+            <span class="cora-cat-count">{{ show(coraData.catIII.toFixed(0)) }}</span>
           </div>
         </div>
       </div>
 
-      <div class="cora-risk-card" :class="getRiskClass(coraData.riskRating)">
+      <div class="cora-risk-card" :class="pending ? '' : getRiskClass(coraData.riskRating)">
         <div class="risk-label">
           CORA RISK
         </div>
         <div class="risk-score">
-          {{ coraData.weightedAvg.toFixed(1) }}%
+          {{ show(`${coraData.weightedAvg.toFixed(1)}%`) }}
         </div>
         <div class="risk-rating">
-          {{ coraData.riskRating.toUpperCase() }}
+          {{ show(coraData.riskRating.toUpperCase()) }}
         </div>
       </div>
     </div>
@@ -96,6 +102,7 @@ function getRiskClass(riskRating) {
 .cora-content {
   display: flex;
   gap: 12px;
+  justify-content: space-evenly;
   align-items: stretch;
   flex: 1;
   overflow: hidden;
@@ -105,12 +112,12 @@ function getRiskClass(riskRating) {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  flex: 1;
+  flex: none;
   justify-content: center;
 }
 
 .subsection-title {
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   text-transform: uppercase;
   color: var(--color-text-dim);
   margin: 0 0 3px 0;
@@ -120,18 +127,12 @@ function getRiskClass(riskRating) {
 
 .cora-row {
   display: flex;
-  background-color: var(--color-background-subtle);
   border-radius: 5px;
-  overflow: hidden;
-  height: 30px;
-}
-
-.cora-bracket {
-  width: 4px;
-  height: 100%;
-  flex-shrink: 0;
-  border-top-left-radius: 5px;
-  border-bottom-left-radius: 5px;
+  border: 1px solid var(--color-border-default);
+  color: var(--color-text-dark);
+  height: 22px;
+  min-width: 6rem;
+  max-width: 10rem;
 }
 
 .title-container {
@@ -140,13 +141,13 @@ function getRiskClass(riskRating) {
   gap: 6px;
 }
 
-.sm-cat1-bracket {
+.sm-cat1-row {
   background-color: var(--color-cat1);
 }
-.sm-cat2-bracket {
+.sm-cat2-row {
   background-color: var(--color-cat2);
 }
-.sm-cat3-bracket {
+.sm-cat3-row {
   background-color: var(--color-cat3);
 }
 
@@ -155,18 +156,17 @@ function getRiskClass(riskRating) {
   justify-content: space-between;
   align-items: center;
   flex: 1;
-  padding: 0 10px;
+  padding: 0 6px;
 }
 
 .cora-cat-label {
-  font-weight: 700;
-  font-size: 0.95rem;
+  font-weight: 600;
+  font-size: var(--text-md);
 }
 
 .cora-cat-count {
-  font-weight: 600;
-  font-size: 1rem;
-  color: var(--color-text-bright);
+  font-weight: 700;
+  font-size: var(--text-md);
 }
 .cora-risk-card {
   display: flex;
@@ -174,33 +174,28 @@ function getRiskClass(riskRating) {
   align-items: center;
   justify-content: center;
   border-radius: 10px;
+  border: 1px solid var(--color-border-default);
   min-width: 110px;
   text-align: center;
 }
 
 .risk-label {
-  font-size: 0.8rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   text-transform: uppercase;
-  color: var(--color-text-bright);
   margin-bottom: 3px;
 }
 
 .risk-score {
-  font-size: 1.9rem;
+  font-size: var(--text-display);
   font-weight: 800;
-  color: var(--color-text-bright);
   line-height: 1;
   margin-bottom: 3px;
 }
 
 .risk-rating {
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: var(--text-sm);
+  font-weight: 800;
   text-transform: uppercase;
-  color: var(--color-text-bright);
-  background-color: rgba(0, 0, 0, 0.2);
-  padding: 2px 8px;
-  border-radius: 10px;
 }
 </style>

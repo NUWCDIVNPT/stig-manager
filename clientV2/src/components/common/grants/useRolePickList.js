@@ -47,7 +47,8 @@ export function useRolePickList({ source, target, roleOptions, emit }) {
 
       // Stamp the role on a copy — the source objects are shared with the
       // caller's props and must not be mutated.
-      localTarget.value.push(...itemsToMove.map(item => ({ ...item, roleId: option.value })))
+      // New array, not push: the Listbox virtual scroller only re-renders on a new array
+      localTarget.value = [...localTarget.value, ...itemsToMove.map(item => ({ ...item, roleId: option.value }))]
 
       localSource.value = localSource.value.filter(item => !itemsToMove.includes(item))
       selectionSource.value = []
@@ -77,11 +78,11 @@ export function useRolePickList({ source, target, roleOptions, emit }) {
     if (selectionTarget.value.length > 0) {
       const itemsToMove = [...selectionTarget.value]
       // discard the role when moving back (on a copy, as in onSelectRole)
-      localSource.value.push(...itemsToMove.map((item) => {
+      localSource.value = [...localSource.value, ...itemsToMove.map((item) => {
         const copy = { ...item }
         delete copy.roleId
         return copy
-      }))
+      })]
       localTarget.value = localTarget.value.filter(item => !itemsToMove.includes(item))
       selectionTarget.value = []
     }

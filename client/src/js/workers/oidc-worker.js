@@ -442,14 +442,43 @@ function validateTokensResponse(tokensResponse) {
   return true
 }
 
-function validateScope(scopeValue, isAdmin = false) {
-  // Depending on OIDC provider, scopeValue can be a space-separated string (the standard) or an array of scopes. If a string, split it on spaces into an array.
-  const scopes = typeof scopeValue === 'string'
-    ? scopeValue.split(' ')
-    : Array.isArray(scopeValue)
-      ? scopeValue
-      : []
-  const hasScope = s => scopes.includes(s)
+// Collect the scopes held by each named claim. A claim may hold a
+// space-separated string or an array of strings; absent or unusable claims
+// contribute nothing. Mirrors getGrantedScopes in api/source/utils/auth.js;
+// keep the two in sync.
+function getGrantedScopes(payload, claimNames) {
+  const scopes = new Set()
+  for (const claimName of claimNames) {
+    const value = payload[claimName]
+    if (typeof value === 'string') {
+      for (const scope of value.split(' ')) {
+        if (scope.length) scopes.add(scope)
+      }
+    }
+    else if (Array.isArray(value)) {
+      for (const scope of value) {
+        if (typeof scope === 'string' && scope.length) scopes.add(scope)
+      }
+    }
+  }
+  return [...scopes]
+}
+
+// Describe a scope claim value for the error raised when no scopes were found
+function describeClaimValue(value) {
+  if (value === undefined) return 'absent'
+  if (value === null) return 'null'
+  if (typeof value === 'string') return value.trim().length ? 'string' : 'empty string'
+  if (Array.isArray(value)) {
+    if (!value.length) return 'empty array'
+    return value.some(v => typeof v === 'string' && v.length) ? 'array' : 'array with no string values'
+  }
+  return typeof value
+}
+
+// scopes is the array returned by getGrantedScopes
+function validateScope(scopes, isAdmin = false) {
+  const hasScope = (s) => scopes.includes(s)
 
   // Required scopes for each privilege
   const requiredAdminScopes = [
@@ -470,15 +499,17 @@ function validateScope(scopeValue, isAdmin = false) {
   const required = isAdmin ? requiredAdminScopes : requiredUserScopes
   for (const s of required) {
     if (!hasScope(s)) {
-      throw new Error(`Missing required scope "${ENV.scopePrefix}${s}" for ${isAdmin ? 'admin' : 'user'} in access token payload. Received scopes: ${JSON.stringify(scopeValue)}`)
+      throw new Error(`Missing required scope "${ENV.scopePrefix}${s}" for ${isAdmin ? 'admin' : 'user'} in access token payload. Received scopes: ${JSON.stringify(scopes)}`)
     }
   }
   return true
 }
 
 function validateClaims(payload) {
-  if (!payload[ENV.claims.scope]) {
-    throw new Error(`Missing scope claim (${ENV.claims.scope}) in access token payload`)
+  const grantedScopes = getGrantedScopes(payload, ENV.claims.scopeList)
+  if (grantedScopes.length === 0) {
+    const checked = ENV.claims.scopeList.map(name => `${name} (${describeClaimValue(payload[name])})`).join(', ')
+    throw new Error(`No scopes found in access token payload. Checked claims: ${checked}`)
   }
   if (!payload[ENV.claims.username]) {
     throw new Error(`Missing username claim (${ENV.claims.username}) in access token payload`)
@@ -498,7 +529,7 @@ function validateClaims(payload) {
     idleTimeoutM = ENV.idleTimeoutUser
   }
 
-  validateScope(payload[ENV.claims.scope], privileges.includes('admin'))
+  validateScope(grantedScopes, privileges.includes('admin'))
 
   return true
 }

@@ -7,12 +7,6 @@ export function assetKey(assetId) {
   return `asset-${assetId}`
 }
 
-export function archiveFilename(collectionName, format, now = new Date()) {
-  const safeName = (collectionName || 'collection').replace(/[\\/:*?"<>|]/g, '_')
-  const timestamp = now.toISOString().replace(/[:.]/g, '-').replace(/Z$/, '')
-  return `${safeName}_${format}_${timestamp}.zip`
-}
-
 export function validateExport({ target, count, destinationId, min = COLLECTION_MIN, max = COLLECTION_MAX }) {
   if (count === 0) {
     return 'Select at least one asset.'

@@ -5,90 +5,61 @@ import { computed, ref } from 'vue'
 import CatBadge from '../../../components/common/CatBadge.vue'
 import ChangedPropertyChip from '../../../components/common/ChangedPropertyChip.vue'
 import HelpIcon from '../../../components/common/HelpIcon.vue'
+import HighlightText from '../../../components/common/HighlightText.vue'
 import RuleIdDiffSpan from '../../../components/common/RuleIdDiffSpan.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
+import { severityMap } from '../../../shared/lib/checklistUtils.js'
+import { catLabel } from '../../../shared/lib/exportCells.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
+import { paneColumnPt, paneTablePt } from '../tablePt.js'
 
 const props = defineProps({
   rows: {
     type: Array,
     default: () => [],
   },
+  viewRev: {
+    type: String,
+    default: null,
+  },
+  compareRev: {
+    type: String,
+    default: null,
+  },
   selectedKey: {
     type: String,
     default: null,
   },
+  // Unfiltered count and search state from RulePane, for the footer and highlighting
+  totalCount: {
+    type: Number,
+    default: null,
+  },
+  filtered: {
+    type: Boolean,
+    default: false,
+  },
+  highlightTerm: {
+    type: Function,
+    default: () => '',
+  },
 })
 const emit = defineEmits(['select-row'])
 
-const SEVERITY_TO_CAT = { high: 1, medium: 2, low: 3 }
+const exportCat = ({ data }) => catLabel(data)
 
 const dataTableRef = ref(null)
-const { itemSize } = useGridDensity('stig-library-rules-v2', 2, 6, 15)
+const { itemSize, gridStyle } = useGridDensity('stig-library-rules')
 
 const selectedRow = computed(() =>
   props.selectedKey ? props.rows.find(r => r.key === props.selectedKey) ?? null : null,
 )
 
-function getColumnPt(alignment = 'left') {
-  const isCenter = alignment === 'center'
-  return {
-    headerCell: {
-      style: { borderRight: '1px solid var(--color-border-light)' },
-      class: isCenter ? 'column-header-center' : 'column-header-left',
-    },
-    columnHeaderContent: {
-      style: {
-        fontSize: '1rem',
-        color: 'var(--color-text-primary)',
-        justifyContent: isCenter ? 'center' : 'flex-start',
-        textAlign: isCenter ? 'center' : 'left',
-      },
-    },
-    bodyCell: {
-      style: {
-        verticalAlign: 'top',
-        padding: '0.15rem 0.35rem',
-        overflow: 'hidden',
-        textAlign: isCenter ? 'center' : 'left',
-      },
-      class: isCenter ? 'column-body-center' : 'column-body-left',
-    },
-    bodyCellContent: {
-      style: {
-        display: 'flex',
-        justifyContent: isCenter ? 'center' : 'flex-start',
-        alignItems: 'flex-start',
-        width: '100%',
-      },
-    },
-  }
-}
-
-const columnPt = {
-  center: getColumnPt('center'),
-  left: getColumnPt('left'),
-}
-
-const dataTablePt = {
-  tableContainer: { style: { height: '100%' } },
-  table: { style: { tableLayout: 'auto', minWidth: '100%' } },
-  bodyRow: {
-    style: { cursor: 'pointer', height: 'var(--item-size, 36px)', overflow: 'hidden' },
-  },
-  footer: { style: { padding: '0', border: 'none' } },
-  emptyMessageCell: { class: 'agg-grid-empty-cell' },
-}
+const dataTablePt = paneTablePt
 
 function onRowClick(event) {
   emit('select-row', event.data)
-}
-
-function onFooterAction(key) {
-  if (key === 'export') {
-    dataTableRef.value?.exportCSV()
-  }
 }
 </script>
 
@@ -99,43 +70,64 @@ function onFooterAction(key) {
     :selection="selectedRow"
     selection-mode="single"
     data-key="key"
+    export-filename="Changed Rules"
     scrollable
     scroll-height="flex"
     :virtual-scroller-options="{ itemSize, showLoader: true }"
     striped-rows
     resizable-columns
     class="diff-rule-table"
-    :style="{ '--item-size': `${itemSize}px` }"
+    :style="gridStyle"
     :pt="dataTablePt"
     @row-click="onRowClick"
   >
-    <Column header="STIG ID" field="stigId" sortable :style="{ width: '15rem' }" :pt="columnPt.left">
+    <Column header="STIG ID" field="stigId" sortable :style="{ width: '15rem' }" :pt="paneColumnPt.left">
       <template #body="{ data }">
-        <span class="cell-text">{{ data.stigId }}</span>
+        <span class="stiglib-cell-text"><HighlightText :text="data.stigId" :term="highlightTerm('stigId')" /></span>
       </template>
     </Column>
-    <Column header="Left rule" :style="{ width: '16rem', minWidth: '15rem' }" :pt="columnPt.left">
+    <Column
+      field="leftRule"
+      export-header="Left rule"
+      :style="{ width: '16rem', minWidth: '15rem' }"
+      :pt="paneColumnPt.left"
+    >
+      <template #header>
+        <span class="diff-col-header">
+          Rule in <span class="stiglib-rev stiglib-rev--del">{{ compareRev ?? 'compared' }}</span>
+        </span>
+      </template>
       <template #body="{ data }">
-        <span class="cell-text">
+        <span class="stiglib-cell-text">
           <RuleIdDiffSpan v-if="data.leftRule" :id="data.leftRule" side="del" />
-          <span v-else class="dim">—</span>
+          <span v-else class="stiglib-cell-text--dim">—</span>
         </span>
       </template>
     </Column>
-    <Column header="Right rule" :style="{ width: '16rem', minWidth: '15rem' }" :pt="columnPt.left">
+    <Column
+      field="rightRule"
+      export-header="Right rule"
+      :style="{ width: '16rem', minWidth: '15rem' }"
+      :pt="paneColumnPt.left"
+    >
+      <template #header>
+        <span class="diff-col-header">
+          Rule in <span class="stiglib-rev stiglib-rev--add">{{ viewRev ?? 'viewed' }}</span>
+        </span>
+      </template>
       <template #body="{ data }">
-        <span class="cell-text">
+        <span class="stiglib-cell-text">
           <RuleIdDiffSpan v-if="data.rightRule" :id="data.rightRule" side="add" />
-          <span v-else class="dim">—</span>
+          <span v-else class="stiglib-cell-text--dim">—</span>
         </span>
       </template>
     </Column>
-    <Column header="Cat" :style="{ width: '5rem' }" :pt="columnPt.center">
+    <Column header="CAT" field="cat" :export-value="exportCat" :style="{ width: '5rem' }" :pt="paneColumnPt.center">
       <template #body="{ data }">
-        <CatBadge v-if="data.cat" :category="SEVERITY_TO_CAT[data.cat] ?? 3" variant="label" />
+        <CatBadge v-if="data.cat" :category="severityMap[data.cat] ?? 3" variant="label" centered />
       </template>
     </Column>
-    <Column :style="{ minWidth: '16rem' }" :pt="columnPt.left">
+    <Column field="changed" export-header="Changed properties" :style="{ minWidth: '16rem' }" :pt="paneColumnPt.left">
       <template #header>
         Changed properties
         <HelpIcon :content="TOOLTIPS.rulePropertyDiffs" />
@@ -151,17 +143,18 @@ function onFooterAction(key) {
       </template>
     </Column>
     <template #empty>
-      <div class="agg-grid-empty-state">
-        No changed rules between these revisions.
+      <div class="stiglib-empty">
+        {{ filtered ? 'No changed rules match the search.' : 'No changed rules between these revisions.' }}
       </div>
     </template>
     <template #footer>
       <StatusFooter
-        :total-count="rows.length"
+        :total-count="totalCount ?? rows.length"
+        :filtered-count="filtered ? rows.length : null"
+        :dt="dataTableRef"
         total-label="changed rules"
         :show-refresh="false"
         :show-export="true"
-        @action="onFooterAction"
       />
     </template>
   </DataTable>
@@ -174,63 +167,13 @@ function onFooterAction(key) {
   height: 100%;
 }
 
-.cell-text {
-  font-size: 1rem;
-  line-height: 1.3;
-  color: var(--color-text-primary);
-}
-
-.dim {
-  color: var(--color-text-dim);
+.diff-col-header {
+  white-space: nowrap;
 }
 
 .chip-row {
   display: flex;
   gap: 0.3rem;
   flex-wrap: wrap;
-}
-
-:deep(.p-datatable-thead > tr > th) {
-  background: var(--color-background-dark);
-  color: var(--color-text-dim);
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-transform: none;
-  letter-spacing: 0.03em;
-  border-bottom: 1px solid var(--color-border-default);
-  transition: background 0.15s;
-}
-
-:deep(.p-datatable-thead > tr > th:hover) {
-  background: color-mix(in srgb, var(--color-background-light) 10%, var(--color-background-dark));
-}
-
-:deep(.p-datatable-thead > tr > th:last-child) {
-  border-right: none;
-}
-
-:deep(.p-datatable-tbody > tr:hover) {
-  background: var(--color-background-light) !important;
-}
-
-:deep(.p-datatable-footer) {
-  padding: 0;
-  border: none;
-  background: var(--color-background-dark);
-}
-
-:deep(.agg-grid-empty-cell) {
-  padding: 4rem 1rem !important;
-  text-align: center;
-  background: var(--color-background-soft);
-}
-
-.agg-grid-empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.75rem;
-  color: var(--color-text-dim);
-  font-size: 1.1rem;
 }
 </style>

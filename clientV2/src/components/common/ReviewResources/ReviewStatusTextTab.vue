@@ -65,7 +65,7 @@ defineProps({
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
   color: var(--color-text-dim);
 }
 
@@ -75,14 +75,14 @@ defineProps({
 }
 
 .status-card__icon {
-  font-size: 0.8rem;
+  font-size: var(--icon-xs);
   opacity: 0.7;
 }
 
 .status-card__body {
   padding: 1rem;
   color: var(--color-text-primary);
-  font-size: 1.15rem;
+  font-size: var(--text-lg);
   line-height: 1.6;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -99,11 +99,11 @@ defineProps({
   gap: 0.75rem;
   color: var(--color-text-dim);
   font-style: italic;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   opacity: 0.6;
 }
 
 .status-text__empty .pi {
-  font-size: 1.5rem;
+  font-size: var(--text-2xl);
 }
 </style>

@@ -52,7 +52,7 @@ function handleReauth() {
 .reauth-content button {
   margin-top: 1.5rem;
   padding: 0.5rem 1.5rem;
-  font-size: 1rem;
+  font-size: var(--text-md);
   border: none;
   border-radius: 4px;
   background: #007ad9;

@@ -2,11 +2,16 @@
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref } from 'vue'
+import CountColumn from '../../../../components/columns/CountColumn.vue'
 import ActionButton from '../../../../components/common/ActionButton.vue'
 import ActionToolbar from '../../../../components/common/ActionToolbar.vue'
-import ColumnSearchFilter from '../../../../components/common/ColumnSearchFilter.vue'
+import ColumnToggle from '../../../../components/common/ColumnToggle.vue'
+import GridSearch from '../../../../components/common/GridSearch.vue'
+import HighlightText from '../../../../components/common/HighlightText.vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
-import { useTableFooterActions } from '../../../../shared/composables/useTableFooterActions.js'
+import { useColumnVisibility } from '../../../../shared/composables/useColumnVisibility.js'
+import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
+import { formatDateTimeString } from '../../../../shared/lib.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 
 const props = defineProps({
@@ -26,6 +31,8 @@ const props = defineProps({
 
 const emit = defineEmits(['update:selection', 'create', 'delete', 'refresh'])
 
+const exportOwners = ({ data }) => (data ?? []).map(o => o.displayName || o.username).filter(Boolean).join(', ')
+
 const dataTableRef = ref(null)
 
 const selectedCollection = computed({
@@ -36,33 +43,33 @@ const selectedCollection = computed({
   set: value => value && emit('update:selection', value),
 })
 
-const nameFilter = ref('')
+const ownerNames = c => (c.owners ?? []).map(o => o.displayName || o.username).join(' ')
 
-const filteredData = computed(() => {
-  const term = nameFilter.value.trim().toLowerCase()
-  if (!term) {
-    return props.collections
-  }
-  return props.collections.filter(c => c.name?.toLowerCase().includes(term))
-})
+const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibility([
+  { field: 'name', header: 'Name', locked: true },
+  { field: 'owners', header: 'Owners' },
+  { field: 'statistics.userCount', header: 'Users' },
+  { field: 'statistics.assetCount', header: 'Assets' },
+  { field: 'statistics.checklistCount', header: 'Checklists' },
+  { field: 'statistics.created', header: 'Created' },
+  { field: 'collectionId', header: 'ID' },
+], 'adminCollections.columns')
 
-const formatDate = (dateString) => {
-  if (!dateString) {
-    return '-'
-  }
-  return new Date(dateString).toLocaleDateString()
-}
+const { term: searchTerm, filteredRows, isFiltered, highlightTerm } = useGridSearch(() => props.collections, [
+  { field: 'name', header: 'Name' },
+  { field: 'owners', header: 'Owners', searchText: ownerNames },
+  { field: 'collectionId', header: 'ID' },
+], { visibleFields })
 
-const tablePt = compactTablePt({ bodyFontSize: '1rem' })
+const tablePt = compactTablePt()
 const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-border-default)' } }
-
-const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () => emit('refresh') })
+const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-content: center;' } }
 </script>
 
 <template>
   <div class="collection-list">
     <ActionToolbar>
-      <ActionButton icon="pi pi-plus-circle icon-green" @click="emit('create')">
+      <ActionButton icon="icon-collection-new" @click="emit('create')">
         New Collection
       </ActionButton>
       <div class="toolbar-divider" />
@@ -73,13 +80,16 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () =
       >
         Delete Collection
       </ActionButton>
+      <div class="toolbar-spacer" />
+      <GridSearch v-model="searchTerm" class="list-search" label="Search collections" placeholder="Search collections..." />
+      <ColumnToggle v-model="selectedColumns" :columns="toggleableColumns" />
     </ActionToolbar>
 
     <div class="table-container">
       <DataTable
         ref="dataTableRef"
         v-model:selection="selectedCollection"
-        :value="filteredData"
+        :value="filteredRows"
         selection-mode="single"
         data-key="collectionId"
         :loading="loading"
@@ -87,24 +97,22 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () =
         scroll-height="flex"
         resizable-columns
         column-resize-mode="fit"
+        export-filename="Collections"
         class="flex-fill clickable-rows"
         :table-style="{ 'min-width': '50rem' }"
         :pt="tablePt"
       >
         <template #empty>
-          No collections found.
+          {{ isFiltered && collections.length ? 'No collections match the search.' : 'No collections found.' }}
         </template>
 
-        <Column field="name" sortable :pt="borderPt" style="width: 22%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
-          <template #header>
-            <div class="column-header-with-filter">
-              Name
-              <ColumnSearchFilter v-model="nameFilter" placeholder="Search name..." />
-            </div>
+        <Column field="name" header="Name" sortable :pt="borderPt" style="width: 22%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+          <template #body="{ data }">
+            <HighlightText :text="data.name" :term="highlightTerm('name')" />
           </template>
         </Column>
 
-        <Column header="Owners" :pt="borderPt" style="width: 13%; vertical-align: top;">
+        <Column v-if="visibleFields.has('owners')" header="Owners" field="owners" :export-value="exportOwners" :pt="borderPt" style="width: 13%; vertical-align: top;">
           <template #body="{ data }">
             <div v-if="data.owners && data.owners.length" class="owners-cell">
               <span
@@ -113,31 +121,36 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () =
                 class="owner-line"
                 :title="owner.displayName || owner.username"
               >
-                {{ owner.displayName || owner.username }}
+                <HighlightText :text="owner.displayName || owner.username" :term="highlightTerm('owners')" />
               </span>
             </div>
             <span v-else>-</span>
           </template>
         </Column>
 
-        <Column field="statistics.userCount" header="Users" sortable :pt="borderPt" style="width: 13%" />
-        <Column field="statistics.assetCount" header="Assets" sortable :pt="borderPt" style="width: 13%" />
-        <Column field="statistics.checklistCount" header="Checklists" sortable :pt="borderPt" style="width: 13%" />
-        <Column field="statistics.created" header="Created" sortable :pt="borderPt" style="width: 13%">
+        <CountColumn v-if="visibleFields.has('statistics.userCount')" key="statistics.userCount" field="statistics.userCount" header="Users" sortable :pt="centerBorderPt" style="width: 13%" body-style="text-align: center;" />
+        <CountColumn v-if="visibleFields.has('statistics.assetCount')" key="statistics.assetCount" field="statistics.assetCount" header="Assets" sortable :pt="centerBorderPt" style="width: 13%" body-style="text-align: center;" />
+        <CountColumn v-if="visibleFields.has('statistics.checklistCount')" key="statistics.checklistCount" field="statistics.checklistCount" header="Checklists" sortable :pt="centerBorderPt" style="width: 13%" body-style="text-align: center;" />
+        <Column v-if="visibleFields.has('statistics.created')" field="statistics.created" header="Created" sortable :pt="borderPt" style="width: 17%">
           <template #body="{ data }">
-            {{ formatDate(data.statistics?.created) }}
+            {{ formatDateTimeString(data.statistics?.created) || '-' }}
           </template>
         </Column>
-        <Column field="collectionId" header="ID" sortable style="width: 13%" />
+        <Column v-if="visibleFields.has('collectionId')" field="collectionId" header="ID" sortable :pt="centerBorderPt" style="width: 9%" body-style="text-align: center;">
+          <template #body="{ data }">
+            <HighlightText :text="data.collectionId" :term="highlightTerm('collectionId')" />
+          </template>
+        </Column>
 
         <template #footer>
           <StatusFooter
+            :dt="dataTableRef"
             :refresh-loading="loading"
             :total-count="collections.length"
-            :filtered-count="nameFilter.trim() ? filteredData.length : null"
+            :filtered-count="isFiltered ? filteredRows.length : null"
             total-label="collections"
             total-icon="pi pi-folder"
-            @action="onFooterAction"
+            @refresh="emit('refresh')"
           />
         </template>
       </DataTable>
@@ -147,6 +160,7 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () =
 
 <style scoped>
 .collection-list {
+  --checklist-control-height: 2rem;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -176,10 +190,9 @@ const { onFooterAction } = useTableFooterActions(dataTableRef, { onRefresh: () =
   cursor: pointer;
 }
 
-.column-header-with-filter {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
+.list-search {
+  flex: 0 1 18rem;
+  min-width: 10rem;
 }
 
 .owners-cell {

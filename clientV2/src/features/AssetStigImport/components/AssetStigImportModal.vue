@@ -2,10 +2,10 @@
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import { computed, watch } from 'vue'
+import { importDialogPt, primaryBtnPt, secondaryBtnPt } from '../../../shared/lib/dialogPt.js'
 import ImportFileQueueStep from '../../ImportWizard/components/ImportFileQueueStep1.vue'
 import ImportOptionsPanel from '../../ImportWizard/components/ImportOptionsPanel.vue'
 import ImportProgressStep from '../../ImportWizard/components/ImportProgressStep5.vue'
-import { importDialogPt, primaryBtnPt, secondaryBtnPt } from '../../../shared/lib/dialogPt.js'
 import { useAssetStigImport } from '../composables/useAssetStigImport.js'
 import AssetStigPreviewStep from './AssetStigPreviewStep.vue'
 
@@ -48,7 +48,6 @@ function backToFile() {
   wizard.errorDetail.value = null
   wizard.step.value = wizard.STEPS.FILE
 }
-
 
 const dialogTitle = computed(() => {
   const benchmark = props.benchmarkId ? ` — ${props.benchmarkId}` : ''
@@ -193,7 +192,7 @@ const dialogTitle = computed(() => {
   gap: 0.5rem;
   margin: 0;
   color: var(--color-text-primary);
-  font-size: 1.05rem;
+  font-size: var(--text-md);
 }
 
 .error-step {
@@ -213,7 +212,7 @@ const dialogTitle = computed(() => {
 }
 
 .error-callout__icon {
-  font-size: 2rem;
+  font-size: var(--text-display);
   color: var(--color-text-error);
   flex-shrink: 0;
 }
@@ -222,14 +221,14 @@ const dialogTitle = computed(() => {
   margin: 0;
   font-weight: 600;
   color: var(--color-text-error);
-  font-size: 1.2rem;
+  font-size: var(--text-xl);
 }
 
 .error-callout__detail {
   margin: 0.5rem 0 0;
   white-space: pre-wrap;
-  font-family: ui-monospace, monospace;
-  font-size: 1rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
   color: var(--color-text-dim);
 }
 

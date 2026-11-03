@@ -1,29 +1,26 @@
 <script setup>
-import { FilterMatchMode } from '@primevue/core/api'
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, inject, ref, toRefs, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import engineIcon from '../../../assets/bot2.svg'
-
-import overrideIcon from '../../../assets/override2.svg'
-import manualIcon from '../../../assets/user.svg'
 import { fetchReview } from '../../../shared/api/reviewsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
-import { durationToNow } from '../../../shared/lib.js'
+import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
+import { durationToNow, formatDateTimeString } from '../../../shared/lib.js'
 
 import { getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
-import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
+import { gridColumnPt } from '../../../shared/lib/dataTablePt.js'
+import { capitalize } from '../../../shared/lib/exportCells.js'
+import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
-import ColumnFilter from '../ColumnFilter.vue'
-import ColumnSearchFilter from '../ColumnSearchFilter.vue'
 import EngineBadge from '../EngineBadge.vue'
+import GridFilterButton from '../GridFilterButton.vue'
 import LongTextPopover from '../LongTextPopover.vue'
 import ManualBadge from '../ManualBadge.vue'
 import OverrideBadge from '../OverrideBadge.vue'
 import ResultBadge from '../ResultBadge.vue'
 import StatusBadge from '../StatusBadge.vue'
 import StatusFooter from '../StatusFooter.vue'
+import { reviewResourcesTablePt } from './tablePt.js'
 
 const props = defineProps({
   active: {
@@ -92,32 +89,29 @@ const processedHistory = computed(() => {
   }))
 })
 
-const resultOptions = computed(() => {
-  const results = new Set((fullReviewHistory.value || []).map(item => item.result).filter(Boolean))
-  return Array.from(results).map(val => ({
-    value: val,
-    label: getResultDisplay(val),
-  })).sort((a, b) => a.label.localeCompare(b.label))
-})
+const tabBarEnd = inject('reviewTabBarEnd', null)
 
-const engineOptions = computed(() => {
-  const engines = new Set((fullReviewHistory.value || []).map(item => getEngineDisplay(item)).filter(Boolean))
-  return Array.from(engines).map(val => ({
-    value: val,
-    label: val === 'engine' ? 'Engine' : val === 'override' ? 'Override' : 'Manual',
-    image: val === 'engine' ? engineIcon : val === 'override' ? overrideIcon : manualIcon,
-  }))
-})
+const { filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, clear: clearFilters } = useGridSearch(processedHistory, [
+  { field: 'ruleId', header: 'Rule' },
+  { field: 'result', header: 'Result', filterValues: r => getResultDisplay(r.result) ?? '' },
+  { field: '_engineDisplay', header: 'Engine', filterValues: r => capitalize(r._engineDisplay) },
+  { field: 'detail', header: 'Detail' },
+  { field: 'comment', header: 'Comment' },
+  { field: 'statusText', header: 'Status Text', searchText: r => r.status?.text },
+  { field: '_statusLabel', header: 'Status', filterValues: r => capitalize(r._statusLabel) },
+  { field: 'username', header: 'User', filterValues: r => r.username },
+])
 
-const statusOptions = computed(() => {
-  const statuses = new Set((fullReviewHistory.value || []).map(item => item.status?.label).filter(Boolean))
-  return Array.from(statuses).map(val => ({
-    value: val,
-    label: val,
-  })).sort((a, b) => a.label.localeCompare(b.label))
-})
+watch([() => ruleId.value, () => assetId.value], clearFilters)
 
-const ROW_HEIGHT = 40
+// Single-line rows at a fixed height, so cells centre vertically.
+const cellOptions = { verticalAlign: 'middle' }
+const columnPt = {
+  center: gridColumnPt('center', cellOptions),
+  left: gridColumnPt('left', cellOptions),
+}
+
+const ROW_HEIGHT = rowHeightPx('control')
 
 const isAlreadyApplied = (data) => {
   return data.result === formResult.value
@@ -137,51 +131,10 @@ const getApplyTooltip = (data) => {
 
 const dataTableRef = ref(null)
 
-function onFooterAction(key) {
-  if (key === 'export') {
-    dataTableRef.value?.exportCSV()
-  }
-}
-
 const longTextPopover = ref(null)
 const showLongText = (event, label, text) => {
   longTextPopover.value?.show(event, label, text)
 }
-
-const filters = ref({
-  global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  ruleId: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  detail: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  comment: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  statusText: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  username: { value: null, matchMode: FilterMatchMode.CONTAINS },
-  result: { value: null, matchMode: FilterMatchMode.IN },
-  _engineDisplay: { value: null, matchMode: FilterMatchMode.IN },
-  _statusLabel: { value: null, matchMode: FilterMatchMode.IN },
-})
-
-const route = useRoute()
-
-const resetFilters = () => {
-  filters.value.global.value = null
-  filters.value.ruleId.value = null
-  filters.value.detail.value = null
-  filters.value.comment.value = null
-  filters.value.statusText.value = null
-  filters.value.username.value = null
-  filters.value.result.value = null
-  filters.value._engineDisplay.value = null
-  filters.value._statusLabel.value = null
-}
-
-watch([
-  () => route.params.collectionId,
-  () => route.params.assetId,
-  () => route.params.benchmarkId,
-  () => route.params.revisionStr,
-], () => {
-  resetFilters()
-})
 
 const historyStats = computed(() => {
   const reviews = fullReviewHistory.value || []
@@ -234,49 +187,19 @@ const historyStats = computed(() => {
 
   return stats
 })
-
-const historyTablePt = {
-  root: { class: 'sm-scrollbar-thin', style: { backgroundColor: 'var(--color-background-dark)' } },
-  header: { style: { background: 'transparent', border: 'none', padding: '0' } },
-  table: { style: { borderCollapse: 'separate', borderSpacing: '0', background: 'var(--color-background-darkest)' } },
-  thead: {
-    style: {
-      background: 'var(--color-background-dark)',
-      position: 'sticky',
-      top: '0',
-      zIndex: '1',
-    },
-  },
-  headerCell: {
-    style: {
-      background: 'var(--color-background-dark)',
-      borderBottom: '1px solid var(--color-border-default)',
-      color: 'var(--color-text-dim)',
-      fontWeight: '700',
-      fontSize: '0.9rem',
-      textTransform: 'uppercase',
-      letterSpacing: '0.04em',
-      padding: '0.3rem 0.4rem',
-    },
-  },
-  bodyRow: {
-    style: {
-      background: 'var(--color-background-dark)',
-      transition: 'background-color 0.1s ease',
-    },
-  },
-  footer: { style: { padding: '0', border: 'none', background: 'transparent' } },
-}
 </script>
 
 <template>
   <div class="history-wrapper">
+    <Teleport v-if="active && tabBarEnd" :to="tabBarEnd">
+      <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
+    </Teleport>
     <DataTable
       ref="dataTableRef"
-      v-model:filters="filters"
-      :value="processedHistory"
+      :value="filteredRows"
       :loading="isInternalHistoryLoading"
       data-key="touchTs"
+      export-filename="History"
       scrollable
       scroll-height="flex"
       :virtual-scroller-options="{ itemSize: ROW_HEIGHT, showLoader: true }"
@@ -284,21 +207,15 @@ const historyTablePt = {
       :resizable-columns="true"
       column-resize-mode="fit"
       class="history-table"
-      :pt="historyTablePt"
+      :pt="reviewResourcesTablePt"
     >
-      <Column header="Time" field="touchTs" sortable :style="{ width: '65px' }">
+      <Column header="Timestamp" field="touchTs" sortable :style="{ width: '12.5rem' }" :pt="columnPt.left">
         <template #body="{ data }">
-          <span class="cell-text--mono" :title="formatReviewDate(data.touchTs)">{{ durationToNow(data.touchTs) }}</span>
+          <span class="cell-text--mono" :title="durationToNow(data.touchTs)">{{ formatDateTimeString(data.touchTs) }}</span>
         </template>
       </Column>
 
-      <Column field="ruleId" :style="{ width: '150px' }">
-        <template #header>
-          <div class="column-header-with-filter">
-            Rule
-            <ColumnSearchFilter v-model="filters.ruleId.value" placeholder="Search rule..." />
-          </div>
-        </template>
+      <Column field="ruleId" header="Rule" :style="{ width: '12rem' }" :pt="columnPt.left">
         <template #body="{ data }">
           <span
             class="cell-text--mono cell-text--ellipsis"
@@ -308,33 +225,20 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column field="result" :style="{ width: '70px', textAlign: 'center' }">
-        <template #header>
-          <div class="column-header-with-filter">
-            Result
-            <ColumnFilter v-model="filters.result.value" :options="resultOptions">
-              <template #option="{ option }">
-                <ResultBadge :status="option.label" />
-              </template>
-            </ColumnFilter>
-          </div>
-        </template>
+      <Column field="result" header="Result" :style="{ width: '6.25rem' }" :pt="columnPt.center">
         <template #body="{ data }">
           <ResultBadge v-if="getResultDisplay(data.result)" :status="getResultDisplay(data.result)" />
         </template>
       </Column>
 
-      <Column field="resultEngine" filter-field="_engineDisplay" :style="{ width: '50px', textAlign: 'center' }">
+      <Column field="resultEngine" export-header="Engine" :style="{ width: '4.5rem' }" :pt="columnPt.center">
         <template #header>
-          <div class="column-header-with-filter">
-            <img
-              src="../../../assets/bot2.svg"
-              alt="Engine"
-              class="engine-header-icon"
-              title="Result engine"
-            >
-            <ColumnFilter v-model="filters._engineDisplay.value" :options="engineOptions" />
-          </div>
+          <img
+            src="../../../assets/bot2.svg"
+            alt="Engine"
+            class="engine-header-icon"
+            title="Result engine"
+          >
         </template>
         <template #body="{ data }">
           <img
@@ -361,13 +265,7 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column field="detail" :style="{ width: '130px' }">
-        <template #header>
-          <div class="column-header-with-filter">
-            Detail
-            <ColumnSearchFilter v-model="filters.detail.value" placeholder="Search detail..." />
-          </div>
-        </template>
+      <Column field="detail" header="Detail" :style="{ width: '10.25rem' }" :pt="columnPt.left">
         <template #body="{ data }">
           <span
             v-if="data.detail"
@@ -381,13 +279,7 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column field="comment" :style="{ width: '130px' }">
-        <template #header>
-          <div class="column-header-with-filter">
-            Comment
-            <ColumnSearchFilter v-model="filters.comment.value" placeholder="Search comment..." />
-          </div>
-        </template>
+      <Column field="comment" header="Comment" :style="{ width: '10.25rem' }" :pt="columnPt.left">
         <template #body="{ data }">
           <span
             v-if="data.comment"
@@ -401,13 +293,7 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column field="statusText" :style="{ width: '100px' }">
-        <template #header>
-          <div class="column-header-with-filter">
-            Status Text
-            <ColumnSearchFilter v-model="filters.statusText.value" placeholder="Search status text..." />
-          </div>
-        </template>
+      <Column field="statusText" header="Status Text" :style="{ width: '9rem' }" :pt="columnPt.left">
         <template #body="{ data }">
           <span
             v-if="data.status?.text"
@@ -421,29 +307,13 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column filter-field="_statusLabel" :style="{ width: '70px', textAlign: 'center' }">
-        <template #header>
-          <div class="column-header-with-filter">
-            Status
-            <ColumnFilter v-model="filters._statusLabel.value" :options="statusOptions">
-              <template #option="{ option }">
-                <StatusBadge :status="option.value" />
-              </template>
-            </ColumnFilter>
-          </div>
-        </template>
+      <Column field="_statusLabel" header="Status" :style="{ width: '6.25rem' }" :pt="columnPt.center">
         <template #body="{ data }">
           <StatusBadge v-if="data.status?.label" :status="data.status.label" />
         </template>
       </Column>
 
-      <Column field="username" :style="{ width: '100px' }">
-        <template #header>
-          <div class="column-header-with-filter">
-            User
-            <ColumnSearchFilter v-model="filters.username.value" placeholder="Search user..." />
-          </div>
-        </template>
+      <Column field="username" header="User" :style="{ width: '7.25rem' }" :pt="columnPt.left">
         <template #body="{ data }">
           <span
             v-if="data.username"
@@ -455,7 +325,7 @@ const historyTablePt = {
         </template>
       </Column>
 
-      <Column header="Apply" :style="{ width: '40px', textAlign: 'center' }">
+      <Column header="Apply" :exportable="false" :style="{ width: '3.75rem' }" :pt="columnPt.center">
         <template #body="{ data }">
           <button
             class="apply-review-icon-btn"
@@ -470,16 +340,17 @@ const historyTablePt = {
 
       <template #empty>
         <div class="history-table__empty">
-          No review history found for this rule.
+          {{ isFiltered && processedHistory.length ? 'No history matches the filters.' : 'No review history found for this rule.' }}
         </div>
       </template>
 
       <template #footer>
         <StatusFooter
+          :dt="dataTableRef"
           :show-refresh="false"
           :show-export="true"
           :total-count="historyStats.total"
-          @action="onFooterAction"
+          :filtered-count="isFiltered ? filteredRows.length : null"
         >
           <template #right-extra>
             <ResultBadge status="O" :count="historyStats.results.fail" />
@@ -530,31 +401,18 @@ const historyTablePt = {
 }
 
 :deep(.p-datatable-tbody > tr > td) {
-  padding: 0.4rem 0.4rem;
-  vertical-align: middle;
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   border-bottom: 1px solid var(--color-border-light);
   color: var(--color-text-primary);
-  overflow: hidden;
-}
-
-:deep(.p-datatable-thead > tr > th) {
-  border-right: 1px solid var(--color-border-light) !important;
 }
 
 :deep(.p-datatable-thead > tr > th:last-child) {
   border-right: none !important;
 }
 
-.column-header-with-filter {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
 .cell-text--mono {
   color: var(--color-text-primary);
-  font-size: 1rem;
+  font-size: var(--text-md);
 }
 
 .cell-text--ellipsis {
@@ -562,7 +420,7 @@ const historyTablePt = {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 0.95rem;
+  font-size: var(--text-md);
   line-height: 1.3;
   color: var(--color-text-primary);
   cursor: pointer;
@@ -579,7 +437,7 @@ const historyTablePt = {
   color: var(--color-text-dim);
   opacity: 0.5;
   font-style: italic;
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 
 .engine-header-icon {
@@ -623,7 +481,7 @@ const historyTablePt = {
 }
 
 .apply-review-icon-btn i {
-  font-size: 0.9rem;
+  font-size: var(--text-md);
 }
 
 .footer-divider {
@@ -636,7 +494,7 @@ const historyTablePt = {
   padding: 3rem 1rem;
   text-align: center;
   color: var(--color-text-dim);
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-style: italic;
 }
 </style>

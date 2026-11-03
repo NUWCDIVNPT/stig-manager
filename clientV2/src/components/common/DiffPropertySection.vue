@@ -64,7 +64,8 @@ const rendered = computed(() => {
   padding: 0.35rem 0.75rem;
   background-color: var(--color-background-subtle);
   border-bottom: 1px solid var(--color-border-default);
-  font: 700 1.1rem monospace;
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
   color: var(--color-text-primary);
 }
 
@@ -73,16 +74,11 @@ const rendered = computed(() => {
    v-html'd nodes. Diff text aligns much better in a fixed-width font. */
 .diff-property-section__body {
   overflow-x: hidden;
-  font-family: Menlo, Consolas, 'Liberation Mono', monospace;
+  font-family: var(--font-mono);
 }
 
-.d2h-wrapper :deep(.d2h-code-line),
-.d2h-wrapper :deep(.d2h-code-line-prefix),
-.d2h-wrapper :deep(.d2h-code-line-ctn),
-.d2h-wrapper :deep(.d2h-code-linenumber),
-.d2h-wrapper :deep(.line-num1),
-.d2h-wrapper :deep(.line-num2) {
-  font-family: Menlo, Consolas, 'Liberation Mono', monospace;
+.d2h-wrapper :deep(.d2h-diff-table) {
+  font-family: var(--font-mono);
 }
 
 .diff-property-section__error {

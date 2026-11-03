@@ -112,7 +112,7 @@ function onApplyFilter(filter) {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   color: var(--color-text-primary);
   cursor: pointer;
 }
@@ -121,7 +121,7 @@ function onApplyFilter(filter) {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 1rem;
+  font-size: var(--text-md);
   color: var(--color-action-red);
 }
 </style>

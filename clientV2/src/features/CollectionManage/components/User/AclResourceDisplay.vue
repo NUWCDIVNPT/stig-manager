@@ -46,7 +46,7 @@ const parts = computed(() => resourceParts(props.rule))
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  font-size: 1.25rem;
+  font-size: var(--text-xl);
 }
 
 .svg-icon {

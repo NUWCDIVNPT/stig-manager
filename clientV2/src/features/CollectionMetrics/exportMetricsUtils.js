@@ -4,6 +4,7 @@ import { buildQueryString } from '../../shared/api/queryString.js'
 import { useGlobalError } from '../../shared/composables/useGlobalError.js'
 import {
   ASSET_FIELDS,
+  csvMarking,
   formatAssetsForCsv,
   generateCsv,
   mapAssetToLabel,
@@ -109,7 +110,9 @@ export async function handleInventoryExport({
         finalFields = csvFields
       }
 
-      const csvContent = generateCsv(data, finalFields, finalDelimiter)
+      // No Marking on asset CSV: AssetCsvParser rejects unknown headers, so it would break re-import
+      const marking = groupBy === 'asset' ? undefined : csvMarking()
+      const csvContent = generateCsv(data, finalFields, { listDelimiter: finalDelimiter, marking })
       downloadData = new Blob([csvContent])
     }
     else {

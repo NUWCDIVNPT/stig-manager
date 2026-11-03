@@ -31,10 +31,11 @@ const COLUMNS = [
 
 <template>
   <ReportTableBase
+    searchable
     title="Tables"
     :rows="rows"
     :columns="COLUMNS"
-    :key-column="{ field: 'tableName', header: 'Table', searchPlaceholder: 'Search table...', width: '14rem' }"
+    :key-column="{ field: 'tableName', header: 'Table', width: '14rem' }"
     export-filename="appinfo-mysql-tables"
     noun="table"
     table-min-width="80rem"

@@ -26,7 +26,7 @@
 
 .group-title {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: var(--text-xl);
   font-weight: 600;
   color: var(--color-text-primary);
 }
@@ -34,7 +34,7 @@
 .group-desc {
   margin: -0.85rem 0 0.5rem 0;
   font-weight: 500;
-  font-size: 1.05rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
 }
 
@@ -74,7 +74,7 @@
 }
 
 .flabel {
-  font-size: 0.97rem;
+  font-size: var(--text-md);
   font-weight: 600;
   color: var(--color-text-primary);
 }
@@ -84,7 +84,7 @@
 }
 
 .char-count {
-  font-size: 0.8rem;
+  font-size: var(--text-md);
   color: var(--color-text-dim);
 }
 
@@ -113,7 +113,7 @@
 }
 
 .checkbox-label {
-  font-size: 0.9rem;
+  font-size: var(--text-md);
   color: var(--color-text-primary);
 }
 
@@ -132,7 +132,7 @@
 }
 
 .action-header h3 {
-  font-size: 1.25rem;
+  font-size: var(--text-xl);
   color: var(--color-text-bright);
   margin: 0;
 }
@@ -166,7 +166,7 @@
   align-items: center;
   gap: 0.65rem;
   color: var(--color-text-bright);
-  font-size: 1.25rem;
+  font-size: var(--text-xl);
   font-weight: 600;
 }
 

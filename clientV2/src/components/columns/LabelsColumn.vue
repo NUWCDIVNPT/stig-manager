@@ -5,6 +5,10 @@ import LabelsRow from './LabelsRow.vue'
 defineProps({
   field: String,
   header: String,
+  searchTerm: {
+    type: String,
+    default: '',
+  },
 })
 </script>
 
@@ -13,6 +17,7 @@ defineProps({
     <template #body="slotProps">
       <LabelsRow
         :labels="slotProps.data[slotProps.field]"
+        :search-term="searchTerm"
         compact
       />
     </template>

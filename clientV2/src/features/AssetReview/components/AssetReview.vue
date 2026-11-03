@@ -7,7 +7,7 @@ import RuleInfo from '../../../components/common/RuleInfo.vue'
 import { getHttpStatus } from '../../../shared/api/apiClient.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
-import { useDebouncedRef } from '../../../shared/composables/useDebouncedRef.js'
+import { useTours } from '../../../shared/composables/useTours.js'
 import { getRevisionInfo } from '../../../shared/lib/checklistUtils.js'
 import { defaultFieldSettings } from '../../../shared/lib/reviewFormUtils.js'
 import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
@@ -24,6 +24,7 @@ const route = useRoute()
 const router = useRouter()
 const { addView, removeView } = useRecentViews()
 const { getCollectionRoleId } = useCurrentUser()
+const { offerTourWhen } = useTours()
 
 const collectionId = computed(() => route.params.collectionId)
 const assetId = computed(() => route.params.assetId)
@@ -54,6 +55,8 @@ const { state: collection, execute: loadCollection } = useAsyncState(
 
 watch(assetId, () => {
   if (assetId.value) {
+    // Clear first so the header does not show the previous asset while this one loads
+    asset.value = null
     loadAsset()
   }
 }, { immediate: true })
@@ -100,7 +103,6 @@ const {
   isRuleLoading,
   ruleContentError,
   selectRule,
-  clearSelectedRule,
 } = useRuleDetail({ ruleLookupMap, collectionId, assetId, benchmarkId, revisionStr })
 
 // If the route arrives with ?ruleId=… (e.g. from the Findings shield button),
@@ -140,8 +142,14 @@ watch(selectedRuleId, (ruleId) => {
   router.replace({ query: next })
 })
 
-watch([benchmarkId, revisionStr], () => {
-  clearSelectedRule()
+// assetId is included because the router reuses this component when only the
+// asset changes (Recent views, Back/Forward); without it the grid would keep
+// the previous asset's rows while saves target the new asset. The selection
+// is seeded from the incoming ?ruleId rather than cleared: clearing it would
+// make the watcher below strip ruleId from the URL the route just arrived on.
+watch([assetId, benchmarkId, revisionStr], () => {
+  selectRule(route.query.ruleId ?? null)
+  checklistData.value = []
   if (benchmarkId.value && revisionStr.value) {
     if (!stigRevisions.value?.length) {
       loadStigRevisions()
@@ -172,26 +180,25 @@ watch(checklistError, (err) => {
   }
 })
 
-function onReviewSaved(review) {
+// The tour points at the checklist and Rule panels, so it waits for them.
+offerTourWhen('assetReview', () => Boolean(asset.value && gridData.value?.length))
+
+function mergeReview(review) {
   upsertReview(review.ruleId, review)
 }
 
 function onGridRefresh() {
   loadChecklist()
 }
-
-const searchFilter = useDebouncedRef('', 220)
 </script>
 
 <template>
   <div class="asset-review">
-    <div v-if="isLoading" class="asset-review__loading">
-      Loading asset details...
-    </div>
-    <div v-else-if="error" class="asset-review__error">
+    <div v-if="error" class="asset-review__error">
       {{ error || 'Error loading asset' }}
     </div>
-    <div v-else-if="asset" class="asset-review__content">
+    <!-- Keep the grid mounted while the asset loads; child components tolerate a null asset -->
+    <div v-else-if="asset || isLoading" class="asset-review__content">
       <div v-if="checklistError" class="asset-review__checklist-error">
         <i class="pi pi-exclamation-triangle" />
         <span>Could not load checklist: {{ checklistError.message || 'Unknown error' }}</span>
@@ -210,7 +217,7 @@ const searchFilter = useDebouncedRef('', 220)
       >
         <SplitterPanel :size="75" :min-size="40">
           <AssetChecklistGrid
-            :search-filter="searchFilter"
+            data-tour="asset-review-checklist"
             :grid-data="gridData"
             :is-checklist-loading="isChecklistLoading"
             :selected-rule-id="selectedRuleId"
@@ -223,13 +230,14 @@ const searchFilter = useDebouncedRef('', 220)
             :can-accept="canAccept"
             :collection-id="collectionId"
             :asset-id="assetId"
-            @update:search-filter="searchFilter = $event"
-            @review-saved="onReviewSaved"
+            @review-saved="mergeReview"
+            @review-loaded="mergeReview"
             @refresh="onGridRefresh"
           />
         </SplitterPanel>
         <SplitterPanel :size="25" :min-size="20">
           <RuleInfo
+            data-tour="asset-review-rule"
             :rule-content="ruleContent"
             :is-loading="isRuleLoading"
             :rule-content-error="ruleContentError"
@@ -261,7 +269,6 @@ const searchFilter = useDebouncedRef('', 220)
   flex-direction: column;
 }
 
-.asset-review__loading,
 .asset-review__error,
 .asset-review__empty {
   padding: 2rem;
@@ -281,12 +288,12 @@ const searchFilter = useDebouncedRef('', 220)
   background-color: color-mix(in srgb, var(--color-text-error, #e74c3c) 12%, var(--color-background-dark));
   border-bottom: 1px solid color-mix(in srgb, var(--color-text-error, #e74c3c) 40%, transparent);
   color: var(--color-text-error, #e74c3c);
-  font-size: 1rem;
+  font-size: var(--text-md);
   flex-shrink: 0;
 }
 
 .asset-review__checklist-error .pi {
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   flex-shrink: 0;
 }
 
@@ -298,7 +305,7 @@ const searchFilter = useDebouncedRef('', 220)
   border-radius: 4px;
   padding: 0.15rem 0.6rem;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: var(--text-md);
   flex-shrink: 0;
   opacity: 0.85;
   transition: opacity 0.15s;
