@@ -13,7 +13,8 @@ if (!consoleEnabled) {
 
 console.log('import.meta.env:', import.meta.env)
 if (import.meta.env.DEV) {
-  STIGMAN.Env.apiBase = `${import.meta.env.VITE_API_ORIGIN}/api`
+  // vite proxies /api to VITE_API_ORIGIN, keeping API calls same-origin
+  STIGMAN.Env.apiBase = `${window.location.origin}/api`
 }
 else if (STIGMAN.Env.pathPrefix) {
   STIGMAN.Env.apiBase = `${window.location.origin}${STIGMAN.Env.pathPrefix}api`

@@ -21,7 +21,7 @@ here corrupts everything downstream. They take an hour or two each.
 ### 1. `src/shared/csv.js`
 - `escapeCsv(value)` — null/undefined → empty; quote/comma/newline triggers
   quoting; embedded quotes get doubled. Classic CSV escape edge cases.
-- `generateCsv(data, columns, listDelimiter)` — array values, the
+- `generateCsv(data, columns, { listDelimiter, marking })` — array values, the
   `delimitedProperty` extraction branch, missing properties → empty cells,
   header ordering preserved.
 - `mapAssetToLabel(assets, labels)` — labelIds → label names, missing

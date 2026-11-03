@@ -1,22 +1,17 @@
 <script setup>
-import { computed } from 'vue'
 import MenuBar from '../features/MenuBar/components/MenuBar.vue'
 import NavRail from '../features/NavRail/components/NavRail.vue'
+import { classificationBanner } from '../shared/lib/classification.js'
 import { useGlobalAppStore } from '../shared/stores/globalAppStore.js'
 
-const globalAppState = useGlobalAppStore()
-
-// check if banner is shown based on classification
-const bannerHeight = computed(() => globalAppState.classification !== 'NONE' ? '20px' : '0px')
+// The grid fills the viewport below the classification banner, when one is shown.
+const bannerHeight = classificationBanner(useGlobalAppStore().classification).showBanner
+  ? 'var(--classification-banner-height)'
+  : '0px'
 </script>
 
 <template>
-  <div
-    class="appGrid"
-    :style="{
-      '--banner-height': bannerHeight,
-    }"
-  >
+  <div class="appGrid" :style="{ '--banner-height': bannerHeight }">
     <MenuBar style="grid-area: header" />
     <NavRail class="home-content">
       <main class="main">
@@ -35,7 +30,7 @@ const bannerHeight = computed(() => globalAppState.classification !== 'NONE' ? '
   grid-template-rows: auto 1fr;
   grid-template-columns: 1fr;
   width: 100vw;
-  height: 100vh;
+  height: calc(100vh - var(--banner-height, 0px));
   overflow-y: hidden;
   overflow-x: auto;
   min-width: 300px;

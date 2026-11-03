@@ -36,7 +36,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['select-rule', 'refresh'])
+const emit = defineEmits(['select-rule', 'refresh', 'export-archive'])
 
 const { term: searchFilter, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(() => props.gridData, [
   { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false },
@@ -107,6 +107,7 @@ const { itemSize, gridStyle } = useGridDensity('collection-checklist')
       :filter-columns="filterColumns"
       :filter-value-options="valueOptions"
       @apply-preset="key => setShown(DISPLAY_PRESETS[key])"
+      @export-archive="emit('export-archive', $event)"
     />
     <CollectionChecklistGridTable
       :grid-data="filteredRows"

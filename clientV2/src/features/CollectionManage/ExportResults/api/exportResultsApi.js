@@ -47,6 +47,7 @@ function exportToCollectionUrl(collectionId, dstCollectionId) {
 
 // The ZIP keeps the API's Content-Disposition name, which carries the
 // classification prefix (e.g. S_<collection>-CKL_<ts>.zip), as in the legacy client.
+// The non-service-worker paths return that name so callers can pair files with it.
 export async function downloadArchive({ collectionId, format, mode, selections, onProgress, onStreamStart, signal }) {
   const token = bearerToken()
   const url = archiveUrl(collectionId, format, mode)
@@ -88,7 +89,7 @@ export async function downloadArchive({ collectionId, format, mode, selections, 
   if (!response.body || !onProgress) {
     const blob = await response.blob()
     saveAs(blob, filename)
-    return { via: 'fallback', bytes: blob.size, totalBytes }
+    return { via: 'fallback', bytes: blob.size, totalBytes, filename }
   }
 
   const reader = response.body.getReader()
@@ -108,7 +109,7 @@ export async function downloadArchive({ collectionId, format, mode, selections, 
 
   const blob = new Blob(chunks, { type: 'application/zip' })
   saveAs(blob, filename)
-  return { via: 'stream', bytes: receivedBytes, totalBytes }
+  return { via: 'stream', bytes: receivedBytes, totalBytes, filename }
 }
 
 export async function startCollectionExport({ collectionId, dstCollectionId, selections }) {

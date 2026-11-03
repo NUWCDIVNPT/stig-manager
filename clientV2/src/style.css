@@ -72,6 +72,10 @@
      height so their top edges line up. */
   --panel-header-height: 3.25rem;
 
+  /* Classification banner strip; Home.vue subtracts it from the app grid
+     when the banner is shown. 20px at the 12px root, as in the legacy client. */
+  --classification-banner-height: 1.667rem;
+
   /* CAT Rating Colors */
   --color-cat1: #c68c8c;
   --color-cat2: #d4b056;

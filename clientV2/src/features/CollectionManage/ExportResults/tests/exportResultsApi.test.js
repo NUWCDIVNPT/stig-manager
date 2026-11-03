@@ -20,6 +20,8 @@ function archiveResponse({ body = null } = {}) {
 
 // Classification prefix in the ZIP name comes from the API, never the client.
 describe('downloadArchive filename', () => {
+  const originalLocation = window.location
+
   beforeEach(() => {
     vi.clearAllMocks()
     globalThis.fetch = vi.fn()
@@ -27,10 +29,10 @@ describe('downloadArchive filename', () => {
 
   afterEach(() => {
     vi.restoreAllMocks()
+    Object.defineProperty(window, 'location', { writable: true, value: originalLocation })
   })
 
   it('sends no attachment override to the service worker', async () => {
-    const originalLocation = window.location
     Object.defineProperty(window, 'location', { writable: true, value: 'http://initial' })
     getDownloadUrl.mockResolvedValue('http://download-url')
 
@@ -39,16 +41,16 @@ describe('downloadArchive filename', () => {
     expect(result).toEqual({ via: 'service-worker' })
     expect(getDownloadUrl.mock.calls[0][0]).not.toHaveProperty('attachment')
     expect(globalThis.fetch).not.toHaveBeenCalled()
-    Object.defineProperty(window, 'location', { writable: true, value: originalLocation })
   })
 
-  it('saves the fallback download under the API\'s prefixed name', async () => {
+  it('saves the fallback download under the API\'s prefixed name and returns it', async () => {
     getDownloadUrl.mockResolvedValue(null)
     globalThis.fetch.mockResolvedValue(archiveResponse())
 
-    await downloadArchive(args)
+    const result = await downloadArchive(args)
 
     expect(saveAs.mock.calls[0][1]).toBe(API_NAME)
+    expect(result).toMatchObject({ via: 'fallback', filename: API_NAME })
   })
 
   it('keeps the prefixed name when streaming with progress', async () => {
@@ -66,7 +68,7 @@ describe('downloadArchive filename', () => {
     const result = await downloadArchive({ ...args, onProgress })
 
     expect(saveAs.mock.calls[0][1]).toBe(API_NAME)
-    expect(result).toMatchObject({ via: 'stream', bytes: 3 })
+    expect(result).toMatchObject({ via: 'stream', bytes: 3, filename: API_NAME })
     expect(onProgress).toHaveBeenLastCalledWith({ bytesReceived: 3, totalBytes: null })
   })
 })

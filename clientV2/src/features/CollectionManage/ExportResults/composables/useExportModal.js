@@ -106,7 +106,7 @@ export function useExportModal(props, emit, { prefsKeyPrefix, effectiveSelection
         },
       })
       if (result?.via !== 'service-worker') {
-        emit('archive-export-complete', { filename })
+        emit('archive-export-complete', { filename: result?.filename ?? filename })
       }
     }
     catch (err) {
