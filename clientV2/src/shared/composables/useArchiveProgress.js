@@ -1,8 +1,8 @@
 import { saveAs } from 'file-saver-es'
 import { computed, reactive } from 'vue'
-import { formatBytes } from '../../../../shared/lib.js'
-import { downloadArchive } from '../api/exportResultsApi.js'
-import { archiveFilename } from '../exportResultsLogic.js'
+import { archiveFilename, downloadArchive } from '../api/archiveApi.js'
+import { formatBytes } from '../lib.js'
+import { useGlobalError } from './useGlobalError.js'
 
 function initialState() {
   return { visible: false, active: false, bytesReceived: 0, totalBytes: null, filename: '', log: [] }
@@ -15,6 +15,7 @@ const nextFrame = globalThis.requestAnimationFrame ?? (cb => setTimeout(cb, 16))
  * and the single place that runs an archive download against it.
  */
 export function useArchiveProgress() {
+  const { triggerError } = useGlobalError()
   const progress = reactive(initialState())
 
   function appendLog(message) {
@@ -65,8 +66,10 @@ export function useArchiveProgress() {
     appendLog(`Error: ${err?.message ?? String(err)}`)
   }
 
+  // Closable while streaming, as in the legacy client; the download continues and still prompts to save.
   function close() {
     if (progress.active) {
+      progress.visible = false
       return
     }
     Object.assign(progress, initialState())
@@ -89,6 +92,11 @@ export function useArchiveProgress() {
    * downloads are handed to the browser and show no dialog.
    */
   async function download({ collectionId, collectionName, format, mode, selections }) {
+    // One download per dialog; a repeat request reopens the running one.
+    if (progress.active) {
+      progress.visible = true
+      return
+    }
     const filename = archiveFilename(collectionName, format)
     try {
       const result = await downloadArchive({
@@ -104,6 +112,8 @@ export function useArchiveProgress() {
       }
     }
     catch (err) {
+      // Global error modal, as the legacy client's SM.Error.handleError
+      triggerError(err)
       onError(err)
     }
   }

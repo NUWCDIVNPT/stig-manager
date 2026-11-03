@@ -164,6 +164,9 @@ The claims presented by the authentication provider the last time this User auth
   // Collection Review breadcrumb STIG picker and empty checklist, when the label filter excludes the STIG.
   collectionReview: Object.freeze({
     stigNotInLabelFilter: `No Assets matching the label filter have this STIG. Change the filter or choose another STIG.`,
+    archiveCkl: `Download an archive with results in DISA STIG Viewer format for each asset in the collection`,
+    archiveCklb: `Download an archive with results in DISA STIG Viewer v3 format for each asset in the collection`,
+    archiveXccdf: `Download an archive with results in XCCDF format for each asset in the collection`,
   }),
 
   // Breadcrumb STIG/revision pickers, when the current value isn't among the options.

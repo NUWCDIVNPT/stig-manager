@@ -1,10 +1,10 @@
 import { saveAs } from 'file-saver-es'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { getDownloadUrl } from '../../../../shared/serviceWorker.js'
-import { downloadArchive } from '../api/exportResultsApi.js'
+import { getDownloadUrl } from '../serviceWorker.js'
+import { archiveFilename, downloadArchive, stigRevisionSelections } from './archiveApi.js'
 
 vi.mock('file-saver-es', () => ({ saveAs: vi.fn() }))
-vi.mock('../../../../shared/serviceWorker.js', () => ({ getDownloadUrl: vi.fn() }))
+vi.mock('../serviceWorker.js', () => ({ getDownloadUrl: vi.fn() }))
 
 const API_NAME = 'S_MyCollection-CKL_2026-10-30T1450Z.zip'
 const args = { collectionId: '21', format: 'ckl', mode: 'mono', selections: [{ assetId: '1' }] }
@@ -70,5 +70,43 @@ describe('downloadArchive filename', () => {
     expect(saveAs.mock.calls[0][1]).toBe(API_NAME)
     expect(result).toMatchObject({ via: 'stream', bytes: 3, filename: API_NAME })
     expect(onProgress).toHaveBeenLastCalledWith({ bytesReceived: 3, totalBytes: null })
+  })
+})
+
+describe('archiveFilename', () => {
+  const now = new Date('2026-03-05T14:23:45.678Z')
+
+  it('formats name_format_timestamp.zip with the supplied date', () => {
+    expect(archiveFilename('MyCollection', 'ckl', now))
+      .toBe('MyCollection_ckl_2026-03-05T14-23-45-678.zip')
+  })
+
+  it('falls back to "collection" when name is empty / nullish', () => {
+    expect(archiveFilename('', 'ckl', now)).toBe('collection_ckl_2026-03-05T14-23-45-678.zip')
+    expect(archiveFilename(null, 'ckl', now)).toBe('collection_ckl_2026-03-05T14-23-45-678.zip')
+    expect(archiveFilename(undefined, 'ckl', now)).toBe('collection_ckl_2026-03-05T14-23-45-678.zip')
+  })
+
+  it('replaces windows-illegal filename chars in the collection name with _', () => {
+    expect(archiveFilename('a\\b/c:d*e?f"g<h>i|j', 'cklb', now))
+      .toBe('a_b_c_d_e_f_g_h_i_j_cklb_2026-03-05T14-23-45-678.zip')
+  })
+
+  it('uses Date.now() by default when no date is supplied', () => {
+    const name = archiveFilename('X', 'xccdf')
+    expect(name).toMatch(/^X_xccdf_\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}\.zip$/)
+  })
+})
+
+describe('stigRevisionSelections', () => {
+  it('pins each Asset to the one STIG revision, with string assetIds', () => {
+    expect(stigRevisionSelections([{ assetId: 1 }, { assetId: '2' }], 'RHEL_8', 'V1R2')).toEqual([
+      { assetId: '1', stigs: [{ benchmarkId: 'RHEL_8', revisionStr: 'V1R2' }] },
+      { assetId: '2', stigs: [{ benchmarkId: 'RHEL_8', revisionStr: 'V1R2' }] },
+    ])
+  })
+
+  it('returns an empty list for missing assets', () => {
+    expect(stigRevisionSelections(null, 'RHEL_8', 'V1R2')).toEqual([])
   })
 })

@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '../../../testUtils/utils'
 import AssetsToolbar from '../components/Asset/AssetsToolbar.vue'
 
-vi.mock('../ExportResults/components/ExportByAssetButton.vue', () => ({ default: { render: () => {} } }))
+vi.mock('../ExportResults/components/ExportResultsButton.vue', () => ({ default: { render: () => {} } }))
 vi.mock('../components/Asset/ExportAssetsCsvButton.vue', () => ({ default: { render: () => {} } }))
 vi.mock('../components/Asset/ImportAssetsCsvButton.vue', () => ({ default: { render: () => {} } }))
 vi.mock('../components/Asset/ImportResultsButton.vue', () => ({ default: { render: () => {} } }))

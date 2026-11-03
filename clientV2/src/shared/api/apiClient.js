@@ -6,6 +6,11 @@ import { OpenApiOps } from './openApiOps.js'
 let getAccessToken = () => null
 let apiSpecObj = null
 
+// For raw fetch() callers (streamed downloads) that can't go through apiFetch
+export function getAuthToken() {
+  return getAccessToken()
+}
+
 export function configureAuth({ getToken }) {
   if (getToken) {
     getAccessToken = getToken
@@ -81,7 +86,7 @@ async function doFetch(url, opts) {
   return text ? safeJson(text) : null
 }
 // to be edited
-function getBaseUrl() {
+export function getBaseUrl() {
   try {
     return STIGMAN.Env.apiBase
   }

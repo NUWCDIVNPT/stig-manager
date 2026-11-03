@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 import {
-  archiveFilename,
   assetKey,
   buildDestinationOptions,
   buildStigTree,
@@ -151,31 +150,6 @@ describe('computeAssetTreeSelections', () => {
       { assetId: 'a1' },
       { assetId: 'a2', stigs: ['B1'] },
     ])
-  })
-})
-
-describe('archiveFilename', () => {
-  const now = new Date('2026-03-05T14:23:45.678Z')
-
-  it('formats name_format_timestamp.zip with the supplied date', () => {
-    expect(archiveFilename('MyCollection', 'ckl', now))
-      .toBe('MyCollection_ckl_2026-03-05T14-23-45-678.zip')
-  })
-
-  it('falls back to "collection" when name is empty / nullish', () => {
-    expect(archiveFilename('', 'ckl', now)).toBe('collection_ckl_2026-03-05T14-23-45-678.zip')
-    expect(archiveFilename(null, 'ckl', now)).toBe('collection_ckl_2026-03-05T14-23-45-678.zip')
-    expect(archiveFilename(undefined, 'ckl', now)).toBe('collection_ckl_2026-03-05T14-23-45-678.zip')
-  })
-
-  it('replaces windows-illegal filename chars in the collection name with _', () => {
-    expect(archiveFilename('a\\b/c:d*e?f"g<h>i|j', 'cklb', now))
-      .toBe('a_b_c_d_e_f_g_h_i_j_cklb_2026-03-05T14-23-45-678.zip')
-  })
-
-  it('uses Date.now() by default when no date is supplied', () => {
-    const name = archiveFilename('X', 'xccdf')
-    expect(name).toMatch(/^X_xccdf_\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}\.zip$/)
   })
 })
 

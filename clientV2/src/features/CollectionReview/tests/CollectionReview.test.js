@@ -7,6 +7,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { fetchCollection } from '../../../shared/api/collectionsApi.js'
 
 // Composables Mocks
+import { useArchiveProgress } from '../../../shared/composables/useArchiveProgress.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 
 import { renderWithProviders } from '../../../testUtils/utils.js'
@@ -26,6 +27,14 @@ vi.mock('../api/collectionReviewApi.js', () => ({
   fetchReviewsByRule: vi.fn(),
   fetchRule: vi.fn(),
   postReviewBatch: vi.fn(),
+}))
+
+vi.mock('../../../shared/composables/useArchiveProgress.js', () => ({
+  useArchiveProgress: vi.fn(),
+}))
+
+vi.mock('../../../components/common/ArchiveProgressDialog.vue', () => ({
+  default: { name: 'ArchiveProgressDialog', props: ['archive'], template: '<div />' },
 }))
 
 vi.mock('../../../shared/composables/useCurrentUser.js', () => ({
@@ -49,11 +58,12 @@ vi.mock('vue-router', () => ({
 vi.mock('../components/CollectionChecklistGrid.vue', () => ({
   default: {
     name: 'CollectionChecklistGrid',
-    props: ['gridData', 'isLoading', 'selectedRuleId', 'assetCount', 'emptyMessage'],
+    props: ['gridData', 'isLoading', 'selectedRuleId', 'assetCount', 'emptyMessage', 'canExportArchive'],
     template: `
-      <div data-testid="mock-checklist-grid" :data-empty-message="emptyMessage">
+      <div data-testid="mock-checklist-grid" :data-empty-message="emptyMessage" :data-can-export-archive="String(canExportArchive)">
         <button data-testid="emit-select-rule" @click="$emit('select-rule', 'V-456')">Select Rule</button>
         <button data-testid="emit-refresh" @click="$emit('refresh')">Refresh</button>
+        <button data-testid="emit-export-archive" @click="$emit('export-archive', { format: 'ckl', mode: 'mono' })">Export</button>
       </div>
     `,
   },
@@ -113,7 +123,7 @@ vi.mock('primevue/splitter', () => ({ default: { name: 'Splitter', template: '<d
 vi.mock('primevue/splitterpanel', () => ({ default: { name: 'SplitterPanel', template: '<div><slot></slot></div>' } }))
 
 describe('collectionReview.vue', () => {
-  let mockRouterPush, mockRouterReplace, mockAddView, mockRemoveView, routeState
+  let mockRouterPush, mockRouterReplace, mockAddView, mockRemoveView, mockDownload, routeState
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -145,6 +155,9 @@ describe('collectionReview.vue', () => {
       addView: mockAddView,
       removeView: mockRemoveView,
     })
+
+    mockDownload = vi.fn()
+    useArchiveProgress.mockReturnValue({ download: mockDownload })
 
     useReviewActionAvailability.mockReturnValue({
       actionStates: { submit: true },
@@ -385,6 +398,60 @@ describe('collectionReview.vue', () => {
         assets: { assetIds: ['asset-1'] },
         rules: { ruleIds: ['V-123'] },
       })
+    })
+  })
+
+  describe('export result archive', () => {
+    const grid = () => screen.getByTestId('mock-checklist-grid')
+
+    it('exports every listed Asset at the route revision', async () => {
+      createWrapper()
+      await flushPromises()
+
+      expect(grid().dataset.canExportArchive).toBe('true')
+      await fireEvent.click(screen.getByTestId('emit-export-archive'))
+
+      expect(mockDownload).toHaveBeenCalledWith({
+        collectionId: 'coll-1',
+        collectionName: 'Test Collection',
+        format: 'ckl',
+        mode: 'mono',
+        selections: [{ assetId: 'asset-1', stigs: [{ benchmarkId: 'bench-1', revisionStr: 'rev-1' }] }],
+      })
+    })
+
+    it('cannot export when no Assets have the STIG', async () => {
+      fetchAssetsByCollectionStig.mockResolvedValue([])
+      createWrapper()
+      await flushPromises()
+
+      expect(grid().dataset.canExportArchive).toBe('false')
+      await fireEvent.click(screen.getByTestId('emit-export-archive'))
+      expect(mockDownload).not.toHaveBeenCalled()
+    })
+
+    it('cannot export the previous STIG\'s Assets while the new list loads', async () => {
+      createWrapper()
+      await flushPromises()
+
+      fetchAssetsByCollectionStig.mockReturnValue(new Promise(() => {}))
+      routeState.params.benchmarkId = 'bench-2'
+      await flushPromises()
+
+      expect(grid().dataset.canExportArchive).toBe('false')
+      await fireEvent.click(screen.getByTestId('emit-export-archive'))
+      expect(mockDownload).not.toHaveBeenCalled()
+    })
+
+    it('cannot export after the Asset list fails to reload', async () => {
+      createWrapper()
+      await flushPromises()
+
+      fetchAssetsByCollectionStig.mockRejectedValue(new Error('boom'))
+      routeState.params.benchmarkId = 'bench-2'
+      await flushPromises()
+
+      expect(grid().dataset.canExportArchive).toBe('false')
     })
   })
 })
