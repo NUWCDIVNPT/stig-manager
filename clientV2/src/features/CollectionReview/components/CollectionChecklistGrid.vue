@@ -24,6 +24,10 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  canExportArchive: {
+    type: Boolean,
+    default: true,
+  },
   // Passed through to the table; see CollectionChecklistGridTable
   emptyMessage: {
     type: String,
@@ -106,6 +110,7 @@ const { itemSize, gridStyle } = useGridDensity('collection-checklist')
       :active-preset="activePreset"
       :filter-columns="filterColumns"
       :filter-value-options="valueOptions"
+      :can-export-archive="canExportArchive"
       @apply-preset="key => setShown(DISPLAY_PRESETS[key])"
       @export-archive="emit('export-archive', $event)"
     />

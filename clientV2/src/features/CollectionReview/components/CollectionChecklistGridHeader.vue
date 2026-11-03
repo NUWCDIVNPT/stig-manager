@@ -30,6 +30,11 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  // False while the Asset list is loading, failed or empty
+  canExportArchive: {
+    type: Boolean,
+    default: true,
+  },
 })
 
 const emit = defineEmits(['apply-preset', 'export-archive'])
@@ -88,6 +93,7 @@ const checklistMenuItems = computed(() => [
   {
     label: 'Export Result Archive',
     icon: 'pi pi-download',
+    disabled: !props.canExportArchive,
     items: [
       { label: 'CKL (STIG Viewer v2)', icon: 'pi pi-download', tooltip: TOOLTIPS.collectionReview.archiveCkl, command: () => emit('export-archive', { format: 'ckl', mode: 'mono' }) },
       { label: 'CKLB (STIG Viewer v3)', icon: 'pi pi-download', tooltip: TOOLTIPS.collectionReview.archiveCklb, command: () => emit('export-archive', { format: 'cklb', mode: 'mono' }) },

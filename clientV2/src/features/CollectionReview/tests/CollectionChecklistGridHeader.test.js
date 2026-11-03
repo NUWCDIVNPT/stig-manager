@@ -31,7 +31,7 @@ vi.mock('primevue/tieredmenu', () => ({
     },
     template: `
       <div>
-        <div v-for="group in model" :key="group.label">
+        <div v-for="group in model" :key="group.label" :data-group="group.label" :data-disabled="String(!!group.disabled)">
           <button v-for="item in group.items" :key="item.label" :data-icon="item.icon" :title="item.tooltip" @click="item.command && item.command()">
             {{ item.label }}
           </button>
@@ -188,6 +188,11 @@ describe('checklistGridHeader.vue', () => {
       ])
       expect(screen.getByText('XCCDF').closest('button').title)
         .toBe('Download an archive with results in XCCDF format for each asset in the collection')
+    })
+
+    it('disables Export Result Archive when the parent says it cannot export', () => {
+      const { container } = createWrapper({ canExportArchive: false })
+      expect(container.querySelector('[data-group="Export Result Archive"]').dataset.disabled).toBe('true')
     })
 
     it('fills the circle only for the active preset', () => {

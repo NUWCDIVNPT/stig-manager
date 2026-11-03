@@ -68,12 +68,15 @@ const { state: gridData, isLoading: isChecklistLoading, error: checklistError, e
   { immediate: false, initialState: [] },
 )
 
-const { state: assets, execute: loadAssets } = useAsyncState(
+const { state: assets, isLoading: isAssetsLoading, error: assetsError, execute: loadAssets } = useAsyncState(
   () => fetchAssetsByCollectionStig(collectionId.value, benchmarkId.value, labelFilterParams.value),
   { immediate: false, initialState: [] },
 )
 
 const assetCount = computed(() => assets.value?.length ?? 0)
+
+// While reloading, or after a failed reload, `assets` still holds the previous STIG's list.
+const canExportArchive = computed(() => !isAssetsLoading.value && !assetsError.value && assetCount.value > 0)
 
 // Explains an empty checklist by the label filter; undefined leaves the grid's
 // default. A failed fetch is already reported by the global error modal.
@@ -209,7 +212,7 @@ function onSelectRule(ruleId) {
 const archive = useArchiveProgress()
 
 function onExportArchive({ format, mode }) {
-  if (!assets.value?.length) {
+  if (!canExportArchive.value) {
     return
   }
   archive.download({
@@ -362,6 +365,7 @@ async function onBatchEditConfirm(payload) {
                 :is-loading="isChecklistLoading"
                 :selected-rule-id="selectedRuleId"
                 :asset-count="assetCount"
+                :can-export-archive="canExportArchive"
                 :empty-message="checklistEmptyMessage"
                 :export-filename="benchmarkId"
                 @select-rule="onSelectRule"
