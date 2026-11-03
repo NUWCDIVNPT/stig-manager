@@ -1,7 +1,7 @@
 <script setup>
 import ActionButton from '../../../../components/common/ActionButton.vue'
 import ActionToolbar from '../../../../components/common/ActionToolbar.vue'
-import ExportByStigButton from '../../ExportResults/components/ExportByStigButton.vue'
+import ExportResultsButton from '../../ExportResults/components/ExportResultsButton.vue'
 import AssignStigButton from './AssignStigButton.vue'
 import UnassignStigButton from './UnassignStigButton.vue'
 
@@ -49,10 +49,11 @@ const emit = defineEmits(['clear-selection', 'stigs-changed', 'modify-stig'])
       Modify
     </ActionButton>
     <div class="toolbar-divider" />
-    <ExportByStigButton
+    <ExportResultsButton
+      by="stig"
       :collection-id="props.collectionId"
       :collection-name="props.collectionName"
-      :selected-stigs="props.selectedStigs"
+      :selected="props.selectedStigs"
     />
     <div class="toolbar-spacer" />
     <ActionButton variant="clear" :disabled="!hasSelection" @click="emit('clear-selection')">

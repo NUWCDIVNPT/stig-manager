@@ -1,7 +1,7 @@
 <script setup>
 import ActionButton from '../../../../components/common/ActionButton.vue'
 import ActionToolbar from '../../../../components/common/ActionToolbar.vue'
-import ExportByAssetButton from '../../ExportResults/components/ExportByAssetButton.vue'
+import ExportResultsButton from '../../ExportResults/components/ExportResultsButton.vue'
 import ExportAssetsCsvButton from './ExportAssetsCsvButton.vue'
 import ImportAssetsCsvButton from './ImportAssetsCsvButton.vue'
 import ImportResultsButton from './ImportResultsButton.vue'
@@ -52,10 +52,11 @@ const emit = defineEmits(['imported', 'clear-selection', 'create-asset', 'modify
     <div class="toolbar-divider" />
     <ImportResultsButton :collection-id="props.collectionId" @imported="emit('imported')" />
     <div class="toolbar-divider" />
-    <ExportByAssetButton
+    <ExportResultsButton
+      by="asset"
       :collection-id="props.collectionId"
       :collection-name="props.collectionName"
-      :selected-assets="props.selectedAssets"
+      :selected="props.selectedAssets"
     />
     <div class="toolbar-divider" />
     <ActionButton icon="pi pi-trash icon-red" :disabled="!hasSelection" @click="emit('delete-assets')">

@@ -5,18 +5,34 @@ import ArchiveProgressDialog from '../../../../components/common/ArchiveProgress
 import { useArchiveProgress } from '../../../../shared/composables/useArchiveProgress.js'
 import { useCollectionExportProgressStore } from '../../../../shared/stores/collectionExportProgressStore.js'
 import ExportByAssetModal from './ExportByAssetModal.vue'
+import ExportByStigModal from './ExportByStigModal.vue'
 
 const props = defineProps({
   collectionId: { type: String, required: true },
   collectionName: { type: String, default: '' },
-  selectedAssets: { type: Array, default: () => [] },
+  by: { type: String, required: true, validator: value => ['asset', 'stig'].includes(value) },
+  selected: { type: Array, default: () => [] },
 })
 
-const eligibleAssets = computed(() =>
-  props.selectedAssets.filter(a => (a.stigCnt ?? 0) > 0),
-)
+// What differs between the Assets and STIGs toolbars; Assets without STIG assignments have nothing to export.
+const MODES = {
+  asset: {
+    modal: ExportByAssetModal,
+    selectionProp: 'selectedAssets',
+    title: 'Export selected assets and their results',
+    eligible: rows => rows.filter(a => (a.stigCnt ?? 0) > 0),
+  },
+  stig: {
+    modal: ExportByStigModal,
+    selectionProp: 'selectedStigs',
+    title: 'Export selected STIG results',
+    eligible: rows => rows,
+  },
+}
 
-const disabled = computed(() => eligibleAssets.value.length === 0)
+const mode = computed(() => MODES[props.by])
+const eligible = computed(() => mode.value.eligible(props.selected))
+const disabled = computed(() => eligible.value.length === 0)
 
 const modalVisible = ref(false)
 
@@ -39,17 +55,18 @@ function onArchiveExport(detail) {
   <ActionButton
     icon="pi pi-download icon-blue"
     :disabled="disabled"
-    title="Export selected assets and their results"
+    :title="mode.title"
     @click="openModal"
   >
     Export results...
   </ActionButton>
 
-  <ExportByAssetModal
+  <component
+    :is="mode.modal"
     v-model:visible="modalVisible"
     :collection-id="collectionId"
     :collection-name="collectionName"
-    :selected-assets="eligibleAssets"
+    v-bind="{ [mode.selectionProp]: eligible }"
     @export-started="collectionExportStore.start"
     @collection-export-progress="collectionExportStore.pushStage"
     @collection-export-complete="collectionExportStore.finish"
