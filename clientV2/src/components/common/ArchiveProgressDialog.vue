@@ -1,7 +1,7 @@
 <script setup>
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
-import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
+import { primaryBtnPt, secondaryBtnPt } from '../../shared/lib/dialogPt.js'
 
 // Renders a useArchiveProgress() instance; the composable owns visibility.
 const props = defineProps({
@@ -16,8 +16,6 @@ const { progress, fetchedLabel, saveLog, close } = props.archive
     :visible="progress.visible"
     modal
     :draggable="false"
-    :closable="!progress.active"
-    :close-on-escape="!progress.active"
     :style="{ width: 'min(560px, 94vw)' }"
     header="Downloading checklists"
     @update:visible="close"
@@ -39,7 +37,6 @@ const { progress, fetchedLabel, saveLog, close } = props.archive
         <Button
           label="Close"
           :pt="primaryBtnPt"
-          :disabled="progress.active"
           @click="close"
         />
       </div>

@@ -7,14 +7,6 @@ export function assetKey(assetId) {
   return `asset-${assetId}`
 }
 
-// Base name for the progress log (.log.txt) until the API's classification-prefixed
-// Content-Disposition name is known (see downloadArchive); the ZIP itself never uses it.
-export function archiveFilename(collectionName, format, now = new Date()) {
-  const safeName = (collectionName || 'collection').replace(/[\\/:*?"<>|]/g, '_')
-  const timestamp = now.toISOString().replace(/[:.]/g, '-').replace(/Z$/, '')
-  return `${safeName}_${format}_${timestamp}.zip`
-}
-
 export function validateExport({ target, count, destinationId, min = COLLECTION_MIN, max = COLLECTION_MAX }) {
   if (count === 0) {
     return 'Select at least one asset.'
@@ -273,16 +265,4 @@ export function toggleLeafSelection(root, branch, leaf, keys) {
   next[branch.key] = computeBranchSelectionState(branch, next)
   next[root.key] = computeRootSelectionState(root, next)
   return next
-}
-
-/**
- * Archive selections for every Asset at one STIG revision, as the Collection
- * Review page exports. Unlike the tree builders above, each STIG entry pins a
- * revisionStr ('latest' is accepted by the API).
- */
-export function stigRevisionSelections(assets, benchmarkId, revisionStr) {
-  return (assets ?? []).map(asset => ({
-    assetId: String(asset.assetId),
-    stigs: [{ benchmarkId, revisionStr }],
-  }))
 }

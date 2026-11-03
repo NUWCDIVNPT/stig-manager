@@ -1,26 +1,4 @@
-import { saveAs } from 'file-saver-es'
-import { apiCall } from '../../../../shared/api/apiClient.js'
-import { buildQueryString } from '../../../../shared/api/queryString.js'
-import { filenameFromContentDisposition } from '../../../../shared/lib/contentDisposition.js'
-import { getDownloadUrl } from '../../../../shared/serviceWorker.js'
-
-function apiBase() {
-  try {
-    return STIGMAN.Env.apiBase
-  }
-  catch {
-    return import.meta.env.VITE_API_BASE_URL ?? '/api'
-  }
-}
-
-function bearerToken() {
-  try {
-    return STIGMAN.oidcWorker?.token
-  }
-  catch {
-    return null
-  }
-}
+import { apiCall, getAuthToken, getBaseUrl } from '../../../../shared/api/apiClient.js'
 
 export function fetchAssetStigSummary(collectionId, assetId) {
   if (!collectionId || !assetId) {
@@ -36,84 +14,12 @@ export function fetchStigAssetSummary(collectionId, benchmarkId) {
   return apiCall('getMetricsSummaryByCollection', { collectionId, benchmarkId })
 }
 
-function archiveUrl(collectionId, format, mode) {
-  const search = mode ? buildQueryString({ mode }) : ''
-  return `${apiBase()}/collections/${collectionId}/archive/${format}${search}`
-}
-
 function exportToCollectionUrl(collectionId, dstCollectionId) {
-  return `${apiBase()}/collections/${collectionId}/export-to/${dstCollectionId}`
-}
-
-// The ZIP keeps the API's Content-Disposition name, which carries the
-// classification prefix (e.g. S_<collection>-CKL_<ts>.zip), as in the legacy client.
-// The non-service-worker paths return that name so callers can pair files with it.
-export async function downloadArchive({ collectionId, format, mode, selections, onProgress, onStreamStart, signal }) {
-  const token = bearerToken()
-  const url = archiveUrl(collectionId, format, mode)
-  const init = {
-    url,
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(selections),
-  }
-
-  const href = await getDownloadUrl(init)
-  if (href) {
-    window.location = href
-    return { via: 'service-worker' }
-  }
-
-  onStreamStart?.()
-  const response = await fetch(url, {
-    method: init.method,
-    headers: init.headers,
-    body: init.body,
-    signal,
-  })
-  if (!response.ok) {
-    const body = await response.text().catch(() => '')
-    throw new Error(`Archive request failed (${response.status}). ${body}`)
-  }
-  const filename = filenameFromContentDisposition(response.headers.get('content-disposition'))
-  if (!filename) {
-    throw new Error('No Content-Disposition header in Response')
-  }
-
-  const totalHeader = response.headers.get('Content-Length')
-  const totalBytes = totalHeader ? Number(totalHeader) : null
-
-  if (!response.body || !onProgress) {
-    const blob = await response.blob()
-    saveAs(blob, filename)
-    return { via: 'fallback', bytes: blob.size, totalBytes, filename }
-  }
-
-  const reader = response.body.getReader()
-  const chunks = []
-  let receivedBytes = 0
-  onProgress({ bytesReceived: 0, totalBytes })
-
-  while (true) {
-    const { done, value } = await reader.read()
-    if (done) {
-      break
-    }
-    chunks.push(value)
-    receivedBytes += value.length
-    onProgress({ bytesReceived: receivedBytes, totalBytes })
-  }
-
-  const blob = new Blob(chunks, { type: 'application/zip' })
-  saveAs(blob, filename)
-  return { via: 'stream', bytes: receivedBytes, totalBytes, filename }
+  return `${getBaseUrl()}/collections/${collectionId}/export-to/${dstCollectionId}`
 }
 
 export async function startCollectionExport({ collectionId, dstCollectionId, selections }) {
-  const token = bearerToken()
+  const token = getAuthToken()
   const url = exportToCollectionUrl(collectionId, dstCollectionId)
   const response = await fetch(url, {
     method: 'POST',
