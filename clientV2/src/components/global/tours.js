@@ -1,5 +1,6 @@
 // Tours shown by TourHost, keyed by tour id.
 //
+// title: how the tour is named where the user manages tours (What's New).
 // date:  bumped whenever the tour changes enough that users who have already
 //        seen it should be shown it again. Compared against
 //        webPreferences.tours[id].
@@ -17,12 +18,13 @@
 //               on screen (a popup, say).
 export const TOURS = {
   shell: {
+    title: 'Orientation',
     date: '2026-10-04',
     steps: [
       {
         target: 'nav-rail',
         title: 'Navigation rail',
-        body: 'Everything in the app is reached from this rail. The arrow at the top expands it for section labels and your Collection list, or collapses it to icons.',
+        body: 'Everything in the app is reached from this rail. The Collections and Recent Views icons open popovers; the others go straight to their section. Click the arrow at the top to expand the entire rail.',
         expandRail: true,
       },
       {
@@ -46,7 +48,7 @@ export const TOURS = {
       {
         target: 'nav-item-whats-new',
         title: 'What\'s New',
-        body: 'Release notes and feature announcements.',
+        body: 'See release notes, feature announcements, and replay these tours.',
         expandRail: true,
       },
       {
@@ -84,6 +86,7 @@ export const TOURS = {
     ],
   },
   collection: {
+    title: 'Collection Workspace',
     date: '2026-11-02',
     steps: [
       {
@@ -94,7 +97,7 @@ export const TOURS = {
       {
         target: 'collection-tabs',
         title: 'Collection views',
-        body: 'The STIGs, Assets, and Labels grids, and the Findings report, are tabs here, one click apart.',
+        body: 'The STIGs, Assets, and Labels grids, as well as the Findings report, are tabs here.',
         placement: 'below',
       },
       {
@@ -106,18 +109,19 @@ export const TOURS = {
       {
         target: 'label-filter',
         title: 'Label filter',
-        body: 'Pick one or more Labels here and the Dashboard, the grids, and Findings describe only the Assets that carry them. The filter stays with you when you open a STIG in Collection Review, and is part of the URL so a bookmark reopens the same filtered view.',
+        body: 'Pick one or more Labels here and the Dashboard, the grids, and Findings show only the Assets that carry them. The filter stays with you when you open a STIG in Collection Review, and is part of the URL so a bookmark reopens the same filtered view.',
         placement: 'below',
       },
     ],
   },
   collectionReview: {
+    title: 'Collection Review',
     date: '2026-11-02',
     steps: [
       {
         target: 'label-filter',
         title: 'Label filter',
-        body: 'Collection Review is filtered by Label too. A filter picked on the Collection Dashboard carries into this view, and you can change it here at any time.',
+        body: 'Collection Review is filtered by Label too. A filter picked on the Collection Dashboard carries into this view, and vice versa. You can change the filter here at any time.',
         placement: 'below',
       },
       {
@@ -129,7 +133,7 @@ export const TOURS = {
       {
         target: 'collection-review-reviews',
         title: 'Reviews',
-        body: 'The Review of the selected Rule on each Asset. Click a row to edit that Review in a pop-up right where you are, or select several rows to set their results or statuses together.',
+        body: 'The Review of the selected Rule on each Asset. Click a row to edit that Review in a pop-up right where you are, or select several rows to perform batch edit operations.',
         placement: 'center',
       },
       {
@@ -141,6 +145,7 @@ export const TOURS = {
     ],
   },
   assetReview: {
+    title: 'Asset Review',
     date: '2026-11-02',
     steps: [
       {
@@ -164,13 +169,13 @@ export const TOURS = {
       {
         target: 'asset-review-row',
         title: 'Edit a Review',
-        body: 'Click a row to open the Review editor beside it. Next will open the first row for you.',
+        body: 'Click a row to open the Review editor pop-up. "Next" will open the first row editor for you.',
         clickTarget: true,
       },
       {
         target: 'review-popover',
         title: 'Review editor',
-        body: 'Result, Detail, Comment, and Status are edited in this pop-up, which stays open as you move between rows. Review Resources below it show the Review\'s History and the same Rule on other Assets.',
+        body: 'Result, Detail, Comment, and Status are edited in this pop-up. Expand Review Resources to show the Review\'s History and the same Rule on other Assets.',
         deferred: true,
       },
       {
