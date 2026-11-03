@@ -3,43 +3,44 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 
-// Renders the state returned by useArchiveProgress()
+// Renders a useArchiveProgress() instance; the composable owns visibility.
 const props = defineProps({
   archive: { type: Object, required: true },
 })
 
-const visible = defineModel('visible', { type: Boolean, default: false })
+const { progress, fetchedLabel, saveLog, close } = props.archive
 </script>
 
 <template>
   <Dialog
-    v-model:visible="visible"
+    :visible="progress.visible"
     modal
     :draggable="false"
-    :closable="!props.archive.progress.active"
-    :close-on-escape="!props.archive.progress.active"
+    :closable="!progress.active"
+    :close-on-escape="!progress.active"
     :style="{ width: 'min(560px, 94vw)' }"
     header="Downloading checklists"
+    @update:visible="close"
   >
     <div class="archive-progress-body">
       <div class="archive-bytes-bar" role="status" aria-live="polite">
-        {{ props.archive.fetchedLabel }}
+        {{ fetchedLabel }}
       </div>
-      <pre class="archive-log">{{ props.archive.progress.log.join('\n') }}</pre>
+      <pre class="archive-log">{{ progress.log.join('\n') }}</pre>
     </div>
     <template #footer>
       <div class="archive-progress-footer">
         <Button
           label="Save log..."
           :pt="secondaryBtnPt"
-          :disabled="props.archive.progress.log.length === 0"
-          @click="props.archive.saveLog"
+          :disabled="progress.log.length === 0"
+          @click="saveLog"
         />
         <Button
           label="Close"
           :pt="primaryBtnPt"
-          :disabled="props.archive.progress.active"
-          @click="props.archive.close"
+          :disabled="progress.active"
+          @click="close"
         />
       </div>
     </template>

@@ -1,26 +1,21 @@
 import { saveAs } from 'file-saver-es'
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive } from 'vue'
 import { formatBytes } from '../../../../shared/lib.js'
 import { downloadArchive } from '../api/exportResultsApi.js'
 import { archiveFilename } from '../exportResultsLogic.js'
 
 function initialState() {
-  return { active: false, bytesReceived: 0, totalBytes: null, filename: '', log: [] }
+  return { visible: false, active: false, bytesReceived: 0, totalBytes: null, filename: '', log: [] }
 }
 
+const nextFrame = globalThis.requestAnimationFrame ?? (cb => setTimeout(cb, 16))
+
 /**
- * State and handlers for the archive download progress dialog
- * (ArchiveProgressDialog.vue). The on* handlers match the archive events
- * emitted by the export modals; `download` drives them directly for callers
- * that bypass the modal.
+ * State for the archive download progress dialog (ArchiveProgressDialog.vue)
+ * and the single place that runs an archive download against it.
  */
 export function useArchiveProgress() {
-  const visible = ref(false)
   const progress = reactive(initialState())
-
-  function reset() {
-    Object.assign(progress, initialState())
-  }
 
   function appendLog(message) {
     progress.log.push(message)
@@ -36,18 +31,24 @@ export function useArchiveProgress() {
   })
 
   function onStarted({ format, mode, filename }) {
-    reset()
-    progress.active = true
-    progress.filename = filename ?? ''
-    visible.value = true
+    Object.assign(progress, initialState(), { visible: true, active: true, filename })
     appendLog(`Starting download (${format}${mode ? ` / ${mode}` : ''}).`)
     appendLog('When the stream has finished you will be prompted to save the data to disk. The final size of the archive is unknown during streaming.')
   }
 
-  function onProgress({ bytesReceived, totalBytes }) {
-    progress.bytesReceived = bytesReceived ?? 0
-    if (totalBytes) {
-      progress.totalBytes = totalBytes
+  // Stream chunks arrive far faster than frames; apply the latest once per frame.
+  let pending = null
+  function onProgress(update) {
+    const schedule = pending === null
+    pending = update
+    if (schedule) {
+      nextFrame(() => {
+        progress.bytesReceived = pending.bytesReceived ?? 0
+        if (pending.totalBytes) {
+          progress.totalBytes = pending.totalBytes
+        }
+        pending = null
+      })
     }
   }
 
@@ -68,8 +69,7 @@ export function useArchiveProgress() {
     if (progress.active) {
       return
     }
-    visible.value = false
-    reset()
+    Object.assign(progress, initialState())
   }
 
   function saveLog() {
@@ -108,16 +108,5 @@ export function useArchiveProgress() {
     }
   }
 
-  return {
-    visible,
-    progress,
-    fetchedLabel,
-    onStarted,
-    onProgress,
-    onComplete,
-    onError,
-    close,
-    saveLog,
-    download,
-  }
+  return { progress, fetchedLabel, close, saveLog, download }
 }

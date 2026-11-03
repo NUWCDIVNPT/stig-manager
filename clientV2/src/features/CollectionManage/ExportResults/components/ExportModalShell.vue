@@ -32,9 +32,7 @@ const emit = defineEmits([
   'collection-export-progress',
   'collection-export-complete',
   'collection-export-error',
-  'archive-export-progress',
-  'archive-export-complete',
-  'archive-export-error',
+  'archive-export',
 ])
 
 const effectiveSelections = computed(() => props.effectiveSelections)

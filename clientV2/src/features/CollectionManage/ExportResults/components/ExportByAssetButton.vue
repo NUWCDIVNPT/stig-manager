@@ -30,28 +30,8 @@ function openModal() {
   modalVisible.value = true
 }
 
-function onExportStarted(detail) {
-  if (detail.type === 'collection') {
-    collectionExportStore.start({
-      dstCollectionId: detail.dstCollectionId,
-      dstCollectionName: detail.dstCollectionName,
-    })
-  }
-  else if (detail.type === 'archive') {
-    archive.onStarted(detail)
-  }
-}
-
-function onCollectionProgress(event) {
-  collectionExportStore.pushStage(event)
-}
-
-function onCollectionComplete() {
-  collectionExportStore.finish()
-}
-
-function onCollectionError(err) {
-  collectionExportStore.fail(err)
+function onArchiveExport(detail) {
+  archive.download({ collectionId: props.collectionId, collectionName: props.collectionName, ...detail })
 }
 </script>
 
@@ -70,14 +50,12 @@ function onCollectionError(err) {
     :collection-id="collectionId"
     :collection-name="collectionName"
     :selected-assets="eligibleAssets"
-    @export-started="onExportStarted"
-    @collection-export-progress="onCollectionProgress"
-    @collection-export-complete="onCollectionComplete"
-    @collection-export-error="onCollectionError"
-    @archive-export-progress="archive.onProgress"
-    @archive-export-complete="archive.onComplete"
-    @archive-export-error="archive.onError"
+    @export-started="collectionExportStore.start"
+    @collection-export-progress="collectionExportStore.pushStage"
+    @collection-export-complete="collectionExportStore.finish"
+    @collection-export-error="collectionExportStore.fail"
+    @archive-export="onArchiveExport"
   />
 
-  <ArchiveProgressDialog v-model:visible="archive.visible.value" :archive="archive" />
+  <ArchiveProgressDialog :archive="archive" />
 </template>

@@ -3,13 +3,13 @@ import { classificationBanner } from '../../shared/lib/classification.js'
 import { useGlobalAppStore } from '../../shared/stores/globalAppStore.js'
 
 // Read once at setup; classification is fixed for the app lifetime.
-const cls = classificationBanner(useGlobalAppStore().classification)
+const banner = classificationBanner(useGlobalAppStore().classification)
 </script>
 
 <template>
-  <div v-if="cls.showBanner" class="sm-banner" :class="[`sm-banner-${cls.classificationCls}`]">
+  <div v-if="banner" class="sm-banner" :class="[`sm-banner-${banner.cls}`]">
     <div class="sm-banner-body-text">
-      {{ cls.classificationText }}
+      {{ banner.text }}
     </div>
   </div>
 </template>

@@ -1,12 +1,8 @@
 import { computed, ref, watch } from 'vue'
 import { useCurrentUser } from '../../../../shared/composables/useCurrentUser.js'
 import { readStoredValue, storeValue } from '../../../../shared/lib/localStorage.js'
+import { startCollectionExport } from '../api/exportResultsApi.js'
 import {
-  downloadArchive,
-  startCollectionExport,
-} from '../api/exportResultsApi.js'
-import {
-  archiveFilename,
   buildDestinationOptions,
   parsePrefs,
   validateExport,
@@ -89,29 +85,10 @@ export function useExportModal(props, emit, { prefsKeyPrefix, effectiveSelection
   }
 
   // ── Submit ──────────────────────────────────────────────────────────────────
-  async function submitArchive() {
+  // The owning button runs the download through useArchiveProgress().
+  function submitArchive() {
     const { value, mode } = selectedFormat.value
-    const filename = archiveFilename(props.collectionName, value)
-    try {
-      const result = await downloadArchive({
-        collectionId: props.collectionId,
-        format: value,
-        mode,
-        selections: effectiveSelections.value,
-        onStreamStart: () => {
-          emit('export-started', { type: 'archive', format: value, mode, filename })
-        },
-        onProgress: ({ bytesReceived, totalBytes }) => {
-          emit('archive-export-progress', { bytesReceived, totalBytes })
-        },
-      })
-      if (result?.via !== 'service-worker') {
-        emit('archive-export-complete', { filename: result?.filename ?? filename })
-      }
-    }
-    catch (err) {
-      emit('archive-export-error', err)
-    }
+    emit('archive-export', { format: value, mode, selections: effectiveSelections.value })
   }
 
   async function submitCollection() {

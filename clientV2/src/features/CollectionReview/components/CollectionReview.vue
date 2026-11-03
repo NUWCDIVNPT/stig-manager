@@ -13,6 +13,7 @@ import { defaultFieldSettings, statusPayloadForAction } from '../../../shared/li
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import ArchiveProgressDialog from '../../CollectionManage/ExportResults/components/ArchiveProgressDialog.vue'
 import { useArchiveProgress } from '../../CollectionManage/ExportResults/composables/useArchiveProgress.js'
+import { stigRevisionSelections } from '../../CollectionManage/ExportResults/exportResultsLogic.js'
 import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 import { fetchAssetsByCollectionStig, fetchCollectionChecklist, fetchReviewsByRule, fetchRule, postReviewBatch } from '../api/collectionReviewApi.js'
 import { useReviewActionAvailability } from '../composables/useReviewActionAvailability.js'
@@ -203,11 +204,7 @@ function onSelectRule(ruleId) {
 const archive = useArchiveProgress()
 
 function onExportArchive({ format, mode }) {
-  const selections = (assets.value ?? []).map(asset => ({
-    assetId: String(asset.assetId),
-    stigs: [{ benchmarkId: benchmarkId.value, revisionStr: revisionStr.value }],
-  }))
-  if (selections.length === 0) {
+  if (!assets.value?.length) {
     return
   }
   archive.download({
@@ -215,7 +212,7 @@ function onExportArchive({ format, mode }) {
     collectionName: collection.value?.name,
     format,
     mode,
-    selections,
+    selections: stigRevisionSelections(assets.value, benchmarkId.value, revisionStr.value),
   })
 }
 
@@ -409,7 +406,7 @@ async function onBatchEditConfirm(payload) {
       @confirm="onBatchEditConfirm"
     />
 
-    <ArchiveProgressDialog v-model:visible="archive.visible.value" :archive="archive" />
+    <ArchiveProgressDialog :archive="archive" />
   </div>
 </template>
 

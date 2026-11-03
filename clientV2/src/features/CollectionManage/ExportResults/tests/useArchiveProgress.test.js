@@ -19,7 +19,7 @@ describe('useArchiveProgress.download', () => {
 
     await archive.download(args)
 
-    expect(archive.visible.value).toBe(false)
+    expect(archive.progress.visible).toBe(false)
     expect(downloadArchive.mock.calls[0][0]).toMatchObject({ collectionId: '21', format: 'ckl', mode: 'mono', selections: args.selections })
   })
 
@@ -33,7 +33,7 @@ describe('useArchiveProgress.download', () => {
 
     await archive.download(args)
 
-    expect(archive.visible.value).toBe(true)
+    expect(archive.progress.visible).toBe(true)
     expect(archive.progress.active).toBe(false)
     expect(archive.progress.filename).toBe('U_My Coll-CKL_x.zip')
     expect(archive.progress.log.at(-1)).toBe('Streaming is complete.')
@@ -54,6 +54,6 @@ describe('useArchiveProgress.download', () => {
     expect(archive.progress.active).toBe(false)
     expect(archive.progress.log.at(-1)).toBe('Error: boom')
     archive.close()
-    expect(archive.visible.value).toBe(false)
+    expect(archive.progress.visible).toBe(false)
   })
 })
