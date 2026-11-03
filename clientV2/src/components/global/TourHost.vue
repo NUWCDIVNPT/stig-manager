@@ -15,7 +15,6 @@ import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useGlobalError } from '../../shared/composables/useGlobalError.js'
 import { useTours } from '../../shared/composables/useTours.js'
-import { useWebPreferences } from '../../shared/composables/useWebPreferences.js'
 import { TOURS } from './tours.js'
 
 const vFocustrap = FocusTrap
@@ -23,8 +22,7 @@ const vFocustrap = FocusTrap
 const SHELL_TOUR = 'shell'
 
 const { triggerError } = useGlobalError()
-const { preferences, patchPreferences } = useWebPreferences()
-const { request, takeRequest, setNavRailExpanded } = useTours()
+const { request, takeRequest, setNavRailExpanded, hasSeen, markSeen } = useTours()
 const router = useRouter()
 const route = useRoute()
 
@@ -180,10 +178,6 @@ function back() {
   }
 }
 
-function hasSeen(id) {
-  return (preferences.value.tours?.[id] ?? '') >= TOURS[id].date
-}
-
 // Enter is left to the focused button, and Tab to the card's focus trap.
 function onKeydown(e) {
   if (e.key === 'Escape') {
@@ -224,7 +218,7 @@ async function finish() {
   listen(false)
   if (!hasSeen(id)) {
     try {
-      await patchPreferences({ tours: { [id]: TOURS[id].date } })
+      await markSeen(id)
     }
     catch (error) {
       triggerError(error)
@@ -241,11 +235,13 @@ async function start(id) {
   // before deciding which steps are available.
   setNavRailExpanded(steps.some(s => s.expandRail))
   await nextTick()
-  // A step with a route brings its own target along once it navigates, and a
-  // deferred step's target is produced by the click before it, but either only
-  // joins a tour that has something to show on the current screen.
+  // A step with a route brings its own target along once it navigates, and
+  // the step after a clickTarget step gets its target from that click, but
+  // either only joins a tour that has something to show on the current screen.
   const onScreen = steps.filter(s => findTarget(s.target))
-  availableSteps.value = onScreen.length ? steps.filter(s => s.route || s.deferred || onScreen.includes(s)) : []
+  availableSteps.value = onScreen.length
+    ? steps.filter((s, i) => s.route || steps[i - 1]?.clickTarget || onScreen.includes(s))
+    : []
   if (availableSteps.value.length === 0) {
     setNavRailExpanded(false)
     return

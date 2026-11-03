@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { api } from '../../../shared/api/apiClient.js'
 import { useTours } from '../../../shared/composables/useTours.js'
 import { useGlobalAppStore } from '../../../shared/stores/globalAppStore.js'
-import { renderWithProviders } from '../../../testUtils/utils.js'
+import { mockWebPreferencesPatch, renderWithProviders } from '../../../testUtils/utils.js'
 import TourHost from '../TourHost.vue'
 import { TOURS } from '../tours.js'
 
@@ -33,8 +33,9 @@ function addAnchor(name) {
 }
 
 // Home offers the shell tour when it mounts; the host picks it up on mount.
-async function renderAndStart() {
-  useTours().offerTour('shell')
+// `force` starts the tour instead, as What's New does.
+async function renderAndStart(id = 'shell', { force = false } = {}) {
+  useTours()[force ? 'startTour' : 'offerTour'](id)
   const utils = renderWithProviders(TourHost)
   await vi.advanceTimersByTimeAsync(0)
   return utils
@@ -52,11 +53,7 @@ describe('tourHost', () => {
     routeMock.path = '/'
     useTours().takeRequest()
     useGlobalAppStore().setUser({ webPreferences: { lastWhatsNew: '2000-01-01' } })
-    // The API answers a merge-patch with the merged preferences
-    api.patch.mockImplementation((_path, body) => {
-      const prefs = useGlobalAppStore().user.webPreferences
-      return Promise.resolve({ ...prefs, tours: { ...prefs.tours, ...body.tours } })
-    })
+    mockWebPreferencesPatch(api.patch, useGlobalAppStore())
   })
 
   afterEach(() => {
@@ -133,13 +130,11 @@ describe('tourHost', () => {
     expect(event.clientY).toBe(25)
   })
 
-  it('keeps a deferred step whose target the previous click produces', async () => {
+  it('keeps the step after a clickTarget step, whose target that click produces', async () => {
     addAnchor('asset-review-checklist')
     const row = addAnchor('asset-review-row')
     row.addEventListener('click', () => addAnchor('review-popover'))
-    useTours().startTour('assetReview')
-    renderWithProviders(TourHost)
-    await vi.advanceTimersByTimeAsync(0)
+    await renderAndStart('assetReview', { force: true })
 
     // Checklist, row, editor. The editor step stays although its target is not yet on screen.
     expect(screen.getByText('1 / 3')).toBeInTheDocument()
@@ -150,10 +145,8 @@ describe('tourHost', () => {
     expect(document.querySelector('[data-tour="review-popover"]')).not.toBeNull()
   })
 
-  it('does not open a tour whose only candidates are deferred or routed steps', async () => {
-    useTours().startTour('assetReview')
-    renderWithProviders(TourHost)
-    await vi.advanceTimersByTimeAsync(0)
+  it('does not open a tour whose only candidates are click-produced or routed steps', async () => {
+    await renderAndStart('assetReview', { force: true })
     expect(screen.queryByRole('dialog')).toBeNull()
   })
 

@@ -10,12 +10,11 @@
 //               'left', 'below', 'below-end' or 'center' (over the target).
 //   expandRail: holds the nav rail open while the step is showing.
 //   clickTarget: Next clicks the target before moving on, so a step can walk
-//               the user through a link or open an editor.
+//               the user through a link or open an editor. The step after it
+//               is kept even though its target is not on screen when the tour
+//               starts, since the click brings it on screen.
 //   route:      navigates there when the step opens. The step is kept even
 //               though its target is not on screen when the tour starts.
-//   deferred:   the step is kept even though its target is not on screen when
-//               the tour starts, because the previous step's click brings it
-//               on screen (a popup, say).
 export const TOURS = {
   shell: {
     title: 'Orientation',
@@ -176,7 +175,6 @@ export const TOURS = {
         target: 'review-popover',
         title: 'Review editor',
         body: 'Result, Detail, Comment, and Status are edited in this pop-up. Expand Review Resources to show the Review\'s History and the same Rule on other Assets.',
-        deferred: true,
       },
       {
         target: 'asset-review-rule',

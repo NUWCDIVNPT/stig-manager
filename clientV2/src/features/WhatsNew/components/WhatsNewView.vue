@@ -7,40 +7,18 @@ import WhatsNewContent from '../../../components/global/WhatsNewContent.vue'
 import { Sources } from '../../../components/global/whatsNewSources.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import { useTours } from '../../../shared/composables/useTours.js'
-import { useWebPreferences } from '../../../shared/composables/useWebPreferences.js'
 
-const { startTour } = useTours()
-const { preferences, patchPreferences } = useWebPreferences()
+const { startTour, recordedTourIds, hasSeen, forget } = useTours()
 const { triggerError } = useGlobalError()
-
-const seenTourIds = computed(() => Object.keys(preferences.value.tours ?? {}))
-const isPatching = ref(false)
 const menuRef = ref(null)
 
-// A null date removes the tour from the merge-patch, so the view offers it
-// again the next time it opens.
-async function forget(ids) {
-  isPatching.value = true
+async function forgetTours(ids, then) {
   try {
-    await patchPreferences({ tours: Object.fromEntries(ids.map(id => [id, null])) })
+    await forget(ids)
+    then?.()
   }
   catch (error) {
     triggerError(error)
-    return false
-  }
-  finally {
-    isPatching.value = false
-  }
-  return true
-}
-
-// Forgets every tour, including ids no longer defined, and starts over from
-// the shell tour. View tours wait for the shell tour, so starting it here is
-// what lets each of them be offered again when its view opens.
-async function resetAll() {
-  const ids = [...new Set([...seenTourIds.value, ...Object.keys(TOURS)])]
-  if (await forget(ids)) {
-    startTour('shell')
   }
 }
 
@@ -48,20 +26,22 @@ const menuItems = computed(() => [
   { label: 'Start the orientation tour now', icon: 'pi pi-play', command: () => startTour('shell') },
   { separator: true },
   ...Object.entries(TOURS).map(([id, tour]) => {
-    const seen = seenTourIds.value.includes(id)
+    const seen = hasSeen(id)
     return {
       label: seen ? `Offer the ${tour.title} tour again` : `${tour.title} tour not seen yet`,
       icon: seen ? 'pi pi-refresh' : 'pi pi-circle',
-      disabled: !seen || isPatching.value,
-      command: () => forget([id]),
+      disabled: !seen,
+      command: () => forgetTours([id]),
     }
   }),
   { separator: true },
   {
+    // View tours wait for the shell tour, so starting it here is what lets
+    // each of them be offered again when its view opens.
     label: 'Reset all tours and start over',
     icon: 'pi pi-replay',
-    disabled: !seenTourIds.value.length || isPatching.value,
-    command: resetAll,
+    disabled: !recordedTourIds.value.length,
+    command: () => forgetTours(recordedTourIds.value, () => startTour('shell')),
   },
 ])
 </script>

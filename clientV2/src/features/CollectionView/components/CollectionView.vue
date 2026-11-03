@@ -34,7 +34,7 @@ const props = defineProps({
 
 const route = useRoute()
 const router = useRouter()
-const { offerTour } = useTours()
+const { offerTourWhen } = useTours()
 const { removeView } = useRecentViews()
 const { triggerError } = useGlobalError()
 const { addView } = useRecentViews()
@@ -104,11 +104,7 @@ const collectionReady = computed(() => Boolean(collection.value))
 
 // The tour points at the dashboard and the label filter, which the Management
 // route hides, so it waits for a view that shows them.
-watch(() => collectionReady.value && Boolean(route.meta.labelFilter), (ready) => {
-  if (ready) {
-    offerTour('collection')
-  }
-}, { immediate: true })
+offerTourWhen('collection', () => collectionReady.value && Boolean(route.meta.labelFilter))
 
 // Map route name to tab value
 const routeToTab = {
@@ -171,8 +167,6 @@ watch([activeTab, selectedLabelNames], ([tab, names]) => {
 watch(() => props.collectionId, () => {
   visitedTabs.value = new Set([activeTab.value])
 })
-
-const tabListPt = { ...viewTabListPt, root: { 'data-tour': 'collection-tabs' } }
 
 const tabPanelsPt = {
   root: {
@@ -279,7 +273,7 @@ function toggleDashboardSidebar() {
       <SplitterPanel :size="82">
         <div class="right-panel">
           <Tabs v-model:value="activeTab" :pt="viewTabsPt">
-            <TabList :pt="tabListPt">
+            <TabList :pt="viewTabListPt" data-tour="collection-tabs">
               <Tab value="stigs" :pt="viewTabPt">
                 STIGs
               </Tab>

@@ -22,7 +22,7 @@ import RuleTable from './RuleTable.vue'
 
 const route = useRoute()
 const router = useRouter()
-const { offerTour } = useTours()
+const { offerTourWhen } = useTours()
 const { addView, removeView } = useRecentViews()
 const { getCollectionRoleId } = useCurrentUser()
 
@@ -169,11 +169,7 @@ watch(checklistError, (err) => {
 })
 
 // The tour points at the grids, so it waits for the checklist.
-watch(() => Boolean(gridData.value?.length), (ready) => {
-  if (ready) {
-    offerTour('collectionReview')
-  }
-}, { immediate: true })
+offerTourWhen('collectionReview', () => Boolean(gridData.value?.length))
 
 // makes sure selectged is always valid or we pick first item
 watch(gridData, (data) => {
