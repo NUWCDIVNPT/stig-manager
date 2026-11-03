@@ -36,11 +36,10 @@ try {
   const globalAppState = useGlobalAppStore()
   globalAppState.setUser(STIGMAN.curUser)
 
-  // Fetch API spec and config together; op/configuration by path since apiCall needs the spec first.
-  // A failed configuration fetch degrades to an unmarked (NONE) banner rather than aborting bootstrap.
+  // Fetch API spec and config together; op/configuration by path since apiCall needs the spec first
   const [spec, apiConfig] = await Promise.all([
     api.get('/op/definition'),
-    api.get('/op/configuration').catch(() => null),
+    api.get('/op/configuration'),
   ])
   configureApiSpec(spec)
 
