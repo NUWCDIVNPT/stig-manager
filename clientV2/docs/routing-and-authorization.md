@@ -24,13 +24,13 @@ The canonical source for privilege and grant data is `globalAppStore.user`, popu
 
 **Do NOT parse privileges directly from the OIDC token** (`tokenParsed.realm_access.roles`). The API normalizes token claims via the configurable `STIGMAN_JWT_PRIVILEGES_CLAIM` environment variable — hardcoding `realm_access.roles` breaks for non-Keycloak providers that use different claim paths. The API's `GET /user` response already resolves this, so the client should read from `globalAppStore.user.privileges`.
 
-This also resolves Decision D6 (dual token access pattern). Components should not `inject('worker')` for privilege checks — the worker should be an implementation detail of the auth/fetch layer only.
+Components do not `inject('worker')` for privilege checks; the worker is an implementation detail of the auth/fetch layer (a few export components still inject it for raw token access to streamed downloads).
 
 ---
 
 ## `useCurrentUser()` Composable
 
-A single composable replaces the scattered `inject('worker')` + token-parsing pattern. It reads from `globalAppStore.user`:
+`src/shared/composables/useCurrentUser.js` reads from `globalAppStore.user`:
 
 - `user` — the raw user object (reactive)
 - `isAdmin` — `computed(() => user.privileges.admin)`
@@ -38,9 +38,7 @@ A single composable replaces the scattered `inject('worker')` + token-parsing pa
 - `getCollectionGrant(collectionId)` — returns the grant object (with `roleId`) or `null`
 - `hasCollectionAccess(collectionId)` — `true` if a grant exists
 - `getCollectionRoleId(collectionId)` — returns the `roleId` (1-4) or `null`
-- `refreshUser()` — re-fetches `GET /user`, updates the store. Used for stale grant recovery (see below)
-
-**Replaces** direct token parsing in: NavTree.vue, NavTreeContent.vue, CollectionSelection.vue.
+- `refreshUser()` — re-fetches `GET /user` and updates the store. Called after mutations that change grants or collection names (create, clone, rename, delete) so the nav rail, breadcrumb and access checks stay current. Failures are logged, not thrown.
 
 ---
 
@@ -50,26 +48,30 @@ A single composable replaces the scattered `inject('worker')` + token-parsing pa
 
 | Route pattern | `meta` |
 |---|---|
-| `/admin/*` | `{ requiresAdmin: true }` |
+| `/app-management/*` | `{ requiresAdmin: true }` |
+| `/app-management/transfer`, `/app-management/log-stream` | `requiresAdmin` plus `{ isEnabled: () => boolean, disabledRedirect: 'app-management' }` |
 | `/collection/:id/*` | `{ requiresCollectionGrant: true }` |
-| `/collection/:id/manage` | `{ requiresCollectionGrant: true, minRoleId: 3 }` |
+| `/collection/:id/management` | `{ requiresCollectionGrant: true, minRoleId: 3 }` |
 
-### Global `beforeEach` guard
+### Global `beforeEach` guard (`src/router/navigationGuards.js`)
 
 1. **Admin routes** (`meta.requiresAdmin`):
-   - If user does not have `privileges.admin` → redirect to `/` (home)
+   - If user does not have `privileges.admin` → redirect to `home`
 
-2. **Collection routes** (`meta.requiresCollectionGrant`):
+2. **Feature-gated routes** (`meta.isEnabled`):
+   - If the predicate returns false → redirect to `meta.disabledRedirect` (or `home`). This only hides UI; the API enforces its experimental flags independently.
+
+3. **Collection routes** (`meta.requiresCollectionGrant`):
    - Look up the `collectionId` route param in `globalAppStore.user.collectionGrants`
-   - If **no grant** → redirect to `/collections` with a toast: *"You don't have access to this collection"*
+   - If **no grant** → redirect to `collections`
    - If grant exists but `meta.minRoleId` is set and user's `roleId < minRoleId` → redirect to the collection dashboard (they can view but not manage)
 
-3. **Catch-all** (`/:pathMatch(.*)*`):
-   - Render a 404 component
+4. **Catch-all** (`/:pathMatch(.*)*`):
+   - Render the `not-found` view
 
 ### Key design choice
 
-**All users — including admins — must have a grant to access `/collection/:id/*` routes.** Admin privilege only gates the `/admin/*` routes (user management, STIG management, service jobs, app info, admin collections panel). Admins manage collections they don't have grants to through the `/admin/collections` route, which is a separate admin-only view.
+**All users — including admins — must have a grant to access `/collection/:id/*` routes.** Admin privilege only gates the `/app-management/*` routes (collections, users, user groups, STIGs, service jobs, app info, transfer, log stream). Admins manage collections they don't have grants to through `/app-management/collections`, which is a separate admin-only view.
 
 ---
 
@@ -78,7 +80,7 @@ A single composable replaces the scattered `inject('worker')` + token-parsing pa
 When a user navigates to `/collection/:collectionId` (via deep link, bookmark, or shared URL):
 
 1. **Route guard** checks `globalAppStore.user.collectionGrants` for a matching `collectionId`
-2. **No grant** → redirect to `/collections` + toast notification
+2. **No grant** → redirect to `/collections`
 3. **Grant exists** → allow navigation. The `roleId` determines available UI features:
 
 | roleId | Role | UI capabilities |
@@ -88,7 +90,7 @@ When a user navigates to `/collection/:collectionId` (via deep link, bookmark, o
 | 2 | Full | Read/write access to all assets/STIGs, no management |
 | 1 | Restricted | Access solely determined by ACL rules (see next section) |
 
-The NavTree already only shows collections the user has grants for (via `GET /collections`). The route guard handles the deep-link/bookmark edge case.
+The nav rail builds its collection list from `user.collectionGrants`, so it only shows collections the user has grants for. The route guard handles the deep-link/bookmark edge case.
 
 ---
 
@@ -131,19 +133,11 @@ For **Restricted** role (roleId 1): default access is `none`. ACL rules are the 
 
 ---
 
-## Handling Stale Grants (403 Recovery)
+## Stale Grants
 
-User grants can change mid-session (e.g., removed from a collection while viewing it). The client handles this:
+User grants can change mid-session (e.g., removed from a collection while viewing it). There is no global 403 interceptor; each view that depends on a resource for its existence handles the failure itself through the `onError` option of `useAsyncState` (see `handleRouteError` in `AssetReview.vue`, and the equivalents in `CollectionReview.vue` and `StigLibrary.vue`): on 403/404 it drops the view from recent views and routes to `not-found`. Other 403s surface through the global error modal.
 
-1. API calls return 403
-2. On 403, the client:
-   1. Re-fetches the user object (`GET /user`) to update `globalAppStore.user` with current grants/privileges
-   2. Re-fetches the collections list (`GET /collections`) so the NavTree reflects the updated grants — the NavTree sources its collection list independently from the user object, so both must be refreshed
-   3. Checks if the current route is still accessible with the updated grants
-   4. If **no longer accessible** → redirect to `/collections` with a toast: *"Your access to this collection has changed"*
-   5. If **still accessible** (403 was for a different reason) → show the error normally
-
-The `refreshUser()` method on `useCurrentUser()` should handle both fetches (user + collections) as a single operation. This can be triggered by a 403 interceptor in `apiClient` or by a handler in the global error composable.
+Grant-derived state is refreshed proactively instead: mutations that change grants or collection names call `refreshUser()` so the nav rail and guards see the new state without a reload.
 
 ---
 
@@ -153,10 +147,10 @@ Summary of what each privilege/grant level controls and where the check is enfor
 
 | Check | UI element | Enforcement |
 |---|---|---|
-| `privileges.admin` | "Application Management" nav section, `/admin/*` routes | Route guard + NavTree |
-| `privileges.create_collection` | "Create Collection" action in NavTree | NavTree node visibility |
+| `privileges.admin` | App Management nav rail item, `/app-management/*` routes | Route guard + nav rail |
+| `privileges.create_collection` | "Create Collection" action in the nav rail | Nav rail visibility (`canCreateCollection`) |
 | Grant exists for collectionId | `/collection/:id/*` routes | Route guard |
-| `roleId >= 3` | Collection manage gear, manage link, `/collection/:id/manage` | Route guard + component |
+| `roleId >= 3` | Collection management tab, `/collection/:id/management` | Route guard + component |
 | `roleId === 4` | Delete collection, modify Owner grants | Component |
 | `roleId >= minAcceptGrant` | Accept/Reject review buttons | Component (collection setting) |
 | `access === 'rw'` (from API) | Review form editing, import, attachments | Component |
@@ -165,7 +159,7 @@ Summary of what each privilege/grant level controls and where the check is enfor
 
 ## Edge Cases
 
-- **Collection deleted while user is viewing it**: API calls fail. The 403 recovery flow handles this (re-fetch user, redirect).
+- **Collection deleted while user is viewing it**: the view's `onError` handler routes to `not-found`; the deleting view calls `refreshUser()` so the nav rail drops the collection.
 - **Non-default OIDC claim path**: Using `globalAppStore.user.privileges` (API-normalized) instead of direct token parsing ensures correctness regardless of `STIGMAN_JWT_PRIVILEGES_CLAIM` configuration.
-- **User navigates to `/collection/:id/manage` with roleId 2 (Full)**: Route guard redirects to the collection dashboard — they can view but not manage.
-- **`/admin/collections` vs `/collection/:id/manage`**: Both use the `CollectionManage` component but have different access requirements. The admin route requires `privileges.admin`; the collection route requires a grant with `roleId >= 3`.
+- **User navigates to `/collection/:id/management` with roleId 2 (Full)**: Route guard redirects to the collection dashboard — they can view but not manage.
+- **`/app-management/collections` vs `/collection/:id/management`**: different components and different access requirements. The admin route requires `privileges.admin`; the collection route requires a grant with `roleId >= 3`.

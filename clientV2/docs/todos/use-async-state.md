@@ -18,8 +18,6 @@ both touch how the composable's generation counter and abort controller are expo
 
 ## Abort signal detail
 
-Originated from the branch review of `new-client-findings-filters` (2026-09-09).
-
 `useAsyncState` appends the signal *after* the caller's own arguments:
 
 ```js
@@ -45,16 +43,9 @@ Not a correctness bug today: the generation counter already discards stale resul
 errors, and `isLoading` transitions whether or not the signal is used. Losing it
 costs bandwidth and a server query that runs to completion for nothing.
 
-### Options
+### Proposed improvement
 
-- **Make the signal non-positional** (preferred). Pass a context object as a fixed,
-  documented last argument, or a named property, so factories never depend on arity.
-- **Or document the constraint** at both ends: a one-line comment on each
-  signal-consuming factory plus a note in the `useAsyncState` JSDoc. Cheap, but
-  relies on the next person reading it.
-- **Or warn in dev** when `args.length > 0` and the factory looks like it expects the
-  signal first. Noisy; probably not worth it.
-
-Either way, update or remove the stale `NOTE ... TBD` comment above the
+Make the signal non-positional: pass a context object as a fixed, documented last
+argument, or a named property, so factories never depend on arity. Also update or remove the stale `NOTE ... TBD` comment above the
 `promiseFactory` call — Findings has done that TBD, so it's wrong for three call
 sites.

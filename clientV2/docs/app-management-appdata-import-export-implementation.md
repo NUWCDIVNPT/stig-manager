@@ -1,6 +1,6 @@
 # App Management: Application Data Import/Export Implementation Guide
 
-This document describes the experimental **App Management -> Export/Import Data** feature in implementation-neutral terms, and maps it to the current implementations: the API, the legacy ExtJS client, and the Vue clientV2 feature at `clientV2/src/features/AppManagement/Appdata/`.
+This document describes the experimental **App Management -> Export/Import Data** feature and maps it to the current implementations: the API, the legacy ExtJS client, and the Vue clientV2 feature at `clientV2/src/features/AppManagement/Appdata/`.
 
 The feature exports most application-owned database data as a streaming JSON Lines (JSONL) document, optionally compressed with GZip, and can import such a document to replace the destination instance's application data. It is an administrative migration/restore mechanism, not a general-purpose interchange format and not a substitute for a database backup.
 
@@ -293,7 +293,7 @@ The POST response is itself a JSONL event stream. A consumer must incrementally 
 
 Do not interpret HTTP 200 or end-of-stream alone as success. The current service catches processing errors, emits `{status:"fail", error:...}`, and returns normally, so the controller may still finish with HTTP 200. A correct client must require the terminal `{status:"success"}` record and surface a `fail` record as an error. It should also handle network termination without either terminal record as an indeterminate/failed import.
 
-## 8. UI behavior to reproduce
+## 8. UI behavior
 
 ### 8.1 Page
 
@@ -387,121 +387,3 @@ The legacy UI does not ask for a second confirmation after analysis. The V2 page
 - The server catches import exceptions and converts them to progress events rather than an error HTTP status.
 - Export service errors occur after streaming has begun and the controller does not await the export promise, complicating propagation and cleanup.
 - The legacy completion message is displayed after the response ends even if the stream contained `status:"fail"`; this must not be copied. (The V2 import requires the terminal `{status:"success"}` record and treats an ended stream without a terminal record as indeterminate/failed.)
-
-## 10. Recommended reimplementation architecture
-
-Keep these responsibilities separate:
-
-```text
-Runtime feature config
-        |
-        +--> navigation/page gate
-        |
-        +--> API endpoint gate
-
-Export endpoint --> schema discovery --> row stream --> JSONL encoder --> optional GZip --> response
-
-File picker --> local validator --> destructive confirmation --> raw upload
-                                                            |
-Import endpoint --> staged validation --> maintenance lock --> transactional/staged restore where possible
-                                                            |
-                                                            +--> JSONL progress stream --> UI log/progress
-```
-
-For a production-grade rewrite, improve safety beyond parity:
-
-1. Introduce an explicit AppData format/schema version independent of application and database migration versions.
-2. Stream uploads to a restricted temporary file while calculating a checksum; do not retain the full request in memory.
-3. Fully validate and inventory the document before altering the live schema.
-4. Allowlist every table and column against destination schema metadata.
-5. Acquire an application-wide maintenance/import lock and reject concurrent writes.
-6. Prefer restore into a staging schema/database, validate counts and relationships, then switch atomically where the database permits it.
-7. If in-place replacement is unavoidable, record a durable import job and recovery instructions.
-8. Return a job/import ID and structured, versioned progress events.
-9. Make terminal failure unambiguous in both the event protocol and final HTTP/job state.
-10. Audit who initiated export/import, source metadata, checksum, timestamps, result, and failure details without logging exported sensitive values.
-
-## 11. Reference state machines
-
-### Export
-
-```text
-idle -> requesting -> streaming/downloading -> complete
-                    \-> failed
-```
-
-Disable duplicate export actions while requesting. Cancellation should abort the HTTP request and remove any partial client-side download if the platform allows it.
-
-### Import
-
-```text
-no-file
-  -> analyzing
-      -> invalid
-      -> ready
-          -> confirming
-              -> uploading/importing
-                  -> succeeded -> full application reload
-                  -> failed/indeterminate -> recovery guidance
-```
-
-Do not return from `failed/indeterminate` directly to `ready` without forcing the operator to verify or restore the destination database; the database may already have been partially modified.
-
-## 12. Minimum acceptance tests
-
-### Access and flag tests
-
-- Disabled flag hides the menu and makes export/import endpoints unavailable.
-- Non-admin users cannot navigate to the page and receive 403 when attempting elevated calls.
-- Missing or false `elevate` is rejected.
-- Correct scopes plus administrator privilege permit the appropriate operations.
-
-### Export tests
-
-- GZip is the default and decompresses to valid JSONL.
-- Explicit JSONL returns the correct media type and attachment extension.
-- Metadata, table summary, every table header, and rows are newline-delimited.
-- Summary/table counts equal actual emitted rows.
-- Empty tables emit headers.
-- Excluded and generated columns are absent.
-- Boolean, JSON/date strings, nulls, Unicode, large text, and binary values round-trip.
-- Client cancellation and database/response-stream failures clean up resources.
-
-### Analysis/import tests
-
-- Valid same-migration JSONL and GZip files are accepted.
-- Newer migrations, corrupt GZip, malformed JSON, missing metadata/summary, unknown tables/columns, duplicate headers, wrong row widths, and count mismatches are rejected before mutation.
-- MIME types with parameters and browser-empty types are handled deliberately.
-- Lines and multibyte UTF-8 characters split across chunks parse correctly.
-- More than 10,000 rows creates multiple insert batches without losing rows.
-- Empty tables are cleared.
-- Older compatible data follows the reset/source-migrate/import/forward-migrate sequence.
-- Every failure produces a terminal failed state and never a false success display.
-- A zero-row export does not produce invalid progress arithmetic.
-- A disconnected progress stream becomes indeterminate unless a separately queried job state confirms completion.
-- On success, a full reload shows replacement users, grants, collections, STIGs, assets, reviews, and review history.
-
-### Recovery/concurrency tests
-
-- Concurrent mutation is blocked for the whole destructive phase.
-- Simulated failure after truncate and mid-insert follows documented recovery behavior.
-- Foreign keys are restored even after exceptions.
-- Temporary files, connections, locks, and streams are cleaned up after success, failure, and cancellation.
-
-## 13. Compatibility checklist for another implementation
-
-To be wire-compatible with the current feature, a replacement must:
-
-- use operation IDs `getAppData`, `replaceAppData`, and optionally `getAppDataTables`;
-- call `GET` and `POST /op/appdata` with `elevate=true`;
-- send/accept raw `application/jsonl` and GZip bodies, not multipart uploads;
-- emit and consume one JSON value per line;
-- preserve the metadata -> summary -> table header -> positional rows structure;
-- use the header's column ordering for row arrays;
-- preserve the Buffer/base64 convention;
-- reject source migrations newer than the destination;
-- understand the JSONL progress event shapes and require terminal success;
-- enforce administrator authorization and the server-side experimental flag; and
-- force application state to reload after a successful replacement.
-
-Anything beyond those compatibility requirements should favor stronger validation, staged restoration, durable job state, and recoverability rather than reproducing the current implementation's unsafe quirks.

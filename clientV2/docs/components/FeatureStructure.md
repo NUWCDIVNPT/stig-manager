@@ -2,7 +2,7 @@
 
 We organize our codebase by **Feature**, not by file type. This keeps related code together and makes the codebase easier to navigate and maintain.
 
-## Excepted Structure
+## Expected Structure
 
 When creating a new feature (e.g., `src/features/CollectionMetrics`), follow this standard structure:
 
@@ -15,11 +15,12 @@ src/features/MyFeature/
 │   └── SubComponent.vue
 ├── composables/          # Reusable logic and state management
 │   └── useMyFeature.js
-├── tests/                # Unit and Component tests
-│   ├── MainComponent.test.js
-│   └── myFeatureApi.test.js
-└── index.js              # Optional: Export public feature API
+└── tests/                # Unit and Component tests
+    ├── MainComponent.test.js
+    └── myFeatureApi.test.js
 ```
+
+Large features nest sub-features with the same layout (e.g. `AppManagement/Users`, `CollectionManage/ExportResults`); a `lib/` folder holds pure helpers that have no Vue dependency.
 
 ### Why this works
 *   **Discoverability:** Everything related to "Collection Metrics" is in one place.
