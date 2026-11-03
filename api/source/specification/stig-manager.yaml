@@ -10213,11 +10213,12 @@ components:
           type: string
           format: date
         tours:
-          description: The version date of each client tour the user has seen, keyed by tour id
+          description: The version date of each client tour the user has seen, keyed by tour id. A null date forgets that tour, so the client offers it again.
           type: object
           additionalProperties:
             type: string
             format: date
+            nullable: true
       additionalProperties: false
       minProperties: 1
     Version:

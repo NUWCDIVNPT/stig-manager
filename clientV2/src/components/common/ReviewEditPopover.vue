@@ -361,7 +361,8 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
     :dismissable="false"
     :pt="{
       root: {
-        class: 'review-popover',
+        'class': 'review-popover',
+        'data-tour': 'review-popover',
       },
       content: {
         style: { maxHeight: '85vh', overflowY: 'auto', overflowX: 'hidden' },

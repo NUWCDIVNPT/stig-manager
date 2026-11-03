@@ -24,7 +24,7 @@ const route = useRoute()
 const router = useRouter()
 const { addView, removeView } = useRecentViews()
 const { getCollectionRoleId } = useCurrentUser()
-const { offerTour } = useTours()
+const { offerTourWhen } = useTours()
 
 const collectionId = computed(() => route.params.collectionId)
 const assetId = computed(() => route.params.assetId)
@@ -181,11 +181,7 @@ watch(checklistError, (err) => {
 })
 
 // The tour points at the checklist and Rule panels, so it waits for them.
-watch(() => Boolean(asset.value && gridData.value?.length), (ready) => {
-  if (ready) {
-    offerTour('assetReview')
-  }
-}, { immediate: true })
+offerTourWhen('assetReview', () => Boolean(asset.value && gridData.value?.length))
 
 function mergeReview(review) {
   upsertReview(review.ruleId, review)

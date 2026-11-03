@@ -36,3 +36,16 @@ export function renderWithProviders(
   const utils = render(component, { props, ...options, global })
   return { ...utils }
 }
+
+// Answers a mocked `api.patch` of /user/web-preferences the way the API does:
+// a JSON merge-patch of the user's stored preferences, where a null tour date
+// drops that tour. Call it from beforeEach with the vi.fn and the app store.
+export function mockWebPreferencesPatch(patchMock, appStore) {
+  patchMock.mockImplementation((_path, body) => {
+    const prefs = appStore.user.webPreferences
+    const tours = Object.fromEntries(
+      Object.entries({ ...prefs.tours, ...body.tours }).filter(([, date]) => date !== null),
+    )
+    return Promise.resolve({ ...prefs, ...body, tours })
+  })
+}

@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { api } from '../../../shared/api/apiClient.js'
 import { useTours } from '../../../shared/composables/useTours.js'
 import { useGlobalAppStore } from '../../../shared/stores/globalAppStore.js'
-import { renderWithProviders } from '../../../testUtils/utils.js'
+import { mockWebPreferencesPatch, renderWithProviders } from '../../../testUtils/utils.js'
 import TourHost from '../TourHost.vue'
 import { TOURS } from '../tours.js'
 
@@ -33,8 +33,9 @@ function addAnchor(name) {
 }
 
 // Home offers the shell tour when it mounts; the host picks it up on mount.
-async function renderAndStart() {
-  useTours().offerTour('shell')
+// `force` starts the tour instead, as What's New does.
+async function renderAndStart(id = 'shell', { force = false } = {}) {
+  useTours()[force ? 'startTour' : 'offerTour'](id)
   const utils = renderWithProviders(TourHost)
   await vi.advanceTimersByTimeAsync(0)
   return utils
@@ -52,11 +53,7 @@ describe('tourHost', () => {
     routeMock.path = '/'
     useTours().takeRequest()
     useGlobalAppStore().setUser({ webPreferences: { lastWhatsNew: '2000-01-01' } })
-    // The API answers a merge-patch with the merged preferences
-    api.patch.mockImplementation((_path, body) => {
-      const prefs = useGlobalAppStore().user.webPreferences
-      return Promise.resolve({ ...prefs, tours: { ...prefs.tours, ...body.tours } })
-    })
+    mockWebPreferencesPatch(api.patch, useGlobalAppStore())
   })
 
   afterEach(() => {
@@ -79,7 +76,7 @@ describe('tourHost', () => {
 
     expect(screen.getByRole('dialog')).toBeInTheDocument()
     expect(screen.getByText('1 / 4')).toBeInTheDocument()
-    expect(screen.getByText('Navigation moved to the left rail')).toBeInTheDocument()
+    expect(screen.getByText('Navigation rail')).toBeInTheDocument()
 
     await fireEvent.click(screen.getByRole('button', { name: 'Next' }))
     expect(screen.getByText('2 / 4')).toBeInTheDocument()
@@ -87,7 +84,7 @@ describe('tourHost', () => {
 
     await fireEvent.click(screen.getByRole('button', { name: 'Next' }))
     expect(screen.getByText('3 / 4')).toBeInTheDocument()
-    expect(screen.getByText('Your account moved to the top right')).toBeInTheDocument()
+    expect(screen.getByText('Your account')).toBeInTheDocument()
     expect(pushMock).not.toHaveBeenCalled()
 
     // The last step has a route, so it stays in the tour without an anchor and navigates on arrival
@@ -116,6 +113,41 @@ describe('tourHost', () => {
     expect(screen.getByText('3 / 3')).toBeInTheDocument()
     // The link's own navigation got there first, so the route step has nothing to push
     expect(pushMock).not.toHaveBeenCalled()
+  })
+
+  it('clicks a target where the user would, with pointer coordinates', async () => {
+    addAnchor('nav-rail')
+    const link = addAnchor('nav-collections-dashboard')
+    const onClick = vi.fn()
+    link.addEventListener('click', onClick)
+    await renderAndStart()
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    await fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    expect(onClick).toHaveBeenCalledTimes(1)
+    const event = onClick.mock.calls[0][0]
+    expect(event.clientX).toBe(35)
+    expect(event.clientY).toBe(25)
+  })
+
+  it('keeps the step after a clickTarget step, whose target that click produces', async () => {
+    addAnchor('asset-review-checklist')
+    const row = addAnchor('asset-review-row')
+    row.addEventListener('click', () => addAnchor('review-popover'))
+    await renderAndStart('assetReview', { force: true })
+
+    // Checklist, row, editor. The editor step stays although its target is not yet on screen.
+    expect(screen.getByText('1 / 3')).toBeInTheDocument()
+    await fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    expect(screen.getByText('Edit a Review')).toBeInTheDocument()
+    await fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    expect(screen.getByText('Review editor')).toBeInTheDocument()
+    expect(document.querySelector('[data-tour="review-popover"]')).not.toBeNull()
+  })
+
+  it('does not open a tour whose only candidates are click-produced or routed steps', async () => {
+    await renderAndStart('assetReview', { force: true })
+    expect(screen.queryByRole('dialog')).toBeNull()
   })
 
   it('leaves navigation to the clicked link even before the route has changed', async () => {
@@ -160,11 +192,11 @@ describe('tourHost', () => {
     addAnchor('nav-rail')
     addAnchor('asset-review-checklist')
     await renderAndStart()
-    expect(screen.getByText('Navigation moved to the left rail')).toBeInTheDocument()
+    expect(screen.getByText('Navigation rail')).toBeInTheDocument()
 
     useTours().offerTour('assetReview')
     await vi.advanceTimersByTimeAsync(0)
-    expect(screen.getByText('Navigation moved to the left rail')).toBeInTheDocument()
+    expect(screen.getByText('Navigation rail')).toBeInTheDocument()
 
     await fireEvent.click(screen.getByRole('button', { name: 'Skip' }))
     await vi.advanceTimersByTimeAsync(0)
@@ -270,7 +302,7 @@ describe('tourHost', () => {
     await vi.advanceTimersByTimeAsync(0)
     expect(screen.getByText('Checklist')).toBeInTheDocument()
 
-    await fireEvent.click(screen.getByRole('button', { name: 'Done' }))
+    await fireEvent.click(screen.getByRole('button', { name: 'Skip' }))
     await vi.waitFor(() => {
       expect(useGlobalAppStore().user.webPreferences.tours).toEqual({
         shell: SHELL_DATE,

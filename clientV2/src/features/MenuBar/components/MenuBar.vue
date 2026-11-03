@@ -176,7 +176,7 @@ const pt = {
         </div>
 
         <!-- Global breadcrumb -->
-        <nav v-if="breadcrumbItems.length" class="breadcrumb" aria-label="Breadcrumb">
+        <nav v-if="breadcrumbItems.length" class="breadcrumb" aria-label="Breadcrumb" data-tour="breadcrumb">
           <span class="breadcrumb-separator">/</span>
           <template v-for="(item, index) in breadcrumbItems" :key="index">
             <!-- Link + adjacent collection picker -->
@@ -250,7 +250,7 @@ const pt = {
           </template>
         </nav>
         <div v-if="route.meta.labelFilter || route.meta.collectionFilter" class="breadcrumb-filter">
-          <LabelFilterPills v-if="route.meta.labelFilter" />
+          <LabelFilterPills v-if="route.meta.labelFilter" data-tour="label-filter" />
           <CollectionFilterPills v-else />
         </div>
         <!-- Inside a slot so MenuBar keeps one root; the popover teleports to body -->

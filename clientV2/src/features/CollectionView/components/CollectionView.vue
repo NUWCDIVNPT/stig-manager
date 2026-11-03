@@ -12,6 +12,7 @@ import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import { useLabelFilterQuery } from '../../../shared/composables/useLabelFilterQuery.js'
+import { useTours } from '../../../shared/composables/useTours.js'
 import { viewTabListPt, viewTabPt, viewTabsPt } from '../../../shared/lib/tabPt.js'
 import CollectionManage from '../../CollectionManage/components/CollectionManage.vue'
 import CollectionExportMetrics from '../../CollectionMetrics/components/CollectionExportMetrics.vue'
@@ -33,6 +34,7 @@ const props = defineProps({
 
 const route = useRoute()
 const router = useRouter()
+const { offerTourWhen } = useTours()
 const { removeView } = useRecentViews()
 const { triggerError } = useGlobalError()
 const { addView } = useRecentViews()
@@ -99,6 +101,10 @@ watch([() => props.collectionId], () => {
 // collection itself has loaded, so a deleted or revoked collection only fails
 // through the fetchCollection error path above.
 const collectionReady = computed(() => Boolean(collection.value))
+
+// The tour points at the dashboard and the label filter, which the Management
+// route hides, so it waits for a view that shows them.
+offerTourWhen('collection', () => collectionReady.value && Boolean(route.meta.labelFilter))
 
 // Map route name to tab value
 const routeToTab = {
@@ -225,7 +231,7 @@ function toggleDashboardSidebar() {
         :min-size="4"
         :pt="{ root: { class: { 'sidebar-panel--collapsed': dashboardCollapsed, 'sidebar-panel--animating': isAnimating || sidebarTransitioning, 'sidebar-panel--hidden': isManagement }, style: isManagement ? '' : 'min-width: 320px; max-width: 460px;' } }"
       >
-        <aside class="dashboard-sidebar">
+        <aside class="dashboard-sidebar" data-tour="collection-dashboard">
           <button
             class="sidebar-toggle"
             :aria-label="dashboardCollapsed ? 'Expand Dashboard' : 'Collapse Dashboard'"
@@ -267,7 +273,7 @@ function toggleDashboardSidebar() {
       <SplitterPanel :size="82">
         <div class="right-panel">
           <Tabs v-model:value="activeTab" :pt="viewTabsPt">
-            <TabList :pt="viewTabListPt">
+            <TabList :pt="viewTabListPt" data-tour="collection-tabs">
               <Tab value="stigs" :pt="viewTabPt">
                 STIGs
               </Tab>
@@ -282,7 +288,7 @@ function toggleDashboardSidebar() {
               </Tab>
               <template v-if="canManage">
                 <div class="tab-separator" />
-                <Tab value="management" :pt="viewTabPt">
+                <Tab value="management" :pt="viewTabPt" data-tour="collection-tab-management">
                   <i class="pi pi-cog tab-icon" />
                   Management
                 </Tab>
