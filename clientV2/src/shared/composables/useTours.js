@@ -25,12 +25,20 @@ export function useTours() {
   // Offers the tour once `ready()` first turns true, so a view can declare
   // what its tour points at instead of wiring the watch itself.
   function offerTourWhen(id, ready) {
-    const stop = watch(ready, (isReady) => {
-      if (isReady) {
+    // An immediate watch runs its callback before `watch` returns, so `stop`
+    // is still undefined there and the stop happens after instead.
+    let offered = false
+    const watcher = {}
+    watcher.stop = watch(ready, (isReady) => {
+      if (isReady && !offered) {
+        offered = true
         offerTour(id)
-        stop()
+        watcher.stop?.()
       }
     }, { immediate: true })
+    if (offered) {
+      watcher.stop()
+    }
   }
 
   function takeRequest() {

@@ -162,7 +162,10 @@ function next() {
     finish()
     return
   }
-  if (step.value?.clickTarget) {
+  // The click is skipped when what it opens is already on screen, since a
+  // repeat click on the same row would toggle the Review editor closed.
+  const following = availableSteps.value[stepIndex.value + 1]
+  if (step.value?.clickTarget && !findTarget(following?.target)) {
     const target = findTarget(step.value.target)
     if (target) {
       clickAt(target)
