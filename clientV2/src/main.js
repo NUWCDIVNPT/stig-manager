@@ -33,14 +33,19 @@ try {
     triggerError(err)
   }
 
-  // set classification in global app state from env
   const globalAppState = useGlobalAppStore()
-  globalAppState.setClassification(STIGMAN.Env.classification || 'NONE')
   globalAppState.setUser(STIGMAN.curUser)
 
-  // Fetch and configure API Spec
-  const spec = await api.get('/op/definition')
+  // Fetch API spec and config together; op/configuration by path since apiCall needs the spec first.
+  // A failed configuration fetch degrades to an unmarked (NONE) banner rather than aborting bootstrap.
+  const [spec, apiConfig] = await Promise.all([
+    api.get('/op/definition'),
+    api.get('/op/configuration').catch(() => null),
+  ])
   configureApiSpec(spec)
+
+  // Classification lives in op/configuration, not Env.js; set before mount since the banner reads it once
+  globalAppState.setClassification(apiConfig?.classification)
 
   app.use(PrimeVue, {
     theme: {

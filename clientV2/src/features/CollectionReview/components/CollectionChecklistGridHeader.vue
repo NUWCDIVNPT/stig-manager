@@ -31,7 +31,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['apply-preset'])
+const emit = defineEmits(['apply-preset', 'export-archive'])
 
 const searchFilter = defineModel('searchFilter', { type: String, default: '' })
 const selectedColumns = defineModel('selectedColumns', { type: Array, required: true })
@@ -88,9 +88,9 @@ const checklistMenuItems = computed(() => [
     label: 'Export Result Archive',
     icon: 'pi pi-download',
     items: [
-      { label: 'CKL (STIG Viewer v2)', icon: 'pi pi-download' },
-      { label: 'CKLB (STIG Viewer v3)', icon: 'pi pi-download' },
-      { label: 'XCCDF', icon: 'pi pi-download' },
+      { label: 'CKL (STIG Viewer v2)', icon: 'pi pi-download', command: () => emit('export-archive', { format: 'ckl', mode: 'mono' }) },
+      { label: 'CKLB (STIG Viewer v3)', icon: 'pi pi-download', command: () => emit('export-archive', { format: 'cklb', mode: 'mono' }) },
+      { label: 'XCCDF', icon: 'pi pi-download', command: () => emit('export-archive', { format: 'xccdf', mode: null }) },
     ],
   },
 ])

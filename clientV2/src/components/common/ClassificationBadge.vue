@@ -1,11 +1,12 @@
 <script setup>
 import { computed } from 'vue'
+import { CLASSIFICATION_CODES } from '../../shared/lib/classification.js'
 
 const props = defineProps({
   level: {
     type: String,
     required: true,
-    validator: value => ['U', 'CUI', 'FOUO', 'C', 'S', 'TS', 'SCI'].includes(value),
+    validator: value => CLASSIFICATION_CODES.includes(value),
   },
 })
 

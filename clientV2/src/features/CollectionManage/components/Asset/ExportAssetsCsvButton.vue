@@ -49,7 +49,7 @@ async function handleExport() {
     }
 
     const rows = formatAssetsForCsv(mapAssetToLabel(filtered, labels))
-    const csv = generateCsv(rows, ASSET_FIELDS, '\n')
+    const csv = generateCsv(rows, ASSET_FIELDS, { listDelimiter: '\n' })
     downloadCsv(csv, props.collectionName)
   }
   catch (e) {

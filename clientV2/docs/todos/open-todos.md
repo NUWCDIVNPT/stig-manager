@@ -4,8 +4,6 @@ Consolidated list of items still open. Details for each live in the linked sourc
 
 ## CSV export — [csv-export.md](csv-export.md)
 
-- [ ] **Classification "Marking" column is missing.** Product decision, then one fix
-  in `shared/csv.js`. Own PR.
 - [ ] **Fidelity audit** against the legacy client, grid by grid.
 
 ## `useAsyncState` — [use-async-state.md](use-async-state.md)

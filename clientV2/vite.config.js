@@ -5,12 +5,18 @@ import VueDevtools from 'vite-plugin-vue-devtools'
 export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_')
   const envOrigin = env.VITE_ENV_ORIGIN
+  const apiOrigin = env.VITE_API_ORIGIN
   return {
     base: command === 'build' ? './' : '/',
     plugins: [vue(), VueDevtools()],
     server: {
-      // Proxy requests for Env.js to the API server in development only
+      // Development only: Env.js, the OIDC worker and the API are proxied so the
+      // page stays same-origin with the API, as it is in production.
       proxy: {
+        '/api': {
+          target: apiOrigin,
+          changeOrigin: true,
+        },
         '/Env.js': {
           target: envOrigin,
           changeOrigin: true,

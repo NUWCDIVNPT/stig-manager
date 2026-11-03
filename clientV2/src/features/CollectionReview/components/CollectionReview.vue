@@ -11,6 +11,9 @@ import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useLabelFilterQuery } from '../../../shared/composables/useLabelFilterQuery.js'
 import { defaultFieldSettings, statusPayloadForAction } from '../../../shared/lib/reviewFormUtils.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
+import ArchiveProgressDialog from '../../CollectionManage/ExportResults/components/ArchiveProgressDialog.vue'
+import { useArchiveProgress } from '../../CollectionManage/ExportResults/composables/useArchiveProgress.js'
+import { stigRevisionSelections } from '../../CollectionManage/ExportResults/exportResultsLogic.js'
 import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 import { fetchAssetsByCollectionStig, fetchCollectionChecklist, fetchReviewsByRule, fetchRule, postReviewBatch } from '../api/collectionReviewApi.js'
 import { useReviewActionAvailability } from '../composables/useReviewActionAvailability.js'
@@ -196,6 +199,23 @@ function onSelectRule(ruleId) {
   selectedRuleId.value = ruleId
 }
 
+// Checklist menu > Export Result Archive: every Asset in the current (label-filtered)
+// list, for this STIG at the route's revision, as in the legacy client.
+const archive = useArchiveProgress()
+
+function onExportArchive({ format, mode }) {
+  if (!assets.value?.length) {
+    return
+  }
+  archive.download({
+    collectionId: collectionId.value,
+    collectionName: collection.value?.name,
+    format,
+    mode,
+    selections: stigRevisionSelections(assets.value, benchmarkId.value, revisionStr.value),
+  })
+}
+
 const showRuleLoading = computed(() => isRuleLoading.value && !ruleContent.value)
 const showReviewsLoading = computed(() => isReviewsLoading.value)
 
@@ -340,6 +360,7 @@ async function onBatchEditConfirm(payload) {
                 :export-filename="benchmarkId"
                 @select-rule="onSelectRule"
                 @refresh="loadChecklist"
+                @export-archive="onExportArchive"
               />
             </SplitterPanel>
             <SplitterPanel :size="50" :min-size="20">
@@ -384,6 +405,8 @@ async function onBatchEditConfirm(payload) {
       :field-settings="fieldSettings"
       @confirm="onBatchEditConfirm"
     />
+
+    <ArchiveProgressDialog :archive="archive" />
   </div>
 </template>
 
