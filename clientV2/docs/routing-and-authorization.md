@@ -107,8 +107,8 @@ Asset-level access is **not** checked at the route level — it requires an API 
 
 | `access` | Behavior |
 |---|---|
-| `rw` | Full editing: result dropdown, detail/comment fields, save/submit, import, attachments |
-| `r` | Read-only: form fields disabled, buttons show "Read only", import/attachments disabled |
+| `rw` | Full editing: result dropdown, detail/comment fields, save/submit, import |
+| `r` | Read-only: form fields disabled, buttons show "Read only", import disabled |
 | `none` / 403 | Asset not visible to this user — show "no access" message, redirect back to collection dashboard |
 
 ### Restricted users (roleId 1)
@@ -153,7 +153,7 @@ Summary of what each privilege/grant level controls and where the check is enfor
 | `roleId >= 3` | Collection management tab, `/collection/:id/management` | Route guard + component |
 | `roleId === 4` | Delete collection, modify Owner grants | Component |
 | `roleId >= minAcceptGrant` | Accept/Reject review buttons | Component (collection setting) |
-| `access === 'rw'` (from API) | Review form editing, import, attachments | Component |
+| `access === 'rw'` (from API) | Review form editing, import | Component |
 
 ---
 

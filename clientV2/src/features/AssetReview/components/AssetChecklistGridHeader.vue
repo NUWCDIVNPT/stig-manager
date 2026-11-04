@@ -207,8 +207,6 @@ const checklistMenuItems = computed(() => {
           disabled: exportIsRunning.value,
           command: () => exportChecklist(CHECKLIST_EXPORT_FORMATS.XCCDF),
         },
-        { separator: true },
-        { label: 'Attachments Archive', disabled: true },
       ],
     },
   ]
