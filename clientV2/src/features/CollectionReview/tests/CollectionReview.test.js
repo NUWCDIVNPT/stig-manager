@@ -274,7 +274,7 @@ describe('collectionReview.vue', () => {
       await flushPromises()
 
       expect(mockRemoveView).toHaveBeenCalled()
-      expect(mockRouterPush).toHaveBeenCalledWith({
+      expect(mockRouterReplace).toHaveBeenCalledWith({
         name: 'not-found',
         params: { pathMatch: ['collections', 'coll-1', 'bench-1', 'rev-1'] },
       })

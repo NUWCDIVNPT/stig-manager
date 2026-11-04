@@ -33,7 +33,7 @@ const diffMode = computed(() => !!compareRev.value)
 function handleRouteError(err) {
   const status = getHttpStatus(err)
   if (status === 403 || status === 404 || status === 400) {
-    router.push({ name: 'not-found', params: { pathMatch: route.path.substring(1).split('/') } })
+    router.replace({ name: 'not-found', params: { pathMatch: route.path.substring(1).split('/') } })
   }
 }
 
@@ -125,7 +125,7 @@ watch([benchmarks, benchmarkIdParam], ([list, bm]) => {
     return
   }
   if (!list.find(b => b.benchmarkId === bm)) {
-    router.push({ name: 'not-found', params: { pathMatch: route.path.substring(1).split('/') } })
+    router.replace({ name: 'not-found', params: { pathMatch: route.path.substring(1).split('/') } })
   }
 })
 

@@ -53,7 +53,7 @@ const { state: collection, execute: loadCollection } = useAsyncState(
     onError: (err) => {
       if (err.body?.error === 'User has insufficient privilege to complete this request.') {
         removeView(key => key.includes(`:${props.collectionId}`))
-        router.push({ name: 'not-found', params: { pathMatch: route.path.substring(1).split('/') } })
+        router.replace({ name: 'not-found', params: { pathMatch: route.path.substring(1).split('/') } })
       }
       else {
         triggerError(err)

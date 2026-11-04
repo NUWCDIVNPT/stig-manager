@@ -45,7 +45,7 @@ function handleRouteError(err) {
   const isPrivilegeError = err.body?.error === 'User has insufficient privilege to complete this request.'
   if (status === 404 || status === 403 || status === 400 || isPrivilegeError) {
     removeView(key => key.includes(`:${collectionId.value}:${benchmarkId.value}`))
-    router.push({ name: 'not-found', params: { pathMatch: route.path.substring(1).split('/') } })
+    router.replace({ name: 'not-found', params: { pathMatch: route.path.substring(1).split('/') } })
   }
 }
 const { state: collection, execute: loadCollection } = useAsyncState(

@@ -67,13 +67,14 @@ vi.mock('primevue/splitter', () => ({ default: { name: 'Splitter', template: '<d
 vi.mock('primevue/splitterpanel', () => ({ default: { name: 'SplitterPanel', template: '<div><slot></slot></div>' } }))
 
 describe('assetReview.vue', () => {
-  let mockRouterPush, mockAddView, mockRemoveView
+  let mockRouterPush, mockRouterReplace, mockAddView, mockRemoveView
   let mockLoadChecklist, mockUpsertReview, mockSelectRule, mockClearSelectedRule
 
   beforeEach(() => {
     vi.clearAllMocks()
 
     mockRouterPush = vi.fn()
+    mockRouterReplace = vi.fn()
     mockAddView = vi.fn()
     mockRemoveView = vi.fn()
     mockLoadChecklist = vi.fn()
@@ -81,7 +82,7 @@ describe('assetReview.vue', () => {
     mockSelectRule = vi.fn()
     mockClearSelectedRule = vi.fn()
 
-    useRouter.mockReturnValue({ push: mockRouterPush })
+    useRouter.mockReturnValue({ push: mockRouterPush, replace: mockRouterReplace })
     useRoute.mockReturnValue(reactive({
       params: {
         collectionId: 'coll-1',
@@ -219,7 +220,7 @@ describe('assetReview.vue', () => {
       await flushPromises()
 
       expect(screen.getByText('Error: Server Error')).toBeInTheDocument()
-      expect(mockRouterPush).not.toHaveBeenCalled()
+      expect(mockRouterReplace).not.toHaveBeenCalledWith(expect.objectContaining({ name: 'not-found' }))
     })
 
     it('redirects to not-found and removes recent view if asset fetch fails with 403', async () => {
@@ -230,7 +231,7 @@ describe('assetReview.vue', () => {
       await flushPromises()
 
       expect(mockRemoveView).toHaveBeenCalled()
-      expect(mockRouterPush).toHaveBeenCalledWith({
+      expect(mockRouterReplace).toHaveBeenCalledWith({
         name: 'not-found',
         params: { pathMatch: ['collections', 'coll-1', 'assets', 'asset-1', 'bench-1', 'rev-1'] },
       })
