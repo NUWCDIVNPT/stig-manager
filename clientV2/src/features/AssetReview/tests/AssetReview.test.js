@@ -5,10 +5,11 @@ import { nextTick, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 // API Mocks
-import { fetchAsset, fetchCollection, fetchStigRevisions } from '../api/assetReviewApi.js'
+import { fetchAsset, fetchCollection } from '../api/assetReviewApi.js'
 
 // Composables Mocks
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
+import { useStigRevisions } from '../../../shared/composables/useStigRevisions.js'
 import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 import { useChecklistData } from '../composables/useChecklistData.js'
 import { useRuleDetail } from '../composables/useRuleDetail.js'
@@ -19,7 +20,10 @@ import AssetReview from '../components/AssetReview.vue'
 vi.mock('../api/assetReviewApi.js', () => ({
   fetchAsset: vi.fn(),
   fetchCollection: vi.fn(),
-  fetchStigRevisions: vi.fn(),
+}))
+
+vi.mock('../../../shared/composables/useStigRevisions.js', () => ({
+  useStigRevisions: vi.fn(),
 }))
 
 vi.mock('../../../shared/composables/useCurrentUser.js', () => ({
@@ -128,7 +132,7 @@ describe('assetReview.vue', () => {
     // Setup default API resolutions
     fetchAsset.mockResolvedValue({ assetId: 'asset-1', name: 'Test Asset', collection: { collectionId: 'coll-1', name: 'Test Collection' } })
     fetchCollection.mockResolvedValue({ name: 'Test Collection', settings: { status: { canAccept: true, minAcceptGrant: 3 } } })
-    fetchStigRevisions.mockResolvedValue([{ revisionStr: 'rev-1' }])
+    useStigRevisions.mockReturnValue({ revisions: ref([{ revisionStr: 'rev-1' }]) })
   })
 
   function createWrapper() {
@@ -150,7 +154,6 @@ describe('assetReview.vue', () => {
 
       expect(fetchAsset).toHaveBeenCalledWith('asset-1')
       expect(fetchCollection).toHaveBeenCalledWith('coll-1')
-      expect(fetchStigRevisions).toHaveBeenCalledWith('bench-1')
       expect(mockLoadChecklist).toHaveBeenCalled()
     })
 
@@ -254,6 +257,21 @@ describe('assetReview.vue', () => {
       await flushPromises()
 
       expect(mockRouterReplace).not.toHaveBeenCalledWith(expect.objectContaining({ name: 'not-found' }))
+    })
+
+    it('redirects to not-found when the STIG or revision is unknown', async () => {
+      createWrapper()
+      await flushPromises()
+      const [{ benchmarkId, revisionStr, onUnknown }] = useStigRevisions.mock.calls[0]
+      expect(benchmarkId.value).toBe('bench-1')
+      expect(revisionStr.value).toBe('rev-1')
+
+      onUnknown()
+      expect(mockRemoveView).toHaveBeenCalled()
+      expect(mockRouterReplace).toHaveBeenCalledWith({
+        name: 'not-found',
+        params: { pathMatch: ['collections', 'coll-1', 'assets', 'asset-1', 'bench-1', 'rev-1'] },
+      })
     })
 
     it('shows checklist error banner if useChecklistData returns an error', async () => {

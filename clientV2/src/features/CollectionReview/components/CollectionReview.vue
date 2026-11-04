@@ -11,7 +11,9 @@ import { fetchCollection } from '../../../shared/api/collectionsApi.js'
 import { useArchiveProgress } from '../../../shared/composables/useArchiveProgress.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
+import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import { useLabelFilterQuery } from '../../../shared/composables/useLabelFilterQuery.js'
+import { useStigRevisions } from '../../../shared/composables/useStigRevisions.js'
 import { useTours } from '../../../shared/composables/useTours.js'
 import { defaultFieldSettings, statusPayloadForAction } from '../../../shared/lib/reviewFormUtils.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
@@ -28,6 +30,7 @@ const router = useRouter()
 const { offerTourWhen } = useTours()
 const { addView, removeView } = useRecentViews()
 const { getCollectionRoleId } = useCurrentUser()
+const { triggerError } = useGlobalError()
 
 const collectionId = computed(() => route.params.collectionId)
 const benchmarkId = computed(() => route.params.benchmarkId)
@@ -40,14 +43,21 @@ function recentViewKey(cId = collectionId.value, bId = benchmarkId.value) {
   return `collection-review:${cId}:${bId}`
 }
 
+function redirectToNotFound() {
+  removeView(key => key.includes(`:${collectionId.value}:${benchmarkId.value}`))
+  router.replace({ name: 'not-found', params: { pathMatch: route.path.substring(1).split('/') } })
+}
+
 function handleRouteError(err) {
   const status = getHttpStatus(err)
   const isPrivilegeError = err.body?.error === 'User has insufficient privilege to complete this request.'
   if (status === 404 || status === 403 || status === 400 || isPrivilegeError) {
-    removeView(key => key.includes(`:${collectionId.value}:${benchmarkId.value}`))
-    router.replace({ name: 'not-found', params: { pathMatch: route.path.substring(1).split('/') } })
+    redirectToNotFound()
   }
 }
+
+// A STIG or revision that doesn't exist anywhere is a bad URL; one not assigned here keeps the breadcrumb warning
+useStigRevisions({ benchmarkId, revisionStr, onUnknown: redirectToNotFound })
 const { state: collection, execute: loadCollection } = useAsyncState(
   () => fetchCollection(collectionId.value),
   { immediate: false, initialState: null, onError: handleRouteError },
@@ -65,7 +75,8 @@ const canAccept = computed(() =>
 
 const { state: gridData, isLoading: isChecklistLoading, error: checklistError, execute: loadChecklist } = useAsyncState(
   () => fetchCollectionChecklist(collectionId.value, benchmarkId.value, revisionStr.value, labelFilterParams.value),
-  { immediate: false, initialState: [] },
+  // A 400 is a malformed revision in the URL, which useStigRevisions sends to not-found
+  { immediate: false, initialState: [], onError: err => getHttpStatus(err) !== 400 && triggerError(err) },
 )
 
 const { state: assets, isLoading: isAssetsLoading, error: assetsError, execute: loadAssets } = useAsyncState(

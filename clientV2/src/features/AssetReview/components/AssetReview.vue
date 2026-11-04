@@ -7,6 +7,7 @@ import RuleInfo from '../../../components/common/RuleInfo.vue'
 import { getHttpStatus } from '../../../shared/api/apiClient.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
+import { useStigRevisions } from '../../../shared/composables/useStigRevisions.js'
 import { useTours } from '../../../shared/composables/useTours.js'
 import { getRevisionInfo } from '../../../shared/lib/checklistUtils.js'
 import { defaultFieldSettings } from '../../../shared/lib/reviewFormUtils.js'
@@ -14,7 +15,6 @@ import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 import {
   fetchAsset,
   fetchCollection,
-  fetchStigRevisions,
 } from '../api/assetReviewApi.js'
 import { useChecklistData } from '../composables/useChecklistData.js'
 import { useRuleDetail } from '../composables/useRuleDetail.js'
@@ -89,10 +89,7 @@ const canAccept = computed(() =>
   statusSettings.value.canAccept && roleId.value >= statusSettings.value.minAcceptGrant,
 )
 
-const { state: stigRevisions, execute: loadStigRevisions } = useAsyncState(
-  () => fetchStigRevisions(benchmarkId.value),
-  { immediate: false, initialState: [] },
-)
+const { revisions: stigRevisions } = useStigRevisions({ benchmarkId, revisionStr, onUnknown: redirectToNotFound })
 
 const revisionInfo = computed(() => getRevisionInfo(revisionStr.value, stigRevisions.value))
 
@@ -162,9 +159,6 @@ watch([assetId, benchmarkId, revisionStr], () => {
   selectRule(route.query.ruleId ?? null)
   checklistData.value = []
   if (benchmarkId.value && revisionStr.value) {
-    if (!stigRevisions.value?.length) {
-      loadStigRevisions()
-    }
     loadChecklist()
   }
 }, { immediate: true })

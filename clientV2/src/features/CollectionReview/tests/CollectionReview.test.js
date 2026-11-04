@@ -9,6 +9,8 @@ import { fetchCollection } from '../../../shared/api/collectionsApi.js'
 // Composables Mocks
 import { useArchiveProgress } from '../../../shared/composables/useArchiveProgress.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
+import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
+import { useStigRevisions } from '../../../shared/composables/useStigRevisions.js'
 
 import { renderWithProviders } from '../../../testUtils/utils.js'
 import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
@@ -19,6 +21,10 @@ import { useReviewActionAvailability } from '../composables/useReviewActionAvail
 
 vi.mock('../../../shared/api/collectionsApi.js', () => ({
   fetchCollection: vi.fn(),
+}))
+
+vi.mock('../../../shared/composables/useStigRevisions.js', () => ({
+  useStigRevisions: vi.fn(),
 }))
 
 vi.mock('../api/collectionReviewApi.js', () => ({
@@ -286,6 +292,41 @@ describe('collectionReview.vue', () => {
       await flushPromises()
 
       expect(mockRemoveView).toHaveBeenCalled()
+    })
+
+    it('redirects to not-found when the STIG or revision is unknown', async () => {
+      createWrapper()
+      await flushPromises()
+      const [{ benchmarkId, revisionStr, onUnknown }] = useStigRevisions.mock.calls[0]
+      expect(benchmarkId.value).toBe('bench-1')
+      expect(revisionStr.value).toBe('rev-1')
+
+      onUnknown()
+      expect(mockRemoveView).toHaveBeenCalled()
+      expect(mockRouterReplace).toHaveBeenCalledWith({
+        name: 'not-found',
+        params: { pathMatch: ['collections', 'coll-1', 'bench-1', 'rev-1'] },
+      })
+    })
+
+    it('leaves a 400 checklist error to the revision check instead of the error modal', async () => {
+      const { error, clearError } = useGlobalError()
+      clearError()
+      fetchCollectionChecklist.mockRejectedValue({ status: 400 })
+      createWrapper()
+      await flushPromises()
+
+      expect(error.value).toBeNull()
+    })
+
+    it('still reports other checklist errors through the error modal', async () => {
+      const { error, clearError } = useGlobalError()
+      clearError()
+      fetchCollectionChecklist.mockRejectedValue(new Error('Server Error'))
+      createWrapper()
+      await flushPromises()
+
+      expect(error.value?.message).toBe('Server Error')
     })
 
     it('explains an empty checklist by the label filter', async () => {
