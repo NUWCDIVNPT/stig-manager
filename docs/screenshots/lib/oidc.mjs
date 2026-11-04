@@ -1,6 +1,6 @@
 // Hosts clientV2's mock OIDC provider in-process so tokens can be minted for seeding
 // and the browser can log in through its form.
-import MockOidc from '../../../clientV2/mockOidc.js'
+import MockOidc from '../../../test/utils/mockOidc.js'
 
 export async function startOidc(port) {
   const oidc = new MockOidc()
