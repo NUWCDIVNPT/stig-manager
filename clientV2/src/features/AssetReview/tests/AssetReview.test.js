@@ -126,7 +126,7 @@ describe('assetReview.vue', () => {
     })
 
     // Setup default API resolutions
-    fetchAsset.mockResolvedValue({ assetId: 'asset-1', name: 'Test Asset' })
+    fetchAsset.mockResolvedValue({ assetId: 'asset-1', name: 'Test Asset', collection: { collectionId: 'coll-1', name: 'Test Collection' } })
     fetchCollection.mockResolvedValue({ name: 'Test Collection', settings: { status: { canAccept: true, minAcceptGrant: 3 } } })
     fetchStigRevisions.mockResolvedValue([{ revisionStr: 'rev-1' }])
   })
@@ -235,6 +235,25 @@ describe('assetReview.vue', () => {
         name: 'not-found',
         params: { pathMatch: ['collections', 'coll-1', 'assets', 'asset-1', 'bench-1', 'rev-1'] },
       })
+    })
+
+    it('redirects to not-found if the asset belongs to a different collection than the URL', async () => {
+      fetchAsset.mockResolvedValue({ assetId: 'asset-1', name: 'Test Asset', collection: { collectionId: 'coll-2', name: 'Other' } })
+      createWrapper()
+      await flushPromises()
+
+      expect(mockRemoveView).toHaveBeenCalled()
+      expect(mockRouterReplace).toHaveBeenCalledWith({
+        name: 'not-found',
+        params: { pathMatch: ['collections', 'coll-1', 'assets', 'asset-1', 'bench-1', 'rev-1'] },
+      })
+    })
+
+    it('does not redirect when the asset belongs to the URL collection', async () => {
+      createWrapper()
+      await flushPromises()
+
+      expect(mockRouterReplace).not.toHaveBeenCalledWith(expect.objectContaining({ name: 'not-found' }))
     })
 
     it('shows checklist error banner if useChecklistData returns an error', async () => {

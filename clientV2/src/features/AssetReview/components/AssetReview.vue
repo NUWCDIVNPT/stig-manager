@@ -34,12 +34,16 @@ const revisionStr = computed(() => route.params.revisionStr)
 // Fatal route-level error handler.
 // Only used for fetchAsset and fetchCollection — the two resources that define
 // whether this page is accessible at all. Any error on these → redirect.
+function redirectToNotFound() {
+  removeView(key => key.includes(`:${collectionId.value}:${assetId.value}`))
+  router.replace({ name: 'not-found', params: { pathMatch: route.path.substring(1).split('/') } })
+}
+
 function handleRouteError(err) {
   const status = getHttpStatus(err)
   const isPrivilegeError = err.body?.error === 'User has insufficient privilege to complete this request.'
   if (status === 404 || status === 403 || status === 400 || isPrivilegeError) {
-    removeView(key => key.includes(`:${collectionId.value}:${assetId.value}`))
-    router.replace({ name: 'not-found', params: { pathMatch: route.path.substring(1).split('/') } })
+    redirectToNotFound()
   }
 }
 
@@ -60,6 +64,13 @@ watch(assetId, () => {
     loadAsset()
   }
 }, { immediate: true })
+
+// The URL's collection drives settings, role and save targets, so an asset from another collection is a bad URL
+watch([asset, collectionId], ([a, cId]) => {
+  if (a && String(a.collection?.collectionId) !== String(cId)) {
+    redirectToNotFound()
+  }
+})
 
 watch(collectionId, () => {
   if (collectionId.value) {
