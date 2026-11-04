@@ -98,7 +98,7 @@ The nav rail builds its collection list from `user.collectionGrants`, so it only
 
 Asset-level access is **not** checked at the route level — it requires an API call and is handled at the component level.
 
-### Route: `/collection/:collectionId/asset/:assetId/stig/:benchmarkId`
+### Route: `/collection/:collectionId/asset/:assetId/stig/:benchmarkId/revision/:revisionStr`
 
 1. **Route guard** validates collection access (grant exists) — same as above
 2. **Component** (`AssetReview`) fetches checklist data using `format=json-access`, which returns an `access` field
@@ -109,7 +109,7 @@ Asset-level access is **not** checked at the route level — it requires an API 
 |---|---|
 | `rw` | Full editing: result dropdown, detail/comment fields, save/submit, import |
 | `r` | Read-only: form fields disabled, buttons show "Read only", import disabled |
-| `none` / 403 | Asset not visible to this user — show "no access" message, redirect back to collection dashboard |
+| `none` / 403 | Asset not visible to this user — drop it from recent views and route to `not-found` (URL kept) |
 
 ### Restricted users (roleId 1)
 
@@ -135,7 +135,7 @@ For **Restricted** role (roleId 1): default access is `none`. ACL rules are the 
 
 ## Stale Grants
 
-User grants can change mid-session (e.g., removed from a collection while viewing it). There is no global 403 interceptor; each view that depends on a resource for its existence handles the failure itself through the `onError` option of `useAsyncState` (see `handleRouteError` in `AssetReview.vue`, and the equivalents in `CollectionReview.vue` and `StigLibrary.vue`): on 403/404 it drops the view from recent views and routes to `not-found`. Other 403s surface through the global error modal.
+User grants can change mid-session (e.g., removed from a collection while viewing it). There is no global 403 interceptor; each view that depends on a resource for its existence handles the failure itself through the `onError` option of `useAsyncState` (see `handleRouteError` in `AssetReview.vue`, and the equivalents in `CollectionView.vue`, `CollectionReview.vue` and `StigLibrary.vue`): on 403/404 it drops the view from recent views and routes to `not-found`. Other 403s surface through the global error modal.
 
 Grant-derived state is refreshed proactively instead: mutations that change grants or collection names call `refreshUser()` so the nav rail and guards see the new state without a reload.
 
