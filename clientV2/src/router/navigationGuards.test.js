@@ -4,6 +4,7 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 const mockIsAdmin = { value: false }
 const mockHasCollectionAccess = vi.fn(() => false)
 const mockGetCollectionRoleId = vi.fn(() => null)
+let mockFeatureEnabled = false
 
 vi.mock('../shared/composables/useCurrentUser.js', () => ({
   useCurrentUser: () => ({
@@ -53,6 +54,12 @@ function createTestRouter() {
         component: Stub,
         meta: { requiresAdmin: true },
       },
+      {
+        path: '/admin/log-stream',
+        name: 'admin-log-stream',
+        component: Stub,
+        meta: { requiresAdmin: true, isEnabled: () => mockFeatureEnabled, disabledRedirect: 'admin-users' },
+      },
       { path: '/:pathMatch(.*)*', name: 'not-found', component: Stub },
     ],
   })
@@ -84,6 +91,26 @@ describe('navigation guards', () => {
       await router.push('/admin/users')
       await router.isReady()
       expect(router.currentRoute.value.name).toBe('admin-users')
+    })
+  })
+
+  describe('feature-gated routes (meta.isEnabled)', () => {
+    it('redirects to disabledRedirect when the feature is off', async () => {
+      const router = createTestRouter()
+      mockIsAdmin.value = true
+      mockFeatureEnabled = false
+      await router.push('/admin/log-stream')
+      await router.isReady()
+      expect(router.currentRoute.value.name).toBe('admin-users')
+    })
+
+    it('allows access when the feature is on', async () => {
+      const router = createTestRouter()
+      mockIsAdmin.value = true
+      mockFeatureEnabled = true
+      await router.push('/admin/log-stream')
+      await router.isReady()
+      expect(router.currentRoute.value.name).toBe('admin-log-stream')
     })
   })
 
