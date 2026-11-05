@@ -52,17 +52,31 @@ export function useAssetForm({ collectionId, assetId, visible } = {}) {
     set: (v) => { form.labelIds = v },
   }))
 
-  const { isLoading, execute: loadFormData } = useAsyncState(
+  let loadGeneration = 0
+
+  const { isLoading, error: loadError, execute: loadFormData } = useAsyncState(
     async () => {
+      // The fetches outlive a reopen, and these writes are side effects the
+      // generation guard in useAsyncState can't discard.
+      const generation = ++loadGeneration
+      const requestedId = unref(assetId)
+      const isStale = () => generation !== loadGeneration
+
       const [labelList, stigs] = await Promise.all([
         fetchCollectionLabels(unref(collectionId)),
         fetchStigs(),
       ])
       collectionLabels.value = labelList ?? []
       allStigs.value = stigs ?? []
+      if (isStale()) {
+        return
+      }
 
-      if (isEditMode.value) {
-        const asset = await fetchAssetWithStigs(unref(assetId))
+      if (requestedId) {
+        const asset = await fetchAssetWithStigs(requestedId)
+        if (isStale()) {
+          return
+        }
         form.name = asset.name ?? ''
         form.description = asset.description ?? ''
         form.noncomputing = asset.noncomputing ?? false
@@ -81,6 +95,9 @@ export function useAssetForm({ collectionId, assetId, visible } = {}) {
     },
     { immediate: false },
   )
+
+  // Save replaces the whole asset, so a form that never loaded must not save.
+  const canSave = computed(() => isValid.value && !isLoading.value && !loadError.value)
 
   async function initialize() {
     nameError.value = null
@@ -160,6 +177,8 @@ export function useAssetForm({ collectionId, assetId, visible } = {}) {
     isLoading,
     isSubmitting,
     isValid,
+    canSave,
+    loadError,
     nameError,
 
     form,

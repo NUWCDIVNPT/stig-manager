@@ -32,7 +32,7 @@ const visible = defineModel('visible', { type: Boolean, default: false })
 const defaultAccess = ref(null)
 const rules = ref([])
 
-const { isLoading, execute: executeLoad } = useAsyncState(
+const { isLoading, error: loadError, execute: executeLoad } = useAsyncState(
   () => fetchGrantAcl(props.collectionId, props.grant?.grantId),
   { immediate: false },
 )
@@ -42,13 +42,17 @@ const { isLoading: isSaving, execute: executeSave } = useAsyncState(
   { immediate: false },
 )
 
+// A save replaces the whole ACL, so nothing may change the rule list until it
+// has actually loaded: a failed load looks just like a grant with no rules.
+const canEditRules = computed(() => !isLoading.value && !loadError.value)
+
 const granteeName = computed(() => getGrantDisplay(props.grant).title)
 // gets the options for that grant based on role id. Only roleId 1 (Restricted) CAN get the "No Access" option.
 const accessOptions = computed(() => getAllowedAclAccessOptions(props.grant?.roleId))
 
 const previewRule = ref(null)
 // can add if there is a preview rule and it is not a duplicate
-const canAdd = computed(() => !!previewRule.value && !isDuplicateAclRule(rules.value, previewRule.value))
+const canAdd = computed(() => canEditRules.value && !!previewRule.value && !isDuplicateAclRule(rules.value, previewRule.value))
 
 const builderRef = ref()
 
@@ -90,7 +94,7 @@ const { filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOpti
 ], { selection: selectedRules, dataKey: getAclRuleKey })
 
 function removeSelected() {
-  if (!selectedRules.value.length) {
+  if (!canEditRules.value || !selectedRules.value.length) {
     return
   }
   const keys = new Set(selectedRules.value.map(getAclRuleKey))
@@ -123,6 +127,9 @@ watch([visible, () => props.grant?.grantId], async ([isOpen, grantId]) => {
 
 // sends the changes to the backend
 async function onSave() {
+  if (!canEditRules.value) {
+    return
+  }
   const payload = rules.value.map(aclRuleToPayload)
   const response = await executeSave(payload)
   if (response) {
@@ -152,6 +159,11 @@ async function onSave() {
         </div>
       </div>
     </template>
+
+    <div v-if="loadError" class="load-error">
+      <i class="pi pi-exclamation-triangle" />
+      <span>Could not load the ACL for this grant, so it can't be changed. Cancel and try again.</span>
+    </div>
 
     <div class="acl-body" :class="{ loading: isLoading }">
       <div class="acl-col resource-col">
@@ -189,7 +201,7 @@ async function onSave() {
           label="Remove"
           icon="pi pi-angle-left"
           severity="secondary"
-          :disabled="!selectedRules.length"
+          :disabled="!canEditRules || !selectedRules.length"
           class="control-btn"
           :pt="{ icon: ({ context }) => ({ style: context?.disabled ? {} : { color: 'var(--color-action-red)' } }) }"
           @click="removeSelected"
@@ -216,12 +228,22 @@ async function onSave() {
 
     <template #footer>
       <Button label="Cancel" icon="pi pi-times" text :disabled="isSaving" @click="visible = false" />
-      <Button label="Save" icon="pi pi-check" :loading="isSaving" :disabled="isLoading || isSaving" @click="onSave" />
+      <Button label="Save" icon="pi pi-check" :loading="isSaving" :disabled="!canEditRules || isSaving" @click="onSave" />
     </template>
   </Dialog>
 </template>
 
 <style scoped>
+.load-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  color: var(--color-text-dim);
+  border: 1px dashed var(--color-border-default);
+  border-radius: 6px;
+}
+
 .modal-title {
   display: flex;
   align-items: center;

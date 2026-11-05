@@ -318,3 +318,109 @@ describe('useAssetForm — save()', () => {
     expect(row).toEqual({ collection: { collectionId: 'c1' } })
   })
 })
+
+describe('useAssetForm — superseded loads', () => {
+  function deferred() {
+    let resolve
+    const promise = new Promise((r) => {
+      resolve = r
+    })
+    return { promise, resolve }
+  }
+
+  function flush() {
+    return new Promise(r => setTimeout(r))
+  }
+
+  it('ignores a late response for the previous asset', async () => {
+    const assetA = deferred()
+    fetchAssetWithStigs.mockImplementation(id => id === 'a'
+      ? assetA.promise
+      : Promise.resolve({ name: 'asset b', stigs: [] }))
+    const assetId = ref('a')
+    const f = useAssetForm({ collectionId: ref('c1'), assetId })
+
+    const first = f.initialize()
+    await flush()
+    assetId.value = 'b'
+    await f.initialize()
+    expect(f.form.name).toBe('asset b')
+
+    assetA.resolve({ name: 'asset a', metadata: { k: 'v' }, stigs: [] })
+    await first
+
+    expect(f.form.name).toBe('asset b')
+    expect(f.metadataRows.value).toEqual([])
+  })
+
+  it('keeps edits made after a reopen of the same asset when the first load lands last', async () => {
+    const first = deferred()
+    fetchAssetWithStigs.mockReturnValueOnce(first.promise)
+    fetchAssetWithStigs.mockResolvedValueOnce({ name: 'asset a', stigs: [] })
+    const f = useAssetForm({ collectionId: ref('c1'), assetId: ref('a') })
+
+    const firstLoad = f.initialize()
+    await flush()
+    await f.initialize()
+    f.form.name = 'renamed'
+
+    first.resolve({ name: 'asset a', stigs: [] })
+    await firstLoad
+
+    expect(f.form.name).toBe('renamed')
+  })
+
+  it('ignores a late response when the form has since moved to create mode', async () => {
+    const assetA = deferred()
+    fetchAssetWithStigs.mockReturnValue(assetA.promise)
+    const assetId = ref('a')
+    const f = useAssetForm({ collectionId: ref('c1'), assetId })
+
+    const first = f.initialize()
+    await flush()
+    assetId.value = null
+    await f.initialize()
+
+    assetA.resolve({ name: 'asset a', stigs: [] })
+    await first
+
+    expect(f.form.name).toBe('')
+  })
+})
+
+describe('useAssetForm — canSave', () => {
+  it('blocks a save after a failed load, even with a valid name, so stigs and labels are not wiped', async () => {
+    fetchAssetWithStigs.mockRejectedValue(new Error('boom'))
+    const f = setupEdit()
+    await f.initialize()
+    f.form.name = 'typed by the user'
+
+    expect(f.isValid.value).toBe(true)
+    expect(f.loadError.value).toBeTruthy()
+    expect(f.canSave.value).toBe(false)
+  })
+
+  it('blocks a save while the form is loading', async () => {
+    fetchAssetWithStigs.mockReturnValue(new Promise(() => {}))
+    const f = setupEdit()
+    f.initialize()
+    f.form.name = 'typed by the user'
+
+    expect(f.canSave.value).toBe(false)
+  })
+
+  it('allows a save once the form has loaded', async () => {
+    fetchAssetWithStigs.mockResolvedValue({ name: 'asset a', stigs: [] })
+    const f = setupEdit()
+    await f.initialize()
+
+    expect(f.canSave.value).toBe(true)
+  })
+
+  it('stays blocked for a blank name', async () => {
+    const f = setupCreate()
+    await f.initialize()
+
+    expect(f.canSave.value).toBe(false)
+  })
+})

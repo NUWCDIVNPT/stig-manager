@@ -42,7 +42,7 @@ const pickerValue = ref([[], []])
 const availableCount = computed(() => pickerValue.value[0].length)
 const taggedCount = computed(() => pickerValue.value[1].length)
 
-const { isLoading, execute: executeLoad } = useAsyncState(
+const { isLoading, error: loadError, execute: executeLoad } = useAsyncState(
   async () => {
     const [allAssets, taggedAssets, labels] = await Promise.all([
       fetchCollectionAssetsBasic(props.collectionId),
@@ -89,7 +89,7 @@ function close() {
 }
 
 async function onSave() {
-  if (!props.label || saving.value) {
+  if (!props.label || saving.value || loadError.value) {
     return
   }
   await executeSave(pickerValue.value[1].map(a => String(a.assetId)))
@@ -145,6 +145,11 @@ const tablePt = {
     </template>
 
     <div class="modal-body">
+      <div v-if="loadError" class="load-error">
+        <i class="pi pi-exclamation-triangle" />
+        <span>Could not load assets, so tagging can't be changed. Cancel and try again.</span>
+      </div>
+
       <PickListTable
         :model-value="pickerValue"
         data-key="assetId"
@@ -196,13 +201,24 @@ const tablePt = {
     <template #footer>
       <div class="modal-footer">
         <Button label="Cancel" :pt="secondaryBtnPt" :disabled="saving" @click="close" />
-        <Button label="Save" :pt="primaryBtnPt" :loading="saving" :disabled="isLoading" @click="onSave" />
+        <Button label="Save" :pt="primaryBtnPt" :loading="saving" :disabled="isLoading || !!loadError" @click="onSave" />
       </div>
     </template>
   </Dialog>
 </template>
 
 <style scoped>
+.load-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.75rem 1rem 0;
+  padding: 0.6rem 1rem;
+  color: var(--color-text-dim);
+  border: 1px dashed var(--color-border-default);
+  border-radius: 6px;
+}
+
 .modal-header {
   display: flex;
   align-items: center;

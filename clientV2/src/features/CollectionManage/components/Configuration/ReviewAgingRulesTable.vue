@@ -4,6 +4,7 @@ import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import Tag from 'primevue/tag'
 import Toolbar from 'primevue/toolbar'
+import { computed } from 'vue'
 import collectionIcon from '../../../../assets/collection.svg'
 import shieldGreenCheckIcon from '../../../../assets/shield-green-check.svg'
 import targetIcon from '../../../../assets/target.svg'
@@ -27,6 +28,12 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  // The API replaces all rules on every save, so a list that failed to load
+  // must not be edited.
+  loadFailed: {
+    type: Boolean,
+    default: false,
+  },
   // Owners may add/edit/reorder/delete rules; others get a read-only grid.
   canEdit: {
     type: Boolean,
@@ -35,6 +42,14 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['new', 'edit', 'move', 'delete'])
+
+const actionsDisabled = computed(() => props.loading || props.loadFailed)
+
+function onRowDblclick(event) {
+  if (!actionsDisabled.value) {
+    emit('edit', event.data)
+  }
+}
 
 // CSV export for the composite Rule column (title plus action summary).
 const exportRule = ({ record }) => `${ruleTitle(record)} - ${ruleSummary(record)}`
@@ -68,7 +83,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
   <div class="rules-panel">
     <Toolbar class="rules-toolbar">
       <template #start>
-        <ActionButton v-if="canEdit" icon="pi pi-plus-circle icon-green" @click="emit('new')">
+        <ActionButton v-if="canEdit" icon="pi pi-plus-circle icon-green" :disabled="actionsDisabled" @click="emit('new')">
           New Rule
         </ActionButton>
       </template>
@@ -85,7 +100,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
       scroll-height="flex"
       class="rules-table"
       :pt="tablePt"
-      @row-dblclick="emit('edit', $event.data)"
+      @row-dblclick="onRowDblclick"
     >
       <Column header="Rule" :export-value="exportRule" :pt="borderPt">
         <template #body="{ data }">
@@ -135,7 +150,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
               rounded
               size="small"
               :title="isFiltered ? 'Clear filters to reorder' : 'Move up'"
-              :disabled="isFiltered || index === 0"
+              :disabled="actionsDisabled || isFiltered || index === 0"
               @click="emit('move', data, -1)"
             />
             <Button
@@ -145,7 +160,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
               rounded
               size="small"
               :title="isFiltered ? 'Clear filters to reorder' : 'Move down'"
-              :disabled="isFiltered || index === rules.length - 1"
+              :disabled="actionsDisabled || isFiltered || index === rules.length - 1"
               @click="emit('move', data, 1)"
             />
             <Button
@@ -155,6 +170,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
               rounded
               size="small"
               title="Edit rule"
+              :disabled="actionsDisabled"
               @click="emit('edit', data)"
             />
             <Button
@@ -164,6 +180,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
               rounded
               size="small"
               title="Delete rule"
+              :disabled="actionsDisabled"
               @click="emit('delete', data)"
             />
           </div>
@@ -171,7 +188,12 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
       </Column>
 
       <template #empty>
-        {{ isFiltered && rules.length ? 'No rules match the filters.' : 'No rules configured. Click "New Rule" to add one.' }}
+        <template v-if="loadFailed">
+          Rules are unavailable.
+        </template>
+        <template v-else>
+          {{ isFiltered && rules.length ? 'No rules match the filters.' : 'No rules configured. Click "New Rule" to add one.' }}
+        </template>
       </template>
 
       <template #footer>
