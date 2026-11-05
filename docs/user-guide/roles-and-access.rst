@@ -181,15 +181,10 @@ All examples below apply to Grants to both Users or User Groups.
 These actions can be performed by a Collection Owner or Manager on the Users & Grants page of the Collection Management workspace.
 To edit the ACL for a Grant, click the "target" (Edit ACL) icon on the Grant's row.
 
-.. thumbnail:: /assets/images/collection-manage-grants-w-edit-acl-highlighted-trimmed.png
-      :width: 25% 
-      :show_caption: True
-      :title: Click the Edit ACL button to manage the ACL for a Grant.
-
 .. thumbnail:: /assets/images/new/collection-manage-grants-edit-acl.png
       :width: 25% 
       :show_caption: True
-      :title: NEW: Click the Edit ACL button to manage the ACL for a Grant.
+      :title: Click the Edit ACL button to manage the ACL for a Grant.
 
 
 **Grant Read/Write on an entire Collection**
@@ -210,14 +205,9 @@ To edit the ACL for a Grant, click the "target" (Edit ACL) icon on the Grant's r
   - Click the "Add" button and select "with Read Only access." Save.
   
 
-.. thumbnail:: /assets/images/collection-manage-acl-popup-collection-selected.png
-      :width: 25% 
-      :show_caption: True
-      :title: Select the Collection, and "Add with Read Only access."
-
 .. thumbnail:: /assets/images/new/collection-manage-acl-popup-collection-selected.png
       :width: 25% 
       :show_caption: True
-      :title: NEW: Select the Collection, and "Add with Read Only access."
+      :title: Select the Collection, and "Add with Read Only access."
   
 

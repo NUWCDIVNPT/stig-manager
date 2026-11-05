@@ -54,31 +54,20 @@ By default, most users will have the Collection Creator role, allowing them to c
 
 #. After logging into the system, click the green *+* button next to Collections in the Nav Rail on the left.
 
-.. thumbnail:: /assets/images/nav-tree.png
-      :width: 25% 
-      :show_caption: True
-      :title: Navigation Tree
-
 .. thumbnail:: /assets/images/new/nav-tree.png
       :width: 25% 
       :show_caption: True
-      :title: NEW: Navigation Rail
+      :title: Navigation Rail
 
 
 #. You will be prompted for your Collection name and a description.  On Create, you will be automatically made an Owner of the new collection, and will be taken to the Management workspace for this new Collection. You can access the Management workspace later from the Management tab of the Collection Dashboard.
 
 
-   .. thumbnail:: /assets/images/create-collection-popup.png
-      :width: 50%
-      :show_caption: True 
-      :alt: Create Collection Popup
-      :title: Create Collection Popup
-
    .. thumbnail:: /assets/images/new/create-collection-popup.png
       :width: 50%
       :show_caption: True 
       :alt: Create Collection Popup
-      :title: NEW: Create Collection Popup
+      :title: Create Collection Popup
 
 
 
@@ -88,17 +77,11 @@ Create Assets in your Collection
 #. From the Assets page of the Management workspace, use the "Create" button in the toolbar to create a couple sample assets. You can also attach STIGs from the "Create new Asset" popup at this time. The only required field is "Name," which must be unique in this Collection.
    * You can change all the properties of your asset, including attached STIGs, later by selecting the asset and using the "Modify" button in the Assets toolbar.  
 
-.. thumbnail:: /assets/images/collection-manage-asset-create-button.png
-   :width: 50% 
-   :show_caption: True
-   :alt: Create Asset Button
-   :title: Create Asset Button
-
 .. thumbnail:: /assets/images/new/collection-manage-asset-create-button.png
    :width: 50% 
    :show_caption: True
    :alt: Create Asset Button
-   :title: NEW: Create Asset Button
+   :title: Create Asset Button
 
 
 .. note::
@@ -111,17 +94,11 @@ Attach STIGs to Assets in your Collection
 #. Add or remove STIGs by selecting an Asset on the Assets page and clicking "Modify", then moving STIGs between the Available and Assigned lists in the STIG Assignments section of the Asset pop-up. Try to attach the same STIG to more than one Asset. It will help demonstrate the Collection Review feature later. Click "Save asset" on the popup when finished.
 #. STIGs can also be assigned from the STIGs page of the Management workspace: click "Assign", choose a Benchmark ID, and move Assets into the Assigned list. 
 
-.. thumbnail:: /assets/images/AssetCreationPopup.png
-   :width: 50% 
-   :show_caption: True
-   :alt: Asset Creation Popup
-   :title: Asset Creation Popup
-
 .. thumbnail:: /assets/images/new/create-asset.png
    :width: 50% 
    :show_caption: True
    :alt: Asset Creation Popup
-   :title: NEW: Asset Creation Popup
+   :title: Asset Creation Popup
 
 
 * The Assets you create and the STIGs you attach to them are presented on the Assets and STIGs pages of the Management workspace, as well as in the Assets and STIGs tabs of the Collection Dashboard.
@@ -142,46 +119,28 @@ Grant Users Roles in your Collection
    * This will open a popup where you can select specific Assets, STIGs, or Labels that this User can access. Multiple Rules can be created with varying level of Access (Read, Read/Write, or None) to the Assets in the Collection.  Click "Save" when finished.
 
 
-.. thumbnail:: /assets/images/collection-manage-grants.png
+.. thumbnail:: /assets/images/new/collection-manage-grants.png
    :width: 40% 
    :show_caption: True
    :alt: Add Collection Grant
    :title: Add Collection Grant
 
-.. thumbnail:: /assets/images/new/collection-manage-grants.png
-   :width: 40% 
-   :show_caption: True
-   :alt: Add Collection Grant
-   :title: NEW: Add Collection Grant
-
-.. thumbnail:: /assets/images/collection-manage-new-grants-popup.png
-   :width: 40% 
-   :show_caption: True
-   :alt: User Pulldown
-   :title: User Pulldown
-
 .. thumbnail:: /assets/images/new/collection-manage-new-grants-popup.png
    :width: 40% 
    :show_caption: True
    :alt: User Pulldown
-   :title: NEW: User Pulldown
+   :title: User Pulldown
 
 
 |
 
 
 
-.. thumbnail:: /assets/images/CollectionConfig_Populated.png
-      :width: 50% 
-      :show_caption: True
-      :alt: Collection Management panel with demo Assets
-      :title: Collection Management panel with demo Assets
-
 .. thumbnail:: /assets/images/new/collection-manage-populated.png
       :width: 50% 
       :show_caption: True
       :alt: Collection Management panel with demo Assets
-      :title: NEW: Collection Management panel with demo Assets
+      :title: Collection Management panel with demo Assets
 
 |
 
@@ -201,17 +160,11 @@ Evaluate an Asset for STIG compliance
       * The **Review editor** pops up over the checklist when you click a Rule, and is where you will actually log your Evaluation of the Rule.  It contains fields to record Review Results, Detail, and Comments, Status buttons, and an attribution line that indicates who last modified the Review.
       * The **Review Resources** section, expanded from the bottom of the Review editor, contains a history of this Review, any Feedback you have received about this Review from the Collection Owner, and other Reviews that have been performed for the selected Rule against other assets. Use the "Apply" button on one of those Reviews to copy it to the current asset. 
 
-      .. thumbnail:: /assets/images/asset-review.png
-         :width: 50% 
-         :show_caption: True
-         :alt: Asset Review Workspace
-         :title: Asset Review Workspace 
-
       .. thumbnail:: /assets/images/new/asset-review.png
          :width: 50% 
          :show_caption: True
          :alt: Asset Review Workspace
-         :title: NEW: Asset Review Workspace 
+         :title: Asset Review Workspace 
 
 
 #. Select a few Rules and save some Evaluations of them. For now, set a few to "Open," and provide a Comment.  Click "Save" or "Submit" in the editor to save your Evaluation and set its status. The "Submitted" status is available if you meet the Review Settings configured for your Collection. Required fields are marked with an asterisk; see the :ref:`Collection Settings<manage-collection-workspace>` for Reviews in this Collection. 
@@ -231,17 +184,11 @@ Evaluate multiple Assets at once for STIG compliance
 
    * The Collection Review workspace presents similar information to the Asset Review workspace, but in a condensed view that allows you to review this STIG against all Assets you have access to in this Collection at once. 
 
-   .. thumbnail:: /assets/images/collection-review-being-edited.png
-      :width: 50% 
-      :show_caption: True
-      :alt: Editing in the Collection Review panel
-      :title: Editing in the Collection Review panel
-
    .. thumbnail:: /assets/images/new/collection-review-being-edited.png
       :width: 50% 
       :show_caption: True
       :alt: Editing in the Collection Review panel
-      :title: NEW: Editing in the Collection Review panel
+      :title: Editing in the Collection Review panel
 
 #. Select a Rule to review in the STIG Checklist grid at the top. Rule Info will appear in the panel on the right.
 #. Click an Asset in the Reviews grid below the checklist to open the Review editor, where you can edit the Result, Detail, and Comment. Your changes are saved when you select a status with the Save, Submit, or Accept button.
@@ -270,17 +217,11 @@ Findings Report
    * POA&Ms can take different forms, and track more information than is available in STIG Manager. The POA&M output from STIG Manager is intended to be used for reference when populating your official POA&M documents with STIG finding information, and not as a replacement for artifacts that may be directly imported into eMASS or other RMF tools.
 
 
-.. thumbnail:: /assets/images/findings-report.png
-      :width: 50% 
-      :show_caption: True
-      :alt: The Findings Report
-      :title: The Findings report
-
 .. thumbnail:: /assets/images/new/findings-report.png
       :width: 50% 
       :show_caption: True
       :alt: The Findings Report
-      :title: NEW: The Findings report
+      :title: The Findings report
 
 
  

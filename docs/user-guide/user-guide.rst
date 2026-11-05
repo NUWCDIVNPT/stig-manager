@@ -38,15 +38,10 @@ When first logging into STIG Manager, the User is presented with the Navigation 
 Use the Nav Rail to navigate **between** different Collections, as well as the STIG Library, What's New, and (for App Managers) the Admin section. Use the tabs across the top of the Collection Dashboard to navigate to different workspaces **within** a Collection. The breadcrumb bar always shows where you are; each segment can be clicked to move back up, and some segments are selectors (for example, to switch Collections, STIGs, or Revisions).  
 
 
-.. thumbnail:: /assets/images/nav-tree-and-collection-panel.png
-      :width: 50% 
-      :show_caption: True
-      :title: Navigation Tree and Collection Dashboard
-
 .. thumbnail:: /assets/images/new/nav-tree-and-collection-panel.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Nav Rail and Collection Dashboard
+      :title: Nav Rail and Collection Dashboard
 
 
 |
@@ -64,15 +59,10 @@ The User's name and a Sign out option are in the user menu at the top right of t
 
 Selecting a Collection from the Collections list will open up the Collection Dashboard in the content area. If you are a Collection's Owner or Manager, a Management tab will also appear with the other tabs of the Collection Dashboard. Click it to open the Collection Management Workspace.
 
-.. thumbnail:: /assets/images/nav-tree.png
-      :width: 25% 
-      :show_caption: True
-      :title: Navigation Tree
-
 .. thumbnail:: /assets/images/new/nav-tree.png
       :width: 25% 
       :show_caption: True
-      :title: NEW: Nav Rail
+      :title: Nav Rail
 
 |
 
@@ -87,15 +77,10 @@ Create Collection
 +++++++++++++++++++++
 If you have the Collection Creator privilege, the *+* button will appear next to the Collections entry in the Nav Rail. Click it, enter a Name and optional Description, and click Create. You will be the Owner of the new Collection and will be taken to its Management Workspace. See the  :ref:`Manage Collection <manage-collection-workspace>` section of this document for more information about the settings available there. 
 
-.. thumbnail:: /assets/images/create-collection-popup.png
-      :width: 50% 
-      :show_caption: True
-      :title: Create Collection popup
-
 .. thumbnail:: /assets/images/new/create-collection-popup.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Create Collection popup
+      :title: Create Collection popup
 
 | 
 
@@ -125,15 +110,10 @@ The Home page is available from the top of the Nav Rail.
 This page provides links to useful information, such as this Documentation, DISA STIGs, and the RMF Process reference.
 The Home page also provides information about the STIG Manager Open Source Software Project, links to the `STIG Manager OSS Project on GitHub <https://github.com/NUWCDIVNPT/stig-manager/>`_ for submitting Issues with the software, and lists the Application Managers for this instance.
 
-.. thumbnail:: /assets/images/home-tab.png
-      :width: 50% 
-      :show_caption: True
-      :title: Home Tab
-
 .. thumbnail:: /assets/images/new/home-tab.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Home Tab
+      :title: Home Tab
 
 
 What's New
@@ -154,20 +134,15 @@ Browse STIGs
 The Benchmarks list on the left shows every Reference STIG stored in the STIG Manager App, with its latest Revision, rule count, and date. Select a Benchmark to list its Rules in the center panel, and use the "View" dropdown to switch between Revisions. Select a Rule to see its full content on the right.
 
 
-.. thumbnail:: /assets/images/stig-library.png
+.. thumbnail:: /assets/images/new/stig-library.png
       :width: 50% 
       :show_caption: True
       :title: STIG Library
 
-.. thumbnail:: /assets/images/new/stig-library.png
-      :width: 50% 
-      :show_caption: True
-      :title: NEW: STIG Library
-
 .. thumbnail:: /assets/images/new/stig-library-selected.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: STIG Library with a STIG selected
+      :title: STIG Library with a STIG selected
 
 |
 
@@ -178,15 +153,10 @@ Compare Revisions
 The "Compare Revisions" feature allows you to compare two Revisions of a STIG, and get a report of what exact Rules and fields changed between the two. With a STIG selected, choose another Revision from the "Compare with" dropdown. The grid then lists only the Rules that changed, with badges for the properties that changed in each. Select a Rule to see a line-by-line diff in the Detailed changes panel on the right. 
 
 
-.. thumbnail:: /assets/images/stig-compare-tool.png
-      :width: 50% 
-      :show_caption: True
-      :title: STIG Revision Compare Tool
-
 .. thumbnail:: /assets/images/new/stig-compare-tool.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: STIG Revision Compare Tool
+      :title: STIG Revision Compare Tool
 
 |
 
@@ -213,15 +183,10 @@ From the STIGs, Assets, and Labels tabs of the Dashboard you can open individual
       **For the purposes of this report, only Reviews with Not a Finding, Not Applicable, or Open Results are considered "Assessed." Those Reviews that are "Saved" with a Result other than those three do not contribute to the tallies presented here. In order to be Submitted or Accepted, a Review must have one of those 3 Results.**
 
 
-.. thumbnail:: /assets/images/collection-panel.png
-      :width: 50% 
-      :show_caption: True
-      :title: The Collection Dashboard
-
 .. thumbnail:: /assets/images/new/collection-panel.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: The Collection Dashboard
+      :title: The Collection Dashboard
 
 |
 
@@ -235,15 +200,10 @@ The Collection Overview section at the left of the Collection Dashboard provides
 
 The Assets and STIGS presented in the Collection Dashboard can be filtered by Label using the filter in the breadcrumb bar at the top of the page. The same filter applies to every Collection Dashboard tab, to Collection Review, and to the Findings and metrics grids. Only those Assets with at least one of the selected Labels will contribute to the metrics summaries presented in this panel. 
 
-.. thumbnail:: /assets/images/collection-panel-overview.png
-      :width: 25% 
-      :show_caption: True
-      :title: Collection Overview
-
 .. thumbnail:: /assets/images/new/collection-panel-overview.png
       :width: 25% 
       :show_caption: True
-      :title: NEW: Collection Overview
+      :title: Collection Overview
 
 |
 
@@ -258,15 +218,10 @@ The Assets and STIGS presented in the Collection Dashboard can be filtered by La
 .. note::
       The Label filter in the breadcrumb bar applies to the Collection Overview panel and to the STIGs, Assets, Labels, and Findings tabs alike. 
       
-      .. thumbnail:: /assets/images/collection-panel-filters.png
-            :width: 25% 
-            :show_caption: True
-            :title: Collection Dashboard Filtering
-
       .. thumbnail:: /assets/images/new/collection-panel-filters.png
             :width: 50% 
             :show_caption: True
-            :title: NEW: Collection Dashboard Filtering
+            :title: Collection Dashboard Filtering
 
 |
 
@@ -512,15 +467,10 @@ Each tab and grid of the Collection Dashboard presents the total number of Check
 
 
 
-.. thumbnail:: /assets/images/collection-panel-checklist-navigation.png
-      :width: 50% 
-      :show_caption: True
-      :title: Checklists in the STIGs tab of the Collection Dashboard
-
 .. thumbnail:: /assets/images/new/collection-panel-checklist-navigation.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Checklists in the STIGs tab of the Collection Dashboard
+      :title: Checklists in the STIGs tab of the Collection Dashboard
 
 
 |
@@ -547,15 +497,10 @@ Assets Tab
 
 The Assets Tab of the Collection Dashboard provides a list of every Asset that the User has been granted access to in the Collection.
 
-.. thumbnail:: /assets/images/collection-panel-assets.png
-      :width: 50% 
-      :show_caption: True
-      :title: Checklists in the Assets tab of the Collection Dashboard
-
 .. thumbnail:: /assets/images/new/collection-panel-assets.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Checklists in the Assets tab of the Collection Dashboard
+      :title: Checklists in the Assets tab of the Collection Dashboard
 
 
 |
@@ -572,15 +517,10 @@ Labels Tab
 
 The Labels Tab of the Collection Dashboard provides a list of every Label that has been assigned to an Asset that the User has been granted access to in the Collection.
 
-.. thumbnail:: /assets/images/collection-panel-labels.png
-      :width: 50% 
-      :show_caption: True
-      :title: Checklists in the Labels tab of the Collection Dashboard
-
 .. thumbnail:: /assets/images/new/collection-panel-labels.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Checklists in the Labels tab of the Collection Dashboard
+      :title: Checklists in the Labels tab of the Collection Dashboard
 
 
 |
@@ -610,15 +550,10 @@ Findings Tab
 --------------------
 The Findings Report provides a view of all Open Reviews in the Collection that the User has access to. It is the Findings tab of the Collection Dashboard, and respects the Label filter in the breadcrumb bar.
 
-.. thumbnail:: /assets/images/findings-report.png
-      :width: 50% 
-      :show_caption: True
-      :title: Findings Report
-
 .. thumbnail:: /assets/images/new/findings-report.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Findings Report
+      :title: Findings Report
 
 
 -------------------------------
@@ -661,27 +596,17 @@ The Meta Dashboard provides totals and metrics for some or all of your Collectio
 Access the Meta Dashboard from the "Collections Dashboard" entry at the top of the Collections list in the Nav Rail.
 
 
-.. thumbnail:: /assets/images/meta-collection-icon.png
-      :width: 50% 
-      :show_caption: True
-      :title: Click to open the Meta Dashboard
-
 .. thumbnail:: /assets/images/new/meta-collection-nav.png
       :width: 25% 
       :show_caption: True
-      :title: NEW: Collections Dashboard entry in the Nav Rail
+      :title: Collections Dashboard entry in the Nav Rail
 
 |
-
-.. thumbnail:: /assets/images/meta-collection-dashboard.png
-      :width: 50% 
-      :show_caption: True
-      :title: The Meta Dashboard
 
 .. thumbnail:: /assets/images/new/meta-collection-dashboard.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: The Meta Dashboard
+      :title: The Meta Dashboard
 
 
 |      
@@ -698,15 +623,10 @@ The Collections included in the Meta-Collection Dashboard can be filtered with t
 .. note::
       The Collection filter applies to the Overview panel and to the Collections and STIGs tabs alike. 
       
-      .. thumbnail:: /assets/images/meta-collection-panel-overview-filters.png
-                  :width: 25% 
-                  :show_caption: True
-                  :title: Meta-Collection Overview with Filters
-
       .. thumbnail:: /assets/images/new/meta-collection-panel-overview-filters.png
                   :width: 25% 
                   :show_caption: True
-                  :title: NEW: Meta-Collection Overview with Filters
+                  :title: Meta-Collection Overview with Filters
 
 |
 
@@ -716,15 +636,10 @@ Collections Tab
 
 The Collections Tab of the Meta Dashboard provides a list of every Collection that the User has been granted access to in the system.  Select a Collection to populate the STIGs grid with every STIG assigned to any Asset in that Collection. Select a STIG to see the Assets assigned that STIG. Click the Collection icon in a Collection's row to open its Collection Dashboard, or the Shield icon in an Asset's row to open its Asset Review Workspace.
 
-.. thumbnail:: /assets/images/meta-collection-dashboard-collections-tab.png
-      :width: 50% 
-      :show_caption: True
-      :title: Collections Tab of the Meta-Collection Dashboard
-
 .. thumbnail:: /assets/images/new/meta-collection-dashboard-collections-tab.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Collections Tab of the Meta-Collection Dashboard
+      :title: Collections Tab of the Meta-Collection Dashboard
 
 |
 
@@ -734,15 +649,10 @@ STIGs Tab
 
 The STIGs tab of the Meta Dashboard provides a list of every STIG that is assigned to any Asset in any Collection that the User has access to. Selecting a STIG will load any Collections that contain Assets that have been assigned that STIG into the Collections grid below it. Selecting a Collection there will populate the Assets grid with a list of every Asset in that Collection that has been assigned the selected STIG.
 
-.. thumbnail:: /assets/images/meta-collection-dashboard-stigs-tab.png
-      :width: 50% 
-      :show_caption: True
-      :title: Collections Tab of the Meta-Collection Dashboard
-
 .. thumbnail:: /assets/images/new/meta-collection-dashboard-stigs-tab.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Collections Tab of the Meta-Collection Dashboard
+      :title: Collections Tab of the Meta-Collection Dashboard
 
 |
 
@@ -759,15 +669,10 @@ The Collection Review Workspace allows the user to assess all the Assets they ha
 
 The workspace has three parts: the Checklist grid at the top, the Reviews grid below it, and the Rule panel on the right.
 
-.. thumbnail:: /assets/images/collection-review.png
-      :width: 50% 
-      :show_caption: True
-      :title: Collection Review Workspace
-
 .. thumbnail:: /assets/images/new/collection-review.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Collection Review Workspace
+      :title: Collection Review Workspace
 
 
 -------------------------------
@@ -784,15 +689,10 @@ The toolbar above the checklist provides a Search box, a Filter button, a Checkl
 
 By default, the Collection's default Revision of the STIG is displayed. The User can select other Revisions of the STIG, if they have been imported into the system by an Admin, from the Revision selector in the breadcrumb bar. The STIG selector next to it switches to another STIG.
 
-.. thumbnail:: /assets/images/collection-review-stig-revisions.png
-      :width: 50% 
-      :show_caption: True
-      :title: STIG Revision Selection
-
 .. thumbnail:: /assets/images/new/collection-review-stig-revisions.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: STIG Revision Selection
+      :title: STIG Revision Selection
 
 |
 
@@ -803,15 +703,10 @@ The columns in this panel represent the Rule Severity Category, Rule Id, Rule Ti
 
 Additional Columns are available from the Columns menu in the toolbar, and filtering options from the Filter button. Column selections will persist for the Collection across user sessions.
 
-.. thumbnail:: /assets/images/collection-workspace-checklist-ages.png
-      :width: 50% 
-      :show_caption: True
-      :title: Column Selection
-
 .. thumbnail:: /assets/images/new/collection-workspace-checklist-ages.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Column Selection
+      :title: Column Selection
 
 |
 
@@ -843,15 +738,10 @@ Batch Editing
 ~~~~~~~~~~~~~~~~~~~~
 Select more than one Review with the checkboxes, and click the "Batch edit" button to open the Batch Editing interface.
 
-.. thumbnail:: /assets/images/collection-review-batch-edit.png
-      :width: 50% 
-      :show_caption: True
-      :title: Edit Multiple Reviews at Once with Batch Editing
-
 .. thumbnail:: /assets/images/new/collection-review-batch-edit.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Edit Multiple Reviews at Once with Batch Editing
+      :title: Edit Multiple Reviews at Once with Batch Editing
 
 |
 
@@ -879,15 +769,10 @@ This workspace can be accessed by clicking the Shield icon on an Asset in the ST
 The workspace has two parts: the Checklist grid, which fills most of the window, and the Rule panel on the right. Clicking a Rule in the Checklist opens the Review editor over the grid. 
 
 
-.. thumbnail:: /assets/images/asset-review.png
-      :width: 50% 
-      :show_caption: True
-      :title: Asset Review Workspace
-
 .. thumbnail:: /assets/images/new/asset-review.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Asset Review Workspace
+      :title: Asset Review Workspace
 
 |
 
@@ -907,15 +792,10 @@ Switch to another STIG or Revision with the STIG and Revision selectors in the b
 
 The toolbar also offers Submit All and Accept All buttons, and the "Writable" badge at its right indicates that the Reviews for this Asset can be changed by the User.
 
-.. thumbnail:: /assets/images/asset-review-writeable.png
-      :width: 50% 
-      :show_caption: True
-      :title: Reviews can be changed by this User.
-
 .. thumbnail:: /assets/images/new/asset-review-writeable.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Reviews can be changed by this User.
+      :title: Reviews can be changed by this User.
 
 
 
@@ -952,15 +832,6 @@ The default Settings for Reviews in Collections are:
       - Review must have an Evaluation Result of "Not A Finding," "Not Applicable," or "Open. (Not Configurable)
 
 
-.. thumbnail:: /assets/images/review-requirements-popup.png
-      :width: 50% 
-      :show_caption: True
-      :title: Review Requirements
-
-
-|
-
-
 Attributions
 ~~~~~~~~~~~~~~~
 
@@ -972,15 +843,10 @@ STIG Manager tracks the actual Evaluation (The Result, Detail, and Comment) port
 
 - Statused: Changes to the status of a Review (Saved, Submitted, Accepted, or Rejected), the Timestamp, and the User that made that change, are tracked separately and displayed here.
 
-.. thumbnail:: /assets/images/review-attributions-panel.png
-      :width: 50% 
-      :show_caption: True
-      :title: Review Evaluation Panel with Attributions
-
 .. thumbnail:: /assets/images/new/review-attributions-panel.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Review Evaluation Panel with Attributions
+      :title: Review Evaluation Panel with Attributions
 
 |
 
@@ -1012,27 +878,17 @@ Automated "Result Engine" Information
 If a Review was imported from a source of automated assessments, such as Evaluate STIG or SCC, they may be marked as such in the UI.  The origin of Reviews (Automated, Manual, Override/Answer File) is indicated in the "gear" checklist column, and with colored badges on the attribution line of the Review editor. Hover over the badges for more info. 
 
 
-.. thumbnail:: /assets/images/asset-review-autoresult.png
+.. thumbnail:: /assets/images/new/asset-review-autoresult.png
       :width: 50% 
       :show_caption: True
       :title: Asset Review Workspace with Automated Results indicated.
 
-.. thumbnail:: /assets/images/new/asset-review-autoresult.png
-      :width: 50% 
-      :show_caption: True
-      :title: NEW: Asset Review Workspace with Automated Results indicated.
-
 |
-
-.. thumbnail:: /assets/images/asset-review-autoresult-with-override.png
-      :width: 50% 
-      :show_caption: True
-      :title: Review Panel with Overidden Automated Result.      
 
 .. thumbnail:: /assets/images/new/asset-review-autoresult-with-override.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Review Panel with Overridden Automated Result.
+      :title: Review Panel with Overridden Automated Result.
 
 |
 
@@ -1064,15 +920,10 @@ From this Workspace, the User can:
 
 The Workspace is organized into five pages, selected with the buttons at its top right: Configuration, Users & Grants, Assets, STIGs, and Labels. The Configuration page is further divided into Properties, Review Settings, Import Options, Actions, and Danger Zone sections, listed on its left.
 
-.. thumbnail:: /assets/images/manage-collection-workspace.png
-      :width: 50% 
-      :show_caption: True
-      :title: The Manage Collections Workspace
-
 .. thumbnail:: /assets/images/new/manage-collection-workspace.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: The Manage Collections Workspace
+      :title: The Manage Collections Workspace
 
 
 -------------------------------
@@ -1086,15 +937,10 @@ Properties
 ~~~~~~~~~~~~~~~~~~~~
 The Properties section holds the Collection's Name and Description.
 
-.. thumbnail:: /assets/images/collection-properties.png
-      :width: 50% 
-      :show_caption: True
-      :title: Collection Properties
-
 .. thumbnail:: /assets/images/new/collection-properties.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Collection Properties
+      :title: Collection Properties
 
 |
 
@@ -1137,15 +983,10 @@ The default Settings for Review Status are:
 
 
 
-.. thumbnail:: /assets/images/collection-manage-review-fields.png
-      :width: 50% 
-      :show_caption: True
-      :title: Review Requirements
-
 .. thumbnail:: /assets/images/new/collection-manage-review-fields.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Review Requirements
+      :title: Review Requirements
 
 
 |
@@ -1156,15 +997,6 @@ Review History
 Every time an individual Review for an Asset changes, a History record of its previous state is recorded.  For each Collection, Owners and Managers can now limit how many of these History records they keep for for each Review, or turn Review History off entirely
 
 By default, the number of History records is capped at 15 for each Review. 
-
-.. thumbnail:: /assets/images/collection-manage-review-history-setting.png 
-      :width: 50% 
-      :show_caption: True
-      :title: Review history setting
-
-
-|
-
 
 .. _import-options:
 
@@ -1177,15 +1009,10 @@ The Import Options section of the Configuration page allows you to have fine-gra
 
 These import setting preferences can be locked for your Collection, or you can allow other users to customize them as they see fit when they perform their own imports. 
 
-.. thumbnail:: /assets/images/collection-manage-review-import-options.png 
-      :width: 50% 
-      :show_caption: True
-      :title: Review Import Options Fields
-
 .. thumbnail:: /assets/images/new/collection-manage-review-import-options.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Review Import Options Fields
+      :title: Review Import Options Fields
       
 |
 
@@ -1248,15 +1075,10 @@ The Clone Collection form in the Actions section of the Configuration page allow
 This feature can be useful for creating a "snapshot" of a Collection at a particular point in time that could be used to support certain process or reporting needs. At clone time, the new Collection can be created with all its STIGs "pinned" to the default Revisions of the Source Collection, which will ensure the Clone's reviews and metrics do not change when Reference STIGs are updated. 
 
 
-.. thumbnail:: /assets/images/collection-manage-clone-button.png
-      :width: 50% 
-      :show_caption: True
-      :title: The Collection Clone Button
-
 .. thumbnail:: /assets/images/new/collection-manage-clone-button.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: The Collection Clone Button
+      :title: The Collection Clone Button
 
 |
 
@@ -1268,34 +1090,14 @@ The clone always includes the original Collection's Assets, their core propertie
    Whether or not the User Grants are copied, the User who created the new Collection will be an Owner of the new Collection.
 
 
-.. thumbnail:: /assets/images/collection-manage-clone-options.png
+.. thumbnail:: /assets/images/new/collection-manage-clone-options.png
       :width: 50% 
       :show_caption: True
       :title: Collection Clone Options
 
-.. thumbnail:: /assets/images/new/collection-manage-clone-options.png
-      :width: 50% 
-      :show_caption: True
-      :title: NEW: Collection Clone Options
-
 |
 
 Once the clone operation has started, a progress notification will appear.  The User can continue to use STIG Manager while the clone operation is in progress. The notification will update when the clone is complete, with links to the new Collection.
-
-
-.. thumbnail:: /assets/images/collection-manage-clone-status-bar.png
-      :width: 50% 
-      :show_caption: True
-      :title: Collection Clone Status Bar
-
-|
-
-.. thumbnail:: /assets/images/collection-manage-clone-status-complete.png
-      :width: 50% 
-      :show_caption: True
-      :title: Collection Clone Complete
-
-|
 
 
 .. warning::
@@ -1320,15 +1122,10 @@ Access Review Aging configuration from the **Tasks** form in the **Actions** sec
    Rules defined here will not act on any reviews unless the **Update Aged Reviews** system job is enabled and scheduled by an App Manager. Coordinate with your App Manager to confirm the job is running on a cadence appropriate for your rules.
 
 
-.. thumbnail:: /assets/images/collection-manage-tasks.png
-      :width: 35% 
-      :show_caption: True
-      :title: Review Aging Task
-
 .. thumbnail:: /assets/images/new/collection-manage-tasks.png
       :width: 35% 
       :show_caption: True
-      :title: NEW: Review Aging Task
+      :title: Review Aging Task
 
 
 .. rubric:: Rules and Ordinal
@@ -1337,15 +1134,10 @@ A collection can have multiple rules, processed in ordinal order. Rules are inde
 
 .. rubric:: Creating a Rule
 
-.. thumbnail:: /assets/images/collection-manage-review-aging-rule.png
-      :width: 35% 
-      :show_caption: True
-      :title: Review Aging Rule
-
 .. thumbnail:: /assets/images/new/collection-manage-review-aging-rule.png
       :width: 35% 
       :show_caption: True
-      :title: NEW: Review Aging Rule
+      :title: Review Aging Rule
 
 
 Click **New Rule** (Owners only) to open the rule editor. Each rule has three sections:
@@ -1428,26 +1220,16 @@ You can expand individual Groups listed in the "Available Grantees" panel to see
 
 See the :ref:`Roles and Access<roles-and-access>` section for more information about Grants, Roles, and Access Control.
 
-.. thumbnail:: /assets/images/collection-manage-new-grants-popup.png
+.. thumbnail:: /assets/images/new/collection-manage-new-grants-popup.png
       :width: 50% 
       :show_caption: True
       :title: The User Grants Panel
 
-.. thumbnail:: /assets/images/new/collection-manage-new-grants-popup.png
-      :width: 50% 
-      :show_caption: True
-      :title: NEW: The User Grants Panel
-
-
-.. thumbnail:: /assets/images/collection-manage-edit-grant.png
-      :width: 50% 
-      :show_caption: True
-      :title: Edit or reassign an existing Grant
 
 .. thumbnail:: /assets/images/new/collection-manage-edit-grant.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Edit or reassign an existing Grant
+      :title: Edit or reassign an existing Grant
 
 -------------------------------
 
@@ -1457,15 +1239,10 @@ Managers and Owners have additional Collection capabilities that let them add or
 See the :ref:`Roles and Access<roles-and-access>` section for more information about Grants, Roles, and Access Control.
 
 
-.. thumbnail:: /assets/images/collection-manage-acl-popup.png
-      :width: 50% 
-      :show_caption: True
-      :title: The Access Control List Popup
-
 .. thumbnail:: /assets/images/new/collection-manage-acl-popup.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: The Access Control List Popup
+      :title: The Access Control List Popup
 
 |
 
@@ -1479,15 +1256,10 @@ Effective Users
 The Effective Users section displays all the Users that have been granted access to this Collection, with either a Direct Grant to the User or via a Grant to a User Group. Click the "target" icon at the end of a User's row to view an expanded list of every Asset and STIG that the User has access to in this Collection. This view is the "effective access" of the User to the Collection that has been calculated based on the User's Role and the Access Control Lists associated with their Grant.
 
 
-.. thumbnail:: /assets/images/collection-manage-effective-access.png
-      :width: 50% 
-      :show_caption: True
-      :title: Users Effective Access
-
 .. thumbnail:: /assets/images/new/collection-manage-effective-access.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Users Effective Access
+      :title: Users Effective Access
 
 |
 
@@ -1501,29 +1273,19 @@ The Assets page lists the Assets that are a part of this Collection, with their 
 The toolbar provides Create, Import Assets CSV, Export Assets CSV, Import CKL(B) or XCCDF..., Export results..., Delete, Transfer To, and Modify functions.
 The :ref:`Collection Builder` option allows the User to create many Assets and their STIG Assignments at once. 
 
-.. thumbnail:: /assets/images/assets-panel-toolbar.png
-      :width: 50% 
-      :show_caption: True
-      :title: Collection -> Manage -> Assets toolbar
-
 .. thumbnail:: /assets/images/new/assets-panel-toolbar.png
       :width: 100% 
       :show_caption: True
-      :title: NEW: Collection -> Manage -> Assets toolbar
+      :title: Collection -> Manage -> Assets toolbar
 
 |
 
 Use the Search box, the Filter button, and the Columns menu above the grid to filter the Asset grid by Label or any other column, and to choose which columns are shown.
 
-.. thumbnail:: /assets/images/collection-manage-asset-panel-label-filtering.png
-      :width: 50% 
-      :show_caption: True
-      :title: Asset Panel Label Filtering
-
 .. thumbnail:: /assets/images/new/collection-manage-asset-panel-label-filtering.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Asset Panel Label Filtering
+      :title: Asset Panel Label Filtering
 
 
 -------------------------------
@@ -1533,15 +1295,10 @@ Create Asset
 ~~~~~~~~~~~~~~~
 Click the Create button to create an Asset manually. Enter relevant Asset info in the popup window that appears. Labels, Metadata, and STIGs can also be assigned to the new Asset from this interface.
 
-.. thumbnail:: /assets/images/collection-manage-asset-label-edit.png
-      :width: 50% 
-      :show_caption: True
-      :title: Create an Asset
-
 .. thumbnail:: /assets/images/new/collection-manage-asset-label-edit.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Create an Asset
+      :title: Create an Asset
 
 
 -------------------------------
@@ -1591,28 +1348,18 @@ The uploaded CSV must follow this format:
 
 Click Import Assets CSV to create Assets from a CSV file. 
 
-.. thumbnail:: /assets/images/collection-manage-csv-batch-create.png
+.. thumbnail:: /assets/images/new/collection-manage-csv-batch-create.png
       :width: 50% 
       :show_caption: True
       :title: Select 'Import Assets CSV' button
 
-.. thumbnail:: /assets/images/new/collection-manage-csv-batch-create.png
-      :width: 50% 
-      :show_caption: True
-      :title: NEW: Select 'Import Assets CSV' button
-
 
 Begin by selecting a CSV that contains asset data. Once uploaded, the importer parses each row, validating the entries before proceeding. Only rows with valid data are considered for submission — any invalid rows are automatically ignored for submission with the respective errors on that row shown. During validation, the importer checks for non-existing labels referenced in the CSV and automatically marks them to be created upon submission. After validation completes, the user can submit the data. Submission is only enabled if at least one valid asset is detected.
-
-.. thumbnail:: /assets/images/collection-manage-asset-csv-importer.png
-      :width: 50% 
-      :show_caption: True
-      :title: View the Report of the Asset CSV Importer
 
 .. thumbnail:: /assets/images/new/collection-manage-asset-csv-importer.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: View the Report of the Asset CSV Importer
+      :title: View the Report of the Asset CSV Importer
 
 
 -------------------------------------------------------------------------------------------
@@ -1623,15 +1370,10 @@ Export Assets CSV File
 
 To Export Assets as CSV, select one or more Assets (no assets selected will imply all assets), and click the "Export Assets CSV" button. The CSV export will contain the Asset Name, Description, IP, FQDN, MAC, Non-Computing, STIGs, Labels, and Metadata. The CSV will also contain the STIGs assigned to each Asset in the Collection.
 
-.. thumbnail:: /assets/images/collection-manage-results-export-assets-csv.png
-      :width: 50% 
-      :show_caption: True
-      :title: Export Assets CSV Button
-
 .. thumbnail:: /assets/images/new/collection-manage-results-export-assets-csv.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Export Assets CSV Button
+      :title: Export Assets CSV Button
 
 |
 
@@ -1663,15 +1405,10 @@ Collection Builder Process
 
 From the Assets page of the Collection Management workspace, click the "Import CKL(B) or XCCDF..." button in the toolbar.
 
-.. thumbnail:: /assets/images/collection-builder-files.png
-      :width: 50% 
-      :show_caption: True
-      :title: Collection Builder File Select
-
 .. thumbnail:: /assets/images/new/collection-builder-files.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Collection Builder File Select
+      :title: Collection Builder File Select
 
 |
 
@@ -1681,14 +1418,6 @@ See the :ref:`import-options` section of this document for information about the
 -------------------------------
 
 
-.. thumbnail:: /assets/images/collection-builder-errors-and-warnings.png
-      :width: 50% 
-      :show_caption: True
-      :title: Collection Builder Errors and Warnings
-
-
-|
-
 If there is an issue with the files you selected, they will appear here. One error you may encounter is that the STIG in the selected file is not installed in STIG Manager. If this is the case, contact a STIG Manager Administrator to have them install it.
 
 If you provide multiple files for the same Asset and STIG, only the latest will be imported. 
@@ -1696,14 +1425,6 @@ If you provide multiple files for the same Asset and STIG, only the latest will 
 This screen will be skipped if there are no issues with the files you have selected.
 
 -------------------------------
-
-.. thumbnail:: /assets/images/collection-builder-options.png
-      :width: 50% 
-      :show_caption: True
-      :title: Collection Builder Options and Summary
-
-
-|
 
 You will be presented with a summary view of the files you have submitted.
 This view shows the Assets, STIGs, Review totals, filenames and date of the data contained in the submitted files. 
@@ -1714,13 +1435,6 @@ If the summary is appropriate, click the "Add to Collection..." button.
 
 -------------------------------
 
-
-.. thumbnail:: /assets/images/collection-builder-import.png
-      :width: 50% 
-      :show_caption: True
-      :title: Collection Builder Import Log
-
-|
 
 The user is presented with the log of the import. Select an item in the top grid for information about any "rejected" Reviews that were unable to be imported into STIG Manager. This may happen for Rules that are not currently assigned to this Asset, or for versions of STIGs that have not been loaded into STIG Manager.
 
@@ -1756,15 +1470,10 @@ If the destination Collection does not have an Asset of the same name as the one
 
 
 
-.. thumbnail:: /assets/images/collection-manage-results-export-asset-collection.png
-      :width: 50% 
-      :show_caption: True
-      :title: Checklist Archive Export by Asset
-
 .. thumbnail:: /assets/images/new/collection-manage-results-export-asset-collection.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Checklist Archive Export by Asset
+      :title: Checklist Archive Export by Asset
 
 |
 
@@ -1774,19 +1483,6 @@ Export Results as CKL or XCCDF Archive
 +++++++++++++++++++++++++++++++++++++++++++++++
 
 Use the Format dropdown to select whether CKL, CKLB, or XCCDF files will be generated for every Asset selected, then click "Download archive". The package of files will be presented as a .zip file that will also contain a ``_manifest.json`` file describing its contents and any errors encountered while producing it.  Check the :term:`ckl` glossary entry for exact mappings of fields from STIG Manger to .ckl file.
-
-
-.. thumbnail:: /assets/images/collection-manage-results-export-asset-archive.png
-      :width: 50% 
-      :show_caption: True
-      :title: Checklist Archive Export by Asset
-
-|
-
-.. thumbnail:: /assets/images/checklist-archive-export-log.png
-      :width: 50% 
-      :show_caption: True
-      :title: Checklist Archive Export log
 
 
 --------------------------
@@ -1806,15 +1502,10 @@ You must have "Manage" or "Owner" levels of access on both the originating and d
 Individual Asset-STIG assignments to Restricted Users are removed when an Asset is moved to a new Collection. All other information (STIG Assignments, Assessments, etc.) transfers with the Asset.  
 
 
-.. thumbnail:: /assets/images/transfer-asset.png
-      :width: 50% 
-      :show_caption: True
-      :title: Transfer Assets to Another Collection
-
 .. thumbnail:: /assets/images/new/transfer-asset.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Transfer Assets to Another Collection
+      :title: Transfer Assets to Another Collection
 
 
 -------------------------------
@@ -1824,15 +1515,10 @@ Change Asset Properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 To alter an Asset's properties or tag it with Labels, select an Asset and click the Modify button.
 
-.. thumbnail:: /assets/images/collection-manage-asset-label-edit.png
-      :width: 50% 
-      :show_caption: True
-      :title: Asset Properties
-
 .. thumbnail:: /assets/images/new/collection-manage-asset-label-edit.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Asset Properties
+      :title: Asset Properties
 
 
 -------------------------------
@@ -1841,15 +1527,10 @@ STIGs Page
 -------------------
 The STIGs page lists all the STIGs that have been assigned to at least one Asset in the Collection. STIG Assignments can be added or removed from Assets with the Assign, Unassign, and Modify buttons at the top of this page. You can also "pin" a specific Revision of a STIG to the Collection. This will lock this Collection to that specific Revision of a STIG, rather than use the default behavior of always using the latest Revision of a STIG.
 
-.. thumbnail:: /assets/images/stigs-panel.png
-      :width: 50% 
-      :show_caption: True
-      :title: STIGs Panel
-
 .. thumbnail:: /assets/images/new/stigs-panel.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: STIGs Panel
+      :title: STIGs Panel
 
 
 -------------------------------
@@ -1859,15 +1540,10 @@ Assign STIG
 ~~~~~~~~~~~~~~~~~~~~~~
 Click Assign to add a new STIG to the Collection. In the popup, choose the Benchmark ID (and optionally a Default Revision), then move Assets between the Available and Assigned lists. Each Asset shows its Labels and a count of its currently assigned STIGs, and the search boxes filter by Asset name, Label, or STIG. Click Assign to save.
 
-.. thumbnail:: /assets/images/stig-assignments.png
-      :width: 50% 
-      :show_caption: True
-      :title: STIG Assignments
-
 .. thumbnail:: /assets/images/new/stig-assignments.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: STIG Assignments
+      :title: STIG Assignments
 
 
 -------------------------------
@@ -1895,15 +1571,10 @@ The "pinned" Revision is indicated with a pin icon on the STIGs page and in the 
 
 
 
-.. thumbnail:: /assets/images/collection-manage-revision-pinning.png
-      :width: 50% 
-      :show_caption: True
-      :title: Pin a STIG Revision
-
 .. thumbnail:: /assets/images/new/collection-manage-revision-pinning.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Pin a STIG Revision
+      :title: Pin a STIG Revision
 
 -------------------------------
 
@@ -1942,15 +1613,10 @@ If the destination Collection does not have an Asset of the same name as the one
 
 
 
-.. thumbnail:: /assets/images/collection-manage-results-export-asset-collection.png
-      :width: 50% 
-      :show_caption: True
-      :title: Checklist Archive Export by Asset
-
 .. thumbnail:: /assets/images/new/collection-manage-results-export-asset-collection.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Checklist Archive Export by Asset
+      :title: Checklist Archive Export by Asset
 
 |
 
@@ -1961,21 +1627,6 @@ Export Results as CKL or XCCDF Archive
 
 Use the Format dropdown to select whether CKL, CKLB, or XCCDF files will be generated for every Asset selected, then click "Download archive". The package of files will be presented as a .zip file that will also contain a ``_manifest.json`` file describing its contents and any errors encountered while producing it.  Check the :term:`ckl` glossary entry for exact mappings of fields from STIG Manger to .ckl file.
 
-
-.. thumbnail:: /assets/images/collection-manage-results-export-asset-archive.png
-      :width: 50% 
-      :show_caption: True
-      :title: Checklist Archive Export by Asset
-
-|
-
-.. thumbnail:: /assets/images/checklist-archive-export-log.png
-      :width: 50% 
-      :show_caption: True
-      :title: Checklist Archive Export log
-
-
-|
 
 .. _labels-tab:
 
@@ -1988,41 +1639,26 @@ The Labels page allows you to create various Labels and apply them to Assets. La
 Create a label by clicking the "Create" button. Labels can be assigned a name, optional description, and color.
 Select an existing label and click "Edit" to change it. 
 
-.. thumbnail:: /assets/images/collection-manage-labels.png
+.. thumbnail:: /assets/images/new/collection-manage-labels.png
       :width: 50% 
       :show_caption: True
       :title: Collection Labels Tab
 
-.. thumbnail:: /assets/images/new/collection-manage-labels.png
-      :width: 50% 
-      :show_caption: True
-      :title: NEW: Collection Labels Tab
-
 |      
-
-.. thumbnail:: /assets/images/collection-manage-new-label.png
-      :width: 50% 
-      :show_caption: True
-      :title: Create a New Label
 
 .. thumbnail:: /assets/images/new/collection-manage-new-label.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Create a New Label
+      :title: Create a New Label
 
 -------------------------------
 
 When a Label is selected on the Labels page, the "Tag Assets" button is enabled. Click it to view and tag Assets with the selected Label.
 
-.. thumbnail:: /assets/images/collection-manage-tag-assets-modal.png
-      :width: 50% 
-      :show_caption: True
-      :title: View and tag Assets with the selected Label
-
 .. thumbnail:: /assets/images/new/collection-manage-tag-assets-modal.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: View and tag Assets with the selected Label
+      :title: View and tag Assets with the selected Label
 
 |
 

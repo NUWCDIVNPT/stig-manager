@@ -32,15 +32,10 @@ The columns list the Collection Name, Description, Owners, total User members, t
    Be sure to assign a new Collection an Owner, or no one except for App Managers will be able to see it!
 
 
-.. thumbnail:: /assets/images/admin-collections.png
-      :width: 50% 
-      :show_caption: True
-      :title: Collection Administration
-
 .. thumbnail:: /assets/images/new/admin-collections.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Collection Administration
+      :title: Collection Administration
 
 
 ----------------------
@@ -66,15 +61,10 @@ When an App Manager sets a User's Status to "Unavailable," all the User's existi
 By default, the Users page filters on the "Status" column, so that only "Available" Users are displayed. To view all Users, change the Status filter with the Filter button above the grid.
 
 
-.. thumbnail:: /assets/images/admin-users.png
-      :width: 50% 
-      :show_caption: True
-      :title: Users Administration
-
 .. thumbnail:: /assets/images/new/admin-users.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Users Administration
+      :title: Users Administration
 
 |
 
@@ -84,15 +74,10 @@ User Properties
 Select a User to view that User's Grants and other information in the User Properties pane on the right.
 The pane lists the User's email address and other Info, and has User Groups, Direct Grants, Effective Grants, and Last Claims tabs. The User Groups tab changes the User's Group membership. The Direct Grants tab lists the Grants that have been specifically applied to the User, and the "Effective Grants" tab includes Collection Grants for Groups the User is a member of. The "Last Claims" tab displays the OIDC access token information received the last time the User accessed the application. 
 
-.. thumbnail:: /assets/images/admin-user-properties.png
-      :width: 50% 
-      :show_caption: True
-      :title: User Properties
-
 .. thumbnail:: /assets/images/new/admin-user-properties.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: User Properties
+      :title: User Properties
 
 |
 
@@ -104,15 +89,10 @@ This page lists the groups created in the STIGMan system. The columns display th
 Only Application Managers can create or modify Groups and their User membership. Once a Group is created, it becomes available to all Collection Owners and Managers to be assigned Grants in their Collections. 
 
 
-.. thumbnail:: /assets/images/admin-user-groups.png
-      :width: 50% 
-      :show_caption: True
-      :title: User Groups Administration
-
 .. thumbnail:: /assets/images/new/admin-user-groups.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: User Groups Administration
+      :title: User Groups Administration
       
 
 Groups can be created and deleted with the buttons at the top of the page. Select a Group to edit its Name, Description, Users, and Grants in the User Group Properties pane on the right.
@@ -120,27 +100,17 @@ Groups can be created and deleted with the buttons at the top of the page. Selec
 Change the Users in the group from the Users tab by selecting Users and clicking the Add and Remove buttons to move them between the "Available Users" and "Group Members" lists. Group membership changes take effect immediately. 
 
 
-.. thumbnail:: /assets/images/admin-user-groups-popup.png
+.. thumbnail:: /assets/images/new/admin-user-groups-popup.png
       :width: 50% 
       :show_caption: True
       :title: User Group Popup Users Tab
 
-.. thumbnail:: /assets/images/new/admin-user-groups-popup.png
-      :width: 50% 
-      :show_caption: True
-      :title: NEW: User Group Popup Users Tab
-
 Assign Collection Grants to the Group by selecting the "Direct Grants" tab. Select one or more Collections and click Add or Remove to move them between the "Available Collections" and "Direct Grants" lists, then choose a Role for each Grant from its dropdown. Grant changes take effect immediately.
-
-.. thumbnail:: /assets/images/admin-user-groups-popup-grants.png
-      :width: 50% 
-      :show_caption: True
-      :title: User Group Popup Grants Tab
 
 .. thumbnail:: /assets/images/new/admin-user-groups-popup-grants.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: User Group Popup Grants Tab
+      :title: User Group Popup Grants Tab
 
 
 
@@ -155,15 +125,10 @@ Use the "Import STIG" button to add new STIGs, and the "Remove Revision" menu to
       By default, if the imported file contains a STIG Revision that already exists in the STIG Manager system, STIG Manager will retain the existing revision. To overwrite existing revisions, select the "Replace existing Revisions" checkbox when importing.
 
 
-.. thumbnail:: /assets/images/admin-stigs.png
-      :width: 50% 
-      :show_caption: True
-      :title: STIGs Administration
-
 .. thumbnail:: /assets/images/new/admin-stigs.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: STIGs Administration
+      :title: STIGs Administration
 
 
 .. note::
@@ -183,15 +148,10 @@ This page allows App Managers to control and view the background Service Jobs th
 **It is highly recommended that you enable and schedule these jobs to maintain the health of your STIG Manager database.** These jobs help keep your database lean and performant by cleaning up unreferenced data that can accumulate over time.  They also enable some important features such as Review Aging, which automatically acts on reviews that have not been updated within a configurable time threshold. See suggested setup in the :ref:`enable-service-jobs` section of this guide.
 
 
-.. thumbnail:: /assets/images/admin-service-jobs.png
-      :width: 75% 
-      :show_caption: True
-      :title: Service Jobs Administration
-
 .. thumbnail:: /assets/images/new/admin-service-jobs.png
       :width: 75% 
       :show_caption: True
-      :title: NEW: Service Jobs Administration
+      :title: Service Jobs Administration
 
 The Service Jobs feature provides a framework for managing scheduled background operations in STIG Manager. This feature enables both system-defined and user-defined jobs that can run one or more predefined tasks either on a schedule or immediately on demand.
 
@@ -243,15 +203,10 @@ Each job consists of the following components:
    Basic job information including name, description, creator, and modification history.
 
 
-.. thumbnail:: /assets/images/admin-service-job-properties.png
-      :width: 50% 
-      :show_caption: True
-      :title: Service Job Properties   
-
 .. thumbnail:: /assets/images/new/admin-service-job-properties.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Service Job Properties   
+      :title: Service Job Properties   
 
 .. rubric:: Managing Jobs
 
@@ -312,15 +267,10 @@ The report displays the data source, date, and STIG Manager version at the top. 
    Help the STIG Manager team improve the application by sharing this report if you encounter issues or have suggestions for improvement. You can email the report to the team at RMF_Tools@us.navy.mil
 
 
-.. thumbnail:: /assets/images/admin-app-info.png
-      :width: 50% 
-      :show_caption: True
-      :title: Application Info Report
-
 .. thumbnail:: /assets/images/new/admin-app-info.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Application Info Report
+      :title: Application Info Report
 
 
 |
@@ -340,15 +290,10 @@ Log records are transmitted over a WebSocket connection, which requires a proper
 This feature is experimental, however it is enabled by default. It can be disabled by setting the ``STIGMAN_EXPERIMENTAL_LOGSTREAM`` environment variable to ``false``. 
 
 
-.. thumbnail:: /assets/images/admin-log-stream.png
-      :width: 50% 
-      :show_caption: True
-      :title: Application Log Stream
-
 .. thumbnail:: /assets/images/new/admin-log-stream.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Application Log Stream
+      :title: Application Log Stream
 
 
 The Log Stream page contains the Log Stream Panel, JSON Tree Panel, and API Transactions Panel.
@@ -362,15 +307,10 @@ The Log Stream panel contains a toolbar with controls to start and stop the log 
 
 - Click the "Stream" button to open a WebSocket connection to the backend and begin receiving log records. The log records will appear in the panel in real-time as they are generated by the backend. Click the "down" arrow portion of the Stream button to expand the filter options for this function.
 
-.. thumbnail:: /assets/images/admin-log-stream-filter.png
-      :width: 25% 
-      :show_caption: True
-      :title: Application Log Stream Filter Options
-
 .. thumbnail:: /assets/images/new/admin-log-stream-filter.png
       :width: 25% 
       :show_caption: True
-      :title: NEW: Application Log Stream Filter Options
+      :title: Application Log Stream Filter Options
 
 
 
@@ -409,15 +349,10 @@ This feature must be enabled for the deployment by setting the ``STIGMAN_EXPERIM
 .. warning::
    This feature is Experimental and continues to be developed, breaking changes may happen. Use at your own risk and rely on daily database backups to maintain your data.  ALL data in the destination instance will be replaced.
 
-.. thumbnail:: /assets/images/admin-app-data.png
-      :width: 50% 
-      :show_caption: True
-      :title: Application Data Import/Export
-
 .. thumbnail:: /assets/images/new/admin-app-data.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Application Data Import/Export
+      :title: Application Data Import/Export
 
 
 |

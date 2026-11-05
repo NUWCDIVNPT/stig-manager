@@ -42,17 +42,11 @@ These updates must be brought into STIG Manager if you wish the updates to be re
 .. note::
   You can import entire .zip archives of the Quarterly Library Compilations at once, or individual STIGs. 
 
-.. thumbnail:: /assets/images/admin-stigs.png
-   :width: 50% 
-   :show_caption: True
-   :alt: STIG Management
-   :title: STIG Management
-
 .. thumbnail:: /assets/images/new/admin-stigs.png
    :width: 50% 
    :show_caption: True
    :alt: STIG Management
-   :title: NEW: STIG Management
+   :title: STIG Management
 
 |
 
@@ -68,15 +62,10 @@ By default, STIG Manager displays Checklists and Reviews according to the latest
 
 
 
-.. thumbnail:: /assets/images/asset-review-stig-revisions.png
-      :width: 50% 
-      :show_caption: True
-      :title: STIG Revision Selection
-
 .. thumbnail:: /assets/images/new/asset-review-stig-revisions.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: STIG Revision Selection
+      :title: STIG Revision Selection
 
 |
 
@@ -108,17 +97,11 @@ This page presents a list of all Collections in STIG Manager, as well as some st
 
 In most cases, Collection Owners should be administering their own Collections. However, in cases where the Owner is unavailable, or has accidentally removed all owners from a Collection, this interface allows an App Manager to assign new Owner Grants to Collections by selecting the Collection and using "Add Grants..." in the Properties pane. The App Manager can also delete Collections if required.
 
-.. thumbnail:: /assets/images/admin-collections.png
-   :width: 50% 
-   :show_caption: True
-   :alt: Collection Admin
-   :title: Collection Admin
-
 .. thumbnail:: /assets/images/new/admin-collections.png
    :width: 50% 
    :show_caption: True
    :alt: Collection Admin
-   :title: NEW: Collection Admin
+   :title: Collection Admin
 
 
 ----------------------------------
@@ -145,25 +128,15 @@ It is important to note that the pre-register function does not grant access to 
 A pre-registered user will have *No value* in the Last Access column of this screen until they actually access STIG Manager. 
 
 
-.. thumbnail:: /assets/images/user-admin-prereg-button.png
+.. thumbnail:: /assets/images/new/user-admin-prereg-button.png
       :width: 50% 
       :show_caption: True
       :title: Pre-register User button
 
-.. thumbnail:: /assets/images/new/user-admin-prereg-button.png
-      :width: 50% 
-      :show_caption: True
-      :title: NEW: Pre-register User button
-
-.. thumbnail:: /assets/images/user-admin-prereg-popup.png
-      :width: 50% 
-      :show_caption: True
-      :title: Pre-register User popup
-
 .. thumbnail:: /assets/images/new/user-admin-prereg-popup.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Pre-register User popup
+      :title: Pre-register User popup
 
 |
 
@@ -199,15 +172,10 @@ Enable Service Jobs
 
 Service Jobs are scheduled background operations that perform essential database maintenance tasks in STIG Manager. **It is highly recommended that you enable and schedule these jobs to maintain the health of your STIG Manager database.** These jobs help keep your database lean and performant by cleaning up unreferenced data that can accumulate over time.  They also enable some important features such as Review Aging, which automatically acts on reviews that have not been updated within a configurable time threshold.
 
-.. thumbnail:: /assets/images/admin-service-jobs.png
-      :width: 75%
-      :show_caption: True
-      :title: Service Jobs Administration
-
 .. thumbnail:: /assets/images/new/admin-service-jobs.png
       :width: 75%
       :show_caption: True
-      :title: NEW: Service Jobs Administration
+      :title: Service Jobs Administration
 
 .. rubric:: Recommended Setup
 
@@ -220,15 +188,10 @@ Access the Service Jobs interface from ``Admin -> Service Jobs`` in the Nav Rail
 
 Schedule these jobs to run during off-peak hours to minimize performance impact. You can also run any job immediately using the "Run Now" button if needed. Be sure to click the "Enabled" checkbox to activate each job after configuring its schedule, and Save.
 
-.. thumbnail:: /assets/images/admin-service-job-properties.png
-      :width: 50% 
-      :show_caption: True
-      :title: Service Job Properties   
-
 .. thumbnail:: /assets/images/new/admin-service-job-properties.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Service Job Properties   
+      :title: Service Job Properties   
 
 .. _configure-review-aging:
 
