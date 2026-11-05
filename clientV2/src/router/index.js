@@ -227,11 +227,6 @@ const routes = [
     meta: { breadcrumbs: [{ label: 'What\'s New' }] },
   },
   {
-    path: '/assets/:assetId',
-    name: 'asset-review',
-    component: () => import('../features/AssetReview/components/AssetReview.vue'),
-  },
-  {
     path: '/library',
     redirect: { name: 'stig-library' },
   },
