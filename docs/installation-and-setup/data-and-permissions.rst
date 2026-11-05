@@ -185,7 +185,7 @@ When a request includes ``?elevate=true``, it is governed by the elevation acces
 
 Elevation does **not** grant access to collection content. An elevated admin cannot read or write Reviews, access Asset or STIG checklist data, or modify a Collection's settings, labels, metadata, or Grant ACLs — even with ``?elevate=true`` supplied. These operations require a Collection Grant and are performed via normal (non-elevated) requests.
 
-In the reference UI, the ``elevate`` parameter is sent when "Application Management" functions are invoked, such as importing new Reference STIGs, listing all Collections, or creating a Grant in a Collection the admin does not otherwise have access to.
+In the reference UI, the ``elevate`` parameter is sent when administrative functions are invoked, such as importing new Reference STIGs, listing all Collections, or creating a Grant in a Collection the admin does not otherwise have access to.
 
 .. note::
    An elevated admin can create a Grant giving themselves any Role in any Collection. This is intentional: it avoids requiring admins who also need content access to maintain a second OIDC account. The accepted control is that **every elevated request — including self-grant operations — has its complete request and response bodies written to the application log**, regardless of whether the request succeeds. Administrators responsible for deploying STIG Manager should ensure elevated-request log entries are retained and reviewed.

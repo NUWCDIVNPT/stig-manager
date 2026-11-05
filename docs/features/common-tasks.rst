@@ -9,12 +9,15 @@
 
 ######################################
 
+.. note::
+   The guide links on this page go to the :ref:`new-client-index` documentation. The :ref:`legacy-client-index` section has a matching guide for the legacy UI.
+
 
 Build A Collection with .ckl or XCCDF Files
 ===============================================
 
-Create your Collection (with the `+Create Collection...` node of the Nav Tree) and go to its Collection Management workspace by clicking the "gear" icon on the node for your Collection in the Nav Tree. You can also Manage your Collection by opening the main Collection Dashboard and clicking the "Manage" button in the Inventory block.
-From the Collection Management Workspace, select the "Import CKL or XCCDF..." button in the Asset Panel, then check out the :ref:`Collection Builder` portion of our User Guide for more info.
+Create your Collection, then open its Collection Management workspace.
+From the Collection Management Workspace, use the CKL or XCCDF import option for Assets, then check out the :ref:`Collection Builder` portion of our User Guide for more info.
 
 
 Review a STIG on an Asset
@@ -84,7 +87,7 @@ Adding a user to STIG Manager will be dependent on the way your Organization has
 Export Results
 ===============================
 
-From the Collection Management panel, you can export Results for Assets to another Collection, or download a .zip Archive of .ckl files for your entire Collection or some portion of it.  
+From the Collection Management workspace, you can export Results for Assets to another Collection, or download a .zip Archive of .ckl files for your entire Collection or some portion of it.  
 
 These exports are available organized :ref:`by Asset <export-by-asset>` or :ref:`by STIG. <export-by-stig>`
 
@@ -109,12 +112,11 @@ Create a new set of STIG Assignments based on an existing set
 
 You can assign a new STIG to a set of Assets that already have a particular STIG assigned to them. You might do this if you have a set of Assets assigned a Windows STIG, and want to assign all those Assets the Windows Defender STIG, or if the latest DISA STIG release changed the Benchmark ID of a STIG to something new (for example, from **MS_**\ WINDOWS_10_STIG to WINDOWS_10_STIG). 
 
-From the Manage Collection interface:
-   #. In the lower right panel, select the STIG you want to base the new set of assignments off of and click the "Modify..." button.
-   #. From the resulting STIG Assignments pop-up, select the pull-down button from the STIG Selector.
-   #. Scroll and/or filter to find the STIG you want, and select it.
-   #. Select any other desired Assets for assignment. 
-   #. Click "Save".
+From the Collection Management workspace:
+   #. Click "Assign" and choose the new STIG.
+   #. Filter the Asset list by the existing STIG assignment.
+   #. Select the Assets that should receive the new STIG.
+   #. Save your changes.
 
 A new set of Assignments will be created for the new STIG. 
 

@@ -97,7 +97,7 @@ Reporting on Findings and Evaluation Status
 
 Reports adjust as new STIGs are assigned, results imported, or when new DISA STIG revisions are imported, to provide information on the status and progress of evaluations.
 
-The Collection Configuration workspace provides real-time totals for level of work required as changes to Assets and STIGs are made.
+The Collection Management workspace provides real-time totals for level of work required as changes to Assets and STIGs are made.
 
 User Access Controls to Limit Access to Your Data
 -----------------------------------------------------------

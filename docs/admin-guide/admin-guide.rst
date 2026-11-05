@@ -11,7 +11,7 @@ Lists functionality available to App Managers (often called "admins" for short) 
 
 Navigation Rail
 --------------------
-App Managers will see the Admin entry in the Nav Rail, in addition to the entries available to all users. The Admin section has its own navigation list on its left: Collections, Users, User Groups, STIG Benchmarks, Service Jobs, Application Info, Export/Import Data, and Log Stream. Most Admin pages show a grid with a toolbar, and a Properties pane on the right; select a row in the grid to view and edit it in the Properties pane.
+App Managers will see the Admin entry (gear icon) in the Nav Rail, in addition to the entries available to all users. The Admin section has its own navigation list on its left: Collections, Users, User Groups, STIG Benchmarks, Service Jobs, Application Info, Export/Import Data, and Log Stream. Most Admin pages show a grid with a toolbar, and a Properties pane on the right; select a row in the grid to view and edit it in the Properties pane.
 
 .. index::
    single: Admin Section

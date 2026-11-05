@@ -36,7 +36,9 @@ const statics = new Set(staticImages)
 const problems = []
 
 for (const [img, where] of referenced) {
-  if (!generated.has(img) && !statics.has(img)) problems.push(`no source for referenced image ${img} (${where[0]})`)
+  // legacy-client/ is a frozen copy of the legacy docs; its images are not generated
+  const current = where.filter(w => !w.startsWith(`legacy-client${path.sep}`))
+  if (current.length && !generated.has(img) && !statics.has(img)) problems.push(`no source for referenced image ${img} (${current[0]})`)
 }
 for (const e of manifest) {
   if (!referenced.has(e.file)) problems.push(`manifest entry "${e.file}" is not referenced by any doc`)

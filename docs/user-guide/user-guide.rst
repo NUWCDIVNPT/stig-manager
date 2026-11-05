@@ -33,9 +33,9 @@ The videos below may be useful in getting familiar with STIG Manager's layout an
 Application Layout
 ======================
 
-When first logging into STIG Manager, the User is presented with the Navigation Rail (Nav Rail) along the left edge, a breadcrumb bar across the top, and the content area that fills the rest of the window. Clicking on a Collection in the Nav Rail opens the corresponding Collection Dashboard in the content area.
+When first logging into STIG Manager, the User is presented with the Navigation Rail (Nav Rail) along the left edge, a breadcrumb bar across the top, and the content area that fills the rest of the window. Selecting a Collection from the Collections list in the Nav Rail opens the corresponding Collection Dashboard in the content area.
 
-Use the Nav Rail to navigate **between** different Collections, as well as the STIG Library, What's New, and (for App Managers) the Admin section. Use the tabs across the top of the Collection Dashboard to navigate to different workspaces **within** a Collection. The breadcrumb bar always shows where you are; each segment can be clicked to move back up, and some segments are selectors (for example, to switch Collections or STIG Revisions).  
+Use the Nav Rail to navigate **between** different Collections, as well as the STIG Library, What's New, and (for App Managers) the Admin section. Use the tabs across the top of the Collection Dashboard to navigate to different workspaces **within** a Collection. The breadcrumb bar always shows where you are; each segment can be clicked to move back up, and some segments are selectors (for example, to switch Collections, STIGs, or Revisions).  
 
 
 .. thumbnail:: /assets/images/nav-tree-and-collection-panel.png
@@ -56,11 +56,13 @@ Use the Nav Rail to navigate **between** different Collections, as well as the S
 
 Navigation Rail
 --------------------
-The Navigation Rail (Nav Rail) runs along the left edge of the STIG Manager app. Click the chevron at its top to expand it and show labels, or to collapse it to icons only. The User can find all their accessible Collections via this interface, as well as the installed STIG Library and the What's New page. The Nav Rail also offers an Admin entry for those with App Management privileges. The bottom of the Nav Rail lists Recent Views, which jump back to workspaces you have visited recently.
+The Navigation Rail (Nav Rail) runs along the left edge of the STIG Manager app. Click the chevron at its top to expand it and show labels, or to collapse it to icons only. The User can find all their accessible Collections via this interface, as well as the installed STIG Library and the What's New page. The Nav Rail also offers an Admin entry for those with App Management privileges. Recent Views jump back to workspaces you have visited recently.
+
+When the Nav Rail is expanded, the Collections entry expands to show the Collections list, and Recent Views are listed at the bottom of the rail. When it is collapsed, click the Collections icon or the clock icon to open the same lists in a flyout.
 
 The User's name and a Sign out option are in the user menu at the top right of the window. Open the user menu to view the User's Authentication Token information.
 
-Clicking on a Collection will open up the Collection Dashboard in the content area. If you are a Collection's Owner or Manager, a Management tab will also appear with the other tabs of the Collection Dashboard. Click it to open the Collection Management Workspace.
+Selecting a Collection from the Collections list will open up the Collection Dashboard in the content area. If you are a Collection's Owner or Manager, a Management tab will also appear with the other tabs of the Collection Dashboard. Click it to open the Collection Management Workspace.
 
 .. thumbnail:: /assets/images/nav-tree.png
       :width: 25% 
@@ -108,10 +110,10 @@ Breadcrumb Bar and Content Area
 -----------------------------------
 The content area shows one workspace at a time, selected from the Nav Rail or from the tabs of the Collection Dashboard. Every workspace has its own URL, so the browser's Back and Forward buttons, bookmarks, and opening a workspace in a new browser tab all work as expected.
 
-The breadcrumb bar at the top of the content area shows the current location (for example, ``Collections / Miskatonic-Lab-Linux / STIGs``). Some breadcrumb segments are selectors: the Collection segment switches between your Collections, and in the Review Workspaces the Revision segment switches STIG Revisions. The Label filter for a Collection also lives in the breadcrumb bar.
+The breadcrumb bar at the top of the content area shows the current location (for example, ``Collections / Miskatonic-Lab-Linux / STIGs``). Some breadcrumb segments are selectors: the Collection segment switches between your Collections, and in the Review Workspaces the STIG and Revision segments are also available for quick navigation. The Label filter for a Collection also lives in the breadcrumb bar.
 
 .. note::
-   The legacy client opened each workspace in a tab of the Content Panel, with a "Preview" tab that was replaced by the next workspace opened. The new client has no Content Panel tabs. Use the Recent Views list at the bottom of the Nav Rail, your browser's history, or multiple browser tabs instead.
+   The legacy client opened each workspace in a tab of the Content Panel, with a "Preview" tab that was replaced by the next workspace opened. The new client has no Content Panel tabs. Instead, your recent views are available from the Recent Views list (clock icon) in the Nav Rail, and your browser's history and multiple browser tabs also work.
 
 .. index::
    single: Home Panel
@@ -136,7 +138,7 @@ The Home page also provides information about the STIG Manager Open Source Softw
 
 What's New
 --------------------
-The What's New entry in the Nav Rail shows the release notes for recent STIG Manager versions. New items are also shown once on first login after an upgrade. The client uses a single dark theme, so there is no theme selector. 
+The What's New entry in the Nav Rail shows the release notes for recent STIG Manager versions. New items are also shown once on first login after an upgrade. What's New also offers an orientation tour of the layout. 
 
 
 
@@ -202,7 +204,7 @@ Collection Dashboard
 
 The Collection Dashboard provides a view of the overall Status and Evaluation progress of an entire Collection, as well as metrics export options and various pivoted presentations of a Collection's assessment statistics.
 
-The Dashboard's tabs (STIGs, Assets, Labels, Findings, and, for Managers and Owners, Management) also allow you to open up individual Asset or STIG Review Workspaces, the Findings Report, and the Collection Management Workspace. 
+From the STIGs, Assets, and Labels tabs of the Dashboard you can open individual Collection and Asset Review Workspaces. The Findings tab presents the Findings Report, and the Management tab, available to Managers and Owners, opens the Collection Management Workspace. 
 
 
 .. _assessment note:
@@ -780,7 +782,7 @@ Toolbar functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The toolbar above the checklist provides a Search box, a Filter button, a Checklist menu (Group/Rule display options and Export Result Archive), a Columns menu, and Density controls.
 
-By default, the Collection's default Revision of the STIG is displayed. The User can select other Revisions of the STIG, if they have been imported into the system by an Admin, from the Revision selector in the breadcrumb bar.
+By default, the Collection's default Revision of the STIG is displayed. The User can select other Revisions of the STIG, if they have been imported into the system by an Admin, from the Revision selector in the breadcrumb bar. The STIG selector next to it switches to another STIG.
 
 .. thumbnail:: /assets/images/collection-review-stig-revisions.png
       :width: 50% 
@@ -834,7 +836,7 @@ The Reviews grid toolbar provides Accept/Reject (for Collection Managers or Owne
 
 Review Actions
 ~~~~~~~~~~~~~~~~~~~~~~~
-Click a Review row to open the Review editor, where the Result, Detail, Comment, and Status of that Asset's Review can be changed. Changes are saved automatically.
+Click a Review row to open the Review editor, where the Result, Detail, Comment, and Status of that Asset's Review can be changed. Changes are saved when you select a status with the Save, Submit, or Accept button.
 
 
 Batch Editing
@@ -901,7 +903,7 @@ From the Checklist menu in the toolbar, the User can:
    * Export a CKL, CKLB, or XCCDF representation of this Asset's STIG results.
    * Import STIG results for this Asset in .ckl, .cklb, or XCCDF form.
 
-Switch between Revisions of the STIG being displayed with the Revision selector in the breadcrumb bar.
+Switch to another STIG or Revision with the STIG and Revision selectors in the breadcrumb bar.
 
 The toolbar also offers Submit All and Accept All buttons, and the "Writable" badge at its right indicates that the Reviews for this Asset can be changed by the User.
 
@@ -938,7 +940,7 @@ Evaluation
 The Evaluation holds the actual Result of a compliance decision about this Rule on the selected Asset, and the required Details and/or Comment. The Results supported are: Open (O), Not a Finding (NF), Not Applicable (NA), Informational (I), and Not Reviewed (NR).  The colored badges on the attribution line at the bottom of the editor provide additional information about the source of the Result. 
 
 
-Changes to the Result, Detail, and Comment are saved automatically as you edit. "Saved" simply indicates that the review has been logged to the system. The "Submitted" status indicates that the Evaluator considers the review to be "complete"  and may be optionally be "Accepted" or "Rejected" by a User with proper grants in the Collection.
+Reviews can be set to Saved or Submitted statuses from this interface, and edits to the Result, Detail, and Comment are saved when a status is set. "Saved" simply indicates that the review has been logged to the system. The "Submitted" status indicates that the Evaluator considers the review to be "complete"  and may be optionally be "Accepted" or "Rejected" by a User with proper grants in the Collection.
 
 The requirements for a Review to be set to "Submitted" status can be configured in the Collection Management Workspace by Collection Owners and Managers. Fields required for submission are marked with an asterisk in the Review editor, and the Submit button is disabled until they are satisfied. 
 
@@ -982,9 +984,9 @@ STIG Manager tracks the actual Evaluation (The Result, Detail, and Comment) port
 
 |
 
-Submit, Unsubmit, and Accept Buttons
+Save, Submit, and Accept Buttons
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Edits to the Review are saved automatically (the Undo button reverts the edit in progress). The Status buttons on the right of the Review editor allow the User to Submit or Unsubmit the Review, or to Accept the Review (if they have the proper Collection Grant).  In most use cases, the goal for Evaluators will be to get every Review into a "Submitted" state.  Once Submitted, the Collection Owner can set the Review to "Accepted" to indicate they have ok'd it. The Collection Owner can also Reject the Review with Feedback, which will be marked so that the Reviewer can fix any issue with the commentary, or attempt to Close an Open Finding.
+The Status buttons on the right of the Review editor save your edits and set the status of the Review. They allow the User to simply Save the Review for later, to Submit the Review, or to Accept the Review (if they have the proper Collection Grant). On a Submitted or Accepted Review, the Save button becomes "Unsubmit". The Undo button reverts edits that have not been saved.  In most use cases, the goal for Evaluators will be to get every Review into a "Submitted" state.  Once Submitted, the Collection Owner can set the Review to "Accepted" to indicate they have ok'd it. The Collection Owner can also Reject the Review with Feedback, which will be marked so that the Reviewer can fix any issue with the commentary, or attempt to Close an Open Finding.
 
 Review Resources
 ~~~~~~~~~~~~~~~~~~~~

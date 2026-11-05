@@ -12,4 +12,5 @@ export const staticImages = [
   'asset-metadata-and-ckl-elements.png',
   'check-change-example-stig-viewer-crop2.png',
   'stig-viewer-user-guide.png',
+  'legacy-try-new-ui.png',
 ]

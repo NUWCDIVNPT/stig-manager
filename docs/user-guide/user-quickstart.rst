@@ -189,7 +189,7 @@ Evaluate an Asset for STIG compliance
 ======================================
 
 
-#. In the Nav Rail, click on the Collection you just created to open the Collection Dashboard.
+#. In the Nav Rail, open the Collections list and click on the Collection you just created to open the Collection Dashboard.
 #. Select the "Assets" tab at the top of the Collection Dashboard.
 #. Select an Asset to see its associated STIGs.
 #. Click the "shield" icon on a STIG listed under the Asset.
@@ -199,7 +199,7 @@ Evaluate an Asset for STIG compliance
       * The **STIG Checklist grid** lists every rule in the STIG, their evaluation status, and some other helpful info. Click a Rule to load that Rule's information on the right and open the Review editor.
       * The **Rule panel** on the right contains the selected Rule's info such as the Rule Title, Manual Checks, Fix info, and associated CCIs.
       * The **Review editor** pops up over the checklist when you click a Rule, and is where you will actually log your Evaluation of the Rule.  It contains fields to record Review Results, Detail, and Comments, Status buttons, and an attribution line that indicates who last modified the Review.
-      * The **Review Resources** section, expanded from the bottom of the Review editor, contains a history of this Review, any Feedback you have received about this Review from the Collection Owner, and other Reviews you have performed for the selected Rule against other assets. Use the "Apply" button on one of those Reviews to copy it to the current asset. 
+      * The **Review Resources** section, expanded from the bottom of the Review editor, contains a history of this Review, any Feedback you have received about this Review from the Collection Owner, and other Reviews that have been performed for the selected Rule against other assets. Use the "Apply" button on one of those Reviews to copy it to the current asset. 
 
       .. thumbnail:: /assets/images/asset-review.png
          :width: 50% 
@@ -214,7 +214,7 @@ Evaluate an Asset for STIG compliance
          :title: NEW: Asset Review Workspace 
 
 
-#. Select a few Rules and save some Evaluations of them. For now, set a few to "Open," and provide a Comment.  Evaluations are saved automatically as you edit; click "Submit" in the editor to submit one. The "Submitted" status is available if you meet the Review Settings configured for your Collection. Required fields are marked with an asterisk; see the :ref:`Collection Settings<manage-collection-workspace>` for Reviews in this Collection. 
+#. Select a few Rules and save some Evaluations of them. For now, set a few to "Open," and provide a Comment.  Click "Save" or "Submit" in the editor to save your Evaluation and set its status. The "Submitted" status is available if you meet the Review Settings configured for your Collection. Required fields are marked with an asterisk; see the :ref:`Collection Settings<manage-collection-workspace>` for Reviews in this Collection. 
 
    * As you perform reviews, the STIG Checklist grid will update the status columns of each Rule. The bar at the bottom of the grid indicates overall status of the checklist. The toolbar at the top provides Search and Filter options, Submit All and Accept All buttons, and the "Checklist" menu, which includes importing results (in .ckl, .cklb, or XCCDF formats) and exporting results.
    * These evaluations are summarized in the Collection Dashboard. The Findings tab presents just the Open rule evaluations, and can be exported as a .csv or a POAM-style spreadsheet. The STIGs, Assets, and Labels tabs present overall summaries of evaluation progress. 
@@ -244,7 +244,7 @@ Evaluate multiple Assets at once for STIG compliance
       :title: NEW: Editing in the Collection Review panel
 
 #. Select a Rule to review in the STIG Checklist grid at the top. Rule Info will appear in the panel on the right.
-#. Click an Asset in the Reviews grid below the checklist to open the Review editor, where you can edit the Result, Detail, and Comment. Results are saved automatically.
+#. Click an Asset in the Reviews grid below the checklist to open the Review editor, where you can edit the Result, Detail, and Comment. Your changes are saved when you select a status with the Save, Submit, or Accept button.
 
    * Columns in the STIG Checklist panel will update with Statuses and Results as you review.
 

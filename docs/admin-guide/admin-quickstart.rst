@@ -16,7 +16,7 @@ Beyond the permissions granted to normal Users, App Managers have the ability to
 
 **The most important responsibility of the Application Manager is importing and updating the set of STIGs the system will use to calculate statistics, assign to Assets, populate the Library, and reference in all other functions.  This should be done quarterly, with the release of new STIG Library Compilations,  or individually as new STIGs are released.**
 
-This update is quite simple, and is described below. App Managers in STIG Manager have access to the Admin section, which other users do not, from the Admin entry in the Nav Rail. Its pages are listed in the navigation list on the left of the section.
+This update is quite simple, and is described below. App Managers in STIG Manager have access to the Admin section, which other users do not, from the Admin entry (gear icon) in the Nav Rail. Its pages are listed in the navigation list on the left of the section.
 
 
 
@@ -211,7 +211,7 @@ Service Jobs are scheduled background operations that perform essential database
 
 .. rubric:: Recommended Setup
 
-Access the Service Jobs interface from ``Admin -> Service Jobs`` in the Nav Rail. You'll see four system-provided jobs that are disabled by default. Select each job and click "Modify" to set up a schedule on the Schedule tab:
+Access the Service Jobs interface from ``Admin -> Service Jobs`` in the Nav Rail. You'll see system-provided jobs that are disabled by default. Select each job and click "Modify" to set up a schedule on the Schedule tab:
 
 #. **Cleanup Database** - Removes records related to deleted Collections and Assets. **Recommended cadence: Weekly**
 #. **Delete Unmapped Reviews** - Cleans up reviews that no longer match any STIG Rule in the system (often because old Reference STIGs were removed). **Recommended cadence: Monthly**
