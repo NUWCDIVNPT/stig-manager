@@ -172,14 +172,14 @@ For example, Asset-123 has the label "Current Priorities" and is assigned the Wi
 
 In this case, since Asset-123 has Label "Current Priorities" and is also assigned Windows_10_STIG, both rules could apply since they have the same specificity. However, Read access is more restrictive so STIG Manager would allow only Read access to the Windows_10_STIG on Asset-123. 
 
-To display the Effective ACL for a User, navigate to the Users tab in the Manage Collection interface. Hover over the row for a User and click the target icon to open the display.
+To display the Effective ACL for a User, navigate to the Effective Users section of the Users & Grants page in the Collection Management workspace. Click the target icon at the end of the User's row to open the display.
 
 Examples of ACL Management
 --------------------------------------------------------
 
 All examples below apply to Grants to both Users or User Groups. 
-These actions can be performed by a Collection Owner or Manager in the Manage Collection interface.
-To edit the ACL for a Grant, click the "Edit ACL" button displayed when hovering over the Grant.
+These actions can be performed by a Collection Owner or Manager on the Users & Grants page of the Collection Management workspace.
+To edit the ACL for a Grant, click the "target" (Edit ACL) icon on the Grant's row.
 
 .. thumbnail:: /assets/images/collection-manage-grants-w-edit-acl-highlighted-trimmed.png
       :width: 25% 
@@ -198,15 +198,15 @@ To edit the ACL for a Grant, click the "Edit ACL" button displayed when hovering
   
 **Allow a User to change Reviews for all Assets and STIGs in a Collection, except for those with the "For Reference" label**
   - Grant the User a Full, Manage, or Owner Role
-  - Click the "Edit ACL" button displayed when hovering over the Grant.
-  - Select "For Reference" from the "Labels" node of the Collection Resources tree, and "Add -> with Read Only" access. Save.
+  - Click the "target" (Edit ACL) icon on the Grant's row.
+  - Choose the "Label" scope under "Add a Resource Rule", select the "For Reference" Label, and click "Add -> with Read Only access". Save.
   - By default, these roles have Read/Write access to all Assets and STIGs in the Collection. Adding this rule restricts access to Assets with the "For Reference" label to "Read Only".
 
 
 **Make the entire Collection Read-only for a specific User or Group**
   - Grant the User any Role
-  - Click the "Edit ACL" button displayed when hovering over the Grant.
-  - Select the "Collection" node in the Collection Resources Tree.
+  - Click the "target" (Edit ACL) icon on the Grant's row.
+  - Choose the "Whole Collection" scope under "Add a Resource Rule".
   - Click the "Add" button and select "with Read Only access." Save.
   
 

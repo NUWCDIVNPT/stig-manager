@@ -9,22 +9,22 @@ STIGMan App Manager Guide
 
 Lists functionality available to App Managers (often called "admins" for short) in the STIG Manager app.  For information about administering a deployment of STIG Manager, please see :ref:`installation-and-setup-index`.
 
-Navigation Tree
+Navigation Rail
 --------------------
-App Managers will see the Application Management branch in the Navigation tree, as well as the Collections branch available to all users.
+App Managers will see the Admin entry in the Nav Rail, in addition to the entries available to all users. The Admin section has its own navigation list on its left: Collections, Users, User Groups, STIG Benchmarks, Service Jobs, Application Info, Export/Import Data, and Log Stream. Most Admin pages show a grid with a toolbar, and a Properties pane on the right; select a row in the grid to view and edit it in the Properties pane.
 
 .. index::
    single: Administration Branch
 
 .. _Administration Branch:
 
-Application Management Branch
+Admin Section
 ==================================
-The Application Management branch provides access to the following Application Management panels. 
+The Admin section provides access to the following Admin pages.
 
-Collections Admin Panel
+Collections Page
 --------------------------------
-This Panel lists every Collection in the STIGMan system, and allows you to create, delete, and alter them with the buttons at the top.
+This page lists every Collection in the STIGMan system, and allows you to create and delete them with the buttons at the top. Select a Collection to alter its Name, Description, and Grants in the Properties pane.
 The columns list the Collection Name, Description, Owners, total User members, total Assets, total assigned STIGs, and the date of creation.
 
 
@@ -45,9 +45,9 @@ The columns list the Collection Name, Description, Owners, total User members, t
 
 ----------------------
 
-Users Admin Panel
+Users Page
 ---------------------------------
-This Panel lists every User known to the STIGMan system. The columns display usernames, Display Name, Status, Groups, date of first User access, last User access, User's privileges ( Create Collection or Administrator), and their internal userid.
+This page lists every User known to the STIGMan system. The columns display usernames, Display Name, Status, Groups, date of first User access, last User access, User's privileges ( Create Collection or Administrator), and their internal userid.
 
 STIG Manager's Users are automatically created when they have successfully used your Authentication Provider to authenticate and are redirected back to the STIGMan application.
 
@@ -55,7 +55,7 @@ Users can be pre-registered before they have authenticated with your Authenticat
 
 Users can be Unregistered from STIG Manager. If the User has never accessed the system, their User record will be deleted. If the User has accessed the system, the User's Grant and Group assignments will be removed, but their User record will be retained for auditing and attribution purposes. The User will still be able to access the system if granted access by the Authentication Provider.
 
-Application Managers can change a User's Status by selecting the user, and clicking the "Set Un/Available" button in the toolbar. 
+Application Managers can change a User's Status by selecting the user, and clicking the "Set Unavailable" (or "Set Available") button in the toolbar. 
 
 User Statuses:
   - **Available** - Default Status. Allows an authenticated User access to the system and allows them to be assigned Grants and Group memberships.
@@ -63,7 +63,7 @@ User Statuses:
 
 When an App Manager sets a User's Status to "Unavailable," all the User's existing Grants and Group memberships will be removed. The User's record will remain in the system for auditing and attribution purposes.
 
-By default, the Users Admin panel enables a filter on the "Status" column, so that only "Available" Users are displayed. To view all Users, check the "(Select All)" box in the Status column filter.
+By default, the Users page filters on the "Status" column, so that only "Available" Users are displayed. To view all Users, change the Status filter with the Filter button above the grid.
 
 
 .. thumbnail:: /assets/images/admin-users.png
@@ -81,8 +81,8 @@ By default, the Users Admin panel enables a filter on the "Status" column, so th
 User Properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Double-click on a User, or select a user and click the "Modify User..." button to view that User's Grants and other information. 
-The pop-up will list the User's email address and other Info, as well as the User's Group Membership and Grants. The Direct Grants tab lists the Grants that have been specifically applied to the User, and the "Effective Grants" panel includes Collection Grants for Groups the User is a member of. The "Last Claims" tab displays the OIDC access token information received the last time the User accessed the application. 
+Select a User to view that User's Grants and other information in the User Properties pane on the right.
+The pane lists the User's email address and other Info, and has User Groups, Direct Grants, Effective Grants, and Last Claims tabs. The User Groups tab changes the User's Group membership. The Direct Grants tab lists the Grants that have been specifically applied to the User, and the "Effective Grants" tab includes Collection Grants for Groups the User is a member of. The "Last Claims" tab displays the OIDC access token information received the last time the User accessed the application. 
 
 .. thumbnail:: /assets/images/admin-user-properties.png
       :width: 50% 
@@ -96,10 +96,10 @@ The pop-up will list the User's email address and other Info, as well as the Use
 
 |
 
-User Groups Admin Panel
+User Groups Page
 ---------------------------------
 
-This Panel lists the groups created in the STIGMan system. The columns display the Group Name, Description, Creation Date, the number of Users in the group, and the number of Collections the group has access to.
+This page lists the groups created in the STIGMan system. The columns display the Group Name, Description, Creation Date, the number of Users in the group, and the number of Collections the group has access to.
 
 Only Application Managers can create or modify Groups and their User membership. Once a Group is created, it becomes available to all Collection Owners and Managers to be assigned Grants in their Collections. 
 
@@ -115,9 +115,9 @@ Only Application Managers can create or modify Groups and their User membership.
       :title: NEW: User Groups Administration
       
 
-Groups can be created, deleted, and modified with the buttons at the top of the panel. Users can be added to or removed from groups by double-clicking on the group, or selecting a group and clicking the "Modify Group..." button.
+Groups can be created and deleted with the buttons at the top of the page. Select a Group to edit its Name, Description, Users, and Grants in the User Group Properties pane on the right.
 
-Change the Users in the group by selecting the User and clicking the arrow buttons to move them between the "Available Users" and "Group Members" lists. Group membership changes take effect immediately. 
+Change the Users in the group from the Users tab by selecting Users and clicking the Add and Remove buttons to move them between the "Available Users" and "Group Members" lists. Group membership changes take effect immediately. 
 
 
 .. thumbnail:: /assets/images/admin-user-groups-popup.png
@@ -130,7 +130,7 @@ Change the Users in the group by selecting the User and clicking the arrow butto
       :show_caption: True
       :title: NEW: User Group Popup Users Tab
 
-Assign Collection Grants to the Group by selecting the "Direct Grants" tab. Select one or more Collections from either list, and click the the appropriate arrow button to assign or remove the Grant for the Group. Grant changes take effect immediately.
+Assign Collection Grants to the Group by selecting the "Direct Grants" tab. Select one or more Collections and click Add or Remove to move them between the "Available Collections" and "Direct Grants" lists, then choose a Role for each Grant from its dropdown. Grant changes take effect immediately.
 
 .. thumbnail:: /assets/images/admin-user-groups-popup-grants.png
       :width: 50% 
@@ -144,12 +144,12 @@ Assign Collection Grants to the Group by selecting the "Direct Grants" tab. Sele
 
 
 
-STIG Benchmarks Admin Panel
+STIG Benchmarks Page
 -----------------------------------------
-This panel lists every STIG that has been loaded into STIG Manager and allows App Managers to import new STIGs into STIG Manager.
-The panel indicates the Benchmark ID, STIG Title, status, Current Revision, Revision Date, number of Rules, and number of potentially automated Rules for each STIG.
+This page lists every STIG that has been loaded into STIG Manager and allows App Managers to import new STIGs into STIG Manager.
+The grid indicates the Benchmark ID, Title, Status, Latest Revision, Revision Date, Earlier Revisions, number of Rules, and number of Collections using each STIG.
 
-Use the buttons at the top to add new STIGS, delete entire STIGs or specific revisions. STIGs can be imported individually, or as a .zip library of many STIGs.
+Use the "Import STIG" button to add new STIGs, and the "Remove Revision" menu to delete specific Revisions (or entire STIGs) of the selected Benchmarks. "Open Library" jumps to the selected STIG in the STIG Library. STIGs can be imported individually, or as a .zip library of many STIGs.
 
 .. note::
       By default, if the imported file contains a STIG Revision that already exists in the STIG Manager system, STIG Manager will retain the existing revision. To overwrite existing revisions, select the "Replace existing Revisions" checkbox when importing.
@@ -167,7 +167,7 @@ Use the buttons at the top to add new STIGS, delete entire STIGs or specific rev
 
 
 .. note::
-   STIG Manager only knows about the STIGs you have imported into the system. This action must be performed by App Managers, often quarterly to keep pace with DISA releases.  Once a new STIG revision is imported, that revision becomes the default STIG that is presented for Review to the User. Reviews for old STIGs still in the system can be viewed with the Checklist->Revisions menu item in the Asset Review workspace for that STIG.
+   STIG Manager only knows about the STIGs you have imported into the system. This action must be performed by App Managers, often quarterly to keep pace with DISA releases.  Once a new STIG revision is imported, that revision becomes the default STIG that is presented for Review to the User. Reviews for old STIGs still in the system can be viewed by choosing the Revision from the breadcrumb bar of the Asset Review workspace for that STIG.
 
 
 
@@ -175,10 +175,10 @@ Use the buttons at the top to add new STIGS, delete entire STIGs or specific rev
 
 .. _service-jobs:
 
-Service Jobs Panel
+Service Jobs Page
 ------------------------------------
 
-This panel allows App Managers to control and view the background Service Jobs that have been created in the STIGMan database. It includes information about the jobs, their schedule, component tasks, status, run history and output.  App Managers can create, modify, schedule, delete, and run jobs from this panel.  Jobs created by `system` cannot be deleted, but they can be disabled and their schedule can be modified.
+This page allows App Managers to control and view the background Service Jobs that have been created in the STIGMan database. It includes information about the jobs, their schedule, component tasks, status, run history and output.  App Managers can create, modify, schedule, delete, and run jobs from this panel.  Jobs created by `system` cannot be deleted, but they can be disabled and their schedule can be modified.
 
 **It is highly recommended that you enable and schedule these jobs to maintain the health of your STIG Manager database.** These jobs help keep your database lean and performant by cleaning up unreferenced data that can accumulate over time.  They also enable some important features such as Review Aging, which automatically acts on reviews that have not been updated within a configurable time threshold. See suggested setup in the :ref:`enable-service-jobs` section of this guide.
 
@@ -262,7 +262,7 @@ Each job consists of the following components:
    Existing jobs can be modified using the "Modify" button. User jobs allow full modification of all properties, while system jobs only permit schedule modifications.
 
 **Running Jobs Immediately**
-   Any job can be executed immediately using the "Run now..." button, regardless of its scheduled configuration.
+   Any job can be executed immediately using the "Run Now" button, regardless of its scheduled configuration.
 
 **Removing Jobs**
    User jobs can be deleted using the "Remove" button. System jobs cannot be deleted.
@@ -271,11 +271,11 @@ Each job consists of the following components:
 
 The Service Jobs interface provides detailed execution monitoring:
 
-**Job Runs**
-   View complete execution history with run states (running, completed, failed, shutdown), start times, duration, and detailed output logs. 
+**Recent Runs**
+   The Recent Runs grid below the jobs list shows the execution history of the selected job, with run states (running, completed, failed, shutdown), start times, and duration.
 
-**Real-time Output**
-   Monitor job execution in real-time with detailed task-level output including timestamps, message types, and execution status.
+**Runtime Output**
+   The Runtime Output grid shows the detailed task-level output of the selected run, including timestamps, message types, and execution status, updating in real-time while a job runs.
 
 **Run Management**
    Individual job runs can be deleted from the execution history as needed for maintenance purposes with the Trash button in the Job Run row.
@@ -289,11 +289,11 @@ The Service Jobs interface provides detailed execution monitoring:
 
 .. _app-info:
 
-Application Info Panel
+Application Info Page
 ------------------------------------
 
 
-This panel provides App Managers with a report on the current state, performance, and utilization of the STIGMan application.  
+This page provides App Managers with a report on the current state, performance, and utilization of the STIGMan application.  
 
 The toolbar allows users to load and save report data files, as well as fetch a new report from the API. The "Save for sharing" button will download a .json file of the current report data with the option to replace specific deployment data such as Collection and User names with generated identifiers. 
 
@@ -305,7 +305,7 @@ The report displays the data source, date, and STIG Manager version at the top. 
   - **Groups**: A report of all User Groups in the system, their User count, grants, and creation date. 
   - **MySQL**: Information about the managed data, configuration, and status of the MySQL database. 
   - **NodeJs**: Information about the configuration of the STIGMan application, as well as status of the NodeJs server, including the version, uptime, and memory usage.
-  - **JSON Tree** : A tree view of the data that is available in the report. Equivalent to the contents of the .json file that can be downloaded with the "Save" button.
+  - **JSON Tree** : A tree view of the data that is available in the report. Equivalent to the contents of the .json file that can be downloaded with the "Save to file" button.
 
 
 .. note::
@@ -330,11 +330,11 @@ The report displays the data source, date, and STIG Manager version at the top. 
 
 .. _log-stream:
 
-Log Stream Workspace Overview
+Log Stream Page
 ------------------------------------
 
 
-This Workspace provides App Managers with real-time streaming of log records from the STIG Manager backend to the web client. This can help troubleshoot issues that would otherwise require direct access to the backend logs. 
+This page provides App Managers with real-time streaming of log records from the STIG Manager backend to the web client. This can help troubleshoot issues that would otherwise require direct access to the backend logs. 
 Log records are transmitted over a WebSocket connection, which requires a properly configured reverse proxy or firewall to allow WebSocket traffic. In compatible browsers, the stream can be recorded to a file for later analysis. Reverse Proxy configuration guidance can be found in the :ref:`reverse-proxy`.
 
 This feature is experimental, however it is enabled by default. It can be disabled by setting the ``STIGMAN_EXPERIMENTAL_LOGSTREAM`` environment variable to ``false``. 
@@ -351,7 +351,7 @@ This feature is experimental, however it is enabled by default. It can be disabl
       :title: NEW: Application Log Stream
 
 
-The Log Stream Workspace contains the Log Stream Panel, JSON Tree Panel, and API Transactions Panel.
+The Log Stream page contains the Log Stream Panel, JSON Tree Panel, and API Transactions Panel.
 
 
 Log Stream Panel
@@ -397,12 +397,12 @@ Selecting an entry in this grid will auto-select the corresponding log entry in 
 
 .. _app-data:
 
-Export/Import Data Panel
+Export/Import Data Page
 ------------------------------------
 
-This panel allows App Managers to stream JSONL records from the STIG Manager backend database to a file, with an option to GZip compress the stream. The final size of the file is unknown when the operation starts, so no progress indication can be provided. Transfer rates will be higher if the server does not compress the stream, but the final file may be up to 10x larger.
+This page allows App Managers to stream JSONL records from the STIG Manager backend database to a file, with an option to GZip compress the stream. Choose a Format and click "Download Application Data". The final size of the file is unknown when the operation starts, so no progress indication can be provided. Transfer rates will be higher if the server does not compress the stream, but the final file may be up to 10x larger.
 
-The downloaded file can be imported into the same or a different STIG Manager instance. All existing data will be overwritten. Importing a Gzip compressed file will reduce upload time and memory usage on the API service.
+The downloaded file can be imported into the same or a different STIG Manager instance with "Select appdata file..." followed by "Replace Application Data". All existing data will be overwritten. Importing a Gzip compressed file will reduce upload time and memory usage on the API service.
 
 This feature must be enabled for the deployment by setting the ``STIGMAN_EXPERIMENTAL_APPDATA`` environment variable to ``true``. 
 

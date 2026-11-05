@@ -22,7 +22,7 @@ This update is quite simple, and is described below.
 Application Manager Menu
 ============================
 
-App Managers in STIG Manager have access to 4 additional App Management tabs that other users do not, accessible from the Navigation Tree.
+App Managers in STIG Manager have access to the Admin section, which other users do not, from the Admin entry in the Nav Rail. Its pages are listed in the navigation list on the left of the section.
 
 
 .. _stig-import:
@@ -32,7 +32,7 @@ STIG Benchmarks
 ============================
 
 
-This tab shows you a list of STIGs known to this instance of STIG Manager along with some basic statistics about them, such as their rule count and revision date. This interface also allows you to import new STIGs. 
+This page shows you a list of STIGs known to this instance of STIG Manager along with some basic statistics about them, such as their rule count and revision date. This interface also allows you to import new STIGs. 
 
 .. rubric:: Importing and Updating STIGs
 
@@ -41,8 +41,8 @@ DISA releases new versions of many of their STIGs every Quarter.  They also occa
 These updates must be brought into STIG Manager if you wish the updates to be reflected in STIG Manager's reports and presentation. STIGs must be imported by someone with Application Manager privileges in the STIG Manager instance:
 
 #. Download the STIGs you want to update from `DISA. <https://public.cyber.mil/stigs/>`_
-#. Upload the .zip files to STIG Manager via "Import STIGs" button in the ``Application Management -> STIG Benchmarks`` workspace accessed via the Navigation Tree. By default, if the file contains a STIG Revision that already exists in the STIG Manager system, STIG Manager will retain the existing revision. To overwrite existing revisions, select the "Replace existing Revisions" checkbox when importing.
-#. The import may run for several minutes. When finished, the workspace will be populated with the STIG IDs and other information about the STIGs you imported.  These STIGs will now be available to users to assign to their Assets and for evaluations.
+#. Upload the .zip files to STIG Manager via the "Import STIG" button on the ``Admin -> STIG Benchmarks`` page. By default, if the file contains a STIG Revision that already exists in the STIG Manager system, STIG Manager will retain the existing revision. To overwrite existing revisions, select the "Replace existing Revisions" checkbox when importing.
+#. The import may run for several minutes. When finished, the page will be populated with the STIG IDs and other information about the STIGs you imported.  These STIGs will now be available to users to assign to their Assets and for evaluations.
 
 .. note::
   You can import entire .zip archives of the Quarterly Library Compilations at once, or individual STIGs. 
@@ -66,7 +66,7 @@ These updates must be brought into STIG Manager if you wish the updates to be re
 
 
 
-By default, STIG Manager displays Checklists and Reviews according to the latest version of the STIG.  It will also recalculate statistics against the latest version(s) of the STIGs. No other action is needed after an update. When a new STIG is imported from this interface, ALL assets in the system will reflect new version of the imported STIG as the default. Older revisions of STIGs can still be selected from the Review or Collection Review Workspace checklist pulldown menu.
+By default, STIG Manager displays Checklists and Reviews according to the latest version of the STIG.  It will also recalculate statistics against the latest version(s) of the STIGs. No other action is needed after an update. When a new STIG is imported from this interface, ALL assets in the system will reflect new version of the imported STIG as the default. Older revisions of STIGs can still be selected from the Revision selector in the breadcrumb bar of the Asset Review or Collection Review Workspace.
 
 .. note::
    "Latest" is determined by the STIG's version and release numbers across any revision whose ``status`` is not ``draft`` (i.e. ``accepted``, ``deprecated``, ``sunset``, etc. all compete equally). DISA sometimes publishes revisions with new rule content but a ``deprecated`` status; STIG Manager will treat such a revision as the latest if its version+release is higher than any other non-draft revision of the same STIG. Revisions with a ``draft`` status are held back and only chosen if no non-draft revision exists. To override this behavior for a particular Collection, :ref:`pin <pin-revision>` the desired Revision in Collection Management.
@@ -106,12 +106,12 @@ You might also delete a STIG revision if you have updated STIGs but would prefer
 
 
 
-Collections Tab
+Collections Page
 ============================
 
-This tab presents a list of all Collections in STIG Manager, as well as some statistics about the Collection.  It also includes buttons to create, delete, and alter Collection properties and grants. 
+This page presents a list of all Collections in STIG Manager, as well as some statistics about the Collection.  It also includes buttons to create and delete Collections, and a Properties pane to alter the selected Collection's properties and grants. 
 
-In most cases, Collection Owners should be administering their own Collections. However, in cases where the Owner is unavailable, or has accidentally removed all owners from a Collection, this interface allows an App Manager to assign new Owner Grants to Collections by double-clicking the Collection or using the "Collection Properties" button. The App Manager can also delete Collections if required.
+In most cases, Collection Owners should be administering their own Collections. However, in cases where the Owner is unavailable, or has accidentally removed all owners from a Collection, this interface allows an App Manager to assign new Owner Grants to Collections by selecting the Collection and using "Add Grants..." in the Properties pane. The App Manager can also delete Collections if required.
 
 .. thumbnail:: /assets/images/admin-collections.png
    :width: 50% 
@@ -130,11 +130,11 @@ In most cases, Collection Owners should be administering their own Collections. 
 
 .. _pre-registering-users:
 
-User Grants
+Users
 ============================
 
-This tab presents a lit of all users known to STIG Manager, as well as some statistics about them. 
-It also includes buttons to pre-register User, unregister User, and modify User Grants. 
+This page presents a list of all users known to STIG Manager, as well as some statistics about them.
+It also includes buttons to pre-register and unregister Users, and a Properties pane to modify the selected User's Groups and Grants. 
 
 
 .. ATTENTION::
@@ -143,7 +143,7 @@ It also includes buttons to pre-register User, unregister User, and modify User 
 Pre-registering Users
 ----------------------------
 
-STIG Manager will automatically creates a user record when a new Authenticated User accesses the system.  If you want to make assignments to users before they have accessed the system, it is possible to pre-register them from the ``Administration -> User Grants`` workspace.  Click the Pre-register User button, and enter their username. This username must match exactly the username that will be provided by the Authentication Provider when the user eventually shows up. 
+STIG Manager will automatically creates a user record when a new Authenticated User accesses the system.  If you want to make assignments to users before they have accessed the system, it is possible to pre-register them from the ``Admin -> Users`` page.  Click the Pre-register User button, and enter their username. Groups and Direct Grants can be assigned in the same dialog. This username must match exactly the username that will be provided by the Authentication Provider when the user eventually shows up. 
 
 It is important to note that the pre-register function does not grant access to STIG Manager. User *access* is solely managed via your Authentication Provider (Keycloak, Okta, etc). Pre-registering a user in STIG Manager will create a user record in the STIG Manager database that can be given Collection Grants before the user has accessed the system, but they will not be able to access the system until they have authenticated with the Authentication Provider.
 
@@ -192,13 +192,7 @@ To unregister a User, select the User, and click the "Unregister User" button. T
 Modifying Users
 -----------------------
 
-The only changes that can be made to Users in the STIG Manager interface is their Collection Grants or Group Membership. All other data in the User pop-up is derived from information in the access token, which is managed in the Authentication Provider.
-
-.. thumbnail:: /assets/images/userAdmin.png
-   :width: 50% 
-   :show_caption: True
-   :alt: User Admin
-   :title: User Admin
+The only changes that can be made to Users in the STIG Manager interface is their Collection Grants or Group Membership. All other data in the User Properties pane is derived from information in the access token, which is managed in the Authentication Provider.
 
 
 -------------------------------
@@ -222,14 +216,14 @@ Service Jobs are scheduled background operations that perform essential database
 
 .. rubric:: Recommended Setup
 
-Access the Service Jobs interface from ``Application Management -> Service Jobs`` in the Navigation Tree. You'll see three system-provided jobs that are disabled by default. Double-click each job to modify its properties and set up a schedule:
+Access the Service Jobs interface from ``Admin -> Service Jobs`` in the Nav Rail. You'll see four system-provided jobs that are disabled by default. Select each job and click "Modify" to set up a schedule on the Schedule tab:
 
 #. **Cleanup Database** - Removes records related to deleted Collections and Assets. **Recommended cadence: Weekly**
 #. **Delete Unmapped Reviews** - Cleans up reviews that no longer match any STIG Rule in the system (often because old Reference STIGs were removed). **Recommended cadence: Monthly**
 #. **Delete Unmapped Asset Reviews** - Removes reviews for STIGs that are no longer assigned to Assets. **Recommended cadence: Every 90 days**
 #. **Update Aged Reviews** - Modifies or deletes reviews that meet conditions defined by the Review Aging rules specified at the Collection level. See the :ref:`review-aging-rules` section of the User Guide for more information about Review Aging rules and configuration. **Recommended cadence: Daily or Weekly**
 
-Schedule these jobs to run during off-peak hours to minimize performance impact. You can also run any job immediately using the "Run now..." button if needed. Be sure to click the "Enabled" checkbox to activate each job after configuring its schedule, and Save.
+Schedule these jobs to run during off-peak hours to minimize performance impact. You can also run any job immediately using the "Run Now" button if needed. Be sure to click the "Enabled" checkbox to activate each job after configuring its schedule, and Save.
 
 .. thumbnail:: /assets/images/admin-service-job-properties.png
       :width: 50% 
