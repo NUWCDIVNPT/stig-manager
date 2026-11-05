@@ -30,8 +30,8 @@ The videos below may be useful in getting familiar with STIG Manager's layout an
 
 |
 
-.. rubric:: Overall Organization
-   :class: rubric3
+Application Layout
+======================
 
 When first logging into STIG Manager, the User is presented with the Navigation Rail (Nav Rail) along the left edge, a breadcrumb bar across the top, and the content area that fills the rest of the window. Clicking on a Collection in the Nav Rail opens the corresponding Collection Dashboard in the content area.
 
@@ -51,43 +51,11 @@ Use the Nav Rail to navigate **between** different Collections, as well as the S
 
 |
 
-Content Area
-=====================
-The content area shows one workspace at a time, selected from the Nav Rail or from the tabs of the Collection Dashboard. Every workspace has its own URL, so the browser's Back and Forward buttons, bookmarks, and opening a workspace in a new browser tab all work as expected.
-
-The breadcrumb bar at the top of the content area shows the current location (for example, ``Collections / Miskatonic-Lab-Linux / STIGs``). Some breadcrumb segments are selectors: the Collection segment switches between your Collections, and in the Review Workspaces the Revision segment switches STIG Revisions. The Label filter for a Collection also lives in the breadcrumb bar.
-
-.. note::
-   The legacy client opened each workspace in a tab of the Content Panel, with a "Preview" tab that was replaced by the next workspace opened. The new client has no Content Panel tabs. Use the Recent Views list at the bottom of the Nav Rail, your browser's history, or multiple browser tabs instead.
-
-.. index::
-   single: Home Panel
-
-
-Home
-=======================
-The Home page is available from the top of the Nav Rail.
-This page provides links to useful information, such as this Documentation, DISA STIGs, and the RMF Process reference.
-The Home page also provides information about the STIG Manager Open Source Software Project, links to the `STIG Manager OSS Project on GitHub <https://github.com/NUWCDIVNPT/stig-manager/>`_ for submitting Issues with the software, and lists the Application Managers for this instance.
-
-.. thumbnail:: /assets/images/home-tab.png
-      :width: 50% 
-      :show_caption: True
-      :title: Home Tab
-
-.. thumbnail:: /assets/images/new/home-tab.png
-      :width: 50% 
-      :show_caption: True
-      :title: NEW: Home Tab
-
-====================================
-
 .. index::
    single: Navigation Rail
 
-
 Navigation Rail
-====================
+--------------------
 The Navigation Rail (Nav Rail) runs along the left edge of the STIG Manager app. Click the chevron at its top to expand it and show labels, or to collapse it to icons only. The User can find all their accessible Collections via this interface, as well as the installed STIG Library and the What's New page. The Nav Rail also offers an Admin entry for those with App Management privileges. The bottom of the Nav Rail lists Recent Views, which jump back to workspaces you have visited recently.
 
 The User's name and a Sign out option are in the user menu at the top right of the window. Open the user menu to view the User's Authentication Token information.
@@ -109,12 +77,12 @@ Clicking on a Collection will open up the Collection Dashboard in the content ar
 .. index::
    single: Collection Node
 
-Collections 
-----------------------
+Collections
+~~~~~~~~~~~~~~~~~~~~
 The Collections entry of the Nav Rail expands to list all the Collections accessible to the User, as well as the Collections Dashboard entry (see :ref:`meta collection dashboard`). For those with the Collection Creator privilege, a green *+* button appears next to the Collections entry.
 
 Create Collection
-~~~~~~~~~~~~~~~~~~~~~~~~~
++++++++++++++++++++++
 If you have the Collection Creator privilege, the *+* button will appear next to the Collections entry in the Nav Rail. Click it, enter a Name and optional Description, and click Create. You will be the Owner of the new Collection and will be taken to its Management Workspace. See the  :ref:`Manage Collection <manage-collection-workspace>` section of this document for more information about the settings available there. 
 
 .. thumbnail:: /assets/images/create-collection-popup.png
@@ -130,22 +98,56 @@ If you have the Collection Creator privilege, the *+* button will appear next to
 | 
 
 Manage Collection
-~~~~~~~~~~~~~~~~~~~~~
++++++++++++++++++++++
 If you have :term:`Manager or Owner Collection Grants <User>` on a Collection, its Collection Dashboard will include a Management tab from which you can :ref:`manage <manage-collection-workspace>` that Collection. This will allow you to add Assets, STIG Assignments, and Users to the Collection.
 
 See :ref:`manage-collection-workspace` for more info.
 
--------------------------
+
+Breadcrumb Bar and Content Area
+-----------------------------------
+The content area shows one workspace at a time, selected from the Nav Rail or from the tabs of the Collection Dashboard. Every workspace has its own URL, so the browser's Back and Forward buttons, bookmarks, and opening a workspace in a new browser tab all work as expected.
+
+The breadcrumb bar at the top of the content area shows the current location (for example, ``Collections / Miskatonic-Lab-Linux / STIGs``). Some breadcrumb segments are selectors: the Collection segment switches between your Collections, and in the Review Workspaces the Revision segment switches STIG Revisions. The Label filter for a Collection also lives in the breadcrumb bar.
+
+.. note::
+   The legacy client opened each workspace in a tab of the Content Panel, with a "Preview" tab that was replaced by the next workspace opened. The new client has no Content Panel tabs. Use the Recent Views list at the bottom of the Nav Rail, your browser's history, or multiple browser tabs instead.
+
+.. index::
+   single: Home Panel
 
 
-STIG Library Tools
-----------------------
+Home
+--------------------
+The Home page is available from the top of the Nav Rail.
+This page provides links to useful information, such as this Documentation, DISA STIGs, and the RMF Process reference.
+The Home page also provides information about the STIG Manager Open Source Software Project, links to the `STIG Manager OSS Project on GitHub <https://github.com/NUWCDIVNPT/stig-manager/>`_ for submitting Issues with the software, and lists the Application Managers for this instance.
+
+.. thumbnail:: /assets/images/home-tab.png
+      :width: 50% 
+      :show_caption: True
+      :title: Home Tab
+
+.. thumbnail:: /assets/images/new/home-tab.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Home Tab
+
+
+What's New
+--------------------
+The What's New entry in the Nav Rail shows the release notes for recent STIG Manager versions. New items are also shown once on first login after an upgrade. The client uses a single dark theme, so there is no theme selector. 
+
+
+
+STIG Library
+====================
 
 The STIG Library entry in the Nav Rail provides tools to browse your imported Reference STIGs, and compare two Revisions of a STIG.  These features are available to all STIG Manager OSS Users, even those without specific Collection Grants. 
 
 
 Browse STIGs
-~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------
 
 The Benchmarks list on the left shows every Reference STIG stored in the STIG Manager App, with its latest Revision, rule count, and date. Select a Benchmark to list its Rules in the center panel, and use the "View" dropdown to switch between Revisions. Select a Rule to see its full content on the right.
 
@@ -169,7 +171,7 @@ The Benchmarks list on the left shows every Reference STIG stored in the STIG Ma
 
 
 Compare Revisions
-~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------
 
 The "Compare Revisions" feature allows you to compare two Revisions of a STIG, and get a report of what exact Rules and fields changed between the two. With a STIG selected, choose another Revision from the "Compare with" dropdown. The grid then lists only the Rules that changed, with badges for the properties that changed in each. Select a Rule to see a line-by-line diff in the Detailed changes panel on the right. 
 
@@ -185,12 +187,6 @@ The "Compare Revisions" feature allows you to compare two Revisions of a STIG, a
       :title: NEW: STIG Revision Compare Tool
 
 |
-
-
-What's New
-----------------------
-The What's New entry in the Nav Rail shows the release notes for recent STIG Manager versions. New items are also shown once on first login after an upgrade. The client uses a single dark theme, so there is no theme selector. 
-
 
 
 __________________________________
@@ -604,6 +600,53 @@ Click the Shield icon in a STIG's row to open the :ref:`Asset Review Workspace` 
 ===================================
 
 .. index::
+   single: Findings Report
+
+.. _Findings Report:
+
+Findings Tab
+--------------------
+The Findings Report provides a view of all Open Reviews in the Collection that the User has access to. It is the Findings tab of the Collection Dashboard, and respects the Label filter in the breadcrumb bar.
+
+.. thumbnail:: /assets/images/findings-report.png
+      :width: 50% 
+      :show_caption: True
+      :title: Findings Report
+
+.. thumbnail:: /assets/images/new/findings-report.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Findings Report
+
+
+-------------------------------
+
+Aggregated Findings
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+The Aggregated Findings Panel provides a view of all Rule Ids that have at least one "Open" Evaluation in a Collection. By default this view is aggregated by Group ID, and includes the columns: Severity Category, Group ID, Group Title, Number of Assets, and relevant STIG.
+
+Aggregated Findings Header
++++++++++++++++++++++++++++++
+The header of the Aggregated Findings panel allows the User to filter the list by STIG, and to aggregate the view by Group, Rule, or CCI. 
+
+Export a .csv or POA&M-style Spreadsheet
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+At the bottom of this panel are CSV and Generate POA&M... buttons.  The CSV button exports a .csv file, and the POA&M button will ask the User to set a few options and will then produce a pre-populated POA&M reference file.
+
+POA&Ms can take different forms, and track more information than is available in STIG Manager. The POA&M output from STIG Manager is intended to be used for reference when populating your official POA&M documents with STIG finding information, and not as a replacement for artifacts that may be directly imported into eMASS or other RMF tools.
+
+
+Individual Findings
+~~~~~~~~~~~~~~~~~~~~~~~
+Select an aggregated finding in the left panel, to bring up information about the specific assets with that finding in the Individual Findings Panel.
+Information about the Asset, its Labels, the applicable STIG, the Review's Detail, Comment, origin, Status, Reviewer, and age can be found in the default columns.
+
+This section of the Report can be exported on its own.
+
+
+===================================
+
+.. index::
    single: Meta Collection Dashboard
 
 .. _meta collection dashboard:
@@ -728,8 +771,8 @@ The workspace has three parts: the Checklist grid at the top, the Reviews grid b
 -------------------------------
 
 
-Checklist with Review Summary Panel
----------------------------------------
+Checklist Grid
+--------------------
 This checklist provides a list of Rules for the selected STIG, and a summary of the Evaluations associated with every Asset in the Collection.  Select a Rule in this grid to see its content in the Rule panel on the right, and to assess the individual Assets in the Reviews grid below.
 
 
@@ -795,7 +838,7 @@ Click a Review row to open the Review editor, where the Result, Detail, Comment,
 
 
 Batch Editing
---------------------
+~~~~~~~~~~~~~~~~~~~~
 Select more than one Review with the checkboxes, and click the "Batch edit" button to open the Batch Editing interface.
 
 .. thumbnail:: /assets/images/collection-review-batch-edit.png
@@ -813,9 +856,6 @@ Select more than one Review with the checkboxes, and click the "Batch edit" butt
 If a User has Read-Only access to Assets in this Collection, the checkboxes for those Assets will be replaced with a read-only icon, and they will not be able to change those Reviews.
 
 |
-
-Additional Review Resources
------------------------------------
 
 Review History
 ~~~~~~~~~~~~~~~~~~~~
@@ -852,12 +892,12 @@ The workspace has two parts: the Checklist grid, which fills most of the window,
 
 -------------------------------
 
-Checklist Panel
--------------------
-The Checklist Panel presents a list of the Rules associated with the selected STIG. By default, the Collection's default Revision of the STIG is displayed, along with the Severity Category, Group ID, Rule Title, Evaluation Result, Detail, Comment, Result origin, :term:`Review Status <Review>`, and age of each Review.  The "gear" column in the checklist panel provides information about the Result stored in STIG Manager. The "user" icon indicates the Review was performed manually. The "gear" icon indicates an automated tool evaluated the Review. The arrow icon indicates an automated tool produced the result with the help of User input, such as an XCCDF Override or an Evaluate STIG Answer File. Additional Columns are available from the Columns menu in the toolbar, and status and title filters from the Filter button and Search box.
+Checklist Grid
+--------------------
+The Checklist grid presents a list of the Rules associated with the selected STIG. By default, the Collection's default Revision of the STIG is displayed, along with the Severity Category, Group ID, Rule Title, Evaluation Result, Detail, Comment, Result origin, :term:`Review Status <Review>`, and age of each Review.  The "gear" column in the Checklist grid provides information about the Result stored in STIG Manager. The "user" icon indicates the Review was performed manually. The "gear" icon indicates an automated tool evaluated the Review. The arrow icon indicates an automated tool produced the result with the help of User input, such as an XCCDF Override or an Evaluate STIG Answer File. Additional Columns are available from the Columns menu in the toolbar, and status and title filters from the Filter button and Search box.
 
 From the Checklist menu in the toolbar, the User can:
-   * Choose the Group/Rule display of the Checklist Panel.
+   * Choose the Group/Rule display of the Checklist grid.
    * Export a CKL, CKLB, or XCCDF representation of this Asset's STIG results.
    * Import STIG results for this Asset in .ckl, .cklb, or XCCDF form.
 
@@ -889,27 +929,9 @@ The Rule panel on the right provides the text of the Rule.
 It also provides information about the Controls associated with this Rule, including CCI, AP Acronym, and RMF Control.
 
 
-Review Resources
-------------------------
-The Review Resources section at the bottom of the Review editor can be expanded to show resources that may be useful in performing the Rule's Evaluation. Use the Apply button on a row in any of these tabs to copy that Review into the editor.
-
-
-History Tab
-~~~~~~~~~~~~~~~~~
-The History tab displays how this Review has changed over time.
-
-Status Text Tab
-~~~~~~~~~~~~~~~~~~
-If this Review has been Rejected, any feedback that may have been provided by the Collection Owner is displayed here.
-
-Other Assets Tab
-~~~~~~~~~~~~~~~~~
-The Other Assets tab shows Evaluations that have been performed against other Assets in the same Collection that the User has access to.
-
-
 Review Editor
 ----------------------------
-The Review editor opens when you click a Rule in the Checklist Panel, and contains the Evaluation and any required details or commentary for this Review.
+The Review editor opens when you click a Rule in the Checklist grid, and contains the Evaluation and any required details or commentary for this Review.
 
 Evaluation
 ~~~~~~~~~~~~~~~~~~
@@ -964,6 +986,24 @@ Submit, Unsubmit, and Accept Buttons
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Edits to the Review are saved automatically (the Undo button reverts the edit in progress). The Status buttons on the right of the Review editor allow the User to Submit or Unsubmit the Review, or to Accept the Review (if they have the proper Collection Grant).  In most use cases, the goal for Evaluators will be to get every Review into a "Submitted" state.  Once Submitted, the Collection Owner can set the Review to "Accepted" to indicate they have ok'd it. The Collection Owner can also Reject the Review with Feedback, which will be marked so that the Reviewer can fix any issue with the commentary, or attempt to Close an Open Finding.
 
+Review Resources
+~~~~~~~~~~~~~~~~~~~~
+The Review Resources section at the bottom of the Review editor can be expanded to show resources that may be useful in performing the Rule's Evaluation. Use the Apply button on a row in any of these tabs to copy that Review into the editor.
+
+
+History Tab
++++++++++++++++++
+The History tab displays how this Review has changed over time.
+
+Status Text Tab
+++++++++++++++++++
+If this Review has been Rejected, any feedback that may have been provided by the Collection Owner is displayed here.
+
+Other Assets Tab
++++++++++++++++++
+The Other Assets tab shows Evaluations that have been performed against other Assets in the same Collection that the User has access to.
+
+
 Automated "Result Engine" Information
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -995,58 +1035,10 @@ If a Review was imported from a source of automated assessments, such as Evaluat
 |
 
 .. ATTENTION:: 
-      If a user modifies the Result of an "Automated" Review, it will lose its Automated status. This is indicated with the replacement of the tool's badge with a "Manual" one on the attribution line, and the absence of the gear symbol for that rule in the Checklist panel. 
+      If a user modifies the Result of an "Automated" Review, it will lose its Automated status. This is indicated with the replacement of the tool's badge with a "Manual" one on the attribution line, and the absence of the gear symbol for that rule in the Checklist grid. 
 
 
 ==============================
-
-.. index::
-   single: Findings Report
-
-.. _Findings Report:
-
-Findings Report Workspace
-=====================================
-The Findings Report provides a view of all Open Reviews in the Collection that the User has access to. It is the Findings tab of the Collection Dashboard, and respects the Label filter in the breadcrumb bar.
-
-.. thumbnail:: /assets/images/findings-report.png
-      :width: 50% 
-      :show_caption: True
-      :title: Findings Report
-
-.. thumbnail:: /assets/images/new/findings-report.png
-      :width: 50% 
-      :show_caption: True
-      :title: NEW: Findings Report
-
-
--------------------------------
-
-Aggregated Findings
---------------------------
-The Aggregated Findings Panel provides a view of all Rule Ids that have at least one "Open" Evaluation in a Collection. By default this view is aggregated by Group ID, and includes the columns: Severity Category, Group ID, Group Title, Number of Assets, and relevant STIG.
-
-Aggregated Findings Header
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The header of the Aggregated Findings panel allows the User to filter the list by STIG, and to aggregate the view by Group, Rule, or CCI. 
-
-Export a .csv or POA&M-style Spreadsheet
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-At the bottom of this panel are CSV and Generate POA&M... buttons.  The CSV button exports a .csv file, and the POA&M button will ask the User to set a few options and will then produce a pre-populated POA&M reference file.
-
-POA&Ms can take different forms, and track more information than is available in STIG Manager. The POA&M output from STIG Manager is intended to be used for reference when populating your official POA&M documents with STIG finding information, and not as a replacement for artifacts that may be directly imported into eMASS or other RMF tools.
-
-
-Individual Findings
------------------------
-Select an aggregated finding in the left panel, to bring up information about the specific assets with that finding in the Individual Findings Panel.
-Information about the Asset, its Labels, the applicable STIG, the Review's Detail, Comment, origin, Status, Reviewer, and age can be found in the default columns.
-
-This section of the Report can be exported on its own.
-
-
-===========================================
-
 
 .. index::
    single: Manage Collection
@@ -1088,6 +1080,10 @@ Configuration Page
 --------------------------------
 The Configuration page allows Collection Managers and Owners to change the name of the Collection, its description, settings, and any associated Metadata. Changes are saved automatically as you edit.  Collection Owners can also delete this Collection from the Danger Zone section. 
 
+Properties
+~~~~~~~~~~~~~~~~~~~~
+The Properties section holds the Collection's Name and Description.
+
 .. thumbnail:: /assets/images/collection-properties.png
       :width: 50% 
       :show_caption: True
@@ -1100,149 +1096,10 @@ The Configuration page allows Collection Managers and Owners to change the name 
 
 |
 
-.. _clone-collection:
+Metadata
+++++++++++++++++++++
 
-
-Clone Collection
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The Clone Collection form in the Actions section of the Configuration page allows Managers or Owners to create another Collection that is a copy of the one they are currently viewing.  
-This feature can be useful for creating a "snapshot" of a Collection at a particular point in time that could be used to support certain process or reporting needs. At clone time, the new Collection can be created with all its STIGs "pinned" to the default Revisions of the Source Collection, which will ensure the Clone's reviews and metrics do not change when Reference STIGs are updated. 
-
-
-.. thumbnail:: /assets/images/collection-manage-clone-button.png
-      :width: 50% 
-      :show_caption: True
-      :title: The Collection Clone Button
-
-.. thumbnail:: /assets/images/new/collection-manage-clone-button.png
-      :width: 50% 
-      :show_caption: True
-      :title: NEW: The Collection Clone Button
-
-|
-
-The new Collection can be substantially identical to the original, but must have a different name.
-
-The clone always includes the original Collection's Assets, their core properties, their Labels, and their STIG assignments. Users can choose whether to copy Reviews, whether to copy the User Grants from the original Collection into the new one, and how STIG Revisions are pinned in the clone.
-
-.. note::
-   Whether or not the User Grants are copied, the User who created the new Collection will be an Owner of the new Collection.
-
-
-.. thumbnail:: /assets/images/collection-manage-clone-options.png
-      :width: 50% 
-      :show_caption: True
-      :title: Collection Clone Options
-
-.. thumbnail:: /assets/images/new/collection-manage-clone-options.png
-      :width: 50% 
-      :show_caption: True
-      :title: NEW: Collection Clone Options
-
-|
-
-Once the clone operation has started, a progress notification will appear.  The User can continue to use STIG Manager while the clone operation is in progress. The notification will update when the clone is complete, with links to the new Collection.
-
-
-.. thumbnail:: /assets/images/collection-manage-clone-status-bar.png
-      :width: 50% 
-      :show_caption: True
-      :title: Collection Clone Status Bar
-
-|
-
-.. thumbnail:: /assets/images/collection-manage-clone-status-complete.png
-      :width: 50% 
-      :show_caption: True
-      :title: Collection Clone Complete
-
-|
-
-
-.. warning::
-      Large Collections can take several minutes to clone! During this time, Users will likely see a performance impact when accessing the source Collection. Making changes to the source Collection while it is being cloned may lead to inconsistent results in the cloned Collection.
-      
-      You may want to alert your users before cloning a large Collection.
-
-|
-
-.. _grants-panel:
-
-
-Users & Grants Page: Grants
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The Grants section of the Users & Grants page displays all the Users and Groups that have been given a Grant to some portion of this Collection.
-
-User/Group Grants are added with the "Add Grants..." button at the top of the Grants grid. Each Grant row has a "target" icon to change the Access Control List applied to the Grant, a "pencil" icon to change the User or Role associated with the Grant, and a "trash" icon to remove the Grant.
-
-You can expand individual Groups listed in the "Available Grantees" panel to see the Users in that Group.
-
-See the :ref:`Roles and Access<roles-and-access>` section for more information about Grants, Roles, and Access Control.
-
-.. thumbnail:: /assets/images/collection-manage-new-grants-popup.png
-      :width: 50% 
-      :show_caption: True
-      :title: The User Grants Panel
-
-.. thumbnail:: /assets/images/new/collection-manage-new-grants-popup.png
-      :width: 50% 
-      :show_caption: True
-      :title: NEW: The User Grants Panel
-
-
-.. thumbnail:: /assets/images/collection-manage-edit-grant.png
-      :width: 50% 
-      :show_caption: True
-      :title: Edit or reassign an existing Grant
-
-.. thumbnail:: /assets/images/new/collection-manage-edit-grant.png
-      :width: 50% 
-      :show_caption: True
-      :title: NEW: Edit or reassign an existing Grant
-
--------------------------------
-
-Every Grant is associated with a User or Group, an Access Control List, and Role in the Collection.  The Access Control List can be used to restrict or expand the Grant's access to certain Assets, STIGs, or Labels in the Collection.  By default, the Full, Manage, and Owner Roles have Read/Write access to all Reviews in a Collection, and the Restricted Role has no access to any Reviews.  The Access Control List can be used to further restrict or expand access for any of these Roles.
-
-Managers and Owners have additional Collection capabilities that let them add or remove Assets, STIG assignments, and Grants to the Collection. 
-See the :ref:`Roles and Access<roles-and-access>` section for more information about Grants, Roles, and Access Control.
-
-
-.. thumbnail:: /assets/images/collection-manage-acl-popup.png
-      :width: 50% 
-      :show_caption: True
-      :title: The Access Control List Popup
-
-.. thumbnail:: /assets/images/new/collection-manage-acl-popup.png
-      :width: 50% 
-      :show_caption: True
-      :title: NEW: The Access Control List Popup
-
-|
-
-
-
-.. _users-panel:
-
-Users & Grants Page: Effective Users
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The Effective Users section displays all the Users that have been granted access to this Collection, with either a Direct Grant to the User or via a Grant to a User Group. Click the "target" icon at the end of a User's row to view an expanded list of every Asset and STIG that the User has access to in this Collection. This view is the "effective access" of the User to the Collection that has been calculated based on the User's Role and the Access Control Lists associated with their Grant.
-
-
-.. thumbnail:: /assets/images/collection-manage-effective-access.png
-      :width: 50% 
-      :show_caption: True
-      :title: Users Effective Access
-
-.. thumbnail:: /assets/images/new/collection-manage-effective-access.png
-      :width: 50% 
-      :show_caption: True
-      :title: NEW: Users Effective Access
-
-|
+The Metadata form in the Properties section of the Configuration page allows Users with proper access to record miscellaneous key-value data to associate with this Collection. 
 
 Review Settings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1311,7 +1168,7 @@ By default, the number of History records is capped at 15 for each Review.
 
 
 Import Options
-++++++++++++++++++++++++++++++++++++
+~~~~~~~~~~~~~~~~~~~~
 
 
 The Import Options section of the Configuration page allows you to have fine-grained control over how the reviews from .ckl and XCCDF files are imported into your STIG Manager Collection.  The settings specified here will become the default behavior for all users importing results from files into the collection.  **This includes any instances of the STIGMan Watcher utility that may be importing into your Collection.**  
@@ -1375,69 +1232,81 @@ Options can be customized for each import:
 
 -------------------------------
 
+Actions
+~~~~~~~~~~~~~~~~~~~~
+The Actions section of the Configuration page holds the Clone Collection and Tasks forms.
 
-Metadata
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The Metadata form in the Properties section of the Configuration page allows Users with proper access to record miscellaneous key-value data to associate with this Collection. 
-
--------------------------------
+.. _clone-collection:
 
 
-.. _labels-tab:
+Clone Collection
+++++++++++++++++++++
+
+The Clone Collection form in the Actions section of the Configuration page allows Managers or Owners to create another Collection that is a copy of the one they are currently viewing.  
+This feature can be useful for creating a "snapshot" of a Collection at a particular point in time that could be used to support certain process or reporting needs. At clone time, the new Collection can be created with all its STIGs "pinned" to the default Revisions of the Source Collection, which will ensure the Clone's reviews and metrics do not change when Reference STIGs are updated. 
 
 
-Labels Page
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The Labels page allows you to create various Labels and apply them to Assets. Labels are specific to Collections, and will be removed from Assets if they are moved to a different Collection. Labels exist only as an organizing tool, they do not affect the processing or function of the Assets or their Reviews. 
-
-Create a label by clicking the "Create" button. Labels can be assigned a name, optional description, and color.
-Select an existing label and click "Edit" to change it. 
-
-.. thumbnail:: /assets/images/collection-manage-labels.png
+.. thumbnail:: /assets/images/collection-manage-clone-button.png
       :width: 50% 
       :show_caption: True
-      :title: Collection Labels Tab
+      :title: The Collection Clone Button
 
-.. thumbnail:: /assets/images/new/collection-manage-labels.png
+.. thumbnail:: /assets/images/new/collection-manage-clone-button.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Collection Labels Tab
+      :title: NEW: The Collection Clone Button
 
-|      
+|
 
-.. thumbnail:: /assets/images/collection-manage-new-label.png
+The new Collection can be substantially identical to the original, but must have a different name.
+
+The clone always includes the original Collection's Assets, their core properties, their Labels, and their STIG assignments. Users can choose whether to copy Reviews, whether to copy the User Grants from the original Collection into the new one, and how STIG Revisions are pinned in the clone.
+
+.. note::
+   Whether or not the User Grants are copied, the User who created the new Collection will be an Owner of the new Collection.
+
+
+.. thumbnail:: /assets/images/collection-manage-clone-options.png
       :width: 50% 
       :show_caption: True
-      :title: Create a New Label
+      :title: Collection Clone Options
 
-.. thumbnail:: /assets/images/new/collection-manage-new-label.png
+.. thumbnail:: /assets/images/new/collection-manage-clone-options.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Create a New Label
+      :title: NEW: Collection Clone Options
 
--------------------------------
+|
 
-When a Label is selected on the Labels page, the "Tag Assets" button is enabled. Click it to view and tag Assets with the selected Label.
+Once the clone operation has started, a progress notification will appear.  The User can continue to use STIG Manager while the clone operation is in progress. The notification will update when the clone is complete, with links to the new Collection.
 
-.. thumbnail:: /assets/images/collection-manage-tag-assets-modal.png
+
+.. thumbnail:: /assets/images/collection-manage-clone-status-bar.png
       :width: 50% 
       :show_caption: True
-      :title: View and tag Assets with the selected Label
+      :title: Collection Clone Status Bar
 
-.. thumbnail:: /assets/images/new/collection-manage-tag-assets-modal.png
+|
+
+.. thumbnail:: /assets/images/collection-manage-clone-status-complete.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: View and tag Assets with the selected Label
+      :title: Collection Clone Complete
 
 |
 
 
+.. warning::
+      Large Collections can take several minutes to clone! During this time, Users will likely see a performance impact when accessing the source Collection. Making changes to the source Collection while it is being cloned may lead to inconsistent results in the cloned Collection.
+      
+      You may want to alert your users before cloning a large Collection.
+
+|
+
 .. _review-aging-rules:
 
 Review Aging
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+++++++++++++++++++++
 
 Review Aging allows Collection Owners to define rules that automatically act on reviews that have not been updated within a configurable time period. Rules are processed by the **Update Aged Reviews** system job, which is scheduled and enabled by an App Manager.
 
@@ -1530,6 +1399,95 @@ Optionally restricts which reviews the rule applies to. If no target is set, the
 .. rubric:: Viewing Task Output
 
 Click **Task Output...** to open the output log for this collection's aging task runs. The log shows progress per batch processed, including how many reviews were acted on. Use this to confirm rules are matching the expected reviews and to diagnose unexpected results.
+
+-------------------------------
+
+Danger Zone
+~~~~~~~~~~~~~~~~~~~~
+Collection Owners can delete the Collection from the Danger Zone section. A confirmation is required before the Collection and all its Assets, Reviews, and Grants are removed.
+
+-------------------------------
+
+Users & Grants Page
+-----------------------
+The Users & Grants page is divided into the Grants and Effective Users sections.
+
+.. _grants-panel:
+
+
+Grants
+~~~~~~~~~~~~~~~~~~~~
+
+The Grants section of the Users & Grants page displays all the Users and Groups that have been given a Grant to some portion of this Collection.
+
+User/Group Grants are added with the "Add Grants..." button at the top of the Grants grid. Each Grant row has a "target" icon to change the Access Control List applied to the Grant, a "pencil" icon to change the User or Role associated with the Grant, and a "trash" icon to remove the Grant.
+
+You can expand individual Groups listed in the "Available Grantees" panel to see the Users in that Group.
+
+See the :ref:`Roles and Access<roles-and-access>` section for more information about Grants, Roles, and Access Control.
+
+.. thumbnail:: /assets/images/collection-manage-new-grants-popup.png
+      :width: 50% 
+      :show_caption: True
+      :title: The User Grants Panel
+
+.. thumbnail:: /assets/images/new/collection-manage-new-grants-popup.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: The User Grants Panel
+
+
+.. thumbnail:: /assets/images/collection-manage-edit-grant.png
+      :width: 50% 
+      :show_caption: True
+      :title: Edit or reassign an existing Grant
+
+.. thumbnail:: /assets/images/new/collection-manage-edit-grant.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Edit or reassign an existing Grant
+
+-------------------------------
+
+Every Grant is associated with a User or Group, an Access Control List, and Role in the Collection.  The Access Control List can be used to restrict or expand the Grant's access to certain Assets, STIGs, or Labels in the Collection.  By default, the Full, Manage, and Owner Roles have Read/Write access to all Reviews in a Collection, and the Restricted Role has no access to any Reviews.  The Access Control List can be used to further restrict or expand access for any of these Roles.
+
+Managers and Owners have additional Collection capabilities that let them add or remove Assets, STIG assignments, and Grants to the Collection. 
+See the :ref:`Roles and Access<roles-and-access>` section for more information about Grants, Roles, and Access Control.
+
+
+.. thumbnail:: /assets/images/collection-manage-acl-popup.png
+      :width: 50% 
+      :show_caption: True
+      :title: The Access Control List Popup
+
+.. thumbnail:: /assets/images/new/collection-manage-acl-popup.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: The Access Control List Popup
+
+|
+
+
+
+.. _users-panel:
+
+Effective Users
+~~~~~~~~~~~~~~~~~~~~
+
+The Effective Users section displays all the Users that have been granted access to this Collection, with either a Direct Grant to the User or via a Grant to a User Group. Click the "target" icon at the end of a User's row to view an expanded list of every Asset and STIG that the User has access to in this Collection. This view is the "effective access" of the User to the Collection that has been calculated based on the User's Role and the Access Control Lists associated with their Grant.
+
+
+.. thumbnail:: /assets/images/collection-manage-effective-access.png
+      :width: 50% 
+      :show_caption: True
+      :title: Users Effective Access
+
+.. thumbnail:: /assets/images/new/collection-manage-effective-access.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Users Effective Access
+
+|
 
 -------------------------------
 
@@ -2014,6 +1972,55 @@ Use the Format dropdown to select whether CKL, CKLB, or XCCDF files will be gene
       :show_caption: True
       :title: Checklist Archive Export log
 
+
+|
+
+.. _labels-tab:
+
+
+Labels Page
+--------------------
+
+The Labels page allows you to create various Labels and apply them to Assets. Labels are specific to Collections, and will be removed from Assets if they are moved to a different Collection. Labels exist only as an organizing tool, they do not affect the processing or function of the Assets or their Reviews. 
+
+Create a label by clicking the "Create" button. Labels can be assigned a name, optional description, and color.
+Select an existing label and click "Edit" to change it. 
+
+.. thumbnail:: /assets/images/collection-manage-labels.png
+      :width: 50% 
+      :show_caption: True
+      :title: Collection Labels Tab
+
+.. thumbnail:: /assets/images/new/collection-manage-labels.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Collection Labels Tab
+
+|      
+
+.. thumbnail:: /assets/images/collection-manage-new-label.png
+      :width: 50% 
+      :show_caption: True
+      :title: Create a New Label
+
+.. thumbnail:: /assets/images/new/collection-manage-new-label.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Create a New Label
+
+-------------------------------
+
+When a Label is selected on the Labels page, the "Tag Assets" button is enabled. Click it to view and tag Assets with the selected Label.
+
+.. thumbnail:: /assets/images/collection-manage-tag-assets-modal.png
+      :width: 50% 
+      :show_caption: True
+      :title: View and tag Assets with the selected Label
+
+.. thumbnail:: /assets/images/new/collection-manage-tag-assets-modal.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: View and tag Assets with the selected Label
 
 |
 

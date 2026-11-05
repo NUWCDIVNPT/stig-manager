@@ -16,13 +16,8 @@ Beyond the permissions granted to normal Users, App Managers have the ability to
 
 **The most important responsibility of the Application Manager is importing and updating the set of STIGs the system will use to calculate statistics, assign to Assets, populate the Library, and reference in all other functions.  This should be done quarterly, with the release of new STIG Library Compilations,  or individually as new STIGs are released.**
 
-This update is quite simple, and is described below. 
+This update is quite simple, and is described below. App Managers in STIG Manager have access to the Admin section, which other users do not, from the Admin entry in the Nav Rail. Its pages are listed in the navigation list on the left of the section.
 
-
-Application Manager Menu
-============================
-
-App Managers in STIG Manager have access to the Admin section, which other users do not, from the Admin entry in the Nav Rail. Its pages are listed in the navigation list on the left of the section.
 
 
 .. _stig-import:
