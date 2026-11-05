@@ -1,7 +1,7 @@
 .. _admin-quickstart:
 
 
-STIGMan Application Manager (Administrator) Walkthrough
+Admin Walkthrough
 ########################################################################
 
 

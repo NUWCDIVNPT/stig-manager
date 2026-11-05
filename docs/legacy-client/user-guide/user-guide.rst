@@ -2,7 +2,7 @@
 
 
 
-STIG Manager User Guide 
+User Guide 
 ############################################
 
 

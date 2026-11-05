@@ -1,10 +1,10 @@
 .. _admin-guide-doc:
 
 
-STIGMan Application Management Guide 
+Admin Guide 
 ###############################################
 
-STIGMan App Manager Guide
+App Manager Guide
 ==================================
 
 Lists functionality available to App Managers (often called "admins" for short) in the STIG Manager app.  For information about administering a deployment of STIG Manager, please see :ref:`installation-and-setup-index`.

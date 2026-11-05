@@ -18,22 +18,31 @@ These pages describe the new UI. From the legacy UI, open it with the "Try the n
 
 See the :ref:`legacy-client-index` section for documentation of the legacy UI.
 
-For Users
----------------
+.. rubric:: For Users
 
 * :ref:`user-quickstart`: a step-by-step tour of a typical use case, from creating a Collection to producing a POA&M.
 * :ref:`user-guide-doc`: every part of the UI available to Users.
-* :ref:`user-guide-index`: the two documents above, plus Grants and Roles, Review handling, and STIG rule exceptions.
 
-For Admins
----------------
+.. rubric:: For Admins
 
 * :ref:`admin-quickstart`: typical responsibilities of an App Manager, such as keeping STIGs up to date.
 * :ref:`admin-guide-doc`: every part of the UI available to App Managers.
 
+.. rubric:: General Information
+
+* :ref:`roles-and-access`: how Grants, Roles, and Access Control Lists determine access to Collections.
+* :ref:`review-handling`: how Reviews are tracked across STIG Revisions and matched to Rules.
+* :ref:`rule-exceptions`: how Reviews behave for Rules that DISA has republished with different content.
+
 .. toctree::
    :hidden:
-   :maxdepth: 1
+   :maxdepth: 3
+   :numbered: 5
 
-   /user-guide/index
-   /admin-guide/index
+   /user-guide/user-quickstart
+   /user-guide/user-guide
+   /admin-guide/admin-quickstart
+   /admin-guide/admin-guide
+   /user-guide/roles-and-access
+   /user-guide/review-handling
+   /user-guide/rule-exceptions
