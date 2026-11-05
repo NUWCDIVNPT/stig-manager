@@ -808,16 +808,6 @@ Select more than one Review with Shift-Click, Ctrl-Click, or the checkboxes, and
 
 If a User has Read-Only access to Assets in this Collection, the checkboxes for those Assets will be replaced with a read-only icon, and they will not be able to change those Reviews.
 
-.. thumbnail:: /assets/images/collection-review-read-only.png
-      :width: 50% 
-      :show_caption: True
-      :title: Assets are Read-Only for this User
-
-.. thumbnail:: /assets/images/new/collection-review-read-only.png
-      :width: 50% 
-      :show_caption: True
-      :title: NEW: Assets are Read-Only for this User
-
 |
 
 Additional Review Resources
@@ -878,16 +868,6 @@ The menu bar also supports a variety of status and Title filters, and indicates 
       :width: 50% 
       :show_caption: True
       :title: NEW: Reviews can be changed by this User.
-
-.. thumbnail:: /assets/images/asset-review-read-only.png
-      :width: 50% 
-      :show_caption: True
-      :title: Reviews cannot be changed by this User.
-
-.. thumbnail:: /assets/images/new/asset-review-read-only.png
-      :width: 50% 
-      :show_caption: True
-      :title: NEW: Reviews cannot be changed by this User.
 
 
 

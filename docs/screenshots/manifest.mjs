@@ -247,24 +247,7 @@ export const manifest = [
       ['waitFor', '.p-dialog'],
     ],
   },
-  {
-    file: 'collection-review-read-only.png',
-    section: 'user-guide > Collection Review Workspace > Batch Editing (read-only)',
-    user: 'restricted',
-    route: l => `/collection/${l.collectionId(C)}/benchmark/RHEL_10_STIG/revision/V1R3`,
-    steps: [['waitFor', '.p-datatable >> nth=1 >> tbody tr'], ['wait', 600]],
-  },
   // ---- user-guide.rst: Asset Review Workspace
-  {
-    file: 'asset-review-read-only.png',
-    section: 'user-guide > Asset Review Workspace > Checklist Panel (read-only)',
-    user: 'restricted',
-    route: l => l.assetReviewRoute(C, 'host-00003', 'RHEL_10_STIG'),
-    steps: [['waitFor', 'table tbody tr']],
-    clip: 'text=/Read.?only/i',
-    clipPad: 40,
-    scale: 2,
-  },
   // ---- user-guide.rst: Findings Report
   {
     file: 'findings-report.png',
