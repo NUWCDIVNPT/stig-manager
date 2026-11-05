@@ -28,11 +28,12 @@ vi.mock('../components/User/AclRuleBuilder.vue', () => ({
 vi.mock('../components/User/AclRulesTable.vue', () => ({
   default: {
     name: 'AclRulesTable',
-    props: ['rules'],
+    props: ['rules', 'loadFailed'],
     emits: ['update:selection'],
     template: `
       <button type="button" @click="$emit('update:selection', rules)">select all ({{ rules.length }})</button>
       <button type="button" @click="$emit('update:selection', [{ assetId: '1', access: 'r' }])">select a rule</button>
+      <span v-if="loadFailed">table told the load failed</span>
     `,
   },
 }))
@@ -99,6 +100,11 @@ describe('grantAclModal', () => {
     it('tells the user the rules are missing rather than empty', async () => {
       await openFailed()
       expect(await screen.findByText(/could not load the acl/i)).toBeInTheDocument()
+    })
+
+    it('tells the rules table the load failed', async () => {
+      await openFailed()
+      expect(screen.getByText('table told the load failed')).toBeInTheDocument()
     })
 
     it('does not allow rules to be added', async () => {

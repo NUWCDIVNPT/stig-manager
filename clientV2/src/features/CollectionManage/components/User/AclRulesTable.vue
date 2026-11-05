@@ -25,6 +25,11 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  // A list that failed to load must not read as an empty ACL.
+  loadFailed: {
+    type: Boolean,
+    default: false,
+  },
   // Unfiltered count and filter state from the modal, for the footer
   totalCount: {
     type: Number,
@@ -68,7 +73,12 @@ const tablePt = compactTablePt({ footer: 'divider' })
     :pt="tablePt"
   >
     <template #empty>
-      {{ filtered ? 'No rules match the filters.' : 'No ACL rules.' }}
+      <template v-if="loadFailed">
+        Rules are unavailable.
+      </template>
+      <template v-else>
+        {{ filtered ? 'No rules match the filters.' : 'No ACL rules.' }}
+      </template>
     </template>
     <Column header="Resource" :export-value="exportResource" sortable :sort-field="resourceSortKey">
       <template #body="{ data }">

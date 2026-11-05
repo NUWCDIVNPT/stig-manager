@@ -210,9 +210,10 @@ const tablePt = {
 <style scoped>
 .load-error {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   gap: 0.5rem;
-  margin: 0.75rem 1rem 0;
+  margin-bottom: 0.75rem;
   padding: 0.6rem 1rem;
   color: var(--color-text-dim);
   border: 1px dashed var(--color-border-default);
@@ -254,6 +255,7 @@ const tablePt = {
 }
 
 .modal-body {
+  display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
