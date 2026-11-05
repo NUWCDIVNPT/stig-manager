@@ -2,7 +2,7 @@
 // follow the element when layout shifts. Shapes: ellipse (default), box, arrow.
 import { config } from '../config.mjs'
 
-const STYLE = { color: config.highlightColor, width: 4, pad: 8 }
+const STYLE = { color: config.highlightColor, width: 8, pad: 8 }
 
 export async function addHighlights(page, highlights = []) {
   const boxes = []

@@ -59,6 +59,11 @@ By default, most users will have the Collection Creator role, allowing them to c
       :show_caption: True
       :title: Navigation Tree
 
+.. thumbnail:: /assets/images/new/nav-tree.png
+      :width: 25% 
+      :show_caption: True
+      :title: NEW: Navigation Tree
+
 
 #. You will be prompted for your Collection name and a description.  On Save, you will be automatically made an Owner of the new collection, and will be taken to the Collection Configuration tab for this new Collection. You can access this Collection Configuration tab later using the "gear" icon next to your Collection in the Nav Tree, or the "Manage" button from the Collection Dashboard.
 
@@ -68,6 +73,12 @@ By default, most users will have the Collection Creator role, allowing them to c
       :show_caption: True 
       :alt: Create Collection Popup
       :title: Create Collection Popup
+
+   .. thumbnail:: /assets/images/new/create-collection-popup.png
+      :width: 50%
+      :show_caption: True 
+      :alt: Create Collection Popup
+      :title: NEW: Create Collection Popup
 
 
 
@@ -82,6 +93,12 @@ Create Assets in your Collection
    :show_caption: True
    :alt: Create Asset Button
    :title: Create Asset Button
+
+.. thumbnail:: /assets/images/new/collection-manage-asset-create-button.png
+   :width: 50% 
+   :show_caption: True
+   :alt: Create Asset Button
+   :title: NEW: Create Asset Button
 
 
 .. note::
@@ -99,6 +116,12 @@ Attach STIGs to Assets in your Collection
    :show_caption: True
    :alt: Asset Creation Popup
    :title: Asset Creation Popup
+
+.. thumbnail:: /assets/images/new/create-asset.png
+   :width: 50% 
+   :show_caption: True
+   :alt: Asset Creation Popup
+   :title: NEW: Asset Creation Popup
 
 
 * The Assets you create and the STIGs you attach to them are presented in the Collection Management tab (In the Asset and STIG panels on the right) as well as the Nav Tree entry for that collection on the left.
@@ -125,11 +148,23 @@ Grant Users Roles in your Collection
    :alt: Add Collection Grant
    :title: Add Collection Grant
 
+.. thumbnail:: /assets/images/new/collection-manage-grants.png
+   :width: 40% 
+   :show_caption: True
+   :alt: Add Collection Grant
+   :title: NEW: Add Collection Grant
+
 .. thumbnail:: /assets/images/collection-manage-new-grants-popup.png
    :width: 40% 
    :show_caption: True
    :alt: User Pulldown
    :title: User Pulldown
+
+.. thumbnail:: /assets/images/new/collection-manage-new-grants-popup.png
+   :width: 40% 
+   :show_caption: True
+   :alt: User Pulldown
+   :title: NEW: User Pulldown
 
 
 |
@@ -141,6 +176,12 @@ Grant Users Roles in your Collection
       :show_caption: True
       :alt: Collection Management panel with demo Assets
       :title: Collection Management panel with demo Assets
+
+.. thumbnail:: /assets/images/new/collection-manage-populated.png
+      :width: 50% 
+      :show_caption: True
+      :alt: Collection Management panel with demo Assets
+      :title: NEW: Collection Management panel with demo Assets
 
 |
 
@@ -166,6 +207,12 @@ Evaluate an Asset for STIG compliance
          :alt: Asset Review Workspace
          :title: Asset Review Workspace 
 
+      .. thumbnail:: /assets/images/new/asset-review.png
+         :width: 50% 
+         :show_caption: True
+         :alt: Asset Review Workspace
+         :title: NEW: Asset Review Workspace 
+
 
 #. Select a few Rules and save some Evaluations of them. For now, set a few to "Open," and provide a Comment.  You will notice that you have the option to "Save without submitting" or "Save and Submit" the Evaluations. The "Submitted" status is available if you meet the Review Settings configured for your Collection. Hover over the ``(?)`` symbol to view the applicable :ref:`Collection Settings<manage-collection-workspace>` for Reviews in this Collection. 
 
@@ -189,6 +236,12 @@ Evaluate multiple Assets at once for STIG compliance
       :show_caption: True
       :alt: Editing in the Collection Review panel
       :title: Editing in the Collection Review panel
+
+   .. thumbnail:: /assets/images/new/collection-review-being-edited.png
+      :width: 50% 
+      :show_caption: True
+      :alt: Editing in the Collection Review panel
+      :title: NEW: Editing in the Collection Review panel
 
 #. Select a Rule to review in the top left STIG Checklist Panel. Rule Info will appear in the panel below it.
 #. Select an Asset in the Assets panel in the top right. Double-clicking in the Result, Detail, or Comment columns will allow you to edit those fields, either in a pull-down or a text box, as appropriate. Results are saved automatically.
@@ -222,6 +275,12 @@ Findings Report
       :show_caption: True
       :alt: The Findings Report
       :title: The Findings report
+
+.. thumbnail:: /assets/images/new/findings-report.png
+      :width: 50% 
+      :show_caption: True
+      :alt: The Findings Report
+      :title: NEW: The Findings report
 
 
  

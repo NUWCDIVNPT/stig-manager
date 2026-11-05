@@ -186,6 +186,11 @@ To edit the ACL for a Grant, click the "Edit ACL" button displayed when hovering
       :show_caption: True
       :title: Click the Edit ACL button to manage the ACL for a Grant.
 
+.. thumbnail:: /assets/images/new/collection-manage-grants-edit-acl.png
+      :width: 25% 
+      :show_caption: True
+      :title: NEW: Click the Edit ACL button to manage the ACL for a Grant.
+
 
 **Grant Read/Write on an entire Collection**
   - Create a Grant for the User or Group with the Full Role
@@ -209,5 +214,10 @@ To edit the ACL for a Grant, click the "Edit ACL" button displayed when hovering
       :width: 25% 
       :show_caption: True
       :title: Select the Collection, and "Add with Read Only access."
+
+.. thumbnail:: /assets/images/new/collection-manage-acl-popup-collection-selected.png
+      :width: 25% 
+      :show_caption: True
+      :title: NEW: Select the Collection, and "Add with Read Only access."
   
 

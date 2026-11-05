@@ -46,7 +46,7 @@ Use the Navigation tree to navigate **between** different Collections, as well a
 .. thumbnail:: /assets/images/new/nav-tree-and-collection-panel.png
       :width: 50% 
       :show_caption: True
-      :title: NEW: Navigation Tree and Collection Dashboard
+      :title: NEW: Nav Rail and Collection Dashboard
 
 
 |
@@ -101,7 +101,7 @@ Clicking on a Collection will open up the Collection Dashboard in the Content Pa
 .. thumbnail:: /assets/images/new/nav-tree.png
       :width: 25% 
       :show_caption: True
-      :title: NEW: Navigation Tree
+      :title: NEW: Nav Rail
 
 |
 
@@ -159,6 +159,11 @@ Browse the contents of all the Reference STIGs and the various Revisions stored 
       :show_caption: True
       :title: NEW: STIG Library
 
+.. thumbnail:: /assets/images/new/stig-library-selected.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: STIG Library with a STIG selected
+
 |
 
 
@@ -183,19 +188,8 @@ The "Compare Revisions" feature allows you to compare two Revisions of a STIG, a
 
 Interface 
 ----------------------
-This Node offers User Interface options, like Dark Mode, and a view of all available "What's New" pop-up messages.  
+The new client does not have a separate Interface options node. "What's New" messages are available from the What's New entry in the Nav Rail, and are also shown once on first login. The client uses a single dark theme, so there is no light/dark selector. 
 
-.. thumbnail:: /assets/images/nav-tree-interface-options.png
-      :width: 50% 
-      :show_caption: True
-      :title: User Interface Options
-
-.. thumbnail:: /assets/images/new/nav-tree-interface-options.png
-      :width: 50% 
-      :show_caption: True
-      :title: NEW: User Interface Options
-
-|
 
 
 __________________________________
@@ -240,7 +234,7 @@ Collection Overview
 
 The Collection Overview section at the left of the Collection Dashboard provides high-level statistics about the Collection. 
 
-The Assets and STIGS presented in the Collection Dashboard can be filtered by clicking on the Label icon at the top of the Collection Overview Panel. Only those Assets with at least one of the selected Labels will contribute to the metrics summaries presented in this panel. 
+The Assets and STIGS presented in the Collection Dashboard can be filtered by Label using the filter in the breadcrumb bar at the top of the page. The same filter applies to every Collection Dashboard tab, to Collection Review, and to the Findings and metrics grids. Only those Assets with at least one of the selected Labels will contribute to the metrics summaries presented in this panel. 
 
 .. thumbnail:: /assets/images/collection-panel-overview.png
       :width: 25% 
@@ -271,7 +265,7 @@ The Assets and STIGS presented in the Collection Dashboard can be filtered by cl
             :title: Collection Dashboard Filtering
 
       .. thumbnail:: /assets/images/new/collection-panel-filters.png
-            :width: 25% 
+            :width: 50% 
             :show_caption: True
             :title: NEW: Collection Dashboard Filtering
 
@@ -618,13 +612,18 @@ Meta-Collection Dashboard
 
 The Meta Dashboard provides totals and metrics for some or all of your Collections at a glance. The Collections Tab shows top-level metrics for each Collection, while the STIGs tab shows metrics for each STIG across Collections. The dashboard also allows you to open up individual Collection, Asset, or STIG Review Workspaces.
 
-Access the Meta Dashboard by clicking on the Report icon in the top-level Collections node of the Navigation Tree.
+Access the Meta Dashboard from the "Collections Dashboard" entry at the top of the Collections list in the Nav Rail.
 
 
 .. thumbnail:: /assets/images/meta-collection-icon.png
       :width: 50% 
       :show_caption: True
       :title: Click to open the Meta Dashboard
+
+.. thumbnail:: /assets/images/new/meta-collection-nav.png
+      :width: 25% 
+      :show_caption: True
+      :title: NEW: Collections Dashboard entry in the Nav Rail
 
 |
 
@@ -828,11 +827,6 @@ Review History
 ~~~~~~~~~~~~~~~~~~~~
 Click the "clock" icon that appears when hovering over an Asset to see the Review History for that Asset. 
 
-Attachments 
-~~~~~~~~~~~~~~~~~
-Click the "paperclip" icon that appears when hovering over an Asset to see or add attachments to a Review. Hover over a specific attachment to see buttons for viewing or deleting that attachment. The attachments button becomes available once there is an Evaluation Result for the Review. 
-
-
 ================================
 
 .. index::
@@ -918,29 +912,6 @@ Other Assets Tab
 ~~~~~~~~~~~~~~~~~
 The Other Assets tab shows Evaluations that have been performed against other Assets in the same Collection that the User has access to.  The Reviews from this list of assets can be dragged and dropped onto the selected Asset's Review Panel below.
 
-Attachments Tab
-~~~~~~~~~~~~~~~~~
-The Attachments tab allows Reviewers to attach images that support their assessment to their Review. Hover over a specific attachment to see buttons for viewing or deleting that attachment. The "Attach Image..." button becomes available once there is an Evaluation Result for the Review. Support for additional file formats may be added if `Feature Requests <https://github.com/NUWCDIVNPT/stig-manager/issues/new/choose>`_ are submitted. 
-
-.. thumbnail:: /assets/images/attachments-hover-crop.png
-      :width: 25% 
-      :show_caption: True
-      :title: Attachments Tab
-
-.. thumbnail:: /assets/images/new/attachments-hover-crop.png
-      :width: 25% 
-      :show_caption: True
-      :title: NEW: Attachments Tab
-
-|
-
-.. thumbnail:: /assets/images/attachments-preview-crop.png
-      :width: 25% 
-      :show_caption: True
-      :title: Attachment Preview
-
-|
-
 Status Text Tab
 ~~~~~~~~~~~~~~~~~~
 If this Review has been Rejected, any feedback that may have been provided by the Collection Owner is displayed here.
@@ -1018,12 +989,22 @@ If a Review was imported from a source of automated assessments, such as Evaluat
       :show_caption: True
       :title: Asset Review Workspace with Automated Results indicated.
 
+.. thumbnail:: /assets/images/new/asset-review-autoresult.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Asset Review Workspace with Automated Results indicated.
+
 |
 
 .. thumbnail:: /assets/images/asset-review-autoresult-with-override.png
       :width: 50% 
       :show_caption: True
       :title: Review Panel with Overidden Automated Result.      
+
+.. thumbnail:: /assets/images/new/asset-review-autoresult-with-override.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Review Panel with Overridden Automated Result.
 
 |
 
@@ -1578,7 +1559,7 @@ The :ref:`Collection Builder` option allows the User to create many Assets and t
       :title: Collection -> Manage -> Assets toolbar
 
 .. thumbnail:: /assets/images/new/assets-panel-toolbar.png
-      :width: 50% 
+      :width: 100% 
       :show_caption: True
       :title: NEW: Collection -> Manage -> Assets toolbar
 

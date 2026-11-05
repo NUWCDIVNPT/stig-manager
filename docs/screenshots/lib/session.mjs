@@ -1,4 +1,5 @@
 import { config, routeUrl } from '../config.mjs'
+import { TOURS } from '../../../clientV2/src/components/global/tours.js'
 
 const NO_MOTION_CSS = `*, *::before, *::after {
   transition-duration: 0s !important; transition-delay: 0s !important;
@@ -16,6 +17,7 @@ export async function login(browser, user, { scale = config.deviceScaleFactor } 
     colorScheme: user.colorScheme || 'light',
   })
   const page = await context.newPage()
+  await markToursSeen(page)
   await page.goto(routeUrl('/'))
   // The client redirects to the mock provider's form
   await page.waitForSelector('#username', { timeout: 30_000 })
@@ -28,6 +30,21 @@ export async function login(browser, user, { scale = config.deviceScaleFactor } 
   await page.addStyleTag({ content: NO_MOTION_CSS })
   await dismissWhatsNew(page)
   return { context, page }
+}
+
+// Guided tours open on a view's first visit for a user who has not seen them, judged
+// by webPreferences.tours in the GET /user response. Rewrite that response so every
+// tour reads as seen, which needs no token and leaves the user's stored preferences alone.
+async function markToursSeen(page) {
+  const seen = Object.fromEntries(Object.keys(TOURS).map(id => [id, '9999-12-31']))
+  await page.route(/\/api\/user(\?|$)/, async route => {
+    const res = await route.fetch()
+    let body
+    try { body = await res.json() }
+    catch { return route.fulfill({ response: res }) }
+    body.webPreferences = { ...(body.webPreferences ?? {}), tours: { ...(body.webPreferences?.tours ?? {}), ...seen } }
+    await route.fulfill({ response: res, json: body })
+  })
 }
 
 // The What's New dialog opens on a user's first visit; suppress it for the session.

@@ -37,6 +37,11 @@ The columns list the Collection Name, Description, Owners, total User members, t
       :show_caption: True
       :title: Collection Administration
 
+.. thumbnail:: /assets/images/new/admin-collections.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Collection Administration
+
 
 ----------------------
 
@@ -66,6 +71,11 @@ By default, the Users Admin panel enables a filter on the "Status" column, so th
       :show_caption: True
       :title: Users Administration
 
+.. thumbnail:: /assets/images/new/admin-users.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Users Administration
+
 |
 
 User Properties
@@ -78,6 +88,11 @@ The pop-up will list the User's email address and other Info, as well as the Use
       :width: 50% 
       :show_caption: True
       :title: User Properties
+
+.. thumbnail:: /assets/images/new/admin-user-properties.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: User Properties
 
 |
 
@@ -93,6 +108,11 @@ Only Application Managers can create or modify Groups and their User membership.
       :width: 50% 
       :show_caption: True
       :title: User Groups Administration
+
+.. thumbnail:: /assets/images/new/admin-user-groups.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: User Groups Administration
       
 
 Groups can be created, deleted, and modified with the buttons at the top of the panel. Users can be added to or removed from groups by double-clicking on the group, or selecting a group and clicking the "Modify Group..." button.
@@ -105,12 +125,22 @@ Change the Users in the group by selecting the User and clicking the arrow butto
       :show_caption: True
       :title: User Group Popup Users Tab
 
+.. thumbnail:: /assets/images/new/admin-user-groups-popup.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: User Group Popup Users Tab
+
 Assign Collection Grants to the Group by selecting the "Direct Grants" tab. Select one or more Collections from either list, and click the the appropriate arrow button to assign or remove the Grant for the Group. Grant changes take effect immediately.
 
 .. thumbnail:: /assets/images/admin-user-groups-popup-grants.png
       :width: 50% 
       :show_caption: True
       :title: User Group Popup Grants Tab
+
+.. thumbnail:: /assets/images/new/admin-user-groups-popup-grants.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: User Group Popup Grants Tab
 
 
 
@@ -129,6 +159,11 @@ Use the buttons at the top to add new STIGS, delete entire STIGs or specific rev
       :width: 50% 
       :show_caption: True
       :title: STIGs Administration
+
+.. thumbnail:: /assets/images/new/admin-stigs.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: STIGs Administration
 
 
 .. note::
@@ -152,6 +187,11 @@ This panel allows App Managers to control and view the background Service Jobs t
       :width: 75% 
       :show_caption: True
       :title: Service Jobs Administration
+
+.. thumbnail:: /assets/images/new/admin-service-jobs.png
+      :width: 75% 
+      :show_caption: True
+      :title: NEW: Service Jobs Administration
 
 The Service Jobs feature provides a framework for managing scheduled background operations in STIG Manager. This feature enables both system-defined and user-defined jobs that can run one or more predefined tasks either on a schedule or immediately on demand.
 
@@ -207,6 +247,11 @@ Each job consists of the following components:
       :width: 50% 
       :show_caption: True
       :title: Service Job Properties   
+
+.. thumbnail:: /assets/images/new/admin-service-job-properties.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Service Job Properties   
 
 .. rubric:: Managing Jobs
 
@@ -272,6 +317,11 @@ The report displays the data source, date, and STIG Manager version at the top. 
       :show_caption: True
       :title: Application Info Report
 
+.. thumbnail:: /assets/images/new/admin-app-info.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Application Info Report
+
 
 |
 
@@ -295,6 +345,11 @@ This feature is experimental, however it is enabled by default. It can be disabl
       :show_caption: True
       :title: Application Log Stream
 
+.. thumbnail:: /assets/images/new/admin-log-stream.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Application Log Stream
+
 
 The Log Stream Workspace contains the Log Stream Panel, JSON Tree Panel, and API Transactions Panel.
 
@@ -311,6 +366,11 @@ The Log Stream panel contains a toolbar with controls to start and stop the log 
       :width: 25% 
       :show_caption: True
       :title: Application Log Stream Filter Options
+
+.. thumbnail:: /assets/images/new/admin-log-stream-filter.png
+      :width: 25% 
+      :show_caption: True
+      :title: NEW: Application Log Stream Filter Options
 
 
 
@@ -353,6 +413,11 @@ This feature must be enabled for the deployment by setting the ``STIGMAN_EXPERIM
       :width: 50% 
       :show_caption: True
       :title: Application Data Import/Export
+
+.. thumbnail:: /assets/images/new/admin-app-data.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Application Data Import/Export
 
 
 |

@@ -53,6 +53,12 @@ These updates must be brought into STIG Manager if you wish the updates to be re
    :alt: STIG Management
    :title: STIG Management
 
+.. thumbnail:: /assets/images/new/admin-stigs.png
+   :width: 50% 
+   :show_caption: True
+   :alt: STIG Management
+   :title: NEW: STIG Management
+
 |
 
 .. ATTENTION::
@@ -71,6 +77,11 @@ By default, STIG Manager displays Checklists and Reviews according to the latest
       :width: 50% 
       :show_caption: True
       :title: STIG Revision Selection
+
+.. thumbnail:: /assets/images/new/asset-review-stig-revisions.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: STIG Revision Selection
 
 |
 
@@ -108,6 +119,12 @@ In most cases, Collection Owners should be administering their own Collections. 
    :alt: Collection Admin
    :title: Collection Admin
 
+.. thumbnail:: /assets/images/new/admin-collections.png
+   :width: 50% 
+   :show_caption: True
+   :alt: Collection Admin
+   :title: NEW: Collection Admin
+
 
 ----------------------------------
 
@@ -138,10 +155,20 @@ A pre-registered user will have *No value* in the Last Access column of this scr
       :show_caption: True
       :title: Pre-register User button
 
+.. thumbnail:: /assets/images/new/user-admin-prereg-button.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Pre-register User button
+
 .. thumbnail:: /assets/images/user-admin-prereg-popup.png
       :width: 50% 
       :show_caption: True
       :title: Pre-register User popup
+
+.. thumbnail:: /assets/images/new/user-admin-prereg-popup.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Pre-register User popup
 
 |
 
@@ -188,6 +215,11 @@ Service Jobs are scheduled background operations that perform essential database
       :show_caption: True
       :title: Service Jobs Administration
 
+.. thumbnail:: /assets/images/new/admin-service-jobs.png
+      :width: 75%
+      :show_caption: True
+      :title: NEW: Service Jobs Administration
+
 .. rubric:: Recommended Setup
 
 Access the Service Jobs interface from ``Application Management -> Service Jobs`` in the Navigation Tree. You'll see three system-provided jobs that are disabled by default. Double-click each job to modify its properties and set up a schedule:
@@ -203,6 +235,11 @@ Schedule these jobs to run during off-peak hours to minimize performance impact.
       :width: 50% 
       :show_caption: True
       :title: Service Job Properties   
+
+.. thumbnail:: /assets/images/new/admin-service-job-properties.png
+      :width: 50% 
+      :show_caption: True
+      :title: NEW: Service Job Properties   
 
 .. _configure-review-aging:
 

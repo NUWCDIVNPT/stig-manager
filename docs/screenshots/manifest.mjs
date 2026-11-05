@@ -13,11 +13,11 @@
 
 export const users = {
   admin: { username: 'admin', admin: true, createCollection: true },
-  owner: { username: 'lvl4', admin: false, createCollection: true },
-  restricted: { username: 'lvl1', admin: false, createCollection: false },
+  owner: { username: 'stigmanadmin', admin: false, createCollection: true },
+  restricted: { username: 'user02', admin: false, createCollection: false },
 }
 
-const C = 'Collection X' // primary demo collection; overridden once the fixture is chosen
+const C = 'Miskatonic-Lab-Linux' // primary demo collection
 
 // Dashboards draw Chart.js charts that animate for about a second after data arrives;
 // give those entries a longer settle so the capture shows the finished chart.
@@ -27,14 +27,30 @@ const NAV_PANEL = 'nav.nav-rail'
 // charts render once at the final layout. These steps then open its Collections list.
 const OPEN_RAIL_COLLECTIONS = [
   ['wait', CHART_SETTLE],
-  ['hover', 'button.nav-rail-item:has-text("Collections")'],
+  ['hover', '.nav-rail-item:has-text("Collections")'],
   ['wait', 300],
 ]
 // The Management tab remembers its last sub-panel, so every entry selects one explicitly
 const MGMT = panel => ['click', `button.p-togglebutton:has-text("${panel}")`]
 
+// The checklist grid re-renders once after its first rows appear; a settle keeps the
+// row from detaching mid-click.
+const EXPAND_REVIEW_RESOURCES = [['click', '.review-edit-popover__resources-toggle'], ['wait', 800]]
+const selectAssets = n => Array.from({ length: n }, (_, i) => ['click', `.p-datatable tbody tr >> nth=${i} >> .p-checkbox`])
+const SELECT_THREE_ASSETS = selectAssets(3)
+// Dashboards: select the first row of each grid so the dependent grids below it populate
+const SELECT_FIRST_ROWS = [['click', '.p-datatable >> nth=0 >> tbody tr >> nth=0'], ['wait', 800], ['click', '.p-datatable >> nth=1 >> tbody tr >> nth=0'], ['wait', 800]]
+// Issues a few unauthenticated API requests so the Log Stream has lines to show
+const PING_API = async page => {
+  for (const p of ['/api/op/definition', '/api/op/configuration', '/api/stigs']) await page.evaluate(u => fetch(u), p)
+}
+// Admin pages: a list on the left, the selected row's properties on the right
+const SELECT_FIRST_ROW = [['click', '.p-datatable >> nth=0 >> tbody tr >> nth=0'], ['wait', 1000]]
+const ADMIN_DETAIL_PANE = '.splitter-panel >> nth=-1'
+
 const OPEN_REVIEW_POPOVER = [
   ['waitFor', 'table tbody tr'],
+  ['wait', 800],
   ['click', 'table tbody tr >> nth=2'],
   ['waitFor', '.review-edit-popover'],
 ]
@@ -70,9 +86,10 @@ export const manifest = [
     file: 'create-collection-popup.png',
     section: 'user-guide > Collections > +Create Collection',
     user: 'admin',
-    route: '/app-management/collections',
+    route: '/',
+    rail: 'expanded',
     steps: [
-      ['click', 'button:has-text("New Collection")'],
+      ['click', 'button[aria-label="Create New Collection"]'],
       ['waitFor', '.p-dialog'],
     ],
     clip: '.p-dialog',
@@ -86,25 +103,26 @@ export const manifest = [
     route: '/stig-library',
   },
   {
-    // Fixture has no STIG with two revisions, so this shows the benchmark view rather than a diff.
+    file: 'stig-library-selected.png',
+    section: 'user-guide > STIG Library Tools > Browse STIGs (STIG selected)',
+    user: 'admin',
+    route: '/stig-library/RHEL_10_STIG/V1R3',
+    steps: [['waitFor', 'table >> nth=1 >> tbody tr'], ['wait', 600], ['click', 'table >> nth=1 >> tbody tr >> nth=1']],
+  },
+  {
     file: 'stig-compare-tool.png',
     section: 'user-guide > STIG Library Tools > Compare Revisions',
     user: 'admin',
-    route: '/stig-library/VPN_SRG_TEST/V1R1',
-    steps: [['waitFor', 'table tbody tr'], ['click', 'table tbody tr >> nth=1']],
-  },
-  {
-    file: 'nav-tree-interface-options.png',
-    section: 'user-guide > Interface',
-    user: 'admin',
-    route: '/',
+    route: '/stig-library/RHEL_10_STIG/V1R3',
     steps: [
-      ['click', 'li.p-menubar-item:has-text("Sign out") > .p-menubar-item-content'],
-      ['waitFor', '.p-menubar-submenu'],
+      ['waitFor', 'table tbody tr'],
+      ['click', 'label.revision-select:has-text("Compare with") .p-select'],
+      ['click', 'li[role="option"]:has-text("V1R2")'],
+      ['wait', 1500],
+      // second table: the diff rule list (the first is the benchmark list)
+      ['click', 'table >> nth=1 >> tbody tr:has-text("RHEL-10-200090")'],
+      ['wait', 600],
     ],
-    clip: '.p-menubar-submenu',
-    clipPad: 48,
-    scale: 2,
   },
   // ---- user-guide.rst: Collection Dashboard
   {
@@ -112,6 +130,7 @@ export const manifest = [
     section: 'user-guide > Collection Dashboard',
     user: 'admin',
     route: l => `/collection/${l.collectionId(C)}/stigs`,
+    steps: [['wait', CHART_SETTLE], ['click', '.p-datatable >> nth=0 >> tbody tr >> nth=0'], ['wait', 800]],
     settleMs: CHART_SETTLE,
   },
   {
@@ -119,6 +138,8 @@ export const manifest = [
     section: 'user-guide > Collection Dashboard > Collection Overview',
     user: 'admin',
     route: l => `/collection/${l.collectionId(C)}/stigs`,
+    // Tall enough for the Export Metrics box at the bottom of the sidebar
+    viewport: { width: 2560, height: 1560 },
     settleMs: CHART_SETTLE,
     clip: '.dashboard-sidebar',
     scale: 2,
@@ -130,11 +151,10 @@ export const manifest = [
     route: l => `/collection/${l.collectionId(C)}/stigs`,
     steps: [
       ['wait', CHART_SETTLE],
-      ['click', '.metrics-multiselect'],
+      ['click', '.bc-filter .p-multiselect'],
       ['waitFor', '.p-multiselect-overlay, .p-multiselect-panel'],
     ],
-    clip: '.dashboard-sidebar',
-    scale: 2,
+    highlights: [{ selector: '.bc-filter', shape: 'box', pad: 6 }],
   },
   {
     file: 'collection-panel-checklist-navigation.png',
@@ -149,14 +169,14 @@ export const manifest = [
     section: 'user-guide > Collection Dashboard > Assets Tab',
     user: 'admin',
     route: l => `/collection/${l.collectionId(C)}/assets`,
-    steps: [['wait', CHART_SETTLE], ['click', 'tr:has-text("Collection_X_asset")'], ['wait', 600]],
+    steps: [['wait', CHART_SETTLE], ['click', 'tr:has-text("host-00003")'], ['wait', 600]],
   },
   {
     file: 'collection-panel-labels.png',
     section: 'user-guide > Collection Dashboard > Labels Tab',
     user: 'admin',
     route: l => `/collection/${l.collectionId(C)}/labels`,
-    steps: [['wait', CHART_SETTLE], ['click', 'tr:has-text("test-label-full")'], ['wait', 600], ['click', '.p-datatable >> nth=1 >> tbody tr >> nth=0'], ['wait', 600]],
+    steps: [['wait', CHART_SETTLE], ['click', 'tr:has-text("prod")'], ['wait', 600], ['click', '.p-datatable >> nth=1 >> tbody tr >> nth=0'], ['wait', 600]],
   },
   // ---- user-guide.rst: Meta-Collection Dashboard
   {
@@ -166,12 +186,13 @@ export const manifest = [
     route: '/collections',
     steps: [
       ['wait', CHART_SETTLE],
-      ['click', '.metrics-multiselect'],
+      ['click', '.bc-filter .p-multiselect'],
       ['waitFor', 'li[role="option"]'],
       ['click', 'li[role="option"] >> nth=0'],
       ['click', 'li[role="option"] >> nth=1'],
       ['click', 'button:has-text("Apply")'],
       ['wait', CHART_SETTLE],
+      ...SELECT_FIRST_ROWS,
     ],
   },
   {
@@ -186,35 +207,38 @@ export const manifest = [
     section: 'user-guide > Meta-Collection Dashboard > STIGs Tab',
     user: 'admin',
     route: '/collections',
-    steps: [['wait', CHART_SETTLE], ['click', 'button.p-tab:has-text("STIGs")'], ['waitFor', 'tr:has-text("VPN_SRG_TEST")'], ['click', 'tr:has-text("VPN_SRG_TEST")'], ['wait', 600]],
+    steps: [['wait', CHART_SETTLE], ['click', 'button.p-tab:has-text("STIGs")'], ['waitFor', 'tr:has-text("RHEL_10_STIG")'], ['click', 'tr:has-text("RHEL_10_STIG")'], ['wait', 800], ['click', '.p-datatable >> nth=4 >> tbody tr >> nth=0'], ['wait', 800]],
+    // Both tabs keep their grids mounted: tables 0-2 are the Collections tab, 3-5 the STIGs tab
   },
   // ---- user-guide.rst: Collection Review Workspace
   {
     file: 'collection-review.png',
     section: 'user-guide > Collection Review Workspace',
     user: 'admin',
-    route: l => `/collection/${l.collectionId(C)}/benchmark/VPN_SRG_TEST/revision/V1R1`,
-    steps: [['waitFor', '.p-datatable >> nth=1 >> tbody tr'], ['wait', 600]],
+    route: l => `/collection/${l.collectionId(C)}/benchmark/RHEL_10_STIG/revision/V1R3`,
+    steps: [['waitFor', '.p-datatable >> nth=0 >> tbody tr'], ['waitFor', '.p-datatable >> nth=1 >> tbody tr'], ['wait', 1200]],
   },
   {
     file: 'collection-review-stig-revisions.png',
     section: 'user-guide > Collection Review Workspace > Menu Bar functions',
     user: 'admin',
-    route: l => `/collection/${l.collectionId(C)}/benchmark/VPN_SRG_TEST/revision/V1R1`,
-    steps: [['waitFor', '.p-datatable >> nth=1 >> tbody tr'], ['click', 'text=V1R1 >> nth=0'], ['wait', 600]],
+    route: l => `/collection/${l.collectionId(C)}/benchmark/RHEL_10_STIG/revision/V1R3`,
+    steps: [['waitFor', '.p-datatable >> nth=1 >> tbody tr'], ['click', 'text=V1R3 >> nth=0'], ['wait', 600]],
+    highlights: [{ selector: '.breadcrumb-select >> nth=-1', shape: 'ellipse', pad: 14 }],
   },
   {
     file: 'collection-workspace-checklist-ages.png',
     section: 'user-guide > Collection Review Workspace > Columns',
     user: 'admin',
-    route: l => `/collection/${l.collectionId(C)}/benchmark/VPN_SRG_TEST/revision/V1R1`,
+    route: l => `/collection/${l.collectionId(C)}/benchmark/RHEL_10_STIG/revision/V1R3`,
     steps: [['waitFor', '.p-datatable >> nth=1 >> tbody tr'], ['click', 'text=Columns >> nth=0'], ['wait', 600]],
+    highlights: [{ selector: '.p-multiselect-overlay, .p-multiselect-panel', shape: 'box', pad: 4 }],
   },
   {
     file: 'collection-review-batch-edit.png',
     section: 'user-guide > Collection Review Workspace > Batch Editing',
     user: 'admin',
-    route: l => `/collection/${l.collectionId(C)}/benchmark/VPN_SRG_TEST/revision/V1R1`,
+    route: l => `/collection/${l.collectionId(C)}/benchmark/RHEL_10_STIG/revision/V1R3`,
     steps: [
       ['waitFor', '.p-datatable >> nth=1 >> tbody tr'],
       ['click', '.p-datatable >> nth=1 >> tbody tr >> nth=0 >> .p-checkbox'],
@@ -227,7 +251,7 @@ export const manifest = [
     file: 'collection-review-read-only.png',
     section: 'user-guide > Collection Review Workspace > Batch Editing (read-only)',
     user: 'restricted',
-    route: l => `/collection/${l.collectionId(C)}/benchmark/VPN_SRG_TEST/revision/V1R1`,
+    route: l => `/collection/${l.collectionId(C)}/benchmark/RHEL_10_STIG/revision/V1R3`,
     steps: [['waitFor', '.p-datatable >> nth=1 >> tbody tr'], ['wait', 600]],
   },
   // ---- user-guide.rst: Asset Review Workspace
@@ -235,21 +259,10 @@ export const manifest = [
     file: 'asset-review-read-only.png',
     section: 'user-guide > Asset Review Workspace > Checklist Panel (read-only)',
     user: 'restricted',
-    route: l => l.assetReviewRoute(C, 'Collection_X_asset', 'VPN_SRG_TEST'),
+    route: l => l.assetReviewRoute(C, 'host-00003', 'RHEL_10_STIG'),
     steps: [['waitFor', 'table tbody tr']],
     clip: 'text=/Read.?only/i',
     clipPad: 40,
-    scale: 2,
-  },
-  {
-    file: 'attachments-hover-crop.png',
-    section: 'user-guide > Asset Review Workspace > Attachments Tab',
-    user: 'admin',
-    route: l => l.assetReviewRoute(C, 'Collection_X_asset', 'VPN_SRG_TEST'),
-    // The Attachments tab is disabled when the review has none; the fixture has no attachments yet
-    steps: [...OPEN_REVIEW_POPOVER, ['click', '.review-edit-popover >> text=Review Resources'], ['wait', 500], ['click', 'button.p-tab:has-text("Attachments")', { force: true }], ['wait', 400]],
-    clip: '.review-edit-popover',
-    clipPad: 16,
     scale: 2,
   },
   // ---- user-guide.rst: Findings Report
@@ -301,7 +314,7 @@ export const manifest = [
     section: 'user-guide > Collection Management > Grants Tab (edit)',
     user: 'admin',
     route: l => `/collection/${l.collectionId(C)}/management`,
-    steps: [['click', 'button.p-togglebutton:has-text("Users & Grants")'], ['wait', 800], ['click', 'tr:has-text("lvl3") button >> nth=1'], ['waitFor', '.p-dialog']],
+    steps: [['click', 'button.p-togglebutton:has-text("Users & Grants")'], ['wait', 800], ['click', 'tr:has-text("user01") button >> nth=1'], ['waitFor', '.p-dialog']],
     clip: '.p-dialog',
     clipPad: 24,
     scale: 2,
@@ -311,7 +324,7 @@ export const manifest = [
     section: 'user-guide > Collection Management > Grants Tab (ACL)',
     user: 'admin',
     route: l => `/collection/${l.collectionId(C)}/management`,
-    steps: [['click', 'button.p-togglebutton:has-text("Users & Grants")'], ['wait', 800], ['click', 'tr:has-text("bizarroLvl1") button >> nth=0'], ['waitFor', '.p-dialog']],
+    steps: [['click', 'button.p-togglebutton:has-text("Users & Grants")'], ['wait', 800], ['click', 'tr:has-text("user10") button >> nth=0'], ['waitFor', '.p-dialog']],
     clip: '.p-dialog',
     clipPad: 24,
     scale: 2,
@@ -396,14 +409,14 @@ export const manifest = [
     section: 'user-guide > Collection Management > Assets Panel (label filter)',
     user: 'admin',
     route: l => `/collection/${l.collectionId(C)}/management`,
-    steps: [['click', 'button.p-togglebutton:has-text("Assets")'], ['wait', 800], ['click', 'th:has-text("Labels") >> .pi-filter'], ['wait', 600]],
+    steps: [['click', 'button.p-togglebutton:has-text("Assets")'], ['wait', 800], ['click', '.grid-filter-btn'], ['wait', 600]],
   },
   {
     file: 'collection-manage-asset-label-edit.png',
     section: 'user-guide > Collection Management > Assets Panel (asset properties)',
     user: 'admin',
     route: l => `/collection/${l.collectionId(C)}/management`,
-    steps: [['click', 'button.p-togglebutton:has-text("Assets")'], ['wait', 800], ['click', 'tr:has-text("Collection_X_lvl1_asset-1") >> button.row-edit-btn'], ['waitFor', '.p-dialog']],
+    steps: [['click', 'button.p-togglebutton:has-text("Assets")'], ['wait', 800], ['click', 'tr:has-text("host-00003") >> button.row-edit-btn'], ['waitFor', '.p-dialog']],
     clip: '.p-dialog',
     clipPad: 24,
     scale: 2,
@@ -455,7 +468,7 @@ export const manifest = [
     section: 'user-guide > Collection Management > Export Results by Asset',
     user: 'admin',
     route: l => `/collection/${l.collectionId(C)}/management`,
-    steps: [['click', 'button.p-togglebutton:has-text("Assets")'], ['wait', 800], ['click', 'tr:has-text("Collection_X_asset") >> nth=1 >> .p-checkbox'], ['click', 'button:has-text("Export results")'], ['waitFor', '.p-dialog']],
+    steps: [['click', 'button.p-togglebutton:has-text("Assets")'], ['wait', 800], ...selectAssets(20), ['click', 'button:has-text("Export results")'], ['waitFor', '.p-dialog']],
     clip: '.p-dialog',
     clipPad: 24,
     scale: 2,
@@ -465,7 +478,7 @@ export const manifest = [
     section: 'user-guide > Collection Management > Transfer Asset',
     user: 'admin',
     route: l => `/collection/${l.collectionId(C)}/management`,
-    steps: [['click', 'button.p-togglebutton:has-text("Assets")'], ['wait', 800], ['click', 'tr:has-text("Collection_X_asset") >> nth=1 >> .p-checkbox'], ['click', 'button.transfer-trigger'], ['wait', 600]],
+    steps: [['click', 'button.p-togglebutton:has-text("Assets")'], ['wait', 800], ...SELECT_THREE_ASSETS, ['click', 'button.transfer-trigger'], ['wait', 600]],
   },
   {
     file: 'stigs-panel.png',
@@ -479,7 +492,7 @@ export const manifest = [
     section: 'user-guide > Collection Management > Assign STIG',
     user: 'admin',
     route: l => `/collection/${l.collectionId(C)}/management`,
-    steps: [['click', 'button.p-togglebutton:has-text("STIGs")'], ['wait', 800], ['click', 'button.action-btn:has-text("Assign")'], ['waitFor', '.p-dialog']],
+    steps: [['click', 'button.p-togglebutton:has-text("STIGs")'], ['wait', 800], ['click', 'button.action-btn:has-text("Assign")'], ['waitFor', '.p-dialog'], ['click', '.p-dialog .selection-select >> nth=0'], ['click', 'li[role="option"]:has-text("RHEL_10_STIG")'], ['wait', 1200]],
     clip: '.p-dialog',
     clipPad: 24,
     scale: 2,
@@ -489,35 +502,32 @@ export const manifest = [
     section: 'user-guide > Collection Management > Set a Default STIG Revision',
     user: 'admin',
     route: l => `/collection/${l.collectionId(C)}/management`,
-    steps: [['click', 'button.p-togglebutton:has-text("STIGs")'], ['wait', 800], ['click', 'tr:has-text("VPN_SRG_TEST") >> .p-checkbox'], ['click', 'button.action-btn:has-text("Modify")'], ['waitFor', '.p-dialog']],
+    steps: [['click', 'button.p-togglebutton:has-text("STIGs")'], ['wait', 800], ['click', 'tr:has-text("RHEL_10_STIG") >> .p-checkbox'], ['click', 'button.action-btn:has-text("Modify")'], ['waitFor', '.p-dialog'], ['wait', 500], ['press', 'Escape'], ['wait', 500], ['click', 'button.action-btn:has-text("Modify")'], ['waitFor', '.p-dialog'], ['wait', 1500], ['click', '.p-dialog .selection-select >> nth=1'], ['wait', 600]],
+    // Opened twice: the first open of the Modify dialog mounts it already visible, so its
+    // visibility watcher never loads the selected STIG (client bug, reported 2026-11-04)
     clip: '.p-dialog',
     clipPad: 24,
     scale: 2,
   },
   // ---- 2x samples of text-heavy views (not yet placed in the docs)
-  {
-    file: 'asset-review-2x.png',
-    section: 'sample: Asset Review at 2x',
-    user: 'admin',
-    route: l => l.assetReviewRoute(C, 'Collection_X_asset', 'VPN_SRG_TEST'),
-    steps: OPEN_REVIEW_POPOVER,
-    scale: 2,
-  },
-  {
-    file: 'stig-library-rule-2x.png',
-    section: 'sample: STIG Library rule pane at 2x',
-    user: 'admin',
-    route: '/stig-library/VPN_SRG_TEST/V1R1',
-    steps: [['waitFor', 'table tbody tr'], ['click', 'table tbody tr >> nth=1']],
-    clip: '[class*="rule-pane"]',
-    scale: 2,
-  },
   // ---- other trial entries
+  {
+    file: 'meta-collection-nav.png',
+    section: 'user-guide > Meta-Collection Dashboard (Nav Rail entry)',
+    user: 'admin',
+    route: '/',
+    rail: 'expanded',
+    steps: OPEN_RAIL_COLLECTIONS,
+    clip: NAV_PANEL,
+    scale: 2,
+    highlights: [{ selector: 'a.collection-list-link:has-text("Collections Dashboard")', shape: 'box', pad: 4 }],
+  },
   {
     file: 'meta-collection-dashboard.png',
     section: 'user-guide > Meta-Collection Dashboard',
     user: 'admin',
     route: '/collections',
+    steps: [['wait', CHART_SETTLE], ...SELECT_FIRST_ROWS],
     settleMs: CHART_SETTLE,
   },
   {
@@ -530,33 +540,255 @@ export const manifest = [
     file: 'asset-review.png',
     section: 'user-guide > Asset Review Workspace',
     user: 'admin',
-    route: l => l.assetReviewRoute(C, 'Collection_X_asset', 'VPN_SRG_TEST'),
-    steps: OPEN_REVIEW_POPOVER,
+    route: l => l.assetReviewRoute(C, 'host-00003', 'RHEL_10_STIG'),
+    // V-280944 has a saved review, so Review Resources has history to show
+    steps: [['waitFor', 'table tbody tr'], ['wait', 800], ['click', 'tr:has-text("V-280944")'], ['waitFor', '.review-edit-popover'], ...EXPAND_REVIEW_RESOURCES],
   },
   {
     file: 'review-attributions-panel.png',
     section: 'user-guide > Asset Review Workspace > Review Panel',
     user: 'admin',
-    route: l => l.assetReviewRoute(C, 'Collection_X_asset', 'VPN_SRG_TEST'),
-    steps: OPEN_REVIEW_POPOVER,
+    route: l => l.assetReviewRoute(C, 'host-00003', 'RHEL_10_STIG'),
+    // V-280944 has a detail, a comment, and an accepted status
+    steps: [['waitFor', 'table tbody tr'], ['wait', 800], ['click', 'tr:has-text("V-280944")'], ['waitFor', '.review-edit-popover']],
+    highlights: [{ selector: '.review-edit-popover__attributions', shape: 'ellipse', pad: 10 }],
     clip: '.review-edit-popover',
-    clipPad: 16,
+    clipPad: 40,
+    scale: 2,
+  },
+  {
+    file: 'asset-review-autoresult.png',
+    section: 'user-guide > Asset Review Workspace > Result Engine',
+    user: 'admin',
+    route: l => l.assetReviewRoute(C, 'host-00001-override', 'RHEL_10_STIG'),
+    // V-280936 was imported from Evaluate-STIG without an override
+    steps: [['waitFor', 'table tbody tr'], ['wait', 800], ['click', 'tr:has-text("V-280936")'], ['waitFor', '.review-edit-popover'], ['hover', '.result-engine-badges__badge--engine'], ['wait', 600]],
+    highlights: [{ selector: '.result-engine-badges', shape: 'ellipse', pad: 10 }],
+  },
+  {
+    file: 'asset-review-autoresult-with-override.png',
+    section: 'user-guide > Asset Review Workspace > Result Engine (override)',
+    user: 'admin',
+    route: l => l.assetReviewRoute(C, 'host-00001-override', 'RHEL_10_STIG'),
+    // V-281287 carries an answer-file override of the engine result
+    steps: [['waitFor', 'table tbody tr'], ['wait', 800], ['fill', '.checklist-grid__header-search-input input, input.checklist-grid__header-search-input', 'V-281287'], ['wait', 800], ['click', 'tr:has-text("V-281287")'], ['waitFor', '.review-edit-popover'], ['hover', '.result-engine-badges__badge--override'], ['wait', 600]],
+    clip: '.review-edit-popover',
+    clipPad: 120,
     scale: 2,
   },
   {
     file: 'asset-review-writeable.png',
     section: 'user-guide > Asset Review Workspace > Checklist Panel',
     user: 'admin',
-    route: l => l.assetReviewRoute(C, 'Collection_X_asset', 'VPN_SRG_TEST'),
+    route: l => l.assetReviewRoute(C, 'host-00003', 'RHEL_10_STIG'),
     steps: [['waitFor', 'table tbody tr']],
     clip: 'text=Writable',
     clipPad: 40,
     scale: 2,
+  },
+  // ---- admin-guide.rst (list on the left, properties for the selected row on the right)
+  {
+    file: 'admin-collections.png',
+    section: 'admin-guide > Collections Admin Panel',
+    user: 'admin',
+    route: '/app-management/collections',
+    steps: SELECT_FIRST_ROW,
   },
   {
     file: 'admin-users.png',
     section: 'admin-guide > Users Admin Panel',
     user: 'admin',
     route: '/app-management/users',
+    steps: SELECT_FIRST_ROW,
+  },
+  {
+    file: 'admin-user-properties.png',
+    section: 'admin-guide > Users Admin Panel > User Properties',
+    user: 'admin',
+    route: '/app-management/users',
+    steps: SELECT_FIRST_ROW,
+    clip: ADMIN_DETAIL_PANE,
+    clipPad: 8,
+    scale: 2,
+  },
+  {
+    file: 'admin-user-groups.png',
+    section: 'admin-guide > User Groups Admin Panel',
+    user: 'admin',
+    route: '/app-management/user-groups',
+    steps: SELECT_FIRST_ROW,
+  },
+  {
+    file: 'admin-user-groups-popup.png',
+    section: 'admin-guide > User Groups Admin Panel > Users tab',
+    user: 'admin',
+    route: '/app-management/user-groups',
+    steps: SELECT_FIRST_ROW,
+    clip: ADMIN_DETAIL_PANE,
+    clipPad: 8,
+    scale: 2,
+  },
+  {
+    file: 'admin-user-groups-popup-grants.png',
+    section: 'admin-guide > User Groups Admin Panel > Grants tab',
+    user: 'admin',
+    route: '/app-management/user-groups',
+    steps: [...SELECT_FIRST_ROW, ['click', '[role="tab"]:has-text("Grants")'], ['wait', 800]],
+    clip: ADMIN_DETAIL_PANE,
+    clipPad: 8,
+    scale: 2,
+  },
+  {
+    file: 'admin-stigs.png',
+    section: 'admin-guide > STIGs Admin Panel',
+    user: 'admin',
+    route: '/app-management/stigs',
+    steps: SELECT_FIRST_ROW,
+  },
+  {
+    file: 'admin-service-jobs.png',
+    section: 'admin-guide > Service Jobs Admin Panel',
+    user: 'admin',
+    route: '/app-management/service-jobs',
+    steps: SELECT_FIRST_ROW,
+  },
+  {
+    file: 'admin-service-job-properties.png',
+    section: 'admin-guide > Service Jobs Admin Panel > Job Properties',
+    user: 'admin',
+    route: '/app-management/service-jobs',
+    steps: [...SELECT_FIRST_ROW, ['click', 'button:has(.pi-pencil) >> nth=0'], ['waitFor', '.p-dialog'], ['wait', 600]],
+    clip: '.p-dialog',
+    clipPad: 24,
+    scale: 2,
+  },
+  {
+    file: 'admin-app-info.png',
+    section: 'admin-guide > Application Info',
+    user: 'admin',
+    route: '/app-management/app-info',
+    settleMs: 2500,
+  },
+  {
+    file: 'admin-log-stream.png',
+    section: 'admin-guide > Log Stream',
+    user: 'admin',
+    route: '/app-management/log-stream',
+    // Start streaming, then make a few API calls from the page so lines arrive
+    steps: [['wait', 1500], ['click', '.log-toolbar button:has-text("Stream")'], ['wait', 1500], ['run', PING_API], ['wait', 3000]],
+  },
+  {
+    file: 'admin-log-stream-filter.png',
+    section: 'admin-guide > Log Stream > Filter options',
+    user: 'admin',
+    route: '/app-management/log-stream',
+    // Filters are enabled only while streaming
+    steps: [['wait', 2000], ['click', '.log-toolbar button:has-text("Stream")'], ['wait', 4000], ['click', 'button[aria-label="Stream filters"]'], ['waitFor', '.log-filter'], ['wait', 400]],
+    clip: '.p-popover',
+    clipPad: 24,
+    scale: 2,
+  },
+  {
+    file: 'admin-app-data.png',
+    section: 'admin-guide > Export/Import Data',
+    user: 'admin',
+    route: '/app-management/transfer',
+  },
+  // ---- admin-quickstart.rst
+  {
+    file: 'asset-review-stig-revisions.png',
+    section: 'admin-quickstart > STIG Revision Selection',
+    user: 'admin',
+    route: l => l.assetReviewRoute(C, 'host-00003', 'RHEL_10_STIG'),
+    steps: [['waitFor', 'table tbody tr'], ['click', '.breadcrumb-select >> nth=-1'], ['wait', 600]],
+    highlights: [{ selector: '.breadcrumb-select >> nth=-1', shape: 'ellipse', pad: 14 }],
+  },
+  {
+    file: 'user-admin-prereg-button.png',
+    section: 'admin-quickstart > Pre-register User button',
+    user: 'admin',
+    route: '/app-management/users',
+    steps: [['wait', 800]],
+    highlights: [{ selector: 'button:has(.pi-user-plus)', shape: 'ellipse', pad: 12 }],
+    clip: 'button:has(.pi-user-plus) >> xpath=..',
+    clipPad: 40,
+    scale: 2,
+  },
+  {
+    file: 'user-admin-prereg-popup.png',
+    section: 'admin-quickstart > Pre-register User popup',
+    user: 'admin',
+    route: '/app-management/users',
+    steps: [['wait', 800], ['click', 'button:has(.pi-user-plus)'], ['waitFor', '.p-dialog']],
+    clip: '.p-dialog',
+    clipPad: 24,
+    scale: 2,
+  },
+  // ---- user-quickstart.rst
+  {
+    file: 'collection-manage-asset-create-button.png',
+    section: 'user-quickstart > Create Asset button',
+    user: 'admin',
+    route: l => `/collection/${l.collectionId(C)}/management`,
+    steps: [MGMT('Assets'), ['wait', 800]],
+    highlights: [{ selector: '.assets-toolbar button:has-text("Create")', shape: 'ellipse', pad: 10 }],
+    clip: '.assets-toolbar',
+    clipPad: 40,
+    scale: 2,
+  },
+  {
+    file: 'create-asset.png',
+    section: 'user-quickstart > Asset Creation Popup (was AssetCreationPopup.png)',
+    user: 'admin',
+    route: l => `/collection/${l.collectionId(C)}/management`,
+    steps: [MGMT('Assets'), ['wait', 800], ['click', '.assets-toolbar button:has-text("Create")'], ['waitFor', '.p-dialog'], ['wait', 600]],
+    clip: '.p-dialog',
+    clipPad: 24,
+    scale: 2,
+  },
+  {
+    file: 'collection-manage-grants.png',
+    section: 'user-quickstart > Add Collection Grant',
+    user: 'admin',
+    route: l => `/collection/${l.collectionId(C)}/management`,
+    steps: [MGMT('Users & Grants'), ['wait', 800]],
+    highlights: [{ selector: 'button:has-text("Add Grants...")', shape: 'ellipse', pad: 10 }],
+  },
+  {
+    file: 'collection-manage-populated.png',
+    section: 'user-quickstart > Collection Management with Assets (was CollectionConfig_Populated.png)',
+    user: 'admin',
+    route: l => `/collection/${l.collectionId(C)}/management`,
+    steps: [MGMT('Assets'), ['wait', 800]],
+  },
+  {
+    file: 'collection-review-being-edited.png',
+    section: 'user-quickstart > Editing in the Collection Review panel',
+    user: 'admin',
+    route: l => `/collection/${l.collectionId(C)}/benchmark/RHEL_10_STIG/revision/V1R3`,
+    steps: [['waitFor', '.p-datatable >> nth=0 >> tbody tr'], ['waitFor', '.p-datatable >> nth=1 >> tbody tr'], ['wait', 1200], ['click', '.p-datatable >> nth=1 >> tbody tr >> nth=0'], ['waitFor', '.review-edit-popover']],
+  },
+  // ---- roles-and-access.rst
+  {
+    file: 'collection-manage-grants-edit-acl.png',
+    section: 'roles-and-access > Edit ACL button (was collection-manage-grants-w-edit-acl-highlighted-trimmed.png)',
+    user: 'admin',
+    route: l => `/collection/${l.collectionId(C)}/management`,
+    steps: [MGMT('Users & Grants'), ['wait', 800]],
+    highlights: [{ selector: 'tr:has-text("user10") button >> nth=0', shape: 'ellipse', pad: 12 }],
+    clip: '.p-datatable >> nth=0',
+    clipPad: 24,
+    scale: 2,
+  },
+  {
+    file: 'collection-manage-acl-popup-collection-selected.png',
+    section: 'roles-and-access > ACL popup, Whole Collection with Read Only access',
+    user: 'admin',
+    route: l => `/collection/${l.collectionId(C)}/management`,
+    steps: [MGMT('Users & Grants'), ['wait', 800], ['click', 'tr:has-text("user10") button >> nth=0'], ['waitFor', '.p-dialog'], ['wait', 600], ['click', '.p-dialog button:has-text("Add")'], ['waitFor', '.p-menu'], ['wait', 300]],
+    highlights: [{ selector: '.p-menu-item:has-text("Read Only")', shape: 'ellipse', pad: 10 }],
+    clip: '.p-dialog',
+    clipPad: 24,
+    scale: 2,
   },
 ]

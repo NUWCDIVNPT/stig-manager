@@ -26,6 +26,12 @@ export default defineConfig(({ mode, command }) => {
           target: envOrigin,
           changeOrigin: true,
         },
+        // Log Stream websocket (Admin > Log Stream)
+        '/socket': {
+          target: apiOrigin,
+          changeOrigin: true,
+          ws: true,
+        },
       },
     },
     build: {
