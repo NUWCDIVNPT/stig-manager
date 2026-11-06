@@ -19,9 +19,9 @@ Done items keep their original finding for reference. Line links reflect the cod
 | 9 | Recent views leak between users | Security | ⏭️ Skipped (accepted risk) |
 | 10 | Nav rail admin check never updates | Security | ✅ 74011beb |
 | 11 | Error checks rely on message text | Security | ✅ 3219802c |
-| 12 | Label filter lost on the way into Asset Review | Label filter | ✅ uncommitted |
-| 13 | Tab switches drop each tab's own query | URL state | ✅ uncommitted |
-| 14 | Collection-tab selections are local state | URL state | Open |
+| 12 | Label filter lost on the way into Asset Review | Label filter | ✅ 821c8479 |
+| 13 | Tab switches drop each tab's own query | URL state | ✅ bc9d9efc |
+| 14 | Collection-tab selections are local state | URL state | ✅ uncommitted (collection tabs) |
 | 15 | Collection Review selected rule isn't in the URL | URL state | Open |
 | 16 | Collections page tab isn't in the URL | URL state | Open |
 | 17 | Grid rows aren't links | URL state | Open |
@@ -130,7 +130,7 @@ Done items keep their original finding for reference. Line links reflect the cod
 - The collection breadcrumb and tab switches carry the filter, and Management drops it.
 - All of this has tests.
 
-### 12. Label filter lost on the way into Asset Review — ✅ uncommitted
+### 12. Label filter lost on the way into Asset Review — ✅ 821c8479
 
 - **Done (Fix A):** all six links now carry the filter. The tabs and the Findings grid use `buildLabelFilterParams(props.selectedLabelNames)`; Findings passes the filter down to its grid and merges it with `ruleId`. The Asset Review STIG and revision dropdowns use `pickLabelFilterQuery(route.query)`, which drops `ruleId` because it belongs to the old STIG. The breadcrumb's return trip was already tested in `labelFilterRoutes.test.js`.
 - **Problem:** Only STIGs tab → Collection Review carries it. These links drop it:
@@ -152,15 +152,18 @@ Planned as its own effort and PR (decided 2026-10-28; merged here from `docs/tod
 
 **Current state:** STIG Library (`ruleId`, `compareRev`, `diffKey`), Findings (`stig`, `agg`, `sel`) and Asset Review (`ruleId`) already keep their state in the URL, each with its own hand-rolled read-on-mount + `router.replace` watch. The label filter lives in the URL via `useLabelFilterQuery` but is carried route-to-route per call site.
 
-### 13. Tab switches drop each tab's own query — ✅ uncommitted
+### 13. Tab switches drop each tab's own query — ✅ bc9d9efc
 
 - **Done:** stash applied by hand (one hunk had drifted). Tests click the real tabs: round trip restores Findings' query, no leaking between tabs, current label filter wins, Management stays unfiltered, a collection switch clears saved queries, and Back from Asset Review lands on the restored URL. The stash itself is still in `git stash list`; drop it once this is committed.
 - **Problem:** Collection tabs are route navigation, but panels stay mounted (`visitedTabs` + `v-if`), so component state survives a tab switch while the URL does not. Leaving Findings for STIGs and returning drops `?agg/stig/sel` while Findings still shows them, so URL and screen disagree, and Back from Asset Review lands on the default view.
 - **Prototype stashed:** `git stash list` → *"url-state: CollectionView per-tab query save/restore"*. Keeps a `tabQueries` Map in `CollectionView`: on leave, save `route.query` minus label keys; on return, re-attach it with the current label filter on top; clear on collection switch. ~10 lines, tests and lint passed.
 - **Why it's safe:** hidden tabs are inert. Findings only changes state from user input or its one-shot mount restore, so a saved query can't go stale.
 
-### 14. Collection-tab selections are local state
+### 14. Collection-tab selections are local state — ✅ uncommitted (collection tabs)
 
+- **Done:** new shared `useQuerySelection(key)` (ref ↔ one query key, `replace`). STIGs `?stig=`, Assets `?asset=`, Labels `?label=` (unlabeled row = `none`) and `?asset=`. Tabs now keep a selection that is still listed after a reload or filter change, and fall back to the first row (STIGs/Assets) or nothing (Labels) otherwise. The helper only writes while its own tab is the current route (hidden tabs stay mounted), re-syncs when the tab comes back, and builds same-tick writes on each other so the Labels tab can change two keys at once.
+- **Still open:** the Collections page (meta) tabs; do them with #16.
+- **Not done (decided 2026-11-06):** the collection breadcrumb on review pages still opens the default tab with nothing selected. Remembering each collection's last view for the crumb was built and then dropped as too complex; Back, reload, Recent views and links do restore the selection.
 - **Problem:** the selected STIG, asset and label in the collection tabs are plain refs (e.g. `selectedBenchmarkId` in `CollectionStigsTab.vue`). Back from Asset Review loses the selection, and you can't link to "collection X with STIG Y selected." Same gap in the meta-dash (Collections page) tabs. This is the biggest UX gap.
 - **Fix:** mirror them to the query the way Findings does (`?stig=` etc.).
 

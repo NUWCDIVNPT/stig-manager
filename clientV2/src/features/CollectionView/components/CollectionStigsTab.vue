@@ -1,10 +1,11 @@
 <script setup>
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
-import { ref, watch } from 'vue'
+import { watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MetricsSummaryGrid from '../../../components/common/MetricsSummaryGrid.vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { useQuerySelection } from '../../../shared/composables/useQuerySelection.js'
 import { buildLabelFilterParams } from '../../../shared/lib/labelFilters.js'
 import { fetchCollectionChecklistAssets, fetchCollectionStigSummary } from '../api/collectionApi.js'
 
@@ -43,7 +44,7 @@ const { state: stigs, isLoading: stigsLoading, execute: loadStigs } = useAsyncSt
   { initialState: [], immediate: false },
 )
 
-const selectedBenchmarkId = ref(null)
+const selectedBenchmarkId = useQuerySelection('stig')
 
 const { state: checklistAssets, isLoading: checklistAssetsLoading, execute: loadChecklistAssets } = useAsyncState(
   () => {
@@ -65,15 +66,17 @@ watch([() => props.ready, () => props.collectionId, () => props.selectedLabelNam
     return
   }
   loadStigs()
-  selectedBenchmarkId.value = null
 }, { immediate: true, deep: true })
 
-// Auto-select first STIG
+// Keep the selected STIG (clicked or from the URL) while it is still listed, else select the first
 watch(stigs, (newStigs) => {
-  if (newStigs?.length > 0 && selectedBenchmarkId.value === null) {
-    selectedBenchmarkId.value = newStigs[0].benchmarkId
+  if (newStigs?.some(s => s.benchmarkId === selectedBenchmarkId.value)) {
+    loadChecklistAssets()
   }
-}, { immediate: true })
+  else {
+    selectedBenchmarkId.value = newStigs?.[0]?.benchmarkId ?? null
+  }
+})
 
 // Load checklists when selection changes
 watch(selectedBenchmarkId, (newVal) => {

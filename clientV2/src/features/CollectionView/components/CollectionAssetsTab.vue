@@ -1,11 +1,12 @@
 <script setup>
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
-import { computed, ref, watch } from 'vue'
+import { computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MetricsSummaryGrid from '../../../components/common/MetricsSummaryGrid.vue'
 import { fetchCollectionAssetSummary } from '../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { useQuerySelection } from '../../../shared/composables/useQuerySelection.js'
 import { buildLabelFilterParams } from '../../../shared/lib/labelFilters.js'
 import { fetchCollectionAssetStigs } from '../api/collectionApi.js'
 
@@ -44,7 +45,7 @@ const { state: assets, isLoading: assetsLoading, execute: loadAssets } = useAsyn
   { initialState: [], immediate: false },
 )
 
-const selectedAssetId = ref(null)
+const selectedAssetId = useQuerySelection('asset')
 const selectedAssetName = computed(() => assets.value?.find(a => a.assetId === selectedAssetId.value)?.name ?? '')
 
 const { state: selectedAssetStigs, isLoading: selectedAssetStigsLoading, execute: loadSelectedAssetStigs } = useAsyncState(
@@ -58,15 +59,17 @@ watch([() => props.ready, () => props.collectionId, () => props.selectedLabelNam
     return
   }
   loadAssets()
-  selectedAssetId.value = null
 }, { immediate: true, deep: true })
 
-// Auto-select first asset
+// Keep the selected asset (clicked or from the URL) while it is still listed, else select the first
 watch(assets, (newAssets) => {
-  if (newAssets?.length > 0 && selectedAssetId.value === null) {
-    selectedAssetId.value = newAssets[0].assetId
+  if (newAssets?.some(a => a.assetId === selectedAssetId.value)) {
+    loadSelectedAssetStigs()
   }
-}, { immediate: true })
+  else {
+    selectedAssetId.value = newAssets?.[0]?.assetId ?? null
+  }
+})
 
 // Load STIGs when asset selection changes
 watch(selectedAssetId, (newVal) => {

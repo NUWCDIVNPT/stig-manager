@@ -7,7 +7,7 @@ import CollectionAssetsTab from '../components/CollectionAssetsTab.vue'
 import CollectionLabelsTab from '../components/CollectionLabelsTab.vue'
 import CollectionStigsTab from '../components/CollectionStigsTab.vue'
 
-vi.mock('vue-router', () => ({ useRouter: vi.fn() }))
+vi.mock('vue-router', () => ({ useRouter: vi.fn(), useRoute: () => ({ name: 'collection-tab', query: {} }) }))
 
 // One row that satisfies every grid in every tab
 const row = { benchmarkId: 'RHEL_9', revisionStr: 'V2R1', assetId: 'a1', labelId: 'l1', name: 'web-01' }
@@ -56,7 +56,7 @@ describe('asset Review links from the collection tabs', () => {
 
   beforeEach(() => {
     mockPush = vi.fn()
-    useRouter.mockReturnValue({ push: mockPush })
+    useRouter.mockReturnValue({ push: mockPush, replace: vi.fn() })
   })
 
   async function openAssetReview(Tab, path, selectedLabelNames) {

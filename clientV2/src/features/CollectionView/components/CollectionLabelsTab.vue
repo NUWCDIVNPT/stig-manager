@@ -1,11 +1,12 @@
 <script setup>
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
-import { computed, ref, watch } from 'vue'
+import { computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MetricsSummaryGrid from '../../../components/common/MetricsSummaryGrid.vue'
 import { fetchCollectionAssetSummary } from '../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { useQuerySelection } from '../../../shared/composables/useQuerySelection.js'
 import { buildLabelFilterParams } from '../../../shared/lib/labelFilters.js'
 import { fetchCollectionAssetStigs, fetchCollectionLabelSummary } from '../api/collectionApi.js'
 
@@ -33,9 +34,11 @@ const { state: labels, isLoading: labelsLoading, execute: loadLabels } = useAsyn
   { initialState: [], immediate: false },
 )
 
-const selectedLabelId = ref(null)
-const isLabelSelected = ref(false)
-// The unlabeled row has a null labelId and name
+// The unlabeled row has a null labelId and name; the URL holds it as NO_LABEL
+const NO_LABEL = 'none'
+const selectedLabelKey = useQuerySelection('label')
+const isLabelSelected = computed(() => selectedLabelKey.value !== null)
+const selectedLabelId = computed(() => (selectedLabelKey.value === NO_LABEL ? null : selectedLabelKey.value))
 const selectedLabelName = computed(() => {
   if (!isLabelSelected.value) {
     return ''
@@ -55,7 +58,7 @@ const { state: assets, isLoading: assetsLoading, execute: loadAssets } = useAsyn
   { initialState: [], immediate: false },
 )
 
-const selectedAssetId = ref(null)
+const selectedAssetId = useQuerySelection('asset')
 const selectedAssetName = computed(() => assets.value?.find(a => a.assetId === selectedAssetId.value)?.name ?? '')
 
 const { state: assetStigs, isLoading: assetStigsLoading, execute: loadAssetStigs } = useAsyncState(
@@ -69,10 +72,33 @@ watch([() => props.ready, () => props.collectionId, () => props.selectedLabelNam
     return
   }
   loadLabels()
-  selectedLabelId.value = null
-  isLabelSelected.value = false
-  selectedAssetId.value = null
 }, { immediate: true, deep: true })
+
+// Keep the selected label (clicked or from the URL) while it is still listed, else clear both levels
+watch(labels, (newLabels) => {
+  const key = selectedLabelKey.value
+  if (key !== null && newLabels?.some(l => (l.labelId ?? NO_LABEL) === key)) {
+    loadAssets()
+  }
+  else {
+    selectedLabelKey.value = null
+    selectedAssetId.value = null
+    assets.value = []
+  }
+})
+
+// Same for the asset under the label; this tab never auto-selects one
+watch(assets, (newAssets) => {
+  if (selectedAssetId.value === null) {
+    return
+  }
+  if (newAssets?.some(a => a.assetId === selectedAssetId.value)) {
+    loadAssetStigs()
+  }
+  else {
+    selectedAssetId.value = null
+  }
+})
 
 // when an asset is picked
 watch(selectedAssetId, (newVal) => {
@@ -85,8 +111,7 @@ watch(selectedAssetId, (newVal) => {
 })
 
 function handleLabelSelect(labelId) {
-  isLabelSelected.value = true
-  selectedLabelId.value = labelId
+  selectedLabelKey.value = labelId ?? NO_LABEL
   selectedAssetId.value = null
   loadAssets()
 }
