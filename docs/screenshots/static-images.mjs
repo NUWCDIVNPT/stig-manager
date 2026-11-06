@@ -13,4 +13,8 @@ export const staticImages = [
   'check-change-example-stig-viewer-crop2.png',
   'stig-viewer-user-guide.png',
   'legacy-try-new-ui.png',
+  // import wizard steps that need checklist result files and write to a Collection
+  'collection-builder-errors-and-warnings.png',
+  'collection-builder-options.png',
+  'collection-builder-import.png',
 ]

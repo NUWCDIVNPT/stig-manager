@@ -448,7 +448,17 @@ export const manifest = [
   },
   {
     file: 'collection-manage-results-export-asset-collection.png',
-    section: 'user-guide > Collection Management > Export Results by Asset',
+    section: 'user-guide > Collection Management > Export Results to Another Collection',
+    user: 'admin',
+    route: l => `/collection/${l.collectionId(C)}/management`,
+    steps: [['click', 'button.p-togglebutton:has-text("Assets")'], ['wait', 800], ...selectAssets(20), ['click', 'button:has-text("Export results")'], ['waitFor', '.p-dialog'], ['click', '.p-dialog label:has-text("Collection")'], ['wait', 300]],
+    clip: '.p-dialog',
+    clipPad: 24,
+    scale: 2,
+  },
+  {
+    file: 'collection-manage-results-export-asset-archive.png',
+    section: 'user-guide > Collection Management > Export Results as CKL or XCCDF Archive',
     user: 'admin',
     route: l => `/collection/${l.collectionId(C)}/management`,
     steps: [['click', 'button.p-togglebutton:has-text("Assets")'], ['wait', 800], ...selectAssets(20), ['click', 'button:has-text("Export results")'], ['waitFor', '.p-dialog']],

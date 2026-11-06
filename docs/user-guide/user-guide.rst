@@ -1418,6 +1418,14 @@ See the :ref:`import-options` section of this document for information about the
 -------------------------------
 
 
+.. thumbnail:: /assets/images/new/collection-builder-errors-and-warnings.png
+      :width: 50% 
+      :show_caption: True
+      :title: Collection Builder Errors and Warnings
+
+
+|
+
 If there is an issue with the files you selected, they will appear here. One error you may encounter is that the STIG in the selected file is not installed in STIG Manager. If this is the case, contact a STIG Manager Administrator to have them install it.
 
 If you provide multiple files for the same Asset and STIG, only the latest will be imported. 
@@ -1425,6 +1433,14 @@ If you provide multiple files for the same Asset and STIG, only the latest will 
 This screen will be skipped if there are no issues with the files you have selected.
 
 -------------------------------
+
+.. thumbnail:: /assets/images/new/collection-builder-options.png
+      :width: 50% 
+      :show_caption: True
+      :title: Collection Builder Options and Summary
+
+
+|
 
 You will be presented with a summary view of the files you have submitted.
 This view shows the Assets, STIGs, Review totals, filenames and date of the data contained in the submitted files. 
@@ -1435,6 +1451,14 @@ If the summary is appropriate, click the "Add to Collection..." button.
 
 -------------------------------
 
+
+.. thumbnail:: /assets/images/new/collection-builder-import.png
+      :width: 50% 
+      :show_caption: True
+      :title: Collection Builder Import Log
+
+
+|
 
 The user is presented with the log of the import. Select an item in the top grid for information about any "rejected" Reviews that were unable to be imported into STIG Manager. This may happen for Rules that are not currently assigned to this Asset, or for versions of STIGs that have not been loaded into STIG Manager.
 
@@ -1484,6 +1508,13 @@ Export Results as CKL or XCCDF Archive
 
 Use the Format dropdown to select whether CKL, CKLB, or XCCDF files will be generated for every Asset selected, then click "Download archive". The package of files will be presented as a .zip file that will also contain a ``_manifest.json`` file describing its contents and any errors encountered while producing it.  Check the :term:`ckl` glossary entry for exact mappings of fields from STIG Manger to .ckl file.
 
+.. thumbnail:: /assets/images/new/collection-manage-results-export-asset-archive.png
+      :width: 50% 
+      :show_caption: True
+      :title: Checklist Archive Export
+
+
+|
 
 --------------------------
 
@@ -1627,6 +1658,13 @@ Export Results as CKL or XCCDF Archive
 
 Use the Format dropdown to select whether CKL, CKLB, or XCCDF files will be generated for every Asset selected, then click "Download archive". The package of files will be presented as a .zip file that will also contain a ``_manifest.json`` file describing its contents and any errors encountered while producing it.  Check the :term:`ckl` glossary entry for exact mappings of fields from STIG Manger to .ckl file.
 
+.. thumbnail:: /assets/images/new/collection-manage-results-export-asset-archive.png
+      :width: 50% 
+      :show_caption: True
+      :title: Checklist Archive Export
+
+
+|
 
 .. _labels-tab:
 
