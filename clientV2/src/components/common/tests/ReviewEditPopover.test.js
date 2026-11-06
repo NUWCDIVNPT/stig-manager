@@ -1,6 +1,7 @@
 import { fireEvent, screen } from '@testing-library/vue'
 import { flushPromises } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { h, reactive, ref } from 'vue'
 import { renderWithProviders } from '../../../testUtils/utils.js'
 
 import ReviewEditPopover from '../ReviewEditPopover.vue'
@@ -194,6 +195,130 @@ describe('reviewEditPopover.vue', () => {
 
       // Verify reset
       expect(textareas[0]).toHaveValue('Initial detail')
+    })
+  })
+
+  describe('waiting for a save', () => {
+    async function typeAndSave(extraProps = {}) {
+      const utils = createWrapper({ currentReview: null, ...extraProps })
+      await utils.rerender({ currentReview: defaultReview })
+      await flushPromises()
+      await fireEvent.update(screen.getAllByTestId('mock-textarea')[0], 'Typed detail')
+      await fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+      await utils.rerender({ isSaving: true })
+      return utils
+    }
+
+    it('stays open until the save finishes', async () => {
+      const { emitted, rerender } = await typeAndSave()
+
+      expect(emitted().save).toHaveLength(1)
+      expect(emitted().close).toBeUndefined()
+
+      await rerender({ isSaving: false })
+      await flushPromises()
+
+      expect(emitted().close).toHaveLength(1)
+    })
+
+    it('locks the fields and the close button during the save', async () => {
+      await typeAndSave()
+
+      screen.getAllByTestId('mock-textarea').forEach(el => expect(el).toBeDisabled())
+      expect(screen.getByTitle(/discards unsaved changes/)).toBeDisabled()
+    })
+
+    it('keeps the text and shows the error inline when the save fails', async () => {
+      const { emitted, rerender } = await typeAndSave()
+
+      await rerender({ isSaving: false, saveError: new Error('HTTP 500') })
+      await flushPromises()
+
+      expect(emitted().close).toBeUndefined()
+      expect(screen.getAllByTestId('mock-textarea')[0]).toHaveValue('Typed detail')
+      expect(screen.getByRole('alert')).toHaveTextContent('HTTP 500')
+      expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled()
+    })
+
+    it('prefers the API\'s explanation of the failure', async () => {
+      const { rerender } = await typeAndSave()
+      const err = Object.assign(new Error('HTTP 403'), { body: { error: 'User has insufficient privilege' } })
+
+      await rerender({ isSaving: false, saveError: err })
+      await flushPromises()
+
+      expect(screen.getByRole('alert')).toHaveTextContent('User has insufficient privilege')
+    })
+
+    it('clears the error when the next save starts', async () => {
+      const { rerender } = await typeAndSave()
+      await rerender({ isSaving: false, saveError: new Error('HTTP 500') })
+      await flushPromises()
+
+      await fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
+
+    it('keeps the error when the row being edited is clicked again', async () => {
+      const popoverRef = ref(null)
+      const state = reactive({ ...defaultProps, currentReview: null })
+      renderWithProviders({ render: () => h(ReviewEditPopover, { ref: popoverRef, ...state }) })
+      state.currentReview = defaultReview
+      await flushPromises()
+      await fireEvent.update(screen.getAllByTestId('mock-textarea')[0], 'Typed detail')
+      await fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+      state.isSaving = true
+      await flushPromises()
+      Object.assign(state, { isSaving: false, saveError: new Error('HTTP 500') })
+      await flushPromises()
+
+      popoverRef.value.openForRow({ target: document.body, clientX: 0 }, true)
+      await flushPromises()
+
+      expect(screen.getByRole('alert')).toHaveTextContent('HTTP 500')
+    })
+
+    it('clears the error on Undo', async () => {
+      const { rerender } = await typeAndSave()
+      await rerender({ isSaving: false, saveError: new Error('HTTP 500') })
+      await flushPromises()
+
+      await fireEvent.click(screen.getByTitle('Undo changes'))
+
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
+
+    it('closes after a retry succeeds', async () => {
+      const { emitted, rerender } = await typeAndSave()
+      await rerender({ isSaving: false, saveError: new Error('HTTP 500') })
+      await flushPromises()
+
+      await fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+      await rerender({ isSaving: true, saveError: null })
+      await rerender({ isSaving: false })
+      await flushPromises()
+
+      expect(emitted().close).toHaveLength(1)
+    })
+
+    it('does not warn about unsaved changes during the save', async () => {
+      const { emitted } = await typeAndSave()
+
+      await fireEvent.click(screen.getByTestId('trigger-hide'))
+      await flushPromises()
+
+      expect(emitted().close).toBeUndefined()
+      expect(screen.queryByText(/your changes to close/)).not.toBeInTheDocument()
+    })
+
+    it('does not close for a status change that finishes while nothing was saved', async () => {
+      const { emitted, rerender } = createWrapper({ currentReview: defaultReview, isSaving: true })
+
+      await rerender({ isSaving: false })
+      await flushPromises()
+
+      expect(emitted().close).toBeUndefined()
     })
   })
 

@@ -52,38 +52,63 @@ watch(taskOptions, (options) => {
 // derives the output endpoint's taskName from task.name).
 const activeTask = computed(() => tasks.value.find(t => t.taskId === selectedTask.value))
 
+const ruleModalVisible = ref(false)
+const editingRule = ref(null)
+const editingIndex = ref(-1)
+const showDeleteModal = ref(false)
+
 // Review Aging rules for this collection. Each rule carries a UI-only client
 // `_clientId` for stable DataTable keys plus the persisted rule fields.
 const {
   state: rules,
   isLoading: rulesLoading,
+  error: rulesError,
   execute: loadRules,
 } = useAsyncState(
   async () => {
     const config = await fetchReviewAgingConfig(props.collectionId)
     return config.map((rule, i) => ({ _clientId: `${i}-${Date.now()}`, ...rule }))
   },
-  { initialState: [] },
+  // rulesError is shown inline.
+  { initialState: [], onError: null },
 )
 
-watch(() => props.collectionId, () => loadRules())
+// True when a save succeeded but the reload after it failed: the grid then
+// shows the rules from before the save.
+const rulesStale = ref(false)
+
+// useAsyncState keeps the last state on error, so clear it first or a failed
+// load would leave the previous collection's rules on screen. An open editor
+// was working on the old list, so it must not save into the new collection.
+watch(() => props.collectionId, () => {
+  rules.value = []
+  rulesStale.value = false
+  ruleModalVisible.value = false
+  showDeleteModal.value = false
+  loadRules()
+})
+
+const rulesSaving = ref(false)
 
 // Persist the full rule array (the API replaces all rules on every save), then
 // reload so the grid shows the server's canonical rules (with display-rich
-// targets). On failure the displayed rules are left untouched.
+// targets). On failure the displayed rules are left untouched. The grid is
+// locked until both finish: a change built on the list in between would restore
+// whatever the save in flight just removed.
 async function persistRules(next) {
+  rulesSaving.value = true
   try {
     await saveReviewAgingConfig(props.collectionId, rulesToPutPayload(next))
     await loadRules()
+    rulesStale.value = !!rulesError.value
   }
   catch (err) {
     triggerError(err)
   }
+  finally {
+    rulesSaving.value = false
+  }
 }
-
-const ruleModalVisible = ref(false)
-const editingRule = ref(null)
-const editingIndex = ref(-1)
 
 const openNewRule = () => {
   editingRule.value = null
@@ -123,7 +148,6 @@ const onRuleSaved = (rule) => {
   persistRules(next)
 }
 
-const showDeleteModal = ref(false)
 const ruleToDelete = ref(null)
 
 const deleteMessage = computed(() =>
@@ -204,9 +228,16 @@ const showTaskOutput = () => {
           </ActionButton>
         </div>
 
+        <div v-if="rulesError" class="load-error">
+          <i class="pi pi-exclamation-triangle" />
+          <span v-if="rulesStale">Your change was saved, but the rules could not be reloaded, so this list is out of date. Reload this page to continue.</span>
+          <span v-else>Could not load rules, so they can't be changed. Reload this page and try again.</span>
+        </div>
+
         <ReviewAgingRulesTable
           :rules="rules"
-          :loading="rulesLoading"
+          :loading="rulesLoading || rulesSaving"
+          :load-failed="!!rulesError"
           :can-edit="canEdit"
           @new="openNewRule"
           @edit="openEditRule"
@@ -241,6 +272,16 @@ const showTaskOutput = () => {
 
 <style scoped>
 @import "../collection-manage.css";
+
+.load-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  color: var(--color-text-dim);
+  border: 1px dashed var(--color-border-default);
+  border-radius: 6px;
+}
 
 .manage-tasks {
   max-width: 700px;

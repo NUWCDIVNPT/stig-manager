@@ -95,7 +95,35 @@ describe('tagAssetsModal', () => {
     const utils = renderWithProviders(TagAssetsModal, { props: baseProps })
     await utils.rerender({ ...baseProps, visible: true })
 
-    await waitFor(() => expect(triggerError).toHaveBeenCalledWith(err))
+    await screen.findByText(/could not load assets/i)
+    expect(triggerError).not.toHaveBeenCalled()
     expect(screen.getAllByText('(0)')).toHaveLength(2)
+  })
+
+  it('blocks Save after a failed load so the label is not removed from every asset', async () => {
+    const err = new Error('boom')
+    fetchCollectionAssetsBasic.mockRejectedValue(err)
+    const baseProps = { visible: false, collectionId: 'c1', label }
+    const utils = renderWithProviders(TagAssetsModal, { props: baseProps })
+    await utils.rerender({ ...baseProps, visible: true })
+
+    await screen.findByText(/could not load assets/i)
+    expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled()
+    expect(replaceLabelAssets).not.toHaveBeenCalled()
+  })
+
+  it('enables Save again when a reopened modal loads successfully', async () => {
+    fetchCollectionAssetsBasic.mockRejectedValueOnce(new Error('boom'))
+    const baseProps = { visible: false, collectionId: 'c1', label }
+    const utils = renderWithProviders(TagAssetsModal, { props: baseProps })
+    await utils.rerender({ ...baseProps, visible: true })
+    await screen.findByText(/could not load assets/i)
+
+    await utils.rerender({ ...baseProps, visible: false })
+    await utils.rerender({ ...baseProps, visible: true })
+
+    await waitFor(() => expect(screen.getByText('(2)')).toBeInTheDocument())
+    expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled()
+    expect(screen.queryByText(/could not load assets/i)).not.toBeInTheDocument()
   })
 })

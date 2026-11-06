@@ -2,7 +2,7 @@
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
 import { computed, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 import ArchiveProgressDialog from '../../../components/common/ArchiveProgressDialog.vue'
 import RuleInfo from '../../../components/common/RuleInfo.vue'
 import { notFoundLocation } from '../../../router/notFound.js'
@@ -128,6 +128,7 @@ const ruleContent = computed(() => selectedRuleId.value ? loadedRule.value : nul
 const {
   state: reviewsData,
   isLoading: isReviewsLoading,
+  error: reviewsError,
   execute: loadReviews,
 } = useAsyncState(
   ruleId => fetchReviewsByRule(collectionId.value, ruleId, labelFilterParams.value),
@@ -135,6 +136,11 @@ const {
 )
 
 const mergedReviewsData = computed(() => {
+  // Without the reviews every row would look unreviewed, and saving one replaces
+  // the real review.
+  if (reviewsError.value) {
+    return []
+  }
   const allAssets = assets.value || []
   const reviews = reviewsData.value || []
   const ruleId = selectedRuleId.value
@@ -232,17 +238,30 @@ function loadSelectedRule(ruleId) {
 
 // load data when we have a selected rule and collection/benchmarkid/revisionstr
 watch(selectedRuleId, (ruleId) => {
+  // mergedReviewsData stamps the selected rule on these rows, so the previous
+  // rule's reviews must not survive into the new one, loaded or not.
+  reviewsData.value = []
   if (!ruleId) {
     loadedRule.value = null
-    reviewsData.value = []
     return
   }
   loadSelectedRule(ruleId)
 })
 
+const ruleTable = ref(null)
+
 function onSelectRule(ruleId) {
+  if (ruleTable.value?.blockIfUnsaved()) {
+    return
+  }
   selectedRuleId.value = ruleId
 }
+
+onBeforeRouteLeave(() => !ruleTable.value?.blockIfUnsaved())
+
+// The router reuses this view across routes. The label filter is a query-only
+// update, and it can drop the row being edited, so it is guarded too.
+onBeforeRouteUpdate(() => !ruleTable.value?.blockIfUnsaved())
 
 // Checklist menu > Export Result Archive: every Asset in the current (label-filtered)
 // list, for this STIG at the route's revision, as in the legacy client.
@@ -332,7 +351,12 @@ async function runBulkAction(actionType, rows, rejectText) {
   }
 }
 
+// Each of these ends in a reviews reload, and a failed one empties the grid
+// under the open editor.
 function onBulkAction(actionType) {
+  if (ruleTable.value?.blockIfUnsaved()) {
+    return
+  }
   const rows = selectedRows.value
   if (!rows?.length) { return }
   if (actionType === 'batchEdit') {
@@ -413,10 +437,12 @@ async function onBatchEditConfirm(payload) {
             </SplitterPanel>
             <SplitterPanel :size="50" :min-size="20">
               <RuleTable
+                ref="ruleTable"
                 v-model:selection="selectedRows"
                 data-tour="collection-review-reviews"
                 :grid-data="mergedReviewsData"
                 :is-loading="showReviewsLoading"
+                :load-failed="!!reviewsError"
                 :selected-rule-id="selectedRuleId"
                 :collection-id="collectionId"
                 :field-settings="fieldSettings"

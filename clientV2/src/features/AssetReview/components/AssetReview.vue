@@ -1,8 +1,8 @@
 <script setup>
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
-import { computed, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { computed, ref, watch } from 'vue'
+import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 import RuleInfo from '../../../components/common/RuleInfo.vue'
 import { notFoundLocation } from '../../../router/notFound.js'
 import { getHttpStatus } from '../../../shared/api/apiClient.js'
@@ -158,6 +158,14 @@ function mergeReview(review) {
 function onGridRefresh() {
   loadChecklist()
 }
+
+const checklistGrid = ref(null)
+
+onBeforeRouteLeave(() => !checklistGrid.value?.blockIfUnsaved())
+
+// The router reuses this view across assets, and each rule click rewrites
+// ?ruleId, so only a change of path can be leaving the open review.
+onBeforeRouteUpdate((to, from) => to.path === from.path || !checklistGrid.value?.blockIfUnsaved())
 </script>
 
 <template>
@@ -185,6 +193,7 @@ function onGridRefresh() {
       >
         <SplitterPanel :size="75" :min-size="40">
           <AssetChecklistGrid
+            ref="checklistGrid"
             data-tour="asset-review-checklist"
             :grid-data="gridData"
             :is-checklist-loading="isChecklistLoading"
