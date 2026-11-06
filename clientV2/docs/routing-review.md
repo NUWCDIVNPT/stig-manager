@@ -16,8 +16,8 @@ Done items keep their original finding for reference. Line links reflect the cod
 | 6 | Orphan route `/assets/:assetId` | Security | ✅ e169a965 |
 | 7 | Grants go stale | Security | ✅ uncommitted |
 | 8 | Denials aren't handled consistently | Security | ✅ uncommitted |
-| 9 | Recent views leak between users | Security | Open |
-| 10 | Nav rail admin check never updates | Security | Open |
+| 9 | Recent views leak between users | Security | ⏭️ Skipped (accepted risk) |
+| 10 | Nav rail admin check never updates | Security | ✅ uncommitted |
 | 11 | Error checks rely on message text | Security | Open |
 | 12 | Label filter lost on the way into Asset Review | Label filter | Open |
 | 13 | Tab switches drop each tab's own query | URL state | Open (prototype stashed) |
@@ -96,14 +96,16 @@ Done items keep their original finding for reference. Line links reflect the cod
   - Not an admin → silent redirect to Home.
 - **Fix:** pick one behavior, or at least show a toast.
 
-### 9. Recent views leak between users
+### 9. Recent views leak between users — ⏭️ Skipped (accepted risk)
 
+- **Decision (2026-11-06):** not fixing. It only matters when people share one OS login and browser profile, which they don't in practice. Only names show (a click on someone else's entry hits the 404 page from #8). A per-user key would only hide the list on screen; the data would still be readable in DevTools.
 - **Where:** [useRecentViews.js:3](../src/features/NavRail/composables/useRecentViews.js#L3)
 - **Problem:** saved in localStorage under a single key that isn't tied to the user. On a shared workstation, the next user sees the previous user's collection and asset names.
 - **Fix:** add the userId to the key.
 
-### 10. Nav rail admin check never updates
+### 10. Nav rail admin check never updates — ✅ uncommitted
 
+- **Done:** the nav rail uses `useCurrentUser().isAdmin`, the same source as the guard. Tests swap the user in the real store and check the Admin item follows.
 - **Where:** [useNavItems.js:7](../src/features/NavRail/composables/useNavItems.js#L7)
 - **Problem:** destructures `user` from the store, so `isAdmin` keeps the value from startup.
 - **Fix:** use `useCurrentUser().isAdmin`.
