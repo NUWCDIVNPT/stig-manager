@@ -2,7 +2,7 @@ import { fireEvent, screen } from '@testing-library/vue'
 import { flushPromises } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { reactive } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 // API Mocks
 import { fetchCollection } from '../../../shared/api/collectionsApi.js'
 
@@ -52,6 +52,8 @@ vi.mock('../composables/useReviewActionAvailability.js', () => ({
 vi.mock('vue-router', () => ({
   useRoute: vi.fn(),
   useRouter: vi.fn(),
+  onBeforeRouteLeave: vi.fn(),
+  onBeforeRouteUpdate: vi.fn(),
 }))
 
 // Child Component Mocks
@@ -69,12 +71,19 @@ vi.mock('../components/CollectionChecklistGrid.vue', () => ({
   },
 }))
 
+const ruleTableApi = vi.hoisted(() => ({ blockIfUnsaved: vi.fn(() => false) }))
+
 vi.mock('../components/RuleTable.vue', () => ({
   default: {
     name: 'RuleTable',
-    props: ['selection', 'gridData', 'isLoading', 'selectedRuleId', 'collectionId', 'fieldSettings', 'canAccept', 'isSaving', 'actionStates'],
+    props: ['selection', 'gridData', 'isLoading', 'selectedRuleId', 'collectionId', 'fieldSettings', 'canAccept', 'isSaving', 'actionStates', 'loadFailed'],
+    setup(_, { expose }) {
+      expose(ruleTableApi)
+      return {}
+    },
     template: `
-      <div data-testid="mock-rule-table">
+      <div data-testid="mock-rule-table" :data-load-failed="String(!!loadFailed)">
+        <span data-testid="rule-table-rows">{{ gridData.map(r => r.assetId + ':' + (r.result ?? '-')).join(',') }}</span>
         <button data-testid="emit-select-row" @click="$emit('update:selection', [{ assetId: 'asset-1', ruleId: 'V-123' }])">Select Row</button>
         <button data-testid="emit-bulk-submit" @click="$emit('bulk-action', 'submit')">Submit</button>
         <button data-testid="emit-bulk-reject" @click="$emit('bulk-action', 'reject')">Reject</button>
@@ -332,6 +341,85 @@ describe('collectionReview.vue', () => {
       expect(fetchRule).toHaveBeenCalledWith('bench-1', 'rev-1', 'V-456')
       expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-456', {})
     })
+
+    it('stays on the rule when the open review has unsaved edits', async () => {
+      createWrapper()
+      await flushPromises()
+      vi.clearAllMocks()
+      ruleTableApi.blockIfUnsaved.mockReturnValueOnce(true)
+
+      await fireEvent.click(screen.getByTestId('emit-select-rule'))
+      await flushPromises()
+
+      expect(fetchReviewsByRule).not.toHaveBeenCalled()
+      expect(fetchRule).not.toHaveBeenCalled()
+    })
+
+    it('does not show the previous rule\'s reviews while the next rule loads', async () => {
+      createWrapper()
+      await flushPromises()
+      expect(screen.getByTestId('rule-table-rows')).toHaveTextContent('asset-1:fail')
+      fetchReviewsByRule.mockReturnValue(new Promise(() => {}))
+
+      await fireEvent.click(screen.getByTestId('emit-select-rule'))
+      await flushPromises()
+
+      expect(screen.getByTestId('rule-table-rows')).toHaveTextContent('asset-1:-')
+    })
+
+    it('reports a failed reviews load and offers no rows to edit', async () => {
+      createWrapper()
+      await flushPromises()
+      fetchReviewsByRule.mockRejectedValue(new Error('boom'))
+
+      await fireEvent.click(screen.getByTestId('emit-select-rule'))
+      await flushPromises()
+
+      expect(screen.getByTestId('mock-rule-table')).toHaveAttribute('data-load-failed', 'true')
+      expect(screen.getByTestId('rule-table-rows').textContent).toBe('')
+    })
+  })
+
+  describe('unsaved edits and navigation', () => {
+    const here = { path: '/collection/1/benchmark/S/revision/V1R1' }
+
+    function guards() {
+      createWrapper()
+      return {
+        leave: onBeforeRouteLeave.mock.calls[0][0],
+        update: onBeforeRouteUpdate.mock.calls[0][0],
+      }
+    }
+
+    beforeEach(() => {
+      ruleTableApi.blockIfUnsaved.mockReset().mockReturnValue(false)
+    })
+
+    it('allows leaving when there is nothing unsaved', () => {
+      expect(guards().leave({ path: '/' }, here)).toBe(true)
+    })
+
+    it('blocks leaving with unsaved edits', () => {
+      ruleTableApi.blockIfUnsaved.mockReturnValue(true)
+
+      expect(guards().leave({ path: '/' }, here)).toBe(false)
+    })
+
+    it('blocks moving to another revision, where the router reuses this view', () => {
+      ruleTableApi.blockIfUnsaved.mockReturnValue(true)
+
+      expect(guards().update({ path: '/collection/1/benchmark/S/revision/V2R1' }, here)).toBe(false)
+    })
+
+    it('blocks a label filter change, which can drop the row being edited', () => {
+      ruleTableApi.blockIfUnsaved.mockReturnValue(true)
+
+      expect(guards().update({ ...here, query: { labels: 'a' } }, here)).toBe(false)
+    })
+
+    it('allows a label filter change when there is nothing unsaved', () => {
+      expect(guards().update({ ...here, query: { labels: 'a' } }, here)).toBe(true)
+    })
   })
 
   describe('bulk Action Handlers', () => {
@@ -354,6 +442,23 @@ describe('collectionReview.vue', () => {
       })
       // Should reload reviews after bulk save
       expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-123', {})
+    })
+
+    it('does not run a bulk action over unsaved edits, because a failed reload empties the grid', async () => {
+      createWrapper()
+      await flushPromises()
+      await fireEvent.click(screen.getByTestId('emit-select-row'))
+      await flushPromises()
+      ruleTableApi.blockIfUnsaved.mockReturnValue(true)
+
+      await fireEvent.click(screen.getByTestId('emit-bulk-submit'))
+      await fireEvent.click(screen.getByTestId('emit-bulk-reject'))
+      await fireEvent.click(screen.getByTestId('emit-bulk-batchEdit'))
+      await flushPromises()
+      ruleTableApi.blockIfUnsaved.mockReset().mockReturnValue(false)
+
+      expect(postReviewBatch).not.toHaveBeenCalled()
+      expect(screen.queryByTestId('mock-reject-modal')).not.toBeInTheDocument()
     })
 
     it('opens RejectReasonModal on reject, then calls postReviewBatch on confirm', async () => {

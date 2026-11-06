@@ -2,7 +2,7 @@ import { fireEvent, screen } from '@testing-library/vue'
 import { flushPromises } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick, reactive, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 
 // API Mocks
 import { fetchAsset, fetchCollection, fetchStigRevisions } from '../api/assetReviewApi.js'
@@ -41,9 +41,13 @@ vi.mock('../composables/useRuleDetail.js', () => ({
 vi.mock('vue-router', () => ({
   useRoute: vi.fn(),
   useRouter: vi.fn(),
+  onBeforeRouteLeave: vi.fn(),
+  onBeforeRouteUpdate: vi.fn(),
 }))
 
 // Child Component Mocks
+const gridApi = vi.hoisted(() => ({ blockIfUnsaved: vi.fn(() => false) }))
+
 vi.mock('../components/AssetChecklistGrid.vue', () => ({
   default: {
     name: 'AssetChecklistGrid',
@@ -55,6 +59,10 @@ vi.mock('../components/AssetChecklistGrid.vue', () => ({
         <button data-testid="emit-review-saved" @click="$emit('review-saved', { ruleId: 'V-123', result: 'pass' })">Save Review</button>
       </div>
     `,
+    setup(_, { expose }) {
+      expose(gridApi)
+      return {}
+    },
   },
 }))
 
@@ -208,6 +216,45 @@ describe('assetReview.vue', () => {
       await nextTick()
 
       expect(mockSelectRule).toHaveBeenCalledWith('V-789')
+    })
+  })
+
+  describe('unsaved edits and navigation', () => {
+    const here = { path: '/collection/1/asset/1/stig/S/revision/V1R1' }
+
+    function guards() {
+      createWrapper()
+      return {
+        leave: onBeforeRouteLeave.mock.calls[0][0],
+        update: onBeforeRouteUpdate.mock.calls[0][0],
+      }
+    }
+
+    beforeEach(() => {
+      gridApi.blockIfUnsaved.mockReset().mockReturnValue(false)
+    })
+
+    it('allows leaving when there is nothing unsaved', () => {
+      expect(guards().leave({ path: '/' }, here)).toBe(true)
+    })
+
+    it('blocks leaving with unsaved edits', () => {
+      gridApi.blockIfUnsaved.mockReturnValue(true)
+
+      expect(guards().leave({ path: '/' }, here)).toBe(false)
+    })
+
+    it('blocks moving to another asset, where the router reuses this view', () => {
+      gridApi.blockIfUnsaved.mockReturnValue(true)
+
+      expect(guards().update({ path: '/collection/1/asset/2/stig/S/revision/V1R1' }, here)).toBe(false)
+    })
+
+    it('ignores the ?ruleId rewrite as the user clicks through rules', () => {
+      gridApi.blockIfUnsaved.mockReturnValue(true)
+
+      expect(guards().update({ ...here, query: { ruleId: 'R2' } }, here)).toBe(true)
+      expect(gridApi.blockIfUnsaved).not.toHaveBeenCalled()
     })
   })
 
