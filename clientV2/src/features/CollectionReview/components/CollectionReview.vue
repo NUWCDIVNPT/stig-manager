@@ -157,10 +157,6 @@ watch([stigKey, selectedLabelNames], ([key], [prevKey] = []) => {
   if (!(collectionId.value && benchmarkId.value && revisionStr.value)) {
     return
   }
-  // Back/Forward and the STIG dropdowns reuse this page, so the new URL's rule replaces the old one
-  if (prevKey && key !== prevKey) {
-    selectedRuleId.value = typeof route.query.ruleId === 'string' ? route.query.ruleId : null
-  }
   loadChecklist()
   loadAssets()
   if (key === prevKey && selectedRuleId.value) {

@@ -32,14 +32,28 @@ export function useQuerySelection(key) {
   const route = useRoute()
   const router = useRouter()
   const ownRoute = route.name
-  const fromUrl = route.query[key]
+  const readUrl = () => (typeof route.query[key] === 'string' && route.query[key]) || null
+  const toQueryValue = value => (value == null ? null : String(value))
 
-  const selected = ref(typeof fromUrl === 'string' && fromUrl ? fromUrl : null)
+  const selected = ref(readUrl())
 
-  // route.name is watched too so returning to the tab re-syncs the URL with what it still shows
-  watch([selected, () => route.name], ([value, name]) => {
-    if (name === ownRoute) {
-      writeQueryKey(router, route, key, value == null ? null : String(value))
+  watch(selected, (value) => {
+    if (route.name === ownRoute) {
+      writeQueryKey(router, route, key, toQueryValue(value))
+    }
+  })
+
+  // Returning to a hidden tab: the URL catches up with what the tab still shows.
+  // A URL change while already on this route (Back/Forward, links, Recent views, another collection): the selection follows the URL.
+  watch(() => [route.name, readUrl()], ([name, urlValue], [prevName]) => {
+    if (name !== ownRoute) {
+      return
+    }
+    if (prevName !== ownRoute) {
+      writeQueryKey(router, route, key, toQueryValue(selected.value))
+    }
+    else if (urlValue !== toQueryValue(selected.value)) {
+      selected.value = urlValue
     }
   })
 

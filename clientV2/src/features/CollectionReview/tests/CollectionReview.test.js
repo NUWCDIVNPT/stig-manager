@@ -215,7 +215,8 @@ describe('collectionReview.vue', () => {
       await flushPromises()
       vi.clearAllMocks()
 
-      routeState.query = { labelName: 'label-a' }
+      // The filter change keeps the selected rule's ?ruleId, as useLabelFilterQuery does
+      routeState.query = { ruleId: 'V-123', labelName: 'label-a' }
       routeState.fullPath = '/collections/coll-1/bench-1/rev-1?labelName=label-a'
       await flushPromises()
 

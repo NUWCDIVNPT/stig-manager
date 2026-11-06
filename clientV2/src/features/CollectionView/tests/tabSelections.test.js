@@ -136,6 +136,33 @@ describe('stIGs tab selection in the URL', () => {
     expect(query().stig).toBe('A')
   })
 
+  it('restores the STIG on Back after switching to another collection on the same tab', async () => {
+    await open(CollectionStigsTab, 'stigs', { stig: 'B' })
+
+    // Nav rail to collection c2: CollectionView and this tab are reused with a new collectionId
+    await router.push({ name: 'collection-stigs', params: { collectionId: 'c2' } })
+    await rerender({ collectionId: 'c2' })
+    await flushPromises()
+    expect(selectedIn('stig')).toBe('A')
+    expect(query()).toEqual({ stig: 'A' })
+
+    router.back()
+    await vi.waitFor(() => expect(router.currentRoute.value.params.collectionId).toBe('c1'))
+    await rerender({ collectionId: 'c1' })
+    await flushPromises()
+    expect(selectedIn('stig')).toBe('B')
+    expect(query()).toEqual({ stig: 'B' })
+    expect(fetchCollectionChecklistAssets).toHaveBeenLastCalledWith('c1', 'B', {})
+  })
+
+  it('follows a link to the same tab with a different STIG', async () => {
+    await open(CollectionStigsTab, 'stigs', { stig: 'A' })
+    await router.push({ name: 'collection-stigs', params: { collectionId: 'c1' }, query: { stig: 'B' } })
+    await flushPromises()
+    expect(selectedIn('stig')).toBe('B')
+    expect(fetchCollectionChecklistAssets).toHaveBeenLastCalledWith('c1', 'B', {})
+  })
+
   it('clears the selection when no STIGs are listed', async () => {
     fetchCollectionStigSummary.mockImplementation(async () => [])
     await open(CollectionStigsTab, 'stigs', { stig: 'B' })

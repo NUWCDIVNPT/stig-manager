@@ -13,6 +13,8 @@ function makeRouter() {
     routes: [
       { path: '/stigs', name: 'stigs', component: Empty },
       { path: '/findings', name: 'findings', component: Empty },
+      // Same route name for every collection, like the real collection tabs
+      { path: '/collection/:collectionId/stigs', name: 'collection-stigs', component: Empty },
     ],
   })
 }
@@ -127,5 +129,56 @@ describe('useQuerySelection', () => {
     await router.push('/stigs?stig=A')
     await flushPromises()
     expect(query().stig).toBe('B')
+  })
+
+  describe('follows the URL while its route stays current', () => {
+    it('adopts a new value from a link or Recent view to the same route', async () => {
+      const selected = await setup('/stigs?stig=A')
+      await router.push('/stigs?stig=C')
+      await flushPromises()
+      expect(selected.value).toBe('C')
+    })
+
+    it('clears when the URL drops the key', async () => {
+      const selected = await setup('/stigs?stig=A')
+      await router.push('/stigs')
+      await flushPromises()
+      expect(selected.value).toBeNull()
+    })
+
+    it('restores the selection on Back after switching collection (same route, reused component)', async () => {
+      const selected = await setup('/collection/1/stigs?stig=A')
+
+      await router.push('/collection/2/stigs')
+      await flushPromises()
+      expect(selected.value).toBeNull()
+      // the tab then picks collection 2's first row
+      selected.value = 'B'
+      await flushPromises()
+      expect(query()).toEqual({ stig: 'B' })
+
+      router.back()
+      await vi.waitFor(() => expect(router.currentRoute.value.params.collectionId).toBe('1'))
+      await flushPromises()
+      expect(selected.value).toBe('A')
+      expect(query()).toEqual({ stig: 'A' })
+    })
+
+    it('ignores URL changes while another route is current (hidden tab)', async () => {
+      const selected = await setup('/stigs?stig=A')
+      await router.push('/findings?stig=Findings_scope')
+      await flushPromises()
+      expect(selected.value).toBe('A')
+    })
+
+    it('does not fight its own writes', async () => {
+      const selected = await setup('/stigs')
+      selected.value = 'A'
+      await flushPromises()
+      selected.value = 'B'
+      await flushPromises()
+      expect(selected.value).toBe('B')
+      expect(query().stig).toBe('B')
+    })
   })
 })
