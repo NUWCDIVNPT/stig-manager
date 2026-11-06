@@ -11,7 +11,7 @@ Beyond the permissions granted to normal Users, App Managers have the ability to
    * Update STIG Benchmarks in STIG Manager
    * Alter Collections to which they have not been specifically granted access
    * Alter User Grants
-   * Export and Import Application Data (Experimental feature for now.)
+   * Export and Import Application Data (Experimental)
 
 
 **The most important responsibility of the Application Manager is importing and updating the set of STIGs the system will use to calculate statistics, assign to Assets, populate the Library, and reference in all other functions.  This should be done quarterly, with the release of new STIG Library Compilations,  or individually as new STIGs are released.**
@@ -77,9 +77,9 @@ STIG Manager tracks Reviews by their Rule Version (often called "STIG ID") and t
 Delete STIGs or Revisions
 -------------------------------
 
-Many STIGs are released quarterly, and old STIGs quickly lose their relevance.  To keep a handle on Database growth and simplify the user experience, you may want to delete old STIG revisions. We have found it is not especially useful to keep STIGs greater than 1 revision away from the current one around, as they are no longer valid for most purposes. 
+Many STIGs are released quarterly, and old STIGs quickly lose their relevance.  To keep a handle on Database growth and simplify the user experience, you may want to delete old STIG revisions. It is usually not useful to keep STIGs greater than 1 revision away from the current one around, as they are no longer valid for most purposes. 
 
-You might also delete a STIG revision if you have updated STIGs but would prefer to revert to an older one as the default (hopefully not for long!).  In this case, you might want to delete the current STIG revision.  
+You might also delete a STIG revision if you have updated STIGs but would prefer to revert to an older one as the default.  In this case, you might want to delete the current STIG revision.  
 
 .. warning::
       When you delete a STIG or a specific STIG revision, Reviews for Rules **that only appear in that revision** will be deleted. If the Rules in that STIG are found in other STIGs or revisions, the Reviews will remain.

@@ -39,7 +39,7 @@ Every STIG Manager deployment consists of:
 **OpenID Connect (OIDC) Provider** (Authentication Service, deployer-provided)
   - Manages user accounts and authentication
   - Issues OAuth2 JWT tokens for API access
-  - Tested providers: Red Hat Keycloak, Okta, F5, Azure Entra
+  - Tested providers: Keycloak, Okta, F5, and Azure Entra ID
   - Must support Authorization Code Flow with PKCE for web clients
 
 **MySQL Database** (Data Persistence, deployer-provided)

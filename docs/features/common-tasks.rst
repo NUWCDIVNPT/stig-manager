@@ -96,7 +96,7 @@ Transfer Assets to Another Collection
 
 Assets can be moved from one Collection to another if a User has "Manage" or "Owner" grants on both Collections. 
 
-Transfer Assets with the :ref:`"Transfer To" button in the Manage Collection Workspace.<transfer-asset>`
+Transfer Assets with the :ref:`"Transfer To" button in the Collection Management Workspace.<transfer-asset>`
 
 
 Tag Assets with Labels

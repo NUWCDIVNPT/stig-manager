@@ -48,9 +48,9 @@ The Nav Rail runs along STIG Manager's left edge, and provides Users a list of t
 Create your first Collection
 ======================================
 
-* **You may have already been given access to some Collections in STIG Manager, or you may not have the Collection Creator privilege. If your Nav Rail is already sufficiently populated, feel free to skip to the Evaluate Asset STIG Compliance section.**
+* **You may have already been given access to some Collections in STIG Manager, or you may not have the Collection Creator privilege. If your Nav Rail is already sufficiently populated, feel free to skip to the Evaluate an Asset for STIG compliance section.**
 
-By default, most users will have the Collection Creator role, allowing them to create their own Collection of Assets and their STIGs, and to provide access to them to other users in the system. 
+By default, most users will have the Collection Creator privilege, allowing them to create their own Collection of Assets and their STIGs, and to provide access to them to other users in the system. 
 
 #. After logging into the system, click the green *+* button next to Collections in the Nav Rail on the left.
 

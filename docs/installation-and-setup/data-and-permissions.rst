@@ -24,7 +24,7 @@ Collections are composed of:
 Metadata
 ---------------------------------------------
 
-Collections, Assets, and Reviews all support a JSON field called "metadata" for general use that can be used to enhance functionality and associate arbitrary data with those elements. The project is exploring best practices and uses for this feature. Third-party Clients that "play nice" with this field would be expected to preserve metadata already there unless they put it there, perhaps in a nested object with their client name as the Key.
+Collections, Assets, and Reviews all support a JSON field called "metadata" for general use that can be used to enhance functionality and associate arbitrary data with those elements. Third-party Clients that "play nice" with this field would be expected to preserve metadata already there unless they put it there, perhaps in a nested object with their client name as the Key.
 
 The Project Clients and API make use of the following metadata keys. These keys are reserved for use by the STIG Manager project and should not be used by third-party Clients:
 

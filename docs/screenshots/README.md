@@ -53,7 +53,7 @@ Highlights are anchored to selectors, so they follow the element when the layout
 
 ## Determinism
 
-Animations and transitions are disabled, the viewport and device scale are fixed, and all entries render from the same seed fixture. Font rendering still differs between machines, so `check` is meaningful only against images produced on the same platform. Committed images should come from the CI regeneration job.
+Animations and transitions are disabled, the viewport and device scale are fixed, and all entries render from the same seed fixture. Font rendering still differs between machines, so `check` is meaningful only against images produced on the same platform.
 
 ## Future enhancements
 
