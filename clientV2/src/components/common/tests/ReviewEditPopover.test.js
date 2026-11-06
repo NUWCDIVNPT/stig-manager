@@ -1,6 +1,7 @@
 import { fireEvent, screen } from '@testing-library/vue'
 import { flushPromises } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { h, reactive, ref } from 'vue'
 import { renderWithProviders } from '../../../testUtils/utils.js'
 
 import ReviewEditPopover from '../ReviewEditPopover.vue'
@@ -257,6 +258,25 @@ describe('reviewEditPopover.vue', () => {
       await fireEvent.click(screen.getByRole('button', { name: 'Save' }))
 
       expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
+
+    it('keeps the error when the row being edited is clicked again', async () => {
+      const popoverRef = ref(null)
+      const state = reactive({ ...defaultProps, currentReview: null })
+      renderWithProviders({ render: () => h(ReviewEditPopover, { ref: popoverRef, ...state }) })
+      state.currentReview = defaultReview
+      await flushPromises()
+      await fireEvent.update(screen.getAllByTestId('mock-textarea')[0], 'Typed detail')
+      await fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+      state.isSaving = true
+      await flushPromises()
+      Object.assign(state, { isSaving: false, saveError: new Error('HTTP 500') })
+      await flushPromises()
+
+      popoverRef.value.openForRow({ target: document.body, clientX: 0 }, true)
+      await flushPromises()
+
+      expect(screen.getByRole('alert')).toHaveTextContent('HTTP 500')
     })
 
     it('clears the error on Undo', async () => {

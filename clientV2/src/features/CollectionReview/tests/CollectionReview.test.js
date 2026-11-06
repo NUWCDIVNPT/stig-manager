@@ -444,6 +444,23 @@ describe('collectionReview.vue', () => {
       expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-123', {})
     })
 
+    it('does not run a bulk action over unsaved edits, because a failed reload empties the grid', async () => {
+      createWrapper()
+      await flushPromises()
+      await fireEvent.click(screen.getByTestId('emit-select-row'))
+      await flushPromises()
+      ruleTableApi.blockIfUnsaved.mockReturnValue(true)
+
+      await fireEvent.click(screen.getByTestId('emit-bulk-submit'))
+      await fireEvent.click(screen.getByTestId('emit-bulk-reject'))
+      await fireEvent.click(screen.getByTestId('emit-bulk-batchEdit'))
+      await flushPromises()
+      ruleTableApi.blockIfUnsaved.mockReset().mockReturnValue(false)
+
+      expect(postReviewBatch).not.toHaveBeenCalled()
+      expect(screen.queryByTestId('mock-reject-modal')).not.toBeInTheDocument()
+    })
+
     it('opens RejectReasonModal on reject, then calls postReviewBatch on confirm', async () => {
       createWrapper()
       await flushPromises()

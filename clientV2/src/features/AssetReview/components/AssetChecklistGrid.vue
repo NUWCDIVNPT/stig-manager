@@ -143,7 +143,11 @@ const activePlan = computed(() => {
 
 const activeSkipLines = computed(() => activePlan.value?.skipLines ?? [])
 
+// The batch ends in a checklist reload, as Refresh does (see onRefresh).
 function onBulkAction(action) {
+  if (blockIfUnsaved()) {
+    return
+  }
   pendingAction.value = action
 }
 
@@ -192,8 +196,13 @@ const { isLoading: isSavingStatus, execute: executeSaveStatus } = useAsyncState(
   async ({ ruleId, actionType }) => {
     const status = statusPayloadForAction(actionType)
     if (status === null) { return null }
-    const saved = await patchReview(collectionId.value, assetId.value, ruleId, { status })
-    emit('review-saved', { ...saved, ruleId })
+    const savedAssetId = assetId.value
+    const saved = await patchReview(collectionId.value, savedAssetId, ruleId, { status })
+    // Submit and Accept don't hold the reviewer here, so the grid may show
+    // another asset by now; rows merge by ruleId and would take this review.
+    if (String(assetId.value) === String(savedAssetId)) {
+      emit('review-saved', { ...saved, ruleId })
+    }
     return saved
   },
   { immediate: false },

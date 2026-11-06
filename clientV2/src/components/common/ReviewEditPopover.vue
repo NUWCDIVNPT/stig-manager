@@ -214,7 +214,6 @@ function dismiss() {
 function openAt(event, method) {
   lastAnchorEvent.value = event
   showUnsavedWarning.value = false
-  saveFailure.value = null
   popover.value[method](event)
 }
 
@@ -315,6 +314,7 @@ function reposition(event) {
 // sized to the row so the arrow lands on the row edge and the flip decision
 // sees the row's full extent.
 function openForRow(event, isSameRow) {
+  // A click on the row being edited keeps its failed-save message
   if (!isSameRow) {
     saveFailure.value = null
   }

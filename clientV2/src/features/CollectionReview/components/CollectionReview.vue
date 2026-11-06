@@ -314,7 +314,12 @@ async function runBulkAction(actionType, rows, rejectText) {
   }
 }
 
+// Each of these ends in a reviews reload, and a failed one empties the grid
+// under the open editor.
 function onBulkAction(actionType) {
+  if (ruleTable.value?.blockIfUnsaved()) {
+    return
+  }
   const rows = selectedRows.value
   if (!rows?.length) { return }
   if (actionType === 'batchEdit') {

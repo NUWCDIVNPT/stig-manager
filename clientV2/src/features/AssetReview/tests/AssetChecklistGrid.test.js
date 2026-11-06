@@ -192,6 +192,32 @@ describe('assetChecklistGrid unsaved edits', () => {
     expect(popoverApi.openForRow).toHaveBeenCalled()
   })
 
+  it('drops a Submit result that returns after the grid moved to another asset', async () => {
+    let finish
+    patchReview.mockReturnValueOnce(new Promise((resolve) => {
+      finish = resolve
+    }))
+    const { emitted, rerender } = render()
+    await fireEvent.click(await screen.findByTestId('open-r1'))
+    await fireEvent.click(screen.getByTestId('trigger-status'))
+
+    await rerender({ assetId: 'a2' })
+    finish({ status: { label: 'submitted' } })
+    await waitFor(() => expect(patchReview).toHaveBeenCalledWith('c1', 'a1', 'r1', expect.anything()))
+    await new Promise(r => setTimeout(r, 0))
+
+    expect(emitted()['review-saved']).toBeUndefined()
+  })
+
+  it('merges a Submit result for the asset still shown', async () => {
+    patchReview.mockResolvedValueOnce({ status: { label: 'submitted' } })
+    const { emitted } = render()
+    await fireEvent.click(await screen.findByTestId('open-r1'))
+    await fireEvent.click(screen.getByTestId('trigger-status'))
+
+    await waitFor(() => expect(emitted()['review-saved']).toHaveLength(1))
+  })
+
   it('does not refresh over unsaved edits, because a failed reload unmounts the grid', async () => {
     const onRefresh = vi.fn()
     renderWithProviders({
@@ -223,6 +249,21 @@ describe('assetChecklistGrid unsaved edits', () => {
     await fireEvent.click(screen.getByTestId('table-refresh'))
 
     expect(onRefresh).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not start a bulk action over unsaved edits', async () => {
+    await openRow()
+    popoverApi.isDirty = true
+
+    await fireEvent.click(await screen.findByRole('button', { name: /Submit All/i }))
+
+    expect(screen.queryByRole('button', { name: /Submit 1 review/i })).not.toBeInTheDocument()
+    expect(popoverApi.triggerUnsavedWarning).toHaveBeenCalled()
+
+    popoverApi.isDirty = false
+    await fireEvent.click(screen.getByRole('button', { name: /Submit All/i }))
+
+    expect(await screen.findByRole('button', { name: /Submit 1 review/i })).toBeInTheDocument()
   })
 
   it('passes a failed save to the popover instead of the global error modal', async () => {
