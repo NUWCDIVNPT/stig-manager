@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/vue'
+import { fireEvent, screen } from '@testing-library/vue'
 import { flushPromises } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createMemoryHistory, createRouter } from 'vue-router'
@@ -36,8 +36,9 @@ vi.mock('primevue/splitterpanel', () => ({ default: { name: 'SplitterPanel', tem
 vi.mock('../api/collectionApi.js', () => ({
   fetchCollection: vi.fn(() => Promise.resolve({ collectionId: 'c1', name: 'Test Collection' })),
 }))
+let mockRoleId = 1
 vi.mock('../../../shared/composables/useCurrentUser.js', () => ({
-  useCurrentUser: () => ({ getCollectionRoleId: () => 1 }),
+  useCurrentUser: () => ({ getCollectionRoleId: () => mockRoleId }),
 }))
 vi.mock('../../NavRail/composables/useRecentViews.js', () => ({
   useRecentViews: () => ({ addView: vi.fn(), removeView: mockRemoveView }),
@@ -56,7 +57,10 @@ function makeRouter() {
         path: `/collection/:collectionId/${tab}`,
         name: `collection-${tab}`,
         component: Empty,
+        // matches the real route: Management hides the label filter
+        meta: tab === 'management' ? { labelFilter: false } : {},
       })),
+      { path: '/collection/:collectionId/asset/:assetId', name: 'collection-asset-review', component: Empty },
       { path: '/:pathMatch(.*)*', name: 'not-found', component: Empty },
     ],
   })
@@ -192,5 +196,117 @@ describe('collectionView route errors', () => {
 
     expect(mockTriggerError).toHaveBeenCalledWith(err)
     expect(router.currentRoute.value.name).toBe('collection-stigs')
+  })
+})
+
+describe('collectionView per-tab query', () => {
+  let router
+  let rerender
+
+  const query = () => router.currentRoute.value.query
+  // vue-router keeps a single label as a string or a one-item array depending on how it was set
+  const labels = () => [].concat(query().labelName ?? [])
+
+  async function clickTab(name) {
+    await fireEvent.click(screen.getByRole('tab', { name }))
+    await flushPromises()
+  }
+
+  async function start(tab, startQuery = {}, collectionId = 'c1') {
+    router = makeRouter()
+    await router.push({ name: `collection-${tab}`, params: { collectionId }, query: startQuery })
+    await router.isReady()
+    ;({ rerender } = renderWithProviders(CollectionView, {
+      props: { collectionId },
+      global: { plugins: [router] },
+    }))
+    await flushPromises()
+  }
+
+  beforeEach(() => {
+    mockRoleId = 1
+  })
+
+  it('restores the Findings query after a round trip to another tab', async () => {
+    await start('findings', { agg: 'ruleId', sel: 'SV-1' })
+
+    await clickTab('STIGs')
+    expect(router.currentRoute.value.name).toBe('collection-stigs')
+    expect(query()).toEqual({})
+
+    await clickTab('Findings')
+    expect(router.currentRoute.value.name).toBe('collection-findings')
+    expect(query()).toEqual({ agg: 'ruleId', sel: 'SV-1' })
+  })
+
+  it('does not leak one tab\'s query into another tab', async () => {
+    await start('findings', { agg: 'ruleId' })
+
+    await clickTab('Assets')
+    await clickTab('Labels')
+    expect(query()).toEqual({})
+  })
+
+  it('opens a never-visited tab with only the label filter', async () => {
+    await start('stigs', { labelName: 'Alpha' })
+
+    await clickTab('Findings')
+    expect(query()).toEqual({ labelName: ['Alpha'] })
+  })
+
+  it('applies the current label filter, not the one the tab had when it was left', async () => {
+    await start('findings', { agg: 'ruleId', labelName: 'Old' })
+
+    await clickTab('STIGs')
+    await router.replace({ query: { labelName: 'New' } })
+    await flushPromises()
+
+    await clickTab('Findings')
+    expect(query().agg).toBe('ruleId')
+    expect(labels()).toEqual(['New'])
+  })
+
+  it('does not bring back a label filter that was cleared on another tab', async () => {
+    await start('findings', { agg: 'ruleId', labelName: 'Old' })
+
+    await clickTab('STIGs')
+    await router.replace({ query: {} })
+    await flushPromises()
+
+    await clickTab('Findings')
+    expect(query()).toEqual({ agg: 'ruleId' })
+  })
+
+  it('keeps the label filter off Management', async () => {
+    mockRoleId = 3
+    await start('findings', { agg: 'ruleId', labelName: 'Alpha' })
+
+    await clickTab('Management')
+    expect(router.currentRoute.value.name).toBe('collection-management')
+    expect(query()).toEqual({})
+  })
+
+  it('forgets saved queries when the collection changes', async () => {
+    await start('findings', { agg: 'ruleId' })
+    await clickTab('STIGs')
+
+    await router.push({ name: 'collection-stigs', params: { collectionId: 'c2' } })
+    await rerender({ collectionId: 'c2' })
+    await flushPromises()
+
+    await clickTab('Findings')
+    expect(router.currentRoute.value.params.collectionId).toBe('c2')
+    expect(query()).toEqual({})
+  })
+
+  it('back from Asset Review returns to the restored Findings URL', async () => {
+    await start('findings', { agg: 'ruleId', sel: 'SV-1' })
+    await clickTab('STIGs')
+    await clickTab('Findings')
+
+    await router.push({ name: 'collection-asset-review', params: { collectionId: 'c1', assetId: 'a1' } })
+    router.back()
+    await vi.waitFor(() => expect(router.currentRoute.value.name).toBe('collection-findings'))
+    expect(query()).toEqual({ agg: 'ruleId', sel: 'SV-1' })
   })
 })

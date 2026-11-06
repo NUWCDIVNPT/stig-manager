@@ -20,7 +20,7 @@ Done items keep their original finding for reference. Line links reflect the cod
 | 10 | Nav rail admin check never updates | Security | ✅ 74011beb |
 | 11 | Error checks rely on message text | Security | ✅ 3219802c |
 | 12 | Label filter lost on the way into Asset Review | Label filter | ✅ uncommitted |
-| 13 | Tab switches drop each tab's own query | URL state | Open (prototype stashed) |
+| 13 | Tab switches drop each tab's own query | URL state | ✅ uncommitted |
 | 14 | Collection-tab selections are local state | URL state | Open |
 | 15 | Collection Review selected rule isn't in the URL | URL state | Open |
 | 16 | Collections page tab isn't in the URL | URL state | Open |
@@ -152,8 +152,9 @@ Planned as its own effort and PR (decided 2026-10-28; merged here from `docs/tod
 
 **Current state:** STIG Library (`ruleId`, `compareRev`, `diffKey`), Findings (`stig`, `agg`, `sel`) and Asset Review (`ruleId`) already keep their state in the URL, each with its own hand-rolled read-on-mount + `router.replace` watch. The label filter lives in the URL via `useLabelFilterQuery` but is carried route-to-route per call site.
 
-### 13. Tab switches drop each tab's own query
+### 13. Tab switches drop each tab's own query — ✅ uncommitted
 
+- **Done:** stash applied by hand (one hunk had drifted). Tests click the real tabs: round trip restores Findings' query, no leaking between tabs, current label filter wins, Management stays unfiltered, a collection switch clears saved queries, and Back from Asset Review lands on the restored URL. The stash itself is still in `git stash list`; drop it once this is committed.
 - **Problem:** Collection tabs are route navigation, but panels stay mounted (`visitedTabs` + `v-if`), so component state survives a tab switch while the URL does not. Leaving Findings for STIGs and returning drops `?agg/stig/sel` while Findings still shows them, so URL and screen disagree, and Back from Asset Review lands on the default view.
 - **Prototype stashed:** `git stash list` → *"url-state: CollectionView per-tab query save/restore"*. Keeps a `tabQueries` Map in `CollectionView`: on leave, save `route.query` minus label keys; on return, re-attach it with the current label filter on top; clear on collection switch. ~10 lines, tests and lint passed.
 - **Why it's safe:** hidden tabs are inert. Findings only changes state from user input or its one-shot mount restore, so a saved query can't go stale.

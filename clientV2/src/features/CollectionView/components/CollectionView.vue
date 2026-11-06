@@ -125,17 +125,24 @@ const tabToRoute = {
   management: 'collection-management',
 }
 
+// Each tab's own query (e.g. Findings ?agg/stig/sel), saved on leave and restored on
+// return so the URL matches the hidden tab's retained state. Label keys stay current.
+const tabQueries = new Map()
+
 // Active tab based on route
 const activeTab = computed({
   get: () => routeToTab[route.name] || 'stigs',
   set: (newTab) => {
     const routeName = tabToRoute[newTab]
     if (routeName) {
+      const { labelName, labelMatch, ...ownQuery } = route.query
+      tabQueries.set(activeTab.value, ownQuery)
       const target = { name: routeName, params: { collectionId: props.collectionId } }
       // A tab that hides the label filter (meta.labelFilter false, i.e. Management)
       // does not carry it either, so the filter is never applied invisibly
       const carriesLabelFilter = router.resolve(target).meta.labelFilter !== false
-      router.push(carriesLabelFilter ? { ...target, query: labelFilterParams.value } : target)
+      const savedQuery = tabQueries.get(newTab) ?? {}
+      router.push({ ...target, query: carriesLabelFilter ? { ...savedQuery, ...labelFilterParams.value } : savedQuery })
     }
   },
 })
@@ -168,6 +175,7 @@ watch([activeTab, selectedLabelNames], ([tab, names]) => {
 }, { immediate: true })
 watch(() => props.collectionId, () => {
   visitedTabs.value = new Set([activeTab.value])
+  tabQueries.clear()
 })
 
 const tabPanelsPt = {
