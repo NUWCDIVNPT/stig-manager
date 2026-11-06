@@ -88,7 +88,7 @@ describe('grantAclModal', () => {
     async function openFailed() {
       const utils = openModal()
       await screen.findByText(/could not load the acl/i)
-      expect(triggerError).toHaveBeenCalledWith(err)
+      expect(triggerError).not.toHaveBeenCalled()
       return utils
     }
 

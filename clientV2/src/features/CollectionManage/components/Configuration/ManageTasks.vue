@@ -69,14 +69,20 @@ const {
     const config = await fetchReviewAgingConfig(props.collectionId)
     return config.map((rule, i) => ({ _clientId: `${i}-${Date.now()}`, ...rule }))
   },
-  { initialState: [] },
+  // rulesError is shown inline.
+  { initialState: [], onError: null },
 )
+
+// True when a save succeeded but the reload after it failed: the grid then
+// shows the rules from before the save.
+const rulesStale = ref(false)
 
 // useAsyncState keeps the last state on error, so clear it first or a failed
 // load would leave the previous collection's rules on screen. An open editor
 // was working on the old list, so it must not save into the new collection.
 watch(() => props.collectionId, () => {
   rules.value = []
+  rulesStale.value = false
   ruleModalVisible.value = false
   showDeleteModal.value = false
   loadRules()
@@ -94,6 +100,7 @@ async function persistRules(next) {
   try {
     await saveReviewAgingConfig(props.collectionId, rulesToPutPayload(next))
     await loadRules()
+    rulesStale.value = !!rulesError.value
   }
   catch (err) {
     triggerError(err)
@@ -223,7 +230,8 @@ const showTaskOutput = () => {
 
         <div v-if="rulesError" class="load-error">
           <i class="pi pi-exclamation-triangle" />
-          <span>Could not load rules, so they can't be changed. Reload this page and try again.</span>
+          <span v-if="rulesStale">Your change was saved, but the rules could not be reloaded, so this list is out of date. Reload this page to continue.</span>
+          <span v-else>Could not load rules, so they can't be changed. Reload this page and try again.</span>
         </div>
 
         <ReviewAgingRulesTable

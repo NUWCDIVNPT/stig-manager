@@ -34,7 +34,8 @@ const rules = ref([])
 
 const { isLoading, error: loadError, execute: executeLoad } = useAsyncState(
   () => fetchGrantAcl(props.collectionId, props.grant?.grantId),
-  { immediate: false },
+  // loadError is shown inline.
+  { immediate: false, onError: null },
 )
 
 const { isLoading: isSaving, execute: executeSave } = useAsyncState(

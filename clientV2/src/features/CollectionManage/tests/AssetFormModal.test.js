@@ -51,9 +51,21 @@ describe('assetFormModal', () => {
     await open()
 
     await screen.findByText(/could not load this asset/i)
-    expect(triggerError).toHaveBeenCalledWith(err)
+    expect(triggerError).not.toHaveBeenCalled()
 
     expect(screen.getByRole('button', { name: 'Save asset' })).toBeDisabled()
     expect(replaceAsset).not.toHaveBeenCalled()
+  })
+
+  it('still shows the create form when the label and STIG lists fail to load', async () => {
+    fetchStigs.mockRejectedValue(new Error('boom'))
+    const createProps = { ...baseProps, assetId: null }
+    const utils = renderWithProviders(AssetFormModal, { props: createProps })
+    await utils.rerender({ ...createProps, visible: true })
+
+    await screen.findByText(/could not load labels and stigs/i)
+    expect(screen.queryByText(/could not load this asset/i)).not.toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Enter description')).toBeInTheDocument()
+    expect(triggerError).not.toHaveBeenCalled()
   })
 })

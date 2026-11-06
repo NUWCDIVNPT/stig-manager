@@ -142,7 +142,7 @@ describe('manageTasks', () => {
       renderTasks()
       await screen.findByText(/could not load rules/i)
 
-      expect(triggerError).toHaveBeenCalledWith(err)
+      expect(triggerError).not.toHaveBeenCalled()
       expect(newRuleButton()).toBeDisabled()
     })
 
@@ -176,9 +176,24 @@ describe('manageTasks', () => {
       await user.click(screen.getAllByTitle('Delete rule')[0])
       await user.click(screen.getByRole('button', { name: 'Delete' }))
 
-      await screen.findByText(/could not load rules/i)
+      await screen.findByText(/change was saved/i)
       expect(saveReviewAgingConfig).toHaveBeenCalledTimes(1)
       allRowActions().forEach(el => expect(el).toBeDisabled())
+    })
+
+    it('says the change was saved when only the reload after it fails', async () => {
+      const user = userEvent.setup()
+      fetchReviewAgingConfig.mockResolvedValueOnce([rule('First')])
+      renderTasks()
+      await screen.findByText('First')
+
+      fetchReviewAgingConfig.mockRejectedValue(err)
+      await user.click(screen.getByTitle('Delete rule'))
+      await user.click(screen.getByRole('button', { name: 'Delete' }))
+
+      expect(await screen.findByText(/change was saved.*out of date/i)).toBeInTheDocument()
+      expect(screen.queryByText(/could not load rules/i)).not.toBeInTheDocument()
+      expect(triggerError).not.toHaveBeenCalled()
     })
 
     it('does not open the rule editor from a row double-click', async () => {
@@ -190,7 +205,7 @@ describe('manageTasks', () => {
       fetchReviewAgingConfig.mockRejectedValue(err)
       await user.click(screen.getByTitle('Delete rule'))
       await user.click(screen.getByRole('button', { name: 'Delete' }))
-      await screen.findByText(/could not load rules/i)
+      await screen.findByText(/change was saved/i)
 
       await user.dblClick(screen.getByText('First'))
       expect(screen.queryByText('rule editor open')).not.toBeInTheDocument()

@@ -386,6 +386,25 @@ describe('useAssetForm — superseded loads', () => {
 
     expect(f.form.name).toBe('')
   })
+
+  it('keeps the newer label list when the first load lands last, so a save does not drop a label', async () => {
+    const slowLabels = deferred()
+    const added = { labelId: 'l2', name: 'Added' }
+    fetchCollectionLabels.mockReturnValueOnce(slowLabels.promise)
+    fetchCollectionLabels.mockResolvedValueOnce([added])
+    fetchAssetWithStigs.mockResolvedValue({ name: 'asset a', labels: [added], stigs: [] })
+    const f = useAssetForm({ collectionId: ref('c1'), assetId: ref('a') })
+
+    const firstLoad = f.initialize()
+    await flush()
+    await f.initialize()
+
+    slowLabels.resolve([])
+    await firstLoad
+
+    expect(f.collectionLabels.value).toEqual([added])
+    expect(f.buildPayload().labelNames).toEqual(['Added'])
+  })
 })
 
 describe('useAssetForm — canSave', () => {
@@ -398,6 +417,16 @@ describe('useAssetForm — canSave', () => {
     expect(f.isValid.value).toBe(true)
     expect(f.loadError.value).toBeTruthy()
     expect(f.canSave.value).toBe(false)
+  })
+
+  it('allows a new asset to be created after a failed load', async () => {
+    fetchStigs.mockRejectedValue(new Error('boom'))
+    const f = setupCreate()
+    await f.initialize()
+    f.form.name = 'typed by the user'
+
+    expect(f.loadError.value).toBeTruthy()
+    expect(f.canSave.value).toBe(true)
   })
 
   it('blocks a save while the form is loading', async () => {

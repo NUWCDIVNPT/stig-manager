@@ -192,4 +192,28 @@ describe('stigAssignmentModal', () => {
     expect(screen.getByText('(1)')).toBeInTheDocument()
     expect(writeStigProps).not.toHaveBeenCalled()
   })
+
+  it('loads when it is mounted already visible', async () => {
+    fetchAssetsByCollectionStig.mockResolvedValue([{ assetId: 1 }, { assetId: 2 }])
+
+    renderWithProviders(StigAssignmentModal, {
+      props: { ...closedProps, selectedStig: stigX, visible: true },
+    })
+
+    await waitFor(() => expect(screen.getByText('(2)')).toBeInTheDocument())
+    expect(screen.getByText('(1)')).toBeInTheDocument()
+  })
+
+  it('blocks Save after the asset list fails to load, so the assignment is not emptied', async () => {
+    fetchCollectionAssetsWithStigs.mockRejectedValue(new Error('boom'))
+    fetchAssetsByCollectionStig.mockResolvedValue([{ assetId: 1 }])
+
+    const utils = renderWithProviders(StigAssignmentModal, { props: closedProps })
+    await utils.rerender({ ...closedProps, selectedStig: stigX, visible: true })
+
+    await waitFor(() => expect(triggerError).toHaveBeenCalled())
+    await waitFor(() => expect(fetchAssetsByCollectionStig).toHaveBeenCalled())
+    await new Promise(r => setTimeout(r))
+    expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled()
+  })
 })

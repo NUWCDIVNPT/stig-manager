@@ -66,11 +66,11 @@ export function useAssetForm({ collectionId, assetId, visible } = {}) {
         fetchCollectionLabels(unref(collectionId)),
         fetchStigs(),
       ])
-      collectionLabels.value = labelList ?? []
-      allStigs.value = stigs ?? []
       if (isStale()) {
         return
       }
+      collectionLabels.value = labelList ?? []
+      allStigs.value = stigs ?? []
 
       if (requestedId) {
         const asset = await fetchAssetWithStigs(requestedId)
@@ -93,11 +93,16 @@ export function useAssetForm({ collectionId, assetId, visible } = {}) {
         availableStigs.value = [...allStigs.value]
       }
     },
-    { immediate: false },
+    // The host shows loadError inline.
+    { immediate: false, onError: null },
   )
 
-  // Save replaces the whole asset, so a form that never loaded must not save.
-  const canSave = computed(() => isValid.value && !isLoading.value && !loadError.value)
+  // Save replaces the whole asset, so an edit form that never loaded must not
+  // save. A new asset has nothing to replace, so it can still be created
+  // without the label and STIG lists.
+  const canSave = computed(() =>
+    isValid.value && !isLoading.value && !(isEditMode.value && loadError.value),
+  )
 
   async function initialize() {
     nameError.value = null

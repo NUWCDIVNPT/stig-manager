@@ -91,7 +91,7 @@ const { isLoading: loadingStigs, execute: loadStigs } = useAsyncState(
   { immediate: false },
 )
 
-const { isLoading: loadingAssets, execute: loadAssets } = useAsyncState(
+const { isLoading: loadingAssets, error: assetsError, execute: loadAssets } = useAsyncState(
   () => fetchCollectionAssetsWithStigs(props.collectionId),
   { immediate: false },
 )
@@ -125,10 +125,13 @@ const isLoading = computed(
   () => loadingStigs.value || loadingAssets.value || loadingStigAssets.value,
 )
 
+// Save replaces the whole assignment, so both lists the picker is built from
+// must have loaded.
 const canSave = computed(
   () => !isLoading.value
     && !saving.value
     && !!selectedBenchmarkId.value
+    && !assetsError.value
     && !stigAssetsError.value,
 )
 
@@ -222,11 +225,12 @@ async function onBenchmarkChange(value) {
   rebuildPicker()
 }
 
+// immediate: a parent may mount the modal already visible.
 watch(() => props.visible, (open) => {
   if (open) {
     onOpen()
   }
-})
+}, { immediate: true })
 
 function rebuildPicker() {
   const benchId = selectedBenchmarkId.value

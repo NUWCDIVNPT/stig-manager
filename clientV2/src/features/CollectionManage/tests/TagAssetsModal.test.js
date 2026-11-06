@@ -95,7 +95,8 @@ describe('tagAssetsModal', () => {
     const utils = renderWithProviders(TagAssetsModal, { props: baseProps })
     await utils.rerender({ ...baseProps, visible: true })
 
-    await waitFor(() => expect(triggerError).toHaveBeenCalledWith(err))
+    await screen.findByText(/could not load assets/i)
+    expect(triggerError).not.toHaveBeenCalled()
     expect(screen.getAllByText('(0)')).toHaveLength(2)
   })
 
@@ -106,9 +107,8 @@ describe('tagAssetsModal', () => {
     const utils = renderWithProviders(TagAssetsModal, { props: baseProps })
     await utils.rerender({ ...baseProps, visible: true })
 
-    await waitFor(() => expect(triggerError).toHaveBeenCalledWith(err))
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled())
-    expect(screen.getByText(/could not load assets/i)).toBeInTheDocument()
+    await screen.findByText(/could not load assets/i)
+    expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled()
     expect(replaceLabelAssets).not.toHaveBeenCalled()
   })
 
@@ -117,7 +117,7 @@ describe('tagAssetsModal', () => {
     const baseProps = { visible: false, collectionId: 'c1', label }
     const utils = renderWithProviders(TagAssetsModal, { props: baseProps })
     await utils.rerender({ ...baseProps, visible: true })
-    await waitFor(() => expect(triggerError).toHaveBeenCalled())
+    await screen.findByText(/could not load assets/i)
 
     await utils.rerender({ ...baseProps, visible: false })
     await utils.rerender({ ...baseProps, visible: true })

@@ -51,7 +51,8 @@ const { isLoading, error: loadError, execute: executeLoad } = useAsyncState(
     ])
     return partitionAssets(allAssets, taggedAssets, buildLabelMap(labels))
   },
-  { immediate: false },
+  // loadError is shown inline.
+  { immediate: false, onError: null },
 )
 
 const {
@@ -68,7 +69,7 @@ async function loadData() {
   if (!props.label) {
     return
   }
-  // null when superseded by a newer load or on error (already surfaced)
+  // null when superseded by a newer load or on error (shown inline)
   const result = await executeLoad()
   if (result) {
     pickerValue.value = result
