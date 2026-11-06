@@ -1,6 +1,6 @@
 <script setup>
 import TieredMenu from 'primevue/tieredmenu'
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
 import shieldGreenCheck from '../../../assets/shield-green-check.svg'
@@ -8,8 +8,6 @@ import ColumnToggle from '../../../components/common/ColumnToggle.vue'
 import DensityControls from '../../../components/common/DensityControls.vue'
 import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../components/common/GridSearch.vue'
-import { fetchStigRevisions } from '../../../shared/api/stigsApi.js'
-import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { getRevisionInfo } from '../../../shared/lib/checklistUtils.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 
@@ -35,6 +33,11 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  // The route STIG's revisions, from the page (useStigRevisions), for the revision date in the title
+  stigRevisions: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const emit = defineEmits(['apply-preset', 'export-archive'])
@@ -47,18 +50,7 @@ const route = useRoute()
 const benchmarkId = computed(() => route.params.benchmarkId)
 const revisionStr = computed(() => route.params.revisionStr)
 
-const { state: stigRevisions, execute: loadStigRevisions } = useAsyncState(
-  () => fetchStigRevisions(benchmarkId.value),
-  { immediate: false, initialState: [] },
-)
-
-onMounted(() => {
-  if (benchmarkId.value) {
-    loadStigRevisions()
-  }
-})
-
-const revisionInfo = computed(() => getRevisionInfo(revisionStr.value, stigRevisions.value))
+const revisionInfo = computed(() => getRevisionInfo(revisionStr.value, props.stigRevisions))
 
 const headerTitle = computed(() => {
   if (benchmarkId.value && revisionInfo.value?.display) {

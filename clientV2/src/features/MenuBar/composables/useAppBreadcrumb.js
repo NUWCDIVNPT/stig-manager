@@ -250,6 +250,7 @@ export function useAppBreadcrumb() {
           benchmarkId: newBenchmarkId,
           revisionStr: stigData?.revisionStr || undefined,
         },
+        query: pickLabelFilterQuery(route.query),
       })
     }
   }
@@ -283,6 +284,7 @@ export function useAppBreadcrumb() {
           benchmarkId: route.params.benchmarkId,
           revisionStr: newRevisionStr,
         },
+        query: pickLabelFilterQuery(route.query),
       })
     }
   }

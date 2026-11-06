@@ -4,9 +4,12 @@ import SplitterPanel from 'primevue/splitterpanel'
 import { computed, ref, watch } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 import RuleInfo from '../../../components/common/RuleInfo.vue'
+import { notFoundLocation } from '../../../router/notFound.js'
 import { getHttpStatus } from '../../../shared/api/apiClient.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
+import { useQuerySelection } from '../../../shared/composables/useQuerySelection.js'
+import { useStigRevisions } from '../../../shared/composables/useStigRevisions.js'
 import { useTours } from '../../../shared/composables/useTours.js'
 import { getRevisionInfo } from '../../../shared/lib/checklistUtils.js'
 import { defaultFieldSettings } from '../../../shared/lib/reviewFormUtils.js'
@@ -14,7 +17,6 @@ import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 import {
   fetchAsset,
   fetchCollection,
-  fetchStigRevisions,
 } from '../api/assetReviewApi.js'
 import { useChecklistData } from '../composables/useChecklistData.js'
 import { useRuleDetail } from '../composables/useRuleDetail.js'
@@ -34,12 +36,15 @@ const revisionStr = computed(() => route.params.revisionStr)
 // Fatal route-level error handler.
 // Only used for fetchAsset and fetchCollection — the two resources that define
 // whether this page is accessible at all. Any error on these → redirect.
+function redirectToNotFound() {
+  removeView(key => key.includes(`:${collectionId.value}:${assetId.value}`))
+  router.replace(notFoundLocation(route))
+}
+
 function handleRouteError(err) {
   const status = getHttpStatus(err)
-  const isPrivilegeError = err.body?.error === 'User has insufficient privilege to complete this request.'
-  if (status === 404 || status === 403 || status === 400 || isPrivilegeError) {
-    removeView(key => key.includes(`:${collectionId.value}:${assetId.value}`))
-    router.push({ name: 'not-found', params: { pathMatch: route.path.substring(1).split('/') } })
+  if (status === 404 || status === 403 || status === 400) {
+    redirectToNotFound()
   }
 }
 
@@ -61,6 +66,13 @@ watch(assetId, () => {
   }
 }, { immediate: true })
 
+// The URL's collection drives settings, role and save targets, so an asset from another collection is a bad URL
+watch([asset, collectionId], ([a, cId]) => {
+  if (a && String(a.collection?.collectionId) !== String(cId)) {
+    redirectToNotFound()
+  }
+})
+
 watch(collectionId, () => {
   if (collectionId.value) {
     loadCollection()
@@ -78,10 +90,7 @@ const canAccept = computed(() =>
   statusSettings.value.canAccept && roleId.value >= statusSettings.value.minAcceptGrant,
 )
 
-const { state: stigRevisions, execute: loadStigRevisions } = useAsyncState(
-  () => fetchStigRevisions(benchmarkId.value),
-  { immediate: false, initialState: [] },
-)
+const { revisions: stigRevisions } = useStigRevisions({ benchmarkId, revisionStr, onUnknown: redirectToNotFound })
 
 const revisionInfo = computed(() => getRevisionInfo(revisionStr.value, stigRevisions.value))
 
@@ -103,57 +112,16 @@ const {
   isRuleLoading,
   ruleContentError,
   selectRule,
-} = useRuleDetail({ ruleLookupMap, collectionId, assetId, benchmarkId, revisionStr })
-
-// If the route arrives with ?ruleId=… (e.g. from the Findings shield button),
-// pre-select that rule once the checklist's lookup map has populated.
-// AssetChecklistGridTable handles the scroll itself by watching its own
-// gridData, which avoids a mount-order race when the asset fetch lags the
-// checklist fetch. `map.has(...)` guards stale links pointing at rules
-// outside the loaded benchmark/revision.
-watch(ruleLookupMap, (map) => {
-  const queryRuleId = route.query.ruleId
-  if (!queryRuleId || !map) {
-    return
-  }
-  if (map.has(queryRuleId)) {
-    selectRule(queryRuleId)
-  }
-})
-
-// Mirror the active rule into ?ruleId so the URL stays shareable as the user
-// clicks through rules. router.replace avoids cluttering history; vue-router
-// no-ops when the next query equals the current one, so the watcher set above
-// (which echoes the URL → selectedRuleId) doesn't bounce.
-watch(selectedRuleId, (ruleId) => {
-  const next = { ...route.query }
-  if (ruleId) {
-    if (next.ruleId === ruleId) {
-      return
-    }
-    next.ruleId = ruleId
-  }
-  else {
-    if (next.ruleId === undefined) {
-      return
-    }
-    delete next.ruleId
-  }
-  router.replace({ query: next })
-})
+  // Kept in ?ruleId (like Collection Review), so Back, reload, links and the Findings shield select the rule;
+  // the grid replaces a stale one with its first rule once the checklist loads
+} = useRuleDetail({ ruleLookupMap, collectionId, assetId, benchmarkId, revisionStr, selectedRuleId: useQuerySelection('ruleId') })
 
 // assetId is included because the router reuses this component when only the
 // asset changes (Recent views, Back/Forward); without it the grid would keep
-// the previous asset's rows while saves target the new asset. The selection
-// is seeded from the incoming ?ruleId rather than cleared: clearing it would
-// make the watcher below strip ruleId from the URL the route just arrived on.
+// the previous asset's rows while saves target the new asset.
 watch([assetId, benchmarkId, revisionStr], () => {
-  selectRule(route.query.ruleId ?? null)
   checklistData.value = []
   if (benchmarkId.value && revisionStr.value) {
-    if (!stigRevisions.value?.length) {
-      loadStigRevisions()
-    }
     loadChecklist()
   }
 }, { immediate: true })

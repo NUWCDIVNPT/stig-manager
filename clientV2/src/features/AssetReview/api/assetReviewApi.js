@@ -13,7 +13,7 @@ export {
   putReview,
   putReviewMetadataValue,
 } from '../../../shared/api/reviewsApi.js'
-export { fetchRule, fetchStigRevisions } from '../../../shared/api/stigsApi.js'
+export { fetchRule } from '../../../shared/api/stigsApi.js'
 
 export function fetchChecklist(assetId, benchmarkId, revisionStr, projection) {
   return apiCall('getChecklistByAssetStig', {

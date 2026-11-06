@@ -8,6 +8,8 @@ import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { notFoundLocation } from '../../../router/notFound.js'
+import { getHttpStatus } from '../../../shared/api/apiClient.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
@@ -51,9 +53,10 @@ const { state: collection, execute: loadCollection } = useAsyncState(
   {
     immediate: false,
     onError: (err) => {
-      if (err.body?.error === 'User has insufficient privilege to complete this request.') {
+      // 403 = no grant (API PrivilegeError), 404 = gone, 400 = malformed id; same as the review pages
+      if ([400, 403, 404].includes(getHttpStatus(err))) {
         removeView(key => key.includes(`:${props.collectionId}`))
-        router.push({ name: 'not-found', params: { pathMatch: route.path.substring(1).split('/') } })
+        router.replace(notFoundLocation(route))
       }
       else {
         triggerError(err)
@@ -123,17 +126,24 @@ const tabToRoute = {
   management: 'collection-management',
 }
 
+// Each tab's own query (e.g. Findings ?agg/stig/sel), saved on leave and restored on
+// return so the URL matches the hidden tab's retained state. Label keys stay current.
+const tabQueries = new Map()
+
 // Active tab based on route
 const activeTab = computed({
   get: () => routeToTab[route.name] || 'stigs',
   set: (newTab) => {
     const routeName = tabToRoute[newTab]
     if (routeName) {
+      const { labelName, labelMatch, ...ownQuery } = route.query
+      tabQueries.set(activeTab.value, ownQuery)
       const target = { name: routeName, params: { collectionId: props.collectionId } }
       // A tab that hides the label filter (meta.labelFilter false, i.e. Management)
       // does not carry it either, so the filter is never applied invisibly
       const carriesLabelFilter = router.resolve(target).meta.labelFilter !== false
-      router.push(carriesLabelFilter ? { ...target, query: labelFilterParams.value } : target)
+      const savedQuery = tabQueries.get(newTab) ?? {}
+      router.push({ ...target, query: carriesLabelFilter ? { ...savedQuery, ...labelFilterParams.value } : savedQuery })
     }
   },
 })
@@ -166,6 +176,7 @@ watch([activeTab, selectedLabelNames], ([tab, names]) => {
 }, { immediate: true })
 watch(() => props.collectionId, () => {
   visitedTabs.value = new Set([activeTab.value])
+  tabQueries.clear()
 })
 
 const tabPanelsPt = {

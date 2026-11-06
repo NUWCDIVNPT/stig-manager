@@ -8,9 +8,10 @@ import CollectionChecklistGrid from '../components/CollectionChecklistGrid.vue'
 vi.mock('../components/CollectionChecklistGridHeader.vue', () => ({
   default: {
     name: 'CollectionChecklistGridHeader',
+    props: ['stigRevisions'],
     emits: ['update:searchFilter', 'update:filters'],
     template: `
-      <div>
+      <div data-testid="header" :data-stig-revisions="JSON.stringify(stigRevisions)">
         <button data-testid="search" @click="$emit('update:searchFilter', 'audit')">search</button>
         <button data-testid="filter-cat" @click="$emit('update:filters', [catRule])">cat</button>
       </div>
@@ -35,6 +36,12 @@ const gridData = [
 
 describe('collectionChecklistGrid search and filters', () => {
   beforeEach(() => localStorage.clear())
+
+  it('passes the page\'s STIG revisions to the header', () => {
+    const stigRevisions = [{ revisionStr: 'V1R2' }]
+    renderWithProviders(CollectionChecklistGrid, { props: { gridData, stigRevisions } })
+    expect(JSON.parse(screen.getByTestId('header').dataset.stigRevisions)).toEqual(stigRevisions)
+  })
 
   it('passes searched and filtered rows to the table, with the unfiltered total', async () => {
     renderWithProviders(CollectionChecklistGrid, { props: { gridData } })

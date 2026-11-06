@@ -1,7 +1,7 @@
 import { fireEvent, screen } from '@testing-library/vue'
 import { flushPromises } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 // API Mocks
 import { fetchCollection } from '../../../shared/api/collectionsApi.js'
@@ -9,6 +9,8 @@ import { fetchCollection } from '../../../shared/api/collectionsApi.js'
 // Composables Mocks
 import { useArchiveProgress } from '../../../shared/composables/useArchiveProgress.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
+import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
+import { useStigRevisions } from '../../../shared/composables/useStigRevisions.js'
 
 import { renderWithProviders } from '../../../testUtils/utils.js'
 import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
@@ -19,6 +21,10 @@ import { useReviewActionAvailability } from '../composables/useReviewActionAvail
 
 vi.mock('../../../shared/api/collectionsApi.js', () => ({
   fetchCollection: vi.fn(),
+}))
+
+vi.mock('../../../shared/composables/useStigRevisions.js', () => ({
+  useStigRevisions: vi.fn(),
 }))
 
 vi.mock('../api/collectionReviewApi.js', () => ({
@@ -60,9 +66,9 @@ vi.mock('vue-router', () => ({
 vi.mock('../components/CollectionChecklistGrid.vue', () => ({
   default: {
     name: 'CollectionChecklistGrid',
-    props: ['gridData', 'isLoading', 'selectedRuleId', 'assetCount', 'emptyMessage', 'canExportArchive'],
+    props: ['gridData', 'isLoading', 'selectedRuleId', 'assetCount', 'emptyMessage', 'canExportArchive', 'stigRevisions'],
     template: `
-      <div data-testid="mock-checklist-grid" :data-empty-message="emptyMessage" :data-can-export-archive="String(canExportArchive)">
+      <div data-testid="mock-checklist-grid" :data-empty-message="emptyMessage" :data-can-export-archive="String(canExportArchive)" :data-stig-revisions="JSON.stringify(stigRevisions)">
         <button data-testid="emit-select-rule" @click="$emit('select-rule', 'V-456')">Select Rule</button>
         <button data-testid="emit-refresh" @click="$emit('refresh')">Refresh</button>
         <button data-testid="emit-export-archive" @click="$emit('export-archive', { format: 'ckl', mode: 'mono' })">Export</button>
@@ -167,6 +173,7 @@ describe('collectionReview.vue', () => {
 
     mockDownload = vi.fn()
     useArchiveProgress.mockReturnValue({ download: mockDownload })
+    useStigRevisions.mockReturnValue({ revisions: ref([{ revisionStr: 'rev-1' }]) })
 
     useReviewActionAvailability.mockReturnValue({
       actionStates: { submit: true },
@@ -218,7 +225,8 @@ describe('collectionReview.vue', () => {
       await flushPromises()
       vi.clearAllMocks()
 
-      routeState.query = { labelName: 'label-a' }
+      // The filter change keeps the selected rule's ?ruleId, as useLabelFilterQuery does
+      routeState.query = { ruleId: 'V-123', labelName: 'label-a' }
       routeState.fullPath = '/collections/coll-1/bench-1/rev-1?labelName=label-a'
       await flushPromises()
 
@@ -277,16 +285,63 @@ describe('collectionReview.vue', () => {
       })
     })
 
+    it('keeps the URL\'s query and hash on the 404 page, like the route guard', async () => {
+      routeState.query = { labelName: 'web', ruleId: 'V-1' }
+      routeState.hash = '#top'
+      fetchCollection.mockRejectedValue({ status: 403 })
+      createWrapper()
+      await flushPromises()
+
+      expect(mockRouterReplace).toHaveBeenCalledWith({
+        name: 'not-found',
+        params: { pathMatch: ['collections', 'coll-1', 'bench-1', 'rev-1'] },
+        query: { labelName: 'web', ruleId: 'V-1' },
+        hash: '#top',
+      })
+    })
+
     it('removes recent view and redirects on 403 error', async () => {
       fetchCollection.mockRejectedValue({ status: 403 })
       createWrapper()
       await flushPromises()
 
       expect(mockRemoveView).toHaveBeenCalled()
-      expect(mockRouterPush).toHaveBeenCalledWith({
+      expect(mockRouterReplace).toHaveBeenCalledWith({
         name: 'not-found',
         params: { pathMatch: ['collections', 'coll-1', 'bench-1', 'rev-1'] },
+        query: {},
       })
+    })
+
+    // Shape of ApiError from apiClient: status from the response, body is the API's { error, detail }
+    const apiError = (status, error) => Object.assign(new Error(`HTTP ${status}`), { status, body: { error } })
+
+    it.each([400, 403, 404])('redirects to not-found when the collection fetch returns %i', async (status) => {
+      fetchCollection.mockRejectedValue(apiError(status, 'anything'))
+      createWrapper()
+      await flushPromises()
+
+      expect(mockRouterReplace).toHaveBeenCalledWith({
+        name: 'not-found',
+        params: { pathMatch: ['collections', 'coll-1', 'bench-1', 'rev-1'] },
+        query: {},
+      })
+    })
+
+    it('redirects on a 403 whatever the message says', async () => {
+      fetchCollection.mockRejectedValue(apiError(403, 'Access denied by proxy'))
+      createWrapper()
+      await flushPromises()
+
+      expect(mockRouterReplace).toHaveBeenCalledWith(expect.objectContaining({ name: 'not-found' }))
+    })
+
+    it('decides by status, not message text: a 500 with the privilege message does not redirect', async () => {
+      fetchCollection.mockRejectedValue(apiError(500, 'User has insufficient privilege to complete this request.'))
+      createWrapper()
+      await flushPromises()
+
+      expect(mockRouterReplace).not.toHaveBeenCalledWith(expect.objectContaining({ name: 'not-found' }))
     })
 
     it('removes recent view if checklist load fails', async () => {
@@ -295,6 +350,62 @@ describe('collectionReview.vue', () => {
       await flushPromises()
 
       expect(mockRemoveView).toHaveBeenCalled()
+    })
+
+    it('passes its STIG revisions to the checklist grid (one fetch for the page)', async () => {
+      createWrapper()
+      await flushPromises()
+      expect(JSON.parse(screen.getByTestId('mock-checklist-grid').dataset.stigRevisions)).toEqual([{ revisionStr: 'rev-1' }])
+    })
+
+    it('redirects to not-found when the STIG or revision is unknown', async () => {
+      createWrapper()
+      await flushPromises()
+      const [{ benchmarkId, revisionStr, onUnknown }] = useStigRevisions.mock.calls[0]
+      expect(benchmarkId.value).toBe('bench-1')
+      expect(revisionStr.value).toBe('rev-1')
+
+      onUnknown()
+      expect(mockRemoveView).toHaveBeenCalled()
+      expect(mockRouterReplace).toHaveBeenCalledWith({
+        name: 'not-found',
+        params: { pathMatch: ['collections', 'coll-1', 'bench-1', 'rev-1'] },
+        query: {},
+      })
+    })
+
+    it('sends a 400 for a malformed revision in the URL to not-found, without the error modal', async () => {
+      const { error, clearError } = useGlobalError()
+      clearError()
+      routeState.params.revisionStr = 'banana'
+      fetchCollectionChecklist.mockRejectedValue({ status: 400 })
+      createWrapper()
+      await flushPromises()
+
+      expect(error.value).toBeNull()
+      expect(mockRouterReplace).toHaveBeenCalledWith(expect.objectContaining({ name: 'not-found' }))
+    })
+
+    it('reports any other 400 through the error modal and stays on the page', async () => {
+      const { error, clearError } = useGlobalError()
+      clearError()
+      routeState.params.revisionStr = 'V1R1'
+      fetchCollectionChecklist.mockRejectedValue(Object.assign(new Error('Bad label param'), { status: 400 }))
+      createWrapper()
+      await flushPromises()
+
+      expect(error.value?.message).toBe('Bad label param')
+      expect(mockRouterReplace).not.toHaveBeenCalledWith(expect.objectContaining({ name: 'not-found' }))
+    })
+
+    it('still reports other checklist errors through the error modal', async () => {
+      const { error, clearError } = useGlobalError()
+      clearError()
+      fetchCollectionChecklist.mockRejectedValue(new Error('Server Error'))
+      createWrapper()
+      await flushPromises()
+
+      expect(error.value?.message).toBe('Server Error')
     })
 
     it('explains an empty checklist by the label filter', async () => {
@@ -419,6 +530,132 @@ describe('collectionReview.vue', () => {
 
     it('allows a label filter change when there is nothing unsaved', () => {
       expect(guards().update({ ...here, query: { labels: 'a' } }, here)).toBe(true)
+    })
+  })
+
+  describe('selected rule in the URL (?ruleId)', () => {
+    beforeEach(() => {
+      // Fresh arrays per call, like real fetches, so the grid watcher sees each reload
+      fetchCollectionChecklist.mockImplementation(async () => [{ ruleId: 'V-123' }, { ruleId: 'V-456' }])
+      // Query-only replaces update the mock route, as the real router would
+      mockRouterReplace.mockImplementation((to) => {
+        if (to.query && !to.name) {
+          routeState.query = to.query
+        }
+      })
+    })
+
+    it('puts the auto-selected first rule in the URL', async () => {
+      createWrapper()
+      await flushPromises()
+      expect(routeState.query).toEqual({ ruleId: 'V-123' })
+    })
+
+    it('writes a clicked rule to the URL, keeping the label filter', async () => {
+      routeState.query = { labelName: 'web' }
+      createWrapper()
+      await flushPromises()
+
+      await fireEvent.click(screen.getByTestId('emit-select-rule'))
+      await flushPromises()
+      expect(routeState.query).toEqual({ labelName: 'web', ruleId: 'V-456' })
+    })
+
+    it('restores the rule from the URL and loads only that rule', async () => {
+      routeState.query = { ruleId: 'V-456' }
+      createWrapper()
+      await flushPromises()
+
+      expect(fetchRule).toHaveBeenCalledTimes(1)
+      expect(fetchRule).toHaveBeenCalledWith('bench-1', 'rev-1', 'V-456')
+      expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-456', {})
+      expect(fetchReviewsByRule).not.toHaveBeenCalledWith('coll-1', 'V-123', expect.anything())
+      expect(screen.getByTestId('mock-rule-info').dataset.hasRule).toBe('true')
+    })
+
+    it('falls back to the first rule when the URL names one not in the checklist', async () => {
+      routeState.query = { ruleId: 'V-999' }
+      createWrapper()
+      await flushPromises()
+
+      expect(fetchRule).toHaveBeenCalledWith('bench-1', 'rev-1', 'V-123')
+      expect(fetchRule).not.toHaveBeenCalledWith('bench-1', 'rev-1', 'V-999')
+      expect(routeState.query).toEqual({ ruleId: 'V-123' })
+    })
+
+    it('keeps the rule through a label filter change and reloads only its reviews', async () => {
+      routeState.query = { ruleId: 'V-456' }
+      createWrapper()
+      await flushPromises()
+      fetchRule.mockClear()
+
+      routeState.query = { ruleId: 'V-456', labelName: 'web' }
+      await flushPromises()
+
+      expect(routeState.query.ruleId).toBe('V-456')
+      expect(fetchReviewsByRule).toHaveBeenLastCalledWith('coll-1', 'V-456', { labelName: ['web'] })
+      expect(fetchRule).not.toHaveBeenCalled()
+    })
+
+    it('takes the rule from the new URL when the STIG changes on this page (Back/Forward)', async () => {
+      routeState.query = { ruleId: 'V-123' }
+      createWrapper()
+      await flushPromises()
+      fetchRule.mockClear()
+
+      routeState.params.benchmarkId = 'bench-2'
+      routeState.query = { ruleId: 'V-456' }
+      await flushPromises()
+
+      expect(fetchRule).toHaveBeenCalledWith('bench-2', 'rev-1', 'V-456')
+      expect(routeState.query.ruleId).toBe('V-456')
+    })
+
+    it.each([
+      ['collection', { collectionId: 'coll-2' }, ['bench-1', 'rev-1'], 'coll-2'],
+      ['STIG', { benchmarkId: 'bench-2' }, ['bench-2', 'rev-1'], 'coll-1'],
+      ['revision', { revisionStr: 'rev-2' }, ['bench-1', 'rev-2'], 'coll-1'],
+    ])('reloads the same ruleId for the new page when the %s changes', async (_, params, [bench, rev], coll) => {
+      routeState.query = { ruleId: 'V-456' }
+      createWrapper()
+      await flushPromises()
+      fetchRule.mockClear()
+      fetchReviewsByRule.mockClear()
+
+      // e.g. Back/Forward or a link to the same rule elsewhere
+      Object.assign(routeState.params, params)
+      await flushPromises()
+
+      expect(fetchRule).toHaveBeenCalledTimes(1)
+      expect(fetchRule).toHaveBeenCalledWith(bench, rev, 'V-456')
+      expect(fetchReviewsByRule).toHaveBeenCalledWith(coll, 'V-456', {})
+      expect(routeState.query.ruleId).toBe('V-456')
+    })
+
+    it('does not reload the rule content on a label filter change', async () => {
+      routeState.query = { ruleId: 'V-456' }
+      createWrapper()
+      await flushPromises()
+      fetchRule.mockClear()
+
+      routeState.query = { ruleId: 'V-456', labelName: 'web' }
+      await flushPromises()
+      expect(fetchRule).not.toHaveBeenCalled()
+    })
+
+    it('starts at the first rule when a STIG switch drops ruleId', async () => {
+      routeState.query = { ruleId: 'V-456' }
+      createWrapper()
+      await flushPromises()
+      fetchRule.mockClear()
+
+      routeState.params.benchmarkId = 'bench-2'
+      routeState.path = '/collections/coll-1/bench-2/rev-1'
+      routeState.query = {}
+      await flushPromises()
+
+      expect(fetchRule).toHaveBeenCalledWith('bench-2', 'rev-1', 'V-123')
+      expect(routeState.query).toEqual({ ruleId: 'V-123' })
     })
   })
 

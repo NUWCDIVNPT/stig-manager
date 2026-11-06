@@ -83,6 +83,13 @@ export function calculateChecklistStats(data) {
   return { results, engine, statuses, total: data.length }
 }
 
+// The API's RevisionStr pattern; a revision outside it gets a 400 from the checklist endpoints
+const REVISION_STR = /^(?:V\d{1,3}R\d{1,3}(?:\.\d{1,3})?|latest)$/
+
+export function isRevisionStr(value) {
+  return typeof value === 'string' && REVISION_STR.test(value)
+}
+
 export function getRevisionInfo(revisionStr, revisionsArray) {
   if (!revisionStr) {
     return null

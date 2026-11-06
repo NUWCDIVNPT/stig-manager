@@ -8,6 +8,7 @@ import CollectionStigsTab from '../components/CollectionStigsTab.vue'
 
 vi.mock('vue-router', () => ({
   useRouter: vi.fn(),
+  useRoute: () => ({ name: 'collection-stigs', query: {} }),
 }))
 
 vi.mock('../api/collectionApi.js', () => ({
@@ -36,7 +37,7 @@ describe('collectionStigsTab.vue', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockPush = vi.fn()
-    useRouter.mockReturnValue({ push: mockPush })
+    useRouter.mockReturnValue({ push: mockPush, replace: vi.fn() })
     fetchCollectionStigSummary.mockResolvedValue([{ benchmarkId: 'bench-1', revisionStr: 'V1R1' }])
     fetchCollectionChecklistAssets.mockResolvedValue([])
   })

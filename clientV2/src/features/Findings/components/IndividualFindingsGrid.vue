@@ -25,6 +25,7 @@ import { durationToNow } from '../../../shared/lib.js'
 import { getEngineDisplay } from '../../../shared/lib/checklistUtils.js'
 import { compactTablePt } from '../../../shared/lib/dataTablePt.js'
 import { capitalize, statusText } from '../../../shared/lib/exportCells.js'
+import { buildLabelFilterParams } from '../../../shared/lib/labelFilters.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
 import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 
@@ -45,6 +46,8 @@ const props = defineProps({
   // under the cci aggregator in "All STIGs" mode where one CCI maps to rules
   // across multiple STIGs.
   selectedBenchmarkId: { type: [String, null], default: null },
+  // Collection label filter, carried into Asset Review so its breadcrumb can return with it
+  selectedLabelNames: { type: Array, default: () => [] },
 })
 
 const emit = defineEmits(['retry'])
@@ -145,7 +148,7 @@ function openAssetReview(row) {
       benchmarkId: stig.benchmarkId,
       revisionStr: stig.revisionStr,
     },
-    query: { ruleId: row.ruleId },
+    query: { ...buildLabelFilterParams(props.selectedLabelNames), ruleId: row.ruleId },
   })
 }
 

@@ -337,9 +337,12 @@ function onGridScroll() {
   reviewEditPopover.value?.hide()
 }
 
-watch(() => gridData.value, (data) => {
+watch([() => gridData.value, () => isLoading.value], ([data, loading]) => {
   if (!data?.length) {
-    selectRule(null)
+    // An empty grid while a checklist loads (e.g. switching asset) keeps the selection, so ?ruleId survives
+    if (!loading) {
+      selectRule(null)
+    }
     return
   }
 

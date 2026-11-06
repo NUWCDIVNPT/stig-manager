@@ -198,7 +198,11 @@ const routes = [
     name: 'stig-library',
     component: StigLibrary,
     meta: { breadcrumbs: [{ label: 'STIG Library' }] },
-    beforeEnter: () => {
+    beforeEnter: (to, from) => {
+      // Restore the last view only when entering from outside the library (e.g. nav rail), not from the breadcrumb
+      if (from.name?.startsWith('stig-library')) {
+        return
+      }
       const last = getLastStigLibraryUrl()
       if (last && last !== '/stig-library') {
         return last
@@ -221,11 +225,6 @@ const routes = [
     name: 'whats-new',
     component: WhatsNewView,
     meta: { breadcrumbs: [{ label: 'What\'s New' }] },
-  },
-  {
-    path: '/assets/:assetId',
-    name: 'asset-review',
-    component: () => import('../features/AssetReview/components/AssetReview.vue'),
   },
   {
     path: '/library',

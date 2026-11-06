@@ -38,6 +38,11 @@ const props = defineProps({
     type: String,
     default: 'Checklist',
   },
+  // Passed through to the header for the revision date in its title
+  stigRevisions: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const emit = defineEmits(['select-rule', 'refresh', 'export-archive'])
@@ -111,6 +116,7 @@ const { itemSize, gridStyle } = useGridDensity('collection-checklist')
       :filter-columns="filterColumns"
       :filter-value-options="valueOptions"
       :can-export-archive="canExportArchive"
+      :stig-revisions="stigRevisions"
       @apply-preset="key => setShown(DISPLAY_PRESETS[key])"
       @export-archive="emit('export-archive', $event)"
     />

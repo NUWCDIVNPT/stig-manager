@@ -1,12 +1,10 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { useGlobalAppStore } from '../../../shared/stores/globalAppStore.js'
+import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 
 export function useNavItems() {
   const route = useRoute()
-  const { user } = useGlobalAppStore()
-
-  const isAdmin = computed(() => user?.privileges?.admin)
+  const { isAdmin } = useCurrentUser()
 
   const navItems = computed(() => {
     const items = [
