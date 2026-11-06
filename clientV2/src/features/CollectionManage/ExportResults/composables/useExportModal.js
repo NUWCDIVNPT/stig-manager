@@ -103,16 +103,26 @@ export function useExportModal(props, emit, { prefsKeyPrefix, effectiveSelection
       })
       const { readNdjson } = await import('../../../../shared/lib/ndjsonStream.js')
       let errorEvent = null
+      let hasResult = false
       for await (const event of readNdjson(response)) {
         emit('collection-export-progress', event)
         if (event && event.status === 'error') {
           errorEvent = event
+        }
+        if (event && event.stage === 'result') {
+          hasResult = true
         }
       }
       if (errorEvent) {
         const err = new Error(errorEvent.message || 'Export failed')
         err.event = errorEvent
         emit('collection-export-error', err)
+        return
+      }
+      // The API sends a result only after the commit. Anything else, including a
+      // stream cut off partway, is not a success.
+      if (!hasResult) {
+        emit('collection-export-error', new Error('The export did not complete. Check the destination Collection.'))
         return
       }
       emit('collection-export-complete', { dstCollectionId: dstId })
