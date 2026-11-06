@@ -7,6 +7,11 @@ export function setupOidcHandler() {
   const bc = new BroadcastChannel(STIGMAN.oidcWorker.channelName)
   bc.addEventListener('message', async (event) => {
     if (event.data?.type === 'noToken') {
+      // The tab signing out gets the same broadcast just before its navigation
+      // commits. Other tabs still prompt.
+      if (STIGMAN.oidcWorker.isLoggingOut) {
+        return
+      }
       const noTokenData = {
         type: 'noToken',
         isIdle: event.data.isIdle,

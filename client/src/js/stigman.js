@@ -284,6 +284,11 @@ let reauthAlert, reauthWindow, reauthPopup, reauthTab
 function broadcastHandler (event)  {
 	console.log('[stigman] Received from worker:', event.type, event.data)
 	if (event.data.type === 'noToken') {
+		// The tab signing out gets the same broadcast just before its navigation
+		// commits. Other tabs still prompt.
+		if (window.oidcWorker.isLoggingOut) {
+			return
+		}
 		SM.ActivityHandler.remove()
 		reauthenticate({
 			...event.data.client,
