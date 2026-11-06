@@ -176,7 +176,7 @@ async function onStatusConfirmed() {
         root: { style: 'border: none; background: transparent' },
       }"
     >
-      <SplitterPanel :min-size="20" :size="50" class="splitter-panel">
+      <SplitterPanel :min-size="20" :size="60" class="splitter-panel">
         <UserList
           v-model:selection="selectedUser"
           :users="users"
@@ -188,7 +188,7 @@ async function onStatusConfirmed() {
           @refresh="loadUsers"
         />
       </SplitterPanel>
-      <SplitterPanel :min-size="30" :size="50" class="splitter-panel">
+      <SplitterPanel :min-size="30" :size="40" class="splitter-panel">
         <UserProperties :user="selectedUser" @updated="onUserEdited" />
       </SplitterPanel>
     </Splitter>
