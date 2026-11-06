@@ -46,6 +46,11 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  // Why the last save failed; read when isSaving falls after a save from here.
+  saveError: {
+    type: Object,
+    default: null,
+  },
   // Tab config
   enabledTabs: {
     type: Array,
@@ -60,7 +65,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['save', 'status-action', 'close', 'clear-save-error'])
+const emit = defineEmits(['save', 'status-action', 'close'])
 
 // Expose props as refs so all .value access in the component body is unchanged
 const { currentReview, selectedRuleId, collectionId, assetId, fieldSettings, accessMode, canAccept, isSaving, saveError } = toRefs(props)
@@ -69,6 +74,8 @@ const popover = ref()
 const lastAnchorEvent = ref(null)
 const closing = ref(false)
 const showUnsavedWarning = ref(false)
+const awaitingSave = ref(false)
+const saveFailure = ref(null)
 // Whether Review Resources is expanded. Deliberately not reset when the popover
 // closes or moves to another row: once a user unfolds it, it stays unfolded for
 // every review they open from this grid until they fold it again.
@@ -91,6 +98,7 @@ const reviewEditForm = useReviewEditForm({
   fieldSettings,
   accessMode,
   canAccept,
+  isSaving,
 })
 
 const {
@@ -141,6 +149,8 @@ function onButtonClick(actionType) {
     status = REVIEW_STATUS.SUBMITTED
   }
 
+  saveFailure.value = null
+  awaitingSave.value = true
   emit('save', {
     ruleId,
     result: formResult.value,
@@ -148,9 +158,22 @@ function onButtonClick(actionType) {
     comment: formComment.value,
     status,
   })
+}
+
+// Stay open until the PUT resolves: closing first would lose the user's text if
+// it fails. On failure the text stays here for another try.
+watch(isSaving, (saving) => {
+  if (saving || !awaitingSave.value) {
+    return
+  }
+  awaitingSave.value = false
+  if (saveError.value) {
+    saveFailure.value = saveError.value.body?.error ?? saveError.value.message
+    return
+  }
   closing.value = true
   popover.value.hide()
-}
+})
 
 function onPopoverHide() {
   unbindListeners()
@@ -159,23 +182,31 @@ function onPopoverHide() {
     emit('close')
     return
   }
-  if (isDirty.value) {
+  if (isDirty.value || isSaving.value) {
     nextTick(() => {
       popover.value?.show(lastAnchorEvent.value)
     })
-    showUnsavedWarning.value = true
+    triggerUnsavedWarning()
     return
   }
   emit('close')
 }
 
+// During a save the edits are already on their way, and the form says so.
 function triggerUnsavedWarning() {
-  showUnsavedWarning.value = true
+  showUnsavedWarning.value = !isSaving.value
+}
+
+function undo() {
+  discardChanges()
+  showUnsavedWarning.value = false
+  saveFailure.value = null
 }
 
 function dismiss() {
   discardChanges()
   showUnsavedWarning.value = false
+  saveFailure.value = null
   closing.value = true
   popover.value.hide()
 }
@@ -183,6 +214,7 @@ function dismiss() {
 function openAt(event, method) {
   lastAnchorEvent.value = event
   showUnsavedWarning.value = false
+  saveFailure.value = null
   popover.value[method](event)
 }
 
@@ -196,6 +228,7 @@ function show(event) {
 
 function hide() {
   closing.value = true
+  awaitingSave.value = false
   showUnsavedWarning.value = false
   popover.value.hide()
 }
@@ -282,6 +315,9 @@ function reposition(event) {
 // sized to the row so the arrow lands on the row edge and the flip decision
 // sees the row's full extent.
 function openForRow(event, isSameRow) {
+  if (!isSameRow) {
+    saveFailure.value = null
+  }
   const row = event.target?.closest ? event.target.closest('tr') : null
   const rowRect = row ? row.getBoundingClientRect() : { top: 0, height: 0 }
   const clickX = event.clientX ?? 0
@@ -316,8 +352,8 @@ function bindOutsideHandler() {
       ) {
         return
       }
-      if (isDirty.value) {
-        showUnsavedWarning.value = true
+      if (isDirty.value || isSaving.value) {
+        triggerUnsavedWarning()
         return
       }
       closing.value = true
@@ -376,7 +412,7 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
     @hide="onPopoverHide"
   >
     <div class="review-edit-popover">
-      <button class="review-edit-popover__close" :title="isDirty ? 'Close (discards unsaved changes)' : 'Close'" @click="dismiss">
+      <button class="review-edit-popover__close" :title="isDirty ? 'Close (discards unsaved changes)' : 'Close'" :disabled="isSaving" @click="dismiss">
         <i class="pi pi-times" />
       </button>
       <div v-if="subjectLabel" class="review-edit-popover__subject">
@@ -460,13 +496,18 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
           />
           <button
             class="review-edit-popover__undo-btn"
-            :disabled="!isDirty"
+            :disabled="!isDirty || isSaving"
             title="Undo changes"
-            @click="discardChanges(); showUnsavedWarning = false"
+            @click="undo"
           >
             Undo
           </button>
         </div>
+      </div>
+
+      <div v-if="saveFailure" class="review-edit-popover__save-error" role="alert">
+        <i class="pi pi-exclamation-triangle" />
+        <span>Could not save: {{ saveFailure }}</span>
       </div>
 
       <div v-if="showUnsavedWarning" class="review-edit-popover__unsaved-warning">
@@ -719,6 +760,18 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
 }
 
 /* Unsaved Changes Banner */
+.review-edit-popover__save-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.8rem;
+  background-color: color-mix(in srgb, var(--color-action-red) 15%, var(--color-background-dark));
+  border: 1px solid color-mix(in srgb, var(--color-action-red) 50%, transparent);
+  border-radius: 4px;
+  color: var(--color-text-primary);
+  font-size: var(--text-md);
+}
+
 .review-edit-popover__unsaved-warning {
   display: flex;
   align-items: center;

@@ -1,6 +1,7 @@
 import { fireEvent, screen } from '@testing-library/vue'
 import { flushPromises } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { h, ref } from 'vue'
 import { patchReview, putReview } from '../../../shared/api/reviewsApi.js'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { renderWithProviders } from '../../../testUtils/utils.js'
@@ -15,7 +16,19 @@ vi.mock('../../../shared/composables/useGridDensity.js', () => ({
   useGridDensity: vi.fn(),
 }))
 
+const { triggerError } = vi.hoisted(() => ({ triggerError: vi.fn() }))
+vi.mock('../../../shared/composables/useGlobalError.js', () => ({
+  useGlobalError: () => ({ triggerError }),
+}))
+
 // need to mock because datatable does not render rows in JSDOM due to VirtualScroller relying on physical layout heights (which are 0 in a headless environment).
+const popoverApi = vi.hoisted(() => ({
+  openForRow: vi.fn(),
+  hide: vi.fn(),
+  isDirty: false,
+  triggerUnsavedWarning: vi.fn(),
+}))
+
 vi.mock('primevue/datatable', () => ({
   default: {
     name: 'DataTable',
@@ -49,14 +62,9 @@ vi.mock('primevue/column', () => ({
 vi.mock('../../../components/common/ReviewEditPopover.vue', () => ({
   default: {
     name: 'ReviewEditPopover',
-    props: ['currentReview', 'selectedRuleId', 'collectionId', 'assetId', 'fieldSettings', 'accessMode', 'canAccept', 'isSaving', 'saveError', 'clearSaveError', 'enabledTabs', 'subjectLabel'],
+    props: ['currentReview', 'selectedRuleId', 'collectionId', 'assetId', 'fieldSettings', 'accessMode', 'canAccept', 'isSaving', 'saveError', 'enabledTabs', 'subjectLabel'],
     setup(props, { expose }) {
-      expose({
-        openForRow: vi.fn(),
-        hide: vi.fn(),
-        isDirty: false,
-        triggerUnsavedWarning: vi.fn(),
-      })
+      expose(popoverApi)
       return {}
     },
     template: `
@@ -353,6 +361,93 @@ describe('ruleTableGrid.vue', () => {
 
       expect(emitted()['review-saved']).toBeTruthy()
       expect(emitted()['review-saved'][0][0]).toEqual({ id: 'review-1', assetId: 'asset-1' })
+    })
+  })
+
+  describe('unsaved edits', () => {
+    beforeEach(() => {
+      popoverApi.isDirty = false
+    })
+
+    const grid = ref(null)
+
+    async function openRow() {
+      renderWithProviders({ render: () => h(RuleTableGrid, { ...defaultProps, ref: grid }) })
+      await fireEvent.click(screen.getByText('Asset 1'))
+    }
+
+    it('closes a clean popover when the grid scrolls', async () => {
+      await openRow()
+
+      await fireEvent.scroll(screen.getByTestId('mock-datatable'))
+
+      expect(popoverApi.hide).toHaveBeenCalled()
+    })
+
+    it('keeps a dirty popover open and warns when the grid scrolls', async () => {
+      await openRow()
+      popoverApi.isDirty = true
+
+      await fireEvent.scroll(screen.getByTestId('mock-datatable'))
+
+      expect(popoverApi.hide).not.toHaveBeenCalled()
+      expect(popoverApi.triggerUnsavedWarning).toHaveBeenCalled()
+    })
+
+    it('keeps the editor on the row when another row is clicked with unsaved edits', async () => {
+      await openRow()
+      popoverApi.isDirty = true
+      popoverApi.openForRow.mockClear()
+
+      await fireEvent.click(screen.getByText('Asset 3'))
+
+      expect(popoverApi.openForRow).not.toHaveBeenCalled()
+      expect(popoverApi.triggerUnsavedWarning).toHaveBeenCalled()
+      expect(screen.getByTestId('popover-asset-id')).toHaveTextContent('asset-1')
+    })
+
+    it('still moves the editor to another row when the form is clean', async () => {
+      await openRow()
+      popoverApi.openForRow.mockClear()
+
+      await fireEvent.click(screen.getByText('Asset 3'))
+
+      expect(popoverApi.openForRow).toHaveBeenCalled()
+      expect(screen.getByTestId('popover-asset-id')).toHaveTextContent('asset-3')
+    })
+
+    it('allows reopening the same row with unsaved edits', async () => {
+      await openRow()
+      popoverApi.isDirty = true
+      popoverApi.openForRow.mockClear()
+
+      await fireEvent.click(screen.getByText('Asset 1'))
+
+      expect(popoverApi.openForRow).toHaveBeenCalled()
+    })
+
+    it('reports nothing to protect when the popover is clean', async () => {
+      await openRow()
+
+      expect(grid.value.blockIfUnsaved()).toBe(false)
+    })
+
+    it('blocks and warns when the popover is dirty', async () => {
+      await openRow()
+      popoverApi.isDirty = true
+
+      expect(grid.value.blockIfUnsaved()).toBe(true)
+      expect(popoverApi.triggerUnsavedWarning).toHaveBeenCalled()
+    })
+
+    it('passes a failed save to the popover instead of the global error modal', async () => {
+      putReview.mockRejectedValueOnce(new Error('HTTP 500'))
+      await openRow()
+
+      await fireEvent.click(screen.getByTestId('trigger-save'))
+
+      expect(await screen.findByTestId('popover-save-error')).toHaveTextContent('HTTP 500')
+      expect(triggerError).not.toHaveBeenCalled()
     })
   })
 })

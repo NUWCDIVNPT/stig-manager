@@ -1,4 +1,5 @@
 <script setup>
+import { ref } from 'vue'
 import { useColumnVisibility } from '../../../shared/composables/useColumnVisibility.js'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
@@ -55,9 +56,19 @@ const props = defineProps({
     type: String,
     default: 'Reviews',
   },
+  loadFailed: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['review-saved', 'update:selection', 'bulk-action'])
+
+const ruleTableGrid = ref(null)
+
+defineExpose({
+  blockIfUnsaved: () => ruleTableGrid.value?.blockIfUnsaved() ?? false,
+})
 
 const { gridStyle } = useGridDensity('collection-rule-table')
 
@@ -103,8 +114,10 @@ const { term: searchFilter, filters: gridFilters, filteredRows, isFiltered, filt
       @bulk-action="(action) => emit('bulk-action', action)"
     />
     <RuleTableGrid
+      ref="ruleTableGrid"
       :grid-data="gridData"
       :is-loading="isLoading"
+      :load-failed="loadFailed"
       :rows="filteredRows"
       :is-filtered="isFiltered"
       :highlight-term="highlightTerm"

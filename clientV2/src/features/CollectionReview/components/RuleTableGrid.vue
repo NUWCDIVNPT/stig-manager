@@ -34,6 +34,11 @@ const props = defineProps({
     type: Array,
     default: null,
   },
+  // The reviews failed to load, so an empty grid doesn't mean there are none.
+  loadFailed: {
+    type: Boolean,
+    default: false,
+  },
   isFiltered: {
     type: Boolean,
     default: false,
@@ -128,7 +133,7 @@ const enabledTabs = ['history', 'statusText']
 
 const currentReview = computed(() => props.gridData.find(r => r.assetId === editingRow.value?.assetId) ?? null)
 
-const { isLoading: isSavingReview, execute: executeSaveReview } = useAsyncState(
+const { isLoading: isSavingReview, error: saveError, execute: executeSaveReview } = useAsyncState(
   async ({ assetId, ruleId, result, detail, comment, status }) => {
     const row = props.gridData.find(r => r.assetId === assetId)
     const resultChanged = row ? result !== row.result : true
@@ -143,7 +148,8 @@ const { isLoading: isSavingReview, execute: executeSaveReview } = useAsyncState(
     emit('review-saved', { ...saved, assetId })
     return saved
   },
-  { immediate: false },
+  // The popover stays open and shows a failed save inline.
+  { immediate: false, onError: null },
 )
 
 const { isLoading: isSavingStatus, execute: executeSaveStatus } = useAsyncState(
@@ -164,6 +170,9 @@ function openRowEditor(event, rowData) {
     return
   }
   const isSameRow = editingRow.value?.assetId === rowData.assetId
+  if (!isSameRow && blockIfUnsaved()) {
+    return
+  }
   editingRow.value = rowData
   reviewEditPopover.value?.openForRow(event, isSameRow)
 }
@@ -207,7 +216,22 @@ function onPopoverClose() {
   editingRow.value = null
 }
 
-const scrollLocked = computed(() => !!editingRow.value && !!reviewEditPopover.value?.isDirty)
+const scrollLocked = computed(() => !!editingRow.value && (!!reviewEditPopover.value?.isDirty || isSaving.value))
+
+// True when the open review must not be left yet: a save is in flight, or the
+// form has unsaved edits, which also raises the popover's warning.
+function blockIfUnsaved() {
+  if (isSaving.value) {
+    return true
+  }
+  if (reviewEditPopover.value?.isDirty) {
+    reviewEditPopover.value.triggerUnsavedWarning()
+    return true
+  }
+  return false
+}
+
+defineExpose({ blockIfUnsaved })
 
 function onGridWheel(event) {
   if (scrollLocked.value) {
@@ -216,7 +240,7 @@ function onGridWheel(event) {
 }
 
 function onGridScroll() {
-  if (!editingRow.value) {
+  if (!editingRow.value || blockIfUnsaved()) {
     return
   }
   reviewEditPopover.value?.hide()
@@ -463,7 +487,12 @@ const dataTablePt = {
 
     <template #empty>
       <div class="agg-grid-empty-state">
-        {{ gridData.length > 0 ? 'No reviews match the current search or filters.' : 'Select a rule above to see reviews.' }}
+        <template v-if="loadFailed">
+          Could not load reviews for this rule. Select another rule and come back to try again.
+        </template>
+        <template v-else>
+          {{ gridData.length > 0 ? 'No reviews match the current search or filters.' : 'Select a rule above to see reviews.' }}
+        </template>
       </div>
     </template>
 
@@ -507,6 +536,7 @@ const dataTablePt = {
     :access-mode="editingRow?.access"
     :can-accept="props.canAccept"
     :is-saving="isSaving"
+    :save-error="saveError"
     :enabled-tabs="enabledTabs"
     :subject-label="editingRow?.assetName"
     @save="onPopoverSave"
