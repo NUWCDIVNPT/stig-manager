@@ -139,9 +139,17 @@ describe('useQuerySelection', () => {
       expect(selected.value).toBe('C')
     })
 
-    it('clears when the URL drops the key', async () => {
-      const selected = await setup('/stigs?stig=A')
-      await router.push('/stigs')
+    it('keeps the selection and restores the key when a link to the same page leaves it out (collection breadcrumb)', async () => {
+      const selected = await setup('/collection/1/stigs?stig=A')
+      await router.push('/collection/1/stigs')
+      await flushPromises()
+      expect(selected.value).toBe('A')
+      expect(query()).toEqual({ stig: 'A' })
+    })
+
+    it('clears when the URL drops the key on another path (another collection)', async () => {
+      const selected = await setup('/collection/1/stigs?stig=A')
+      await router.push('/collection/2/stigs')
       await flushPromises()
       expect(selected.value).toBeNull()
     })

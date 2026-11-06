@@ -650,6 +650,7 @@ describe('collectionReview.vue', () => {
       fetchRule.mockClear()
 
       routeState.params.benchmarkId = 'bench-2'
+      routeState.path = '/collections/coll-1/bench-2/rev-1'
       routeState.query = {}
       await flushPromises()
 

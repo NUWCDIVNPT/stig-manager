@@ -57,6 +57,12 @@ describe('useStigRevisions', () => {
     expect(onUnknown).not.toHaveBeenCalled()
   })
 
+  it('flags a STIG that does not exist even with revision latest', async () => {
+    const { onUnknown } = setup('NOT_A_STIG', 'latest')
+    await flushPromises()
+    expect(onUnknown).toHaveBeenCalledOnce()
+  })
+
   it('checks a revision change against the already loaded list', async () => {
     const { rev, onUnknown } = setup()
     await flushPromises()

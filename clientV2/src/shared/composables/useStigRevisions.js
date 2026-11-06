@@ -26,7 +26,8 @@ export function useStigRevisions({ benchmarkId, revisionStr, onUnknown }) {
     if (!id || !rev) {
       return
     }
-    if (rev !== 'latest' && !revisions.value.some(r => r.revisionStr === rev)) {
+    // A STIG must have revisions, so an empty revision list is an unknown STIG
+    if (!revisions.value.length || (rev !== 'latest' && !revisions.value.some(r => r.revisionStr === rev))) {
       onUnknown()
     }
   })

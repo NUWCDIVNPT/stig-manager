@@ -163,6 +163,16 @@ describe('stIGs tab selection in the URL', () => {
     expect(fetchCollectionChecklistAssets).toHaveBeenLastCalledWith('c1', 'B', {})
   })
 
+  it('keeps the STIG when the collection breadcrumb reopens the tab without ?stig', async () => {
+    await open(CollectionStigsTab, 'stigs', { stig: 'B' })
+    fetchCollectionChecklistAssets.mockClear()
+    await router.push({ name: 'collection-stigs', params: { collectionId: 'c1' } })
+    await flushPromises()
+    expect(selectedIn('stig')).toBe('B')
+    expect(query()).toEqual({ stig: 'B' })
+    expect(fetchCollectionChecklistAssets).not.toHaveBeenCalled()
+  })
+
   it('clears the selection when no STIGs are listed', async () => {
     fetchCollectionStigSummary.mockImplementation(async () => [])
     await open(CollectionStigsTab, 'stigs', { stig: 'B' })

@@ -45,13 +45,14 @@ export function useQuerySelection(key) {
     }
   })
 
-  // Returning to a hidden tab: the URL catches up with what the tab still shows.
-  // A URL change while already on this route (Back/Forward, links, Recent views, another collection): the selection follows the URL.
-  watch(() => [route.name, readUrl()], ([name, urlValue], [prevName]) => {
+  // Returning to a hidden tab, or a link to the same page that leaves the key out (the collection breadcrumb,
+  // a Recent view): the URL catches up with what is shown.
+  // Any other URL change while on this route (Back/Forward, links, another collection): the selection follows the URL.
+  watch(() => [route.name, route.path, readUrl()], ([name, path, urlValue], [prevName, prevPath]) => {
     if (name !== ownRoute) {
       return
     }
-    if (prevName !== ownRoute) {
+    if (prevName !== ownRoute || (urlValue === null && path === prevPath)) {
       writeQueryKey(router, route, key, toQueryValue(selected.value))
     }
     else if (urlValue !== toQueryValue(selected.value)) {
