@@ -100,6 +100,18 @@ describe('findings URL state', () => {
     }, { signal: expect.any(AbortSignal) })
   })
 
+  it('scopes the right pane to the STIG in the URL', async () => {
+    mountFindings({ query: { stig: 'VPN_SRG_TEST', sel: 'V-219150' } })
+    await waitFor(() =>
+      expect(screen.getByTestId('selected-value')).toHaveTextContent('V-219150'),
+    )
+    expect(fetchFailedReviews).toHaveBeenCalledWith('17', {
+      aggregator: 'groupId',
+      aggregatorValue: 'V-219150',
+      benchmarkId: 'VPN_SRG_TEST',
+    }, { signal: expect.any(AbortSignal) })
+  })
+
   it('restores nothing when ?sel= matches no loaded row', async () => {
     mountFindings({ query: { sel: 'V-999999' } })
     await waitFor(() => expect(fetchFindings).toHaveBeenCalled())

@@ -9,8 +9,9 @@ import { fetchFailedReviews } from '../api/findingsApi.js'
 // Refs so the pane reacts to selection changes in the middle pane.
 //   selectedFinding === null → returns [] without firing a request
 // getReviewsByCollection accepts labelName/labelMatch server-side, so review rows
-// honor the orchestrator's label filter.
-export function useFindingReviews({ collectionId, selectedFinding, aggregator, labelNames }) {
+// honor the orchestrator's label filter. A null benchmarkId means all STIGs; a
+// CCI or group can span STIGs, so a selected STIG has to scope this request too.
+export function useFindingReviews({ collectionId, selectedFinding, aggregator, benchmarkId, labelNames }) {
   // The reviews API expects the aggregator field's value on the matching
   // record (e.g. aggregator=ruleId&ruleId=SV-12345r1_rule).
   const aggregatorValue = computed(() => {
@@ -26,13 +27,14 @@ export function useFindingReviews({ collectionId, selectedFinding, aggregator, l
     ({ signal } = {}) => fetchFailedReviews(collectionId.value, {
       aggregator: aggregator.value,
       aggregatorValue: aggregatorValue.value,
+      ...(benchmarkId.value ? { benchmarkId: benchmarkId.value } : {}),
       ...buildLabelFilterParams(labelNames.value),
     }, { signal }),
     { immediate: false, initialState: [], onError: null },
   )
 
   watch(
-    [collectionId, aggregator, aggregatorValue, labelNames],
+    [collectionId, aggregator, aggregatorValue, benchmarkId, labelNames],
     () => {
       if (!collectionId.value || !aggregator.value || !aggregatorValue.value) {
         // No selection in the middle pane — clear the right pane without fetching.
