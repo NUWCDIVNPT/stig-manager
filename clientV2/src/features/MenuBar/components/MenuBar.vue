@@ -29,6 +29,7 @@ const {
   isRevisionOptionsUnavailable,
   navigateToStig,
   navigateToRevision,
+  isRevisionPinned,
 } = useAppBreadcrumb()
 
 // Epoch-second claims also get a readable date, as in the legacy client.
@@ -227,6 +228,8 @@ const pt = {
               option-value="revisionStr"
               :invalid-tooltip="TOOLTIPS.breadcrumb.revisionNotFound"
               :options-unavailable="isRevisionOptionsUnavailable"
+              :is-pinned="isRevisionPinned"
+              :pinned-tooltip="TOOLTIPS.pinnedRevision"
               placeholder="Revision"
               @update:model-value="navigateToRevision"
             />

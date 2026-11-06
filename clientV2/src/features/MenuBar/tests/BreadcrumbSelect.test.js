@@ -60,3 +60,27 @@ describe('breadcrumbSelect', () => {
     expect(warningIcon()).toBeNull()
   })
 })
+
+describe('breadcrumbSelect pinned revision', () => {
+  const revisions = [
+    { revisionStr: 'V1R1', collectionIds: ['21'] },
+    { revisionStr: 'V1R2', collectionIds: [] },
+  ]
+  const isPinned = opt => opt.collectionIds.includes('21')
+
+  function createRevisionWrapper(modelValue) {
+    return renderWithProviders(BreadcrumbSelect, {
+      props: { options: revisions, optionLabel: 'revisionStr', optionValue: 'revisionStr', modelValue, isPinned, pinnedTooltip: 'Pinned here.' },
+    })
+  }
+
+  it('marks the selected value with a pin when the predicate says so', () => {
+    createRevisionWrapper('V1R1')
+    expect(screen.getByRole('img', { name: 'Pinned Revision' })).toHaveAttribute('title', 'Pinned here.')
+  })
+
+  it('shows no pin for an unpinned value', () => {
+    createRevisionWrapper('V1R2')
+    expect(screen.queryByRole('img', { name: 'Pinned Revision' })).toBeNull()
+  })
+})

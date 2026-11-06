@@ -102,11 +102,22 @@ describe('checklistGridHeader.vue', () => {
     })
 
     it('builds the revision date from the stigRevisions prop, without fetching revisions itself', () => {
-      useRoute.mockReturnValue({ params: { benchmarkId: 'RHEL_8', revisionStr: 'V1R2' } })
+      useRoute.mockReturnValue({ params: { collectionId: '21', benchmarkId: 'RHEL_8', revisionStr: 'V1R2' } })
       const stigRevisions = [{ revisionStr: 'V1R2', benchmarkDate: '2024-01-01' }]
       createWrapper({ stigRevisions })
-      expect(checklistUtils.getRevisionInfo).toHaveBeenCalledWith('V1R2', stigRevisions)
+      expect(checklistUtils.getRevisionInfo).toHaveBeenCalledWith('V1R2', stigRevisions, '21')
       expect(stigsApi.fetchStigRevisions).not.toHaveBeenCalled()
+    })
+
+    it('shows a pin beside the title only when the revision is the Collection default', async () => {
+      useRoute.mockReturnValue({ params: { collectionId: '21', benchmarkId: 'RHEL_8', revisionStr: 'V1R2' } })
+      checklistUtils.getRevisionInfo.mockReturnValue({ display: 'V1R2', pinned: true })
+      const { rerender } = createWrapper()
+      expect(screen.getByRole('img', { name: 'Pinned Revision' })).toBeInTheDocument()
+
+      checklistUtils.getRevisionInfo.mockReturnValue({ display: 'V1R2', pinned: false })
+      await rerender({ stigRevisions: [] })
+      expect(screen.queryByRole('img', { name: 'Pinned Revision' })).toBeNull()
     })
 
     it('updates the title when the page passes another STIG\'s revisions', async () => {

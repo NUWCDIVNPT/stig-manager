@@ -50,7 +50,7 @@ const route = useRoute()
 const benchmarkId = computed(() => route.params.benchmarkId)
 const revisionStr = computed(() => route.params.revisionStr)
 
-const revisionInfo = computed(() => getRevisionInfo(revisionStr.value, props.stigRevisions))
+const revisionInfo = computed(() => getRevisionInfo(revisionStr.value, props.stigRevisions, route.params.collectionId))
 
 const headerTitle = computed(() => {
   if (benchmarkId.value && revisionInfo.value?.display) {
@@ -115,6 +115,13 @@ function toggleChecklistMenu(event) {
     <div class="checklist-grid__header-top">
       <div class="checklist-grid__title-row">
         <span class="checklist-grid__title">{{ headerTitle }}</span>
+        <span
+          v-if="revisionInfo?.pinned"
+          class="icon-pin checklist-grid__pin"
+          role="img"
+          aria-label="Pinned Revision"
+          :title="TOOLTIPS.pinnedRevision"
+        />
       </div>
     </div>
 
@@ -227,6 +234,10 @@ function toggleChecklistMenu(event) {
 .checklist-grid__menu-caret {
   font-size: var(--icon-xs);
   margin-left: 0.1rem;
+}
+
+.checklist-grid__pin {
+  color: var(--color-text-dim);
 }
 
 .checklist-grid__title {

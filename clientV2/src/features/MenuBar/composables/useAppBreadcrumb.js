@@ -255,6 +255,12 @@ export function useAppBreadcrumb() {
     }
   }
 
+  // Whether a revision option is the route Collection's pinned default (the
+  // option lists the Collections pinning it)
+  function isRevisionPinned(option) {
+    return !!option?.collectionIds?.some(id => String(id) === String(collectionId.value))
+  }
+
   // Navigation helper for revision dropdown (review)
   function navigateToRevision(newRevisionStr) {
     if (!newRevisionStr) {
@@ -300,5 +306,6 @@ export function useAppBreadcrumb() {
     isRevisionOptionsUnavailable,
     navigateToStig,
     navigateToRevision,
+    isRevisionPinned,
   }
 }

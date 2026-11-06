@@ -42,6 +42,15 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  // Given an option, whether to mark it with the pinned-revision glyph
+  isPinned: {
+    type: Function,
+    default: null,
+  },
+  pinnedTooltip: {
+    type: String,
+    default: '',
+  },
 })
 
 defineEmits(['update:modelValue'])
@@ -117,9 +126,28 @@ const selectPt = computed(() => {
           style="margin-right: 0.35rem;"
         />
         <span>{{ displayLabel }}</span>
+        <span
+          v-if="selectedOption && isPinned?.(selectedOption)"
+          class="icon-pin breadcrumb-select-pin"
+          role="img"
+          aria-label="Pinned Revision"
+          :title="pinnedTooltip"
+        />
       </div>
       <span v-else>
         {{ placeholder }}
+      </span>
+    </template>
+    <template #option="{ option }">
+      <span class="breadcrumb-select-option">
+        <span>{{ option[optionLabel] }}</span>
+        <span
+          v-if="isPinned?.(option)"
+          class="icon-pin breadcrumb-select-pin"
+          role="img"
+          aria-label="Pinned Revision"
+          :title="pinnedTooltip"
+        />
       </span>
     </template>
   </Select>
@@ -182,5 +210,20 @@ const selectPt = computed(() => {
 .is-invalid {
   color: var(--color-text-error);
   font-weight: 600;
+}
+
+.breadcrumb-select-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.breadcrumb-select-pin {
+  margin-left: 0.5rem;
+  color: var(--color-text-dim);
+}
+
+.breadcrumb-select-option .breadcrumb-select-pin {
+  margin-left: 0;
 }
 </style>

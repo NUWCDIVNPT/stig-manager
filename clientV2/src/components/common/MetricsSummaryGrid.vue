@@ -14,6 +14,7 @@ import CountColumn from '../columns/CountColumn.vue'
 import DurationColumn from '../columns/DurationColumn.vue'
 import LabelsColumn from '../columns/LabelsColumn.vue'
 import PercentageColumn from '../columns/PercentageColumn.vue'
+import RevisionColumn from '../columns/RevisionColumn.vue'
 import TextColumn from '../columns/TextColumn.vue'
 import ColumnToggle from '../common/ColumnToggle.vue'
 import GridFilterButton from '../common/GridFilterButton.vue'
@@ -198,7 +199,7 @@ const columns = computed(() => {
   ]
   const benchmarkColumn = { field: 'benchmarkId', header: 'Benchmark', group: 'STIG', component: BenchmarkColumn, locked: true, searchable: true, showShield: props.showShield, onShieldClick, style: cellStyle(WIDTH.benchmark), pt: LEFT_HEADER }
   const titleColumn = { field: 'title', header: 'Title', group: 'STIG', defaultHidden: true, component: TextColumn, searchable: true, style: cellStyle(WIDTH.title), pt: LEFT_HEADER }
-  const revisionColumn = { field: 'revisionStr', header: 'Revision', group: 'STIG', component: TextColumn, searchable: true, style: cellStyle(WIDTH.revision), pt: LEFT_HEADER }
+  const revisionColumn = { field: 'revisionStr', header: 'Revision', group: 'STIG', component: RevisionColumn, searchable: true, style: cellStyle(WIDTH.revision), pt: LEFT_HEADER }
   const assetColumn = { field: 'assetName', header: 'Asset', group: 'Asset', component: AssetColumn, locked: true, searchable: true, showShield: props.showShield, onShieldClick, style: cellStyle(WIDTH.name), pt: LEFT_HEADER }
   const stigNames = r => r.stigs
   const labelsColumn = { field: 'labels', header: 'Labels', group: 'Asset', component: LabelsColumn, searchable: true, filterValues: r => r.labels, multiple: true, style: cellStyle(WIDTH.labels), pt: LEFT_HEADER }
@@ -343,11 +344,7 @@ const data = computed(() => {
           revisionKey: `${r.benchmarkId}-${r.revisionStr}`,
           title: r.title,
           revisionStr: r.revisionStr,
-          revision: {
-            string: r.revisionStr,
-            date: r.revisionDate,
-            isPinned: r.revisionPinned,
-          },
+          revisionPinned: r.revisionPinned,
           assetCnt: r.assets,
           ruleCount: r.ruleCount,
           ...commonData,
@@ -372,11 +369,7 @@ const data = computed(() => {
           benchmarkId: r.benchmarkId,
           marking: r.marking,
           revisionStr: r.revisionStr,
-          revision: {
-            string: r.revisionStr,
-            date: r.revisionDate,
-            isPinned: r.revisionPinned,
-          },
+          revisionPinned: r.revisionPinned,
           title: r.title,
           ...commonData,
         }
