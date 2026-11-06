@@ -19,7 +19,7 @@ Our Project incorporates software developed since 2012 by the `U.S. Naval Unders
 The Single Source of Truth throughout Steps 3 and 4 of the RMF Process
 ===========================================================================================
 
-Throughout the RMF process, STIG Manager serves as the single source of truth for users, evaluators, managers, RMF Package reviewers, ISSEs, NQVs, and automated tools about Assets, STIGs, and their current assessment status.  By allowing everyone involved in the process to refer to the same set of data and reports, the RMF process can be executed efficiently and its progress monitored effectively.  STIG Managers API allows automated tools to submit scan results, as well as access data for direction on what STIGs they should scan.
+Throughout the RMF process, STIG Manager serves as the single source of truth for users, evaluators, managers, RMF Package reviewers, ISSEs, NQVs, and automated tools about Assets, STIGs, and their current assessment status.  By allowing everyone involved in the process to refer to the same set of data and reports, the RMF process can be executed efficiently and its progress monitored effectively.  STIG Manager's API allows automated tools to submit scan results, as well as access data for direction on what STIGs they should scan.
 
 STIG Manager provides data structures, assessment workspaces, and Reports for managing these Steps of the RMF process.  
 
@@ -38,9 +38,9 @@ Features and Capabilities Overview
 STIG Evaluation Data, Freed From .CKL Files
 ----------------------------------------------------
 
-STIG Manager maintains a canonical set of STIGs as published by DISA, and relates all Reviews to that set. Working with this data directly in STIGMan, rather than passing .ckl files around, eliminates the possibility of STIG Evaluators using the wrong STIG revision, changing severity, creating malformed .ckls, and other issues that can hamper the efficient flow of Evaluations to Validators.  STIG Manager will import .ckl files and create Reviews that match their contents. Any remaining Evaluation gaps can be reviewed manually in the STIGMan interface, or added to with additional imports. STIGMan provide a unified view of overall Evaluation progress, and are not tied to any specific .ckl file.  
+STIG Manager maintains a canonical set of STIGs as published by DISA, and relates all Reviews to that set. Working with this data directly in STIGMan, rather than passing .ckl files around, eliminates the possibility of STIG Evaluators using the wrong STIG revision, changing severity, creating malformed .ckls, and other issues that can hamper the efficient flow of Evaluations to Validators.  STIG Manager will import .ckl files and create Reviews that match their contents. Any remaining Evaluation gaps can be reviewed manually in the STIGMan interface, or added to with additional imports. STIGMan provides a unified view of overall Evaluation progress, and is not tied to any specific .ckl file.  
 
-Instead of relying on .CKL files that could be altered, overridden, or have missing fields, properly formed .CKLs are generated from the current Evaluation state of Assets. Once Validators verify that all reviews are as they want them, they can create an archive of .CKLs on demand for import into eMASS. 
+Instead of relying on .CKL files that could be altered, overridden, or have missing fields, properly formed .CKLs are generated from the current Evaluation state of Assets. Once Validators verify that all Reviews are as they want them, they can create an archive of .CKLs on demand for import into eMASS. 
 
 
 RMF Package data represented as Collections, Assets, STIGs, and Reviews
@@ -62,7 +62,7 @@ Create Collections From Your Existing .CKL Files
 Migrating to STIG Manager is easy because it can use your existing artifacts to build and update Collections. Assets, STIGs, and Reviews can be populated with the .ckls produced by STIG Viewer or the automated STIG assessments in XCCDF format produced by the SCC tool, as well as manually from the Collection Configuration tab.  Once a Collection is created in STIG Manager, Users can be granted access to see the current results for each STIG on an Asset, or the whole Collection. Users can see automated tool evaluations, and Rules that still require evaluation.
 
 .. note::
-  STIG Manager does not maintain a repository of uploaded checklists. Instead, it maintains a current state of evaluations for an asset, and will create new .ckls for you on demand with the most current results.
+  STIG Manager does not maintain a repository of uploaded checklists. Instead, it maintains a current state of evaluations for an Asset, and will create new .ckls for you on demand with the most current results.
 
 
 -------------------------
@@ -83,7 +83,7 @@ The STIG Manager Client provides efficient workspaces for creating Collections o
 Sophisticated Algorithm Tracks Reviews Across STIG Revision Changes, Eliminating Redundant Work
 ---------------------------------------------------------------------------------------------------
 
-STIG Manager tracks Reviews using the Rule Version and Rule Check Content, so that When STIGs are updated, all Reviews for Rules with unchanged content are carried forward to the new STIG. This allows STIG Evaluators to focus on the Rules that have changed, and not repeat work that has already been done.
+STIG Manager tracks Reviews using the Rule Version and Rule Check Content, so that when STIGs are updated, all Reviews for Rules with unchanged content are carried forward to the new STIG. This allows STIG Evaluators to focus on the Rules that have changed, and not repeat work that has already been done.
 
 See our section on :ref:`Review Handling and Matching<review-handling>` for more information about how STIGMan tracks Reviews.
 
@@ -115,7 +115,7 @@ STIG Manager can produce a pre-populated POA&M-style spreadsheet that lists find
 STIG Manager Integrates with the Continuous RMF Lifecycle approach
 ----------------------------------------------------------------------
 
-STIG Manager is ready to support a life-cycle approach to RMF. Your most current STIG Assessments are always available in STIGManager. When new STIGs are released, system or SAP changes occur, or new STIGs are applied, only the new content needs to be assessed.  STIG Manager also timestamps every review, to help determine compliance with the Continuous Evaluation approach. STIG Manager also maintains a history of every Review performed so Review changes over time can be referenced.
+STIG Manager is ready to support a life-cycle approach to RMF. Your most current STIG Assessments are always available in STIG Manager. When new STIGs are released, system or SAP changes occur, or new STIGs are applied, only the new content needs to be assessed.  STIG Manager timestamps every Review, to help determine compliance with the Continuous Evaluation approach. STIG Manager also maintains a history of every Review performed so Review changes over time can be referenced.
 
 
 

@@ -89,7 +89,7 @@ The claims described in the sections above are contained in OAuth2 JWT formatted
 The Web Client on startup redirects users to the OIDC Provider to authenticate and obtain an access token that defines the scope of API access the user grants that client. For most ASD-compliant deployments, the connection to the OIDC Provider's authorization_endpoint will use MTLS and CAC PKI.
 
 .. note::
-  Communication between the API and clients include the access_token and should occur using TLS but do not require Mutual TLS (MTLS). 
+  Communication between the API and clients includes the access_token and should occur using TLS but does not require Mutual TLS (MTLS). 
 
 The Web Client is a single-page application (SPA) that executes entirely in the browser. Browsers are low- to zero-trust environments where OAuth2 access tokens should have short lifetimes to mitigate the risk of token diversion. Just what is considered 'short' is for you (or your organization) to decide, but 15 minutes or even less is not uncommon.
 
@@ -116,7 +116,7 @@ Several ASD checks address the management of data storage. It is important to un
 Logging and Analysis
 -----------------------
 
-Many ASD checks specify requirements for how application log entries should collected, aggregated, managed, audited, and analysed. The STIG Manager application role in this is simple: it outputs all its log entries to STDOUT.  These log entries must be captured and retained in accordance with your log retention policy.  The developers of the STIG Manager API component have made efforts to ensure that the logs the application emits conform to requirements specified in the ASD where appropriate. However, there are several other components of a successful deployment that will produce logs that may also require management by your logging solution, such as the OIDC Provider, Database, and Container Platform.  
+Many ASD checks specify requirements for how application log entries should be collected, aggregated, managed, audited, and analysed. The STIG Manager application role in this is simple: it outputs all its log entries to STDOUT.  These log entries must be captured and retained in accordance with your log retention policy.  The developers of the STIG Manager API component have made efforts to ensure that the logs the application emits conform to requirements specified in the ASD where appropriate. However, there are several other components of a successful deployment that will produce logs that may also require management by your logging solution, such as the OIDC Provider, Database, and Container Platform.  
 
 Transport Layer Security
 ---------------------------

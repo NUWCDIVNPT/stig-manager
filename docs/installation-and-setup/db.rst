@@ -88,10 +88,10 @@ Configure STIG Manager to use your MySQL Database and User
 
 Specify your MySQL DB and User information with the following Environment Variables:
 
- * *STIGMAN_DB_HOST* - Default: localhost - The database hostname or IP from to the API server
+ * *STIGMAN_DB_HOST* - Default: localhost - The database hostname or IP from the API server
  * *STIGMAN_DB_PORT* - Default: 3306 - The database TCP port relative to the API server
  * *STIGMAN_DB_USER* - Default: stigman - The user account used to login to the database
- * *STIGMAN_DB_SCHEMA* - Default: stigman - The schema where the STIG Manager object are found
+ * *STIGMAN_DB_SCHEMA* - Default: stigman - The schema where the STIG Manager objects are found
  * *STIGMAN_DB_PASSWORD* - The database user password. Not required if configuring client certificate connection, as shown below.
 
 
@@ -139,7 +139,7 @@ The stigman API user must be altered in MySQL such that it is identified by the 
 
 `A sample orchestration for STIG Manager configured for TLS to MySQL is available. <https://github.com/NUWCDIVNPT/stig-manager-docker-compose>`_ This sample orchestration uses self-signed certificates and should be used for testing purposes only.
 
-`More information about configuring MySQL to use encrypted connections. <https://dev.mysql.com/doc/refman/8.0/en/using-encrypted-connections.html>`_
+`More information about configuring MySQL to use encrypted connections. <https://dev.mysql.com/doc/refman/8.4/en/using-encrypted-connections.html>`_
 
 
 

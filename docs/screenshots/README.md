@@ -12,7 +12,7 @@ Generates the client screenshots in `docs/assets/images` from `manifest.mjs`, an
 | `stack.mjs` | Starts mock OIDC, the API, and the Vite dev client for a local run |
 | `seed.mjs` | Loads an appdata export into the running stack |
 | `lint.mjs` | Cross-checks docs, manifest, and image files |
-| `config.mjs` | Ports, URLs, viewport, tolerances; all overridable by `SHOTS_*` env vars |
+| `config.mjs` | Ports, URLs, viewport, tolerances; ports, URLs, database, and output paths are overridable by `SHOTS_*` env vars |
 
 ## Local run
 
@@ -43,7 +43,7 @@ npm run lint
 3. `npm run capture -- --only <name>` and check the result.
 4. `npm run lint` to confirm the doc and manifest agree.
 
-Steps are `[op, ...args]` with ops `goto`, `click`, `dblclick`, `hover`, `fill`, `press`, `wait`, `waitFor`, `idle`, and `run` (an async function escape hatch). Selectors are Playwright selector strings.
+Steps are `[op, ...args]` with ops `goto`, `click`, `dblclick`, `hover`, `fill`, `press`, `wait`, `waitFor`, `idle`, `scrollTo`, `check`, `upload`, and `run` (an async function escape hatch). Selectors are Playwright selector strings.
 
 `clip` captures one element; `clipPad` adds pixels of surrounding context; `clipBottom` ends the clip just below the last match of a selector, for elements taller than their content. Dashboards animate their charts for about a second after data arrives, so those entries set a longer `settleMs`.
 

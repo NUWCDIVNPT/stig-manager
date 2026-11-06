@@ -143,7 +143,7 @@ Use the "Import STIG" button to add new STIGs, and the "Remove Revision" menu to
 Service Jobs Page
 ------------------------------------
 
-This page allows App Managers to control and view the background Service Jobs that have been created in the STIGMan database. It includes information about the jobs, their schedule, component tasks, status, run history and output.  App Managers can create, modify, schedule, delete, and run jobs from this panel.  Jobs created by `system` cannot be deleted, but they can be disabled and their schedule can be modified.
+This page allows App Managers to control and view the background Service Jobs that have been created in the STIGMan database. It includes information about the jobs, their schedule, component tasks, status, run history and output.  App Managers can create, modify, schedule, delete, and run jobs from this panel.  Jobs created by ``system`` cannot be deleted, but they can be disabled and their schedule can be modified.
 
 **It is highly recommended that you enable and schedule these jobs to maintain the health of your STIG Manager database.** These jobs help keep your database lean and performant by cleaning up unreferenced data that can accumulate over time.  They also enable some important features such as Review Aging, which automatically acts on reviews that have not been updated within a configurable time threshold. See suggested setup in the :ref:`enable-service-jobs` section of this guide.
 

@@ -27,7 +27,7 @@ STIG Benchmarks
 ============================
 
 
-This page shows you a list of STIGs known to this instance of STIG Manager along with some basic statistics about them, such as their rule count and revision date. This interface also allows you to import new STIGs. 
+This page shows you a list of STIGs known to this instance of STIG Manager along with some basic statistics about them, such as their Rule count and revision date. This interface also allows you to import new STIGs. 
 
 .. rubric:: Importing and Updating STIGs
 
@@ -37,7 +37,7 @@ These updates must be brought into STIG Manager if you wish the updates to be re
 
 #. Download the STIGs you want to update from `DISA. <https://public.cyber.mil/stigs/>`_
 #. Upload the .zip files to STIG Manager via the "Import STIG" button on the ``Admin -> STIG Benchmarks`` page. By default, if the file contains a STIG Revision that already exists in the STIG Manager system, STIG Manager will retain the existing revision. To overwrite existing revisions, select the "Replace existing Revisions" checkbox when importing.
-#. The import may run for several minutes. When finished, the page will be populated with the STIG IDs and other information about the STIGs you imported.  These STIGs will now be available to users to assign to their Assets and for evaluations.
+#. The import may run for several minutes. When finished, the page will be populated with the STIG IDs and other information about the STIGs you imported.  These STIGs will now be available to Users to assign to their Assets and for evaluations.
 
 .. note::
   You can import entire .zip archives of the Quarterly Library Compilations at once, or individual STIGs. 
@@ -74,7 +74,7 @@ STIG Manager tracks Reviews by their Rule Version (often called "STIG ID") and t
 
 .. _stig-delete:
 
-Delete Stigs or Revisions
+Delete STIGs or Revisions
 -------------------------------
 
 Many STIGs are released quarterly, and old STIGs quickly lose their relevance.  To keep a handle on Database growth and simplify the user experience, you may want to delete old STIG revisions. We have found it is not especially useful to keep STIGs greater than 1 revision away from the current one around, as they are no longer valid for most purposes. 
@@ -82,7 +82,7 @@ Many STIGs are released quarterly, and old STIGs quickly lose their relevance.  
 You might also delete a STIG revision if you have updated STIGs but would prefer to revert to an older one as the default (hopefully not for long!).  In this case, you might want to delete the current STIG revision.  
 
 .. warning::
-      When you delete a STIG or a specific STIG revision, Reviews for rules **that only appear in that revision** will be deleted. If the rules in that STIG are found in other STIGs or revisions, the reviews will remain.
+      When you delete a STIG or a specific STIG revision, Reviews for Rules **that only appear in that revision** will be deleted. If the Rules in that STIG are found in other STIGs or revisions, the Reviews will remain.
 
 
 |
@@ -111,7 +111,7 @@ In most cases, Collection Owners should be administering their own Collections. 
 Users
 ============================
 
-This page presents a list of all users known to STIG Manager, as well as some statistics about them.
+This page presents a list of all Users known to STIG Manager, as well as some statistics about them.
 It also includes buttons to pre-register and unregister Users, and a Properties pane to modify the selected User's Groups and Grants. 
 
 
@@ -121,7 +121,7 @@ It also includes buttons to pre-register and unregister Users, and a Properties 
 Pre-registering Users
 ----------------------------
 
-STIG Manager will automatically creates a user record when a new Authenticated User accesses the system.  If you want to make assignments to users before they have accessed the system, it is possible to pre-register them from the ``Admin -> Users`` page.  Click the Pre-register User button, and enter their username. Groups and Direct Grants can be assigned in the same dialog. This username must match exactly the username that will be provided by the Authentication Provider when the user eventually shows up. 
+STIG Manager will automatically create a user record when a new Authenticated User accesses the system.  If you want to make assignments to users before they have accessed the system, it is possible to pre-register them from the ``Admin -> Users`` page.  Click the Pre-register User button, and enter their username. Groups and Direct Grants can be assigned in the same dialog. This username must match exactly the username that will be provided by the Authentication Provider when the user eventually shows up. 
 
 It is important to note that the pre-register function does not grant access to STIG Manager. User *access* is solely managed via your Authentication Provider (Keycloak, Okta, etc). Pre-registering a user in STIG Manager will create a user record in the STIG Manager database that can be given Collection Grants before the user has accessed the system, but they will not be able to access the system until they have authenticated with the Authentication Provider.
 
@@ -150,7 +150,7 @@ Unregistering Users
 
 Overall access to STIG Manager is controlled by your deployment's OIDC Provider (ie. Keycloak).  Unregistering Users will remove all their Collection Grants, but will not prevent access to STIG Manager unless the user is also disabled/deleted/altered in the Authentication Provider.  However, once un-registered they will not have access to any information in STIG Manager besides the STIG Library. 
 
-To unregister a User, select the User, and click the "Unregister User" button. The selected user will have all their Collection Grants removed.  The User's other info will remain, so that any reviews or other actions they have performed will continue to have attribution. 
+To unregister a User, select the User, and click the "Unregister User" button. If the User has never accessed the system, their User record will be deleted. Otherwise, the User will have all their Collection Grants and Group assignments removed, and the User's other info will remain, so that any Reviews or other actions they have performed will continue to have attribution. 
 
 
 .. note::
@@ -160,7 +160,7 @@ To unregister a User, select the User, and click the "Unregister User" button. T
 Modifying Users
 -----------------------
 
-The only changes that can be made to Users in the STIG Manager interface is their Collection Grants or Group Membership. All other data in the User Properties pane is derived from information in the access token, which is managed in the Authentication Provider.
+The only changes that can be made to Users in the STIG Manager interface are their Collection Grants, Group Membership, and Status (Available or Unavailable). All other data in the User Properties pane is derived from information in the access token, which is managed in the Authentication Provider.
 
 
 -------------------------------
@@ -197,11 +197,11 @@ Schedule these jobs to run during off-peak hours to minimize performance impact.
 
 .. rubric:: Configuring Review Aging Behavior
 
-Some jobs, such as **Update Aged Reviews**, are enabled and scheduled by the App Manager but driven by rules defined per-collection by Collection Owners. When the job runs, it processes each collection that has configured rules; collections without rules are silently skipped.
+Some jobs, such as **Update Aged Reviews**, are enabled and scheduled by the App Manager but driven by rules defined per-Collection by Collection Owners. When the job runs, it processes each Collection that has configured rules; Collections without rules are silently skipped.
 
-This means enabling the job alone has no immediate effect on any reviews. Once it is scheduled, coordinate with your Collection Owners so they can define rules appropriate for their workflows. See :ref:`review-aging-rules` in the User Guide for rule configuration details.
+This means enabling the job alone has no immediate effect on any Reviews. Once it is scheduled, coordinate with your Collection Owners so they can define rules appropriate for their workflows. See :ref:`review-aging-rules` in the User Guide for rule configuration details.
 
-App Managers can view system-level run history and output from the Service Jobs panel. Collection Managers and Owners can view output scoped to their own collection from the **Tasks** tab in their Collection Management workspace.
+App Managers can view system-level run history and output from the Service Jobs panel. Collection Managers and Owners can view output scoped to their own Collection from the **Tasks** form in the Actions section of the Configuration page in their Collection Management Workspace.
 
 .. note::
    Always ensure you have appropriate database backups before enabling these jobs for the first time. See the :ref:`service-jobs` section of the Admin Guide for detailed information about job configuration and monitoring.

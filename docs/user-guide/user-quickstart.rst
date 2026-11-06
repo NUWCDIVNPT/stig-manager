@@ -60,7 +60,7 @@ By default, most users will have the Collection Creator role, allowing them to c
       :title: Navigation Rail
 
 
-#. You will be prompted for your Collection name and a description.  On Create, you will be automatically made an Owner of the new collection, and will be taken to the Management workspace for this new Collection. You can access the Management workspace later from the Management tab of the Collection Dashboard.
+#. You will be prompted for your Collection name and a description.  On Create, you will be automatically made an Owner of the new Collection, and will be taken to the Management workspace for this new Collection. You can access the Management workspace later from the Management tab of the Collection Dashboard.
 
 
    .. thumbnail:: /assets/images/new/create-collection-popup.png
@@ -74,8 +74,9 @@ By default, most users will have the Collection Creator role, allowing them to c
 Create Assets in your Collection
 ======================================
 
-#. From the Assets page of the Management workspace, use the "Create" button in the toolbar to create a couple sample assets. You can also attach STIGs from the "Create new Asset" popup at this time. The only required field is "Name," which must be unique in this Collection.
-   * You can change all the properties of your asset, including attached STIGs, later by selecting the asset and using the "Modify" button in the Assets toolbar.  
+#. From the Assets page of the Management workspace, use the "Create" button in the toolbar to create a couple sample Assets. You can also attach STIGs from the "Create new Asset" popup at this time. The only required field is "Name," which must be unique in this Collection.
+
+   * You can change all the properties of your Asset, including attached STIGs, later by selecting the Asset and using the "Modify" button in the Assets toolbar.  
 
 .. thumbnail:: /assets/images/new/collection-manage-asset-create-button.png
    :width: 50% 
@@ -155,7 +156,7 @@ Evaluate an Asset for STIG compliance
 
    * You will now be presented with the Asset Review workspace for that STIG on that Asset, which contains several parts.
 
-      * The **STIG Checklist grid** lists every rule in the STIG, their evaluation status, and some other helpful info. Click a Rule to load that Rule's information on the right and open the Review editor.
+      * The **STIG Checklist grid** lists every Rule in the STIG, their evaluation status, and some other helpful info. Click a Rule to load that Rule's information on the right and open the Review editor.
       * The **Rule panel** on the right contains the selected Rule's info such as the Rule Title, Manual Checks, Fix info, and associated CCIs.
       * The **Review editor** pops up over the checklist when you click a Rule, and is where you will actually log your Evaluation of the Rule.  It contains fields to record Review Results, Detail, and Comments, Status buttons, and an attribution line that indicates who last modified the Review.
       * The **Review Resources** section, expanded from the bottom of the Review editor, contains a history of this Review, any Feedback you have received about this Review from the Collection Owner, and other Reviews that have been performed for the selected Rule against other assets. Use the "Apply" button on one of those Reviews to copy it to the current asset. 

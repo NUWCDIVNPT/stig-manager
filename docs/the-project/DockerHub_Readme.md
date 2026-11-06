@@ -119,7 +119,7 @@ docker run --name stig-manager-api \
   -p 54000:54000 \
   -e STIGMAN_DB_HOST=<DATABASE_IP> \
   -e STIGMAN_DB_PORT=<DATABASE_PORT> \
-  -e STIGMAN_OIDC_PROVIDER=http://<KEYCLOAK_IP>:<KEYCLOAK_PORT>/auth/realms/stigman \
+  -e STIGMAN_OIDC_PROVIDER=http://<KEYCLOAK_IP>:<KEYCLOAK_PORT>/realms/stigman \
   nuwcdivnpt/stig-manager
 ```
 

@@ -11,9 +11,6 @@ The STIG Manager Project
 
 These pages describe the STIG Manager project.
 
-.. note:
-   This section is still under development.
-
 
 .. toctree::
 	:maxdepth: 1

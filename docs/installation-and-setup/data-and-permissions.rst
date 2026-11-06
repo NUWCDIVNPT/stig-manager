@@ -29,14 +29,14 @@ Collections, Assets, and Reviews all support a JSON field called "metadata" for 
 The Project Clients and API make use of the following metadata keys. These keys are reserved for use by the STIG Manager project and should not be used by third-party Clients:
 
 * Collection Metadata:
-    - ``importOptions`` - Guidance for clients to follow when posting reviews for this collection that are NOT enforced by the API. See :ref:`import-options` for more information.
+    - ``importOptions`` - Guidance for clients to follow when posting Reviews for this Collection that are NOT enforced by the API. See :ref:`import-options` for more information.
 * Asset Metadata
     - ``cklWebOrDatabase`` - A boolean indicating whether the Asset is a Web or Database server. See :ref:`ckl-processing`
     - ``cklHostName`` - The hostname of the Asset as it appears in a .ckl file. See :ref:`ckl-processing`
     - ``cklWebDbSite`` - The Web or Database Site of the Asset as it appears in a .ckl file. See :ref:`ckl-processing`
     - ``cklWebDbInstance`` - The Web or Database Instance of the Asset as it appears in a .ckl file. See :ref:`ckl-processing`
 * Review Metadata
-    - ``artifacts`` - Array of objects describing the artifacts attached to the review. Each item includes name, type, size, description, user, timestamp, and digest of the artifact content. 
+    - ``artifacts`` - Array of objects describing the artifacts attached to the Review. Each item includes name, type, size, description, user, timestamp, and digest of the artifact content. 
     - ``<digest-specified-by-artifact-object>`` - Base64-encoded content of the artifact.
 
 .. note::
@@ -47,7 +47,7 @@ Reference STIGs
 ---------------------------------------------
 
 STIG Manager uses a set of Reference STIGs that it makes available for assignment to Assets, tracks Rule evaluation, and against which it calculates all metrics. 
-These Reference STIGs must be imported and updated periodically as new STIGs are released or updates are made. It is responsibility of a User with the "Application Management" (ie. "admin") privilege to import these official STIGs and keep them updated. Usually, these STIGs are released by DISA on a quarterly schedule. 
+These Reference STIGs must be imported and updated periodically as new STIGs are released or updates are made. It is the responsibility of a User with the "Application Management" (ie. "admin") privilege to import these official STIGs and keep them updated. Usually, these STIGs are released by DISA on a quarterly schedule. 
 
 Wherever the content of a STIG is displayed (STIG Rules, Rule Titles, Rule Descriptions, Fix Texts, Severities, etc.) this data is drawn from the Reference STIG imported by the Application Manager. It is important to note the distinction here between STIG content and "Review" content, which is usually drawn from imported .ckl files or manual results inputted into STIG Manager by Reviewers. This "Review" content only affects the "Review" or "Evaluation" portion of the data displayed in STIG Manager. They cannot change Reference STIG content via .ckl imports. 
 
@@ -57,7 +57,7 @@ Wherever the content of a STIG is displayed (STIG Rules, Rule Titles, Rule Descr
 
 Assets and the STIGs assigned to them are generally presented as Checklists, the lists of Rules and Checks that compose the assigned STIG, and the Reviews that satisfy those Rules. STIG Manager associates Reviews with specific content of Rules (Rule Version and Rule Check Content), independent of the STIGs that are assigned to Assets. This allows for different and more useful presentations of the data than when the Reviews are expressed in flat files, such as .ckl or XCCDF files. 
 
-It is important to note that STIG Manager does not retain the actual .ckl or XCCDF files that are imported into it in any way. The files are parsed for the information they contain, and that information is stored in the database. Manual edits via the UI and new imports all contribute to the current state of an Asset's reviews as presented by the UI and API. NEW .ckl/b or XCCDF files are generated on demand reflecting the current state of a Collections Assets, STIGs, and reviews. 
+It is important to note that STIG Manager does not retain the actual .ckl or XCCDF files that are imported into it in any way. The files are parsed for the information they contain, and that information is stored in the database. Manual edits via the UI and new imports all contribute to the current state of an Asset's Reviews as presented by the UI and API. NEW .ckl/b or XCCDF files are generated on demand reflecting the current state of a Collection's Assets, STIGs, and Reviews. 
 This approach provides several advantages:
 
 - Reviews are associated with the specific content of a Rule (Rule Version and Rule Check Content).
@@ -123,7 +123,7 @@ __________________________________
 STIG Manager supports serializing Reviews in XCCDF format with a STIG Manager namespace (``xmlns:sm="http://github.com/nuwcdivnpt/stig-manager"``). Correct serialization was validated using `the official NIST validation tool <https://csrc.nist.gov/CSRC/media/Projects/Security-Content-Automation-Protocol/specifications/xccdf/1.2/xccdfval-1.2.0.zip>`_.
 
 The XCCDF format is more expressive and extensible than the .ckl format, so additional data can be included.
-Not all tools will recognize elements making use of the STIG Manager namespace, but the files will still validate and test result information will be recognized. STIG Manager itself can re-import it's own XCCDF files and will understand the STIGMan namespace fields. 
+Not all tools will recognize elements making use of the STIG Manager namespace, but the files will still validate and test result information will be recognized. STIG Manager itself can re-import its own XCCDF files and will understand the STIGMan namespace fields. 
 
 STIGMan serializes elements containing data that are STIGMan specific, as well as other elements required to express test results and stay in accordance with the NIST XCCDF specification:
 
@@ -192,13 +192,13 @@ In the reference UI, the ``elevate`` parameter is sent when administrative funct
 
 These **privileges** must be present in the token presented to the API in order to be successfully invoked. 
 
-Access to specific endpoints is controlled by the **scopes** present in a user's token. The scopes granted to users can be configured in the OIDC provider. Certain user types may only need access to certain scopes. For example, an "Application Manager" type user might need access to the ``stig-manager:stig`` scope so that they can update the Reference STIGs in the app, but normal users might only need the ``stig-manager:stig:read`` scope, granting them read-only access to the Reference STIGs.  All configuration of this type is done in the OIDC provider. 
+Access to specific endpoints is controlled by the **scopes** present in a User's token. The scopes granted to Users can be configured in the OIDC provider. Certain User types may only need access to certain scopes. For example, an "Application Manager" type User might need access to the ``stig-manager:stig`` scope so that they can update the Reference STIGs in the app, but normal Users might only need the ``stig-manager:stig:read`` scope, granting them read-only access to the Reference STIGs.  All configuration of this type is done in the OIDC provider. 
   
 See our :ref:`Authentication and Identity <authentication>` documentation and our `API Specification <https://github.com/NUWCDIVNPT/stig-manager/blob/main/api/source/specification/stig-manager.yaml>`_ for more information about how these scopes and privileges interrelate. 
 
 
 .. note::
-    An authorized user will not have access to Collection data until they have been assigned a Grant to one by a Collection Owner or Manager, or create a Collection themselves.
+    An authorized User will not have access to Collection data until they have been assigned a Grant to one by a Collection Owner or Manager, or create a Collection themselves.
     See :ref:`roles-and-access` for more information about how Grants are managed. 
 
 

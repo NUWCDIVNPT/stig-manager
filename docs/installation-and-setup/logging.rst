@@ -12,7 +12,7 @@ You should capture and persist these logging objects in accordance with your Org
 Logging schemas
 ---------------
 
-The full JSON Schema (Draft 07) definition of our logging objects is available here. This documentation is organized to describe each 
+The full JSON Schema (Draft 07) definition of our logging objects is available `here <https://github.com/NUWCDIVNPT/stig-manager/blob/main/api/source/utils/log-schema.json>`_. This documentation is organized to describe each 
 logging component separately and presents the relevant sub-schemas.
 
 Common

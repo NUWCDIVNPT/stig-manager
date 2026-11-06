@@ -5,7 +5,7 @@ API Testing Guide
 ########################################
 
 
-The STIG Manager project currently tests its API using a Mocha/Chai/Chai-HTTP and specific test data, which can be found in the repo.
+The STIG Manager project currently tests its API using Mocha/Chai/Chai-HTTP and specific test data, which can be found in the repo.
 
 The tests are run automatically with Mocha via github actions whenever a Pull Request is made to the project.
 

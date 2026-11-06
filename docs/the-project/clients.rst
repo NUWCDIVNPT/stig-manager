@@ -20,7 +20,7 @@ See the client `README.md <https://github.com/NUWCDIVNPT/stig-manager/tree/main/
 
 STIG Manager Watcher
 -------------------------
-A command-line client that will monitor a file-system directory and upload .ckl/.cklb or XCCDF results to a STIG Manager API instance: `STIG Manger Watcher. <https://github.com/NUWCDIVNPT/stigman-watcher>`_  It is maintained by the main STIGMan OSS dev group, and also available as `an npm package. <https://www.npmjs.com/package/stigman-watcher>`_  Check the gitHub repo's `wiki for further documentation. <https://github.com/NUWCDIVNPT/stigman-watcher/wiki>`_
+A command-line client that will monitor a file-system directory and upload .ckl/.cklb or XCCDF results to a STIG Manager API instance: `STIG Manager Watcher. <https://github.com/NUWCDIVNPT/stigman-watcher>`_  It is maintained by the main STIGMan OSS dev group, and also available as `an npm package. <https://www.npmjs.com/package/stigman-watcher>`_  Check the gitHub repo's `wiki for further documentation. <https://github.com/NUWCDIVNPT/stigman-watcher/wiki>`_
 
 Proposed Clients
 ====================

@@ -109,10 +109,10 @@ This is a glossary with definitions for terms like :term:`Asset`:
 
 
     STIG
-        Secure Technical Implementation Guidelines published by the Defense Information Security Agency. STIGs are published in XCCDF format that can be imported into STIG Manager. Automated results in XCCDF format, such as those produced by the DISA SCC Tool, can also be imported. Manually evaluated STIG Results are often recorded in a .ckl file, a different format, which is produced by the DISA tool STIG Viewer, and can also be imported into STIG Manager. 
+        Security Technical Implementation Guides published by the Defense Information Systems Agency. STIGs are published in XCCDF format that can be imported into STIG Manager. Automated results in XCCDF format, such as those produced by the DISA SCC Tool, can also be imported. Manually evaluated STIG Results are often recorded in a .ckl file, a different format, which is produced by the DISA tool STIG Viewer, and can also be imported into STIG Manager. 
 		
     User
-        Any User in STIG Manager can be assigned a grant that provides access to a Collection by the Collection Owner or Manager.
+        Any User in STIG Manager can be assigned a Grant that provides access to a Collection by the Collection Owner or Manager.
 
         * When you grant Users access to your Collection, or when you are granted access to another Collection by someone else, that Collection will appear in their list of Collections upon refresh of the app. 
 
@@ -127,7 +127,7 @@ This is a glossary with definitions for terms like :term:`Asset`:
                 * Create and modify Grants (without ACLs) on any Collection.
                 * Create and Alter Users and User Groups.
                 * Import and Export Application Data.
-                * The Administrator privilege does not grant access to collection content. An admin cannot read or write Reviews, access Asset or STIG checklist data, or modify a Collection's settings, labels, metadata, or Grant ACLs without holding a Collection Grant. These operations require a normal (non-elevated) request governed by a Grant.
+                * The Administrator privilege does not grant access to Collection content. An admin cannot read or write Reviews, access Asset or STIG checklist data, or modify a Collection's settings, Labels, metadata, or Grant ACLs without holding a Collection Grant. These operations require a normal (non-elevated) request governed by a Grant.
 
     User Group
         A named collection of Users that can be granted access to a Collection as a single entity. User Groups can be created and modified in the User Groups interface available to Application Managers. User Groups are  available to all Collection Owners and Managers for use in the Grants panel.  See :ref:`roles-and-access` for more information.

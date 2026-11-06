@@ -28,9 +28,9 @@ Assets and Resources Maintained
 
 **Deliverable Artifacts:**
 
-- OpenAPI 3.1 Specification
+- OpenAPI 3.0 Specification
 
-  - Fully defined OpenAPI 3.1 Specification 
+  - Fully defined OpenAPI 3.0 Specification 
   - Fully defined to validate both request and response objects
   - Appropriate scopes and endpoint security definitions
 
