@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "api/source/**"
+      - "client/src/js/workers/**"
       - "test/unit/**"
       - ".github/workflows/unit-tests.yml"
   push:
@@ -13,6 +14,7 @@ on:
       - main
     paths:
       - "api/source/**"
+      - "client/src/js/workers/**"
       - "test/unit/**"
       - ".github/workflows/unit-tests.yml"
 
