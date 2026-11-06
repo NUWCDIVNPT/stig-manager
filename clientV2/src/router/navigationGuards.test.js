@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createMemoryHistory, createRouter } from 'vue-router'
 
 const mockIsAdmin = { value: false }
 const mockHasCollectionAccess = vi.fn(() => false)
@@ -20,9 +20,10 @@ const { navigationGuard } = await import('./navigationGuards.js')
 
 const Stub = { template: '<div>stub</div>' }
 
+// Mirrors the real route shapes: nested collection tabs and an admin parent whose meta the children inherit
 function createTestRouter() {
   const router = createRouter({
-    history: createWebHashHistory(),
+    history: createMemoryHistory(),
     routes: [
       { path: '/', name: 'home', component: Stub },
       {
@@ -36,135 +37,182 @@ function createTestRouter() {
             component: Stub,
             redirect: to => ({ name: 'collection-stigs', params: { collectionId: to.params.collectionId } }),
           },
-          {
-            path: 'stigs',
-            name: 'collection-stigs',
-            component: Stub,
-          },
+          { path: 'stigs', name: 'collection-stigs', component: Stub },
+          { path: 'management', name: 'collection-management', component: Stub, meta: { minRoleId: 3 } },
         ],
       },
       {
-        path: '/collection/:collectionId/manage',
-        name: 'collection-manage',
+        path: '/collection/:collectionId/asset/:assetId',
+        name: 'collection-asset-review',
         component: Stub,
-        meta: { requiresCollectionGrant: true, minRoleId: 3 },
+        meta: { requiresCollectionGrant: true },
       },
       { path: '/collections', name: 'collections', component: Stub },
       {
-        path: '/admin/users',
-        name: 'admin-users',
+        path: '/app-management',
         component: Stub,
         meta: { requiresAdmin: true },
-      },
-      {
-        path: '/admin/log-stream',
-        name: 'admin-log-stream',
-        component: Stub,
-        meta: { requiresAdmin: true, isEnabled: () => mockFeatureEnabled, disabledRedirect: 'admin-users' },
+        children: [
+          { path: 'users', name: 'admin-users', component: Stub },
+          {
+            path: 'log-stream',
+            name: 'admin-log-stream',
+            component: Stub,
+            meta: { isEnabled: () => mockFeatureEnabled, disabledRedirect: 'admin-users' },
+          },
+        ],
       },
       { path: '/:pathMatch(.*)*', name: 'not-found', component: Stub },
     ],
   })
-
   router.beforeEach(navigationGuard)
-
   return router
 }
 
+// Lands on the 404 page while the address bar keeps exactly what was opened
+function expectNotFoundAt(router, fullPath) {
+  expect(router.currentRoute.value.name).toBe('not-found')
+  expect(router.currentRoute.value.fullPath).toBe(fullPath)
+}
+
 describe('navigation guards', () => {
+  let router
+
   beforeEach(() => {
     mockIsAdmin.value = false
-    mockHasCollectionAccess.mockReturnValue(false)
-    mockGetCollectionRoleId.mockReturnValue(null)
+    mockFeatureEnabled = false
+    mockHasCollectionAccess.mockReset().mockReturnValue(false)
+    mockGetCollectionRoleId.mockReset().mockReturnValue(null)
     mockRefreshUser.mockReset()
+    router = createTestRouter()
   })
 
   describe('admin routes', () => {
-    it('redirects non-admin to home', async () => {
-      const router = createTestRouter()
-      mockIsAdmin.value = false
-      await router.push('/admin/users')
-      await router.isReady()
-      expect(router.currentRoute.value.name).toBe('home')
+    it('shows the 404 page to a non-admin, keeping the URL', async () => {
+      await router.push('/app-management/users')
+      expectNotFoundAt(router, '/app-management/users')
     })
 
-    it('allows admin to access admin routes', async () => {
-      const router = createTestRouter()
+    it('allows an admin', async () => {
       mockIsAdmin.value = true
-      await router.push('/admin/users')
-      await router.isReady()
+      await router.push('/app-management/users')
       expect(router.currentRoute.value.name).toBe('admin-users')
+    })
+
+    it('does not refresh the user for an admin denial', async () => {
+      await router.push('/app-management/users')
+      expect(mockRefreshUser).not.toHaveBeenCalled()
+    })
+
+    it('checks admin before the feature flag, so a non-admin never learns a feature is off', async () => {
+      await router.push('/app-management/log-stream')
+      expectNotFoundAt(router, '/app-management/log-stream')
     })
   })
 
   describe('feature-gated routes (meta.isEnabled)', () => {
     it('redirects to disabledRedirect when the feature is off', async () => {
-      const router = createTestRouter()
       mockIsAdmin.value = true
-      mockFeatureEnabled = false
-      await router.push('/admin/log-stream')
-      await router.isReady()
+      await router.push('/app-management/log-stream')
       expect(router.currentRoute.value.name).toBe('admin-users')
     })
 
     it('allows access when the feature is on', async () => {
-      const router = createTestRouter()
       mockIsAdmin.value = true
       mockFeatureEnabled = true
-      await router.push('/admin/log-stream')
-      await router.isReady()
+      await router.push('/app-management/log-stream')
       expect(router.currentRoute.value.name).toBe('admin-log-stream')
     })
   })
 
   describe('collection routes', () => {
-    it('redirects to collections when user has no grant', async () => {
-      const router = createTestRouter()
-      mockHasCollectionAccess.mockReturnValue(false)
+    it('shows the 404 page without a grant, keeping the URL', async () => {
       await router.push('/collection/123/stigs')
-      await router.isReady()
-      expect(router.currentRoute.value.name).toBe('collections')
+      expectNotFoundAt(router, '/collection/123/stigs')
     })
 
-    it('allows access when user has a grant', async () => {
-      const router = createTestRouter()
+    it('keeps the query and hash on the 404 URL', async () => {
+      await router.push('/collection/123/stigs?labelName=web&labelMatch=null#top')
+      expectNotFoundAt(router, '/collection/123/stigs?labelName=web&labelMatch=null#top')
+    })
+
+    it('shows the 404 page for a bare collection URL (after its tab redirect)', async () => {
+      await router.push('/collection/123')
+      expectNotFoundAt(router, '/collection/123/stigs')
+    })
+
+    it('shows the 404 page for a review page in a collection without a grant', async () => {
+      await router.push('/collection/123/asset/9')
+      expectNotFoundAt(router, '/collection/123/asset/9')
+    })
+
+    it('allows access with a grant', async () => {
       mockHasCollectionAccess.mockReturnValue(true)
       await router.push('/collection/123/stigs')
-      await router.isReady()
       expect(router.currentRoute.value.name).toBe('collection-stigs')
+    })
+
+    it('checks the URL\'s collectionId', async () => {
+      await router.push('/collection/456/stigs')
+      expect(mockHasCollectionAccess.mock.calls.length).toBeGreaterThan(0)
+      expect(mockHasCollectionAccess.mock.calls.every(([id]) => id === '456')).toBe(true)
+    })
+
+    it('going Back from the 404 page returns to where the user was', async () => {
+      await router.push('/collections')
+      await router.push('/collection/123/stigs')
+      expect(router.currentRoute.value.name).toBe('not-found')
+      router.back()
+      await vi.waitFor(() => expect(router.currentRoute.value.name).toBe('collections'))
     })
   })
 
-  describe('collection manage (minRoleId)', () => {
-    it('redirects to collection dashboard when roleId is too low', async () => {
-      const router = createTestRouter()
+  describe('role-gated tab (meta.minRoleId)', () => {
+    beforeEach(() => {
       mockHasCollectionAccess.mockReturnValue(true)
+    })
+
+    it('sends a too-low role to that collection\'s dashboard, not the 404 page', async () => {
       mockGetCollectionRoleId.mockReturnValue(2)
-      await router.push('/collection/123/manage')
-      await router.isReady()
+      await router.push('/collection/123/management')
       expect(router.currentRoute.value.name).toBe('collection-stigs')
+      expect(router.currentRoute.value.params.collectionId).toBe('123')
     })
 
-    it('allows access when roleId meets minimum', async () => {
-      const router = createTestRouter()
-      mockHasCollectionAccess.mockReturnValue(true)
+    it('allows a role that meets the minimum', async () => {
       mockGetCollectionRoleId.mockReturnValue(3)
-      await router.push('/collection/123/manage')
-      await router.isReady()
-      expect(router.currentRoute.value.name).toBe('collection-manage')
+      await router.push('/collection/123/management')
+      expect(router.currentRoute.value.name).toBe('collection-management')
+    })
+
+    it('allows a role above the minimum', async () => {
+      mockGetCollectionRoleId.mockReturnValue(4)
+      await router.push('/collection/123/management')
+      expect(router.currentRoute.value.name).toBe('collection-management')
     })
   })
 
-  describe('stale grants (refresh before denying)', () => {
+  describe('stale grants (refresh once before denying)', () => {
     it('does not refresh when the grant is already there', async () => {
-      const router = createTestRouter()
       mockHasCollectionAccess.mockReturnValue(true)
       await router.push('/collection/123/stigs')
       expect(mockRefreshUser).not.toHaveBeenCalled()
     })
 
+    it('does not refresh when the role already meets the minimum', async () => {
+      mockHasCollectionAccess.mockReturnValue(true)
+      mockGetCollectionRoleId.mockReturnValue(4)
+      await router.push('/collection/123/management')
+      expect(mockRefreshUser).not.toHaveBeenCalled()
+    })
+
+    it('does not refresh for routes without a grant check', async () => {
+      await router.push('/collections')
+      await router.push('/nonexistent/page')
+      expect(mockRefreshUser).not.toHaveBeenCalled()
+    })
+
     it('allows a grant added since load', async () => {
-      const router = createTestRouter()
       mockRefreshUser.mockImplementation(async () => mockHasCollectionAccess.mockReturnValue(true))
       await router.push('/collection/123/stigs')
       expect(mockRefreshUser).toHaveBeenCalledTimes(1)
@@ -172,56 +220,42 @@ describe('navigation guards', () => {
     })
 
     it('allows a role raised since load', async () => {
-      const router = createTestRouter()
       mockHasCollectionAccess.mockReturnValue(true)
       mockGetCollectionRoleId.mockReturnValue(2)
       mockRefreshUser.mockImplementation(async () => mockGetCollectionRoleId.mockReturnValue(3))
-      await router.push('/collection/123/manage')
+      await router.push('/collection/123/management')
       expect(mockRefreshUser).toHaveBeenCalledTimes(1)
-      expect(router.currentRoute.value.name).toBe('collection-manage')
+      expect(router.currentRoute.value.name).toBe('collection-management')
     })
 
-    it('still denies after one refresh when there is no grant', async () => {
-      const router = createTestRouter()
+    it('shows the 404 page after one refresh when there is still no grant', async () => {
       await router.push('/collection/123/stigs')
       expect(mockRefreshUser).toHaveBeenCalledTimes(1)
-      expect(router.currentRoute.value.name).toBe('collections')
+      expectNotFoundAt(router, '/collection/123/stigs')
     })
 
     it('still sends a too-low role to the dashboard after one refresh', async () => {
-      const router = createTestRouter()
       mockHasCollectionAccess.mockReturnValue(true)
       mockGetCollectionRoleId.mockReturnValue(2)
-      await router.push('/collection/123/manage')
+      await router.push('/collection/123/management')
       // the redirect to the dashboard passes the grant check, so it must not refresh again
       expect(mockRefreshUser).toHaveBeenCalledTimes(1)
       expect(router.currentRoute.value.name).toBe('collection-stigs')
-      expect(router.currentRoute.value.params.collectionId).toBe('123')
     })
 
-    it('sends to collections when a refresh shows the grant was removed', async () => {
-      const router = createTestRouter()
+    it('shows the 404 page when a refresh shows the grant was removed', async () => {
       mockHasCollectionAccess.mockReturnValue(true)
       mockGetCollectionRoleId.mockReturnValue(2)
       mockRefreshUser.mockImplementation(async () => {
         mockHasCollectionAccess.mockReturnValue(false)
         mockGetCollectionRoleId.mockReturnValue(null)
       })
-      await router.push('/collection/123/manage')
+      await router.push('/collection/123/management')
       expect(mockRefreshUser).toHaveBeenCalledTimes(1)
-      expect(router.currentRoute.value.name).toBe('collections')
-    })
-
-    it('does not refresh when the role already meets the minimum', async () => {
-      const router = createTestRouter()
-      mockHasCollectionAccess.mockReturnValue(true)
-      mockGetCollectionRoleId.mockReturnValue(4)
-      await router.push('/collection/123/manage')
-      expect(mockRefreshUser).not.toHaveBeenCalled()
+      expectNotFoundAt(router, '/collection/123/management')
     })
 
     it('waits for the refresh before deciding', async () => {
-      const router = createTestRouter()
       let finishRefresh
       mockRefreshUser.mockImplementation(() => new Promise((resolve) => {
         finishRefresh = () => {
@@ -231,41 +265,17 @@ describe('navigation guards', () => {
       }))
       const nav = router.push('/collection/123/stigs')
       await vi.waitFor(() => expect(mockRefreshUser).toHaveBeenCalled())
-      expect(router.currentRoute.value.name).not.toBe('collections')
+      expect(router.currentRoute.value.name).not.toBe('not-found')
       finishRefresh()
       await nav
       expect(router.currentRoute.value.name).toBe('collection-stigs')
     })
-
-    it('checks the route\'s collectionId', async () => {
-      const router = createTestRouter()
-      mockHasCollectionAccess.mockClear()
-      await router.push('/collection/456/stigs')
-      expect(mockHasCollectionAccess.mock.calls.length).toBeGreaterThan(0)
-      expect(mockHasCollectionAccess.mock.calls.every(([id]) => id === '456')).toBe(true)
-    })
-
-    it('does not refresh for admin denials', async () => {
-      const router = createTestRouter()
-      await router.push('/admin/users')
-      expect(router.currentRoute.value.name).toBe('home')
-      expect(mockRefreshUser).not.toHaveBeenCalled()
-    })
-
-    it('does not refresh for routes without a grant check', async () => {
-      const router = createTestRouter()
-      await router.push('/collections')
-      await router.push('/nonexistent/page')
-      expect(mockRefreshUser).not.toHaveBeenCalled()
-    })
   })
 
   describe('catch-all 404', () => {
-    it('renders not-found for unknown route', async () => {
-      const router = createTestRouter()
+    it('renders not-found for an unknown route', async () => {
       await router.push('/nonexistent/page')
-      await router.isReady()
-      expect(router.currentRoute.value.name).toBe('not-found')
+      expectNotFoundAt(router, '/nonexistent/page')
     })
   })
 })

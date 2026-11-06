@@ -41,6 +41,7 @@ function createTestRouter() {
         ],
       },
       { path: '/collections', name: 'collections', component: Stub },
+      { path: '/:pathMatch(.*)*', name: 'not-found', component: Stub },
     ],
   })
   router.beforeEach(navigationGuard)
@@ -83,7 +84,7 @@ describe('navigation guard grant refresh (real user store)', () => {
     const router = createTestRouter()
     await router.push('/collection/99/stigs')
     expect(mockFetchCurrentUser).toHaveBeenCalledTimes(1)
-    expect(router.currentRoute.value.name).toBe('collections')
+    expect(router.currentRoute.value.name).toBe('not-found')
   })
 
   it('denies without throwing when the refresh fails, and keeps the old user', async () => {
@@ -91,7 +92,7 @@ describe('navigation guard grant refresh (real user store)', () => {
     mockFetchCurrentUser.mockRejectedValue(new Error('network down'))
     const router = createTestRouter()
     await expect(router.push('/collection/7/stigs')).resolves.not.toThrow()
-    expect(router.currentRoute.value.name).toBe('collections')
+    expect(router.currentRoute.value.name).toBe('not-found')
     expect(store.user.collectionGrants).toHaveLength(1)
     expect(consoleSpy).toHaveBeenCalled()
     consoleSpy.mockRestore()
@@ -111,7 +112,7 @@ describe('navigation guard grant refresh (real user store)', () => {
     mockFetchCurrentUser.mockResolvedValueOnce(userWith(grant('1', 1), grant('7', 1)))
     const router = createTestRouter()
     await router.push('/collection/7/stigs')
-    expect(router.currentRoute.value.name).toBe('collections')
+    expect(router.currentRoute.value.name).toBe('not-found')
     // the grant arrives between attempts; a second try picks it up
     await router.push('/collection/7/stigs')
     expect(router.currentRoute.value.name).toBe('collection-stigs')

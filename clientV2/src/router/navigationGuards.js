@@ -2,10 +2,15 @@ import { useCurrentUser } from '../shared/composables/useCurrentUser.js'
 
 const { isAdmin, hasCollectionAccess, getCollectionRoleId, refreshUser } = useCurrentUser()
 
+// No access looks the same as a bad URL: 404 page with the typed URL kept, matching the pages' API 403 handling
+function notFound(to) {
+  return { name: 'not-found', params: { pathMatch: to.path.substring(1).split('/') }, query: to.query, hash: to.hash }
+}
+
 export async function navigationGuard(to) {
   // admin routes
   if (to.meta.requiresAdmin && !isAdmin.value) {
-    return { name: 'home' }
+    return notFound(to)
   }
 
   // Feature-gated routes declare their own predicate in meta.isEnabled.
@@ -25,8 +30,9 @@ export async function navigationGuard(to) {
       await refreshUser()
     }
     if (!hasCollectionAccess(collectionId)) {
-      return { name: 'collections' }
+      return notFound(to)
     }
+    // The collection is theirs, just not this tab, so land on its dashboard
     if (!meetsRole()) {
       return { name: 'collection', params: { collectionId } }
     }

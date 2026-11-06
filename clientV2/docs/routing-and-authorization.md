@@ -56,15 +56,18 @@ Components do not `inject('worker')` for privilege checks; the worker is an impl
 ### Global `beforeEach` guard (`src/router/navigationGuards.js`)
 
 1. **Admin routes** (`meta.requiresAdmin`):
-   - If user does not have `privileges.admin` → redirect to `home`
+   - If user does not have `privileges.admin` → `not-found` (URL kept)
 
 2. **Feature-gated routes** (`meta.isEnabled`):
    - If the predicate returns false → redirect to `meta.disabledRedirect` (or `home`). This only hides UI; the API enforces its experimental flags independently.
 
 3. **Collection routes** (`meta.requiresCollectionGrant`):
    - Look up the `collectionId` route param in `globalAppStore.user.collectionGrants`
-   - If **no grant** → redirect to `collections`
+   - If the grant or role check fails, `refreshUser()` once and re-check (see Stale Grants)
+   - If **no grant** → `not-found` (URL kept)
    - If grant exists but `meta.minRoleId` is set and user's `roleId < minRoleId` → redirect to the collection dashboard (they can view but not manage)
+
+   A denial looks the same as a bad URL: the `not-found` page with the typed URL (query and hash included) left in the address bar. This matches how pages handle an API 403, and doesn't reveal whether a collection exists. The one exception is the role-gated tab, since the collection itself is the user's.
 
 4. **Catch-all** (`/:pathMatch(.*)*`):
    - Render the `not-found` view
@@ -80,7 +83,7 @@ Components do not `inject('worker')` for privilege checks; the worker is an impl
 When a user navigates to `/collection/:collectionId` (via deep link, bookmark, or shared URL):
 
 1. **Route guard** checks `globalAppStore.user.collectionGrants` for a matching `collectionId`
-2. **No grant** → redirect to `/collections`
+2. **No grant** → `not-found` page (URL kept)
 3. **Grant exists** → allow navigation. The `roleId` determines available UI features:
 
 | roleId | Role | UI capabilities |
@@ -137,7 +140,7 @@ For **Restricted** role (roleId 1): default access is `none`. ACL rules are the 
 
 User grants can change mid-session (e.g., removed from a collection while viewing it). There is no global 403 interceptor; each view that depends on a resource for its existence handles the failure itself through the `onError` option of `useAsyncState` (see `handleRouteError` in `AssetReview.vue`, and the equivalents in `CollectionView.vue`, `CollectionReview.vue` and `StigLibrary.vue`): on 403/404 it drops the view from recent views and routes to `not-found`. Other 403s surface through the global error modal.
 
-Grant-derived state is refreshed proactively instead: mutations that change grants or collection names call `refreshUser()` so the nav rail and guards see the new state without a reload.
+Grant-derived state is refreshed proactively instead: mutations that change grants or collection names call `refreshUser()` so the nav rail and guards see the new state without a reload. Grants changed by someone else (e.g. an admin adds one) are picked up by the guard: before denying a `requiresCollectionGrant` or `minRoleId` route it calls `refreshUser()` once and re-checks. Allowed navigations never refetch.
 
 ---
 

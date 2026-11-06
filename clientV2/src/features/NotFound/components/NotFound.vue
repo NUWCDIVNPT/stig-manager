@@ -16,7 +16,7 @@ function goHome() {
         Page Not Found
       </h1>
       <p class="not-found__message">
-        The page you're looking for doesn't exist.
+        The page you're looking for doesn't exist, or you don't have access to it.
       </p>
       <button class="not-found__action" @click="goHome">
         <i class="pi pi-home" />
