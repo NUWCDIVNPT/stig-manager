@@ -215,22 +215,33 @@ import { stylesheets, scripts, isMinimizedSource } from './resources.js'
   async function setupOidcWorker() {
     window.oidcWorker = {
       logout: async function () {
-        const response = await this.sendWorkerRequest({ request: 'logout' })
+        // Set first: the worker's noToken broadcast arrives before its reply.
+        this.isLoggingOut = true
+        const response = await this.sendWorkerRequest({ request: 'logout' }).catch(err => ({ success: false, error: err.message }))
         if (response.success) {
           this.token = null
           this.tokenParsed = null
           window.location.href = response.redirect
+        }
+        else {
+          this.isLoggingOut = false
+          console.error('[init] Logout failed:', response.error)
         }
       },
       sendWorkerRequest: function (request) {
         const requestId = crypto.randomUUID()
         const port = this.worker.port
         port.postMessage({ ...request, requestId })
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
           function handler(event) {
             if (event.data.requestId === requestId) {
               port.removeEventListener('message', handler)
-              resolve(event.data.response)
+              if (event.data.error) {
+                reject(new Error(event.data.error))
+              }
+              else {
+                resolve(event.data.response)
+              }
             }
           }
           port.addEventListener('message', handler)
@@ -247,6 +258,15 @@ import { stylesheets, scripts, isMinimizedSource } from './resources.js'
 
     OW = window.oidcWorker
     OW.worker.port.start()
+
+    // Back from the OP's logged-out page can restore this signed-out document
+    // from the back/forward cache, data still on screen.
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted && OW.isLoggingOut) {
+        window.location.reload()
+      }
+    })
+
   }
 
   async function setupStateWorker() {
@@ -256,11 +276,16 @@ import { stylesheets, scripts, isMinimizedSource } from './resources.js'
         const requestId = crypto.randomUUID()
         const port = this.worker.port
         port.postMessage({ ...request, requestId })
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
           function handler(event) {
             if (event.data.requestId === requestId) {
               port.removeEventListener('message', handler)
-              resolve(event.data.response)
+              if (event.data.error) {
+                reject(new Error(event.data.error))
+              }
+              else {
+                resolve(event.data.response)
+              }
             }
           }
           port.addEventListener('message', handler)
