@@ -74,7 +74,6 @@ function getClientV2Env(){
             apiBase: "${config.client.apiBase}",
             consoleMode: "${config.client.consoleMode}",
             historyBase: "${config.client.historyBase}",
-            pathPrefix: "${config.client.pathPrefix}",
             docsDisabled: ${config.docs.disabled},
             displayAppManagers: ${config.client.displayAppManagers},
             stateEvents: ${config.client.stateEvents},
@@ -163,9 +162,9 @@ function serveStaticV2Files(app){
     app.use('/client-v2', (req, res, next) => {
         req.component = 'static'
         
-        if (config.client.pathPrefix && (req.path === '/' || req.path === '/index.html' || !path.extname(req.path))) {
+        if (config.client.historyBase && (req.path === '/' || req.path === '/index.html' || !path.extname(req.path))) {
             // Change below when nextgen client is served from root instead of /client-v2
-            const injectedHtml = indexTemplate.replace('<head>', `<head>\n    <base href="${config.client.pathPrefix}client-v2/">`)
+            const injectedHtml = indexTemplate.replace('<head>', `<head>\n    <base href="${config.client.historyBase}client-v2/">`)
             res.setHeader('Content-Type', 'text/html')
             res.send(injectedHtml)
         } else {
