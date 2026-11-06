@@ -8,6 +8,7 @@ import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { getHttpStatus } from '../../../shared/api/apiClient.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
@@ -51,7 +52,8 @@ const { state: collection, execute: loadCollection } = useAsyncState(
   {
     immediate: false,
     onError: (err) => {
-      if (err.body?.error === 'User has insufficient privilege to complete this request.') {
+      // 403 = no grant (API PrivilegeError), 404 = gone, 400 = malformed id; same as the review pages
+      if ([400, 403, 404].includes(getHttpStatus(err))) {
         removeView(key => key.includes(`:${props.collectionId}`))
         router.replace({ name: 'not-found', params: { pathMatch: route.path.substring(1).split('/') } })
       }

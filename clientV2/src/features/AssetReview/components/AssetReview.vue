@@ -41,8 +41,7 @@ function redirectToNotFound() {
 
 function handleRouteError(err) {
   const status = getHttpStatus(err)
-  const isPrivilegeError = err.body?.error === 'User has insufficient privilege to complete this request.'
-  if (status === 404 || status === 403 || status === 400 || isPrivilegeError) {
+  if (status === 404 || status === 403 || status === 400) {
     redirectToNotFound()
   }
 }

@@ -286,6 +286,36 @@ describe('collectionReview.vue', () => {
       })
     })
 
+    // Shape of ApiError from apiClient: status from the response, body is the API's { error, detail }
+    const apiError = (status, error) => Object.assign(new Error(`HTTP ${status}`), { status, body: { error } })
+
+    it.each([400, 403, 404])('redirects to not-found when the collection fetch returns %i', async (status) => {
+      fetchCollection.mockRejectedValue(apiError(status, 'anything'))
+      createWrapper()
+      await flushPromises()
+
+      expect(mockRouterReplace).toHaveBeenCalledWith({
+        name: 'not-found',
+        params: { pathMatch: ['collections', 'coll-1', 'bench-1', 'rev-1'] },
+      })
+    })
+
+    it('redirects on a 403 whatever the message says', async () => {
+      fetchCollection.mockRejectedValue(apiError(403, 'Access denied by proxy'))
+      createWrapper()
+      await flushPromises()
+
+      expect(mockRouterReplace).toHaveBeenCalledWith(expect.objectContaining({ name: 'not-found' }))
+    })
+
+    it('decides by status, not message text: a 500 with the privilege message does not redirect', async () => {
+      fetchCollection.mockRejectedValue(apiError(500, 'User has insufficient privilege to complete this request.'))
+      createWrapper()
+      await flushPromises()
+
+      expect(mockRouterReplace).not.toHaveBeenCalledWith(expect.objectContaining({ name: 'not-found' }))
+    })
+
     it('removes recent view if checklist load fails', async () => {
       fetchCollectionChecklist.mockRejectedValue(new Error('Bad params'))
       createWrapper()

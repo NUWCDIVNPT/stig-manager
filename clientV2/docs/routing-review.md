@@ -18,7 +18,7 @@ Done items keep their original finding for reference. Line links reflect the cod
 | 8 | Denials aren't handled consistently | Security | ✅ uncommitted |
 | 9 | Recent views leak between users | Security | ⏭️ Skipped (accepted risk) |
 | 10 | Nav rail admin check never updates | Security | ✅ uncommitted |
-| 11 | Error checks rely on message text | Security | Open |
+| 11 | Error checks rely on message text | Security | ✅ uncommitted |
 | 12 | Label filter lost on the way into Asset Review | Label filter | Open |
 | 13 | Tab switches drop each tab's own query | URL state | Open (prototype stashed) |
 | 14 | Collection-tab selections are local state | URL state | Open |
@@ -110,8 +110,9 @@ Done items keep their original finding for reference. Line links reflect the cod
 - **Problem:** destructures `user` from the store, so `isAdmin` keeps the value from startup.
 - **Fix:** use `useCurrentUser().isAdmin`.
 
-### 11. Error checks rely on message text
+### 11. Error checks rely on message text — ✅ uncommitted
 
+- **Done:** all three pages decide by status only: 400/403/404 → not-found, anything else → error popup. Checked against the API: `PrivilegeError` is always 403 and the body's `error` is only the message text (the spec's `Error` schema types it as a plain string), so the text check added nothing. CollectionView previously sent 404s and reworded 403s to the error popup.
 - **Where:** [CollectionView.vue:54](../src/features/CollectionView/components/CollectionView.vue#L54), [AssetReview.vue:44](../src/features/AssetReview/components/AssetReview.vue#L44), [CollectionReview.vue:53](../src/features/CollectionReview/components/CollectionReview.vue#L53)
 - **Problem:** pages compare against `'User has insufficient privilege…'`.
 - **Fix:** check for status 403 alone; it's less brittle.

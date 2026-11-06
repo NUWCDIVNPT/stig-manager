@@ -240,6 +240,34 @@ describe('assetReview.vue', () => {
       })
     })
 
+    // Shape of ApiError from apiClient: status from the response, body is the API's { error, detail }
+    const apiError = (status, error) => Object.assign(new Error(`HTTP ${status}`), { status, body: { error } })
+    const notFoundCall = { name: 'not-found', params: { pathMatch: ['collections', 'coll-1', 'assets', 'asset-1', 'bench-1', 'rev-1'] } }
+
+    it.each([400, 403, 404])('redirects to not-found when the asset fetch returns %i', async (status) => {
+      fetchAsset.mockRejectedValue(apiError(status, 'anything'))
+      createWrapper()
+      await flushPromises()
+
+      expect(mockRouterReplace).toHaveBeenCalledWith(notFoundCall)
+    })
+
+    it('redirects on a 403 from the collection fetch whatever the message says', async () => {
+      fetchCollection.mockRejectedValue(apiError(403, 'Access denied by proxy'))
+      createWrapper()
+      await flushPromises()
+
+      expect(mockRouterReplace).toHaveBeenCalledWith(notFoundCall)
+    })
+
+    it('decides by status, not message text: a 500 with the privilege message does not redirect', async () => {
+      fetchAsset.mockRejectedValue(apiError(500, 'User has insufficient privilege to complete this request.'))
+      createWrapper()
+      await flushPromises()
+
+      expect(mockRouterReplace).not.toHaveBeenCalledWith(expect.objectContaining({ name: 'not-found' }))
+    })
+
     it('redirects to not-found if the asset belongs to a different collection than the URL', async () => {
       fetchAsset.mockResolvedValue({ assetId: 'asset-1', name: 'Test Asset', collection: { collectionId: 'coll-2', name: 'Other' } })
       createWrapper()
