@@ -21,8 +21,8 @@ Done items keep their original finding for reference. Line links reflect the cod
 | 11 | Error checks rely on message text | Security | ✅ 3219802c |
 | 12 | Label filter lost on the way into Asset Review | Label filter | ✅ 821c8479 |
 | 13 | Tab switches drop each tab's own query | URL state | ✅ bc9d9efc |
-| 14 | Collection-tab selections are local state | URL state | ✅ uncommitted (collection tabs) |
-| 15 | Collection Review selected rule isn't in the URL | URL state | Open |
+| 14 | Collection-tab selections are local state | URL state | ✅ 9605a460 (collection tabs) |
+| 15 | Collection Review selected rule isn't in the URL | URL state | ✅ uncommitted |
 | 16 | Collections page tab isn't in the URL | URL state | Open |
 | 17 | Grid rows aren't links | URL state | Open |
 | 18 | Every page has the same browser tab title | URL state | Open |
@@ -159,7 +159,7 @@ Planned as its own effort and PR (decided 2026-10-28; merged here from `docs/tod
 - **Prototype stashed:** `git stash list` → *"url-state: CollectionView per-tab query save/restore"*. Keeps a `tabQueries` Map in `CollectionView`: on leave, save `route.query` minus label keys; on return, re-attach it with the current label filter on top; clear on collection switch. ~10 lines, tests and lint passed.
 - **Why it's safe:** hidden tabs are inert. Findings only changes state from user input or its one-shot mount restore, so a saved query can't go stale.
 
-### 14. Collection-tab selections are local state — ✅ uncommitted (collection tabs)
+### 14. Collection-tab selections are local state — ✅ 9605a460 (collection tabs)
 
 - **Done:** new shared `useQuerySelection(key)` (ref ↔ one query key, `replace`). STIGs `?stig=`, Assets `?asset=`, Labels `?label=` (unlabeled row = `none`) and `?asset=`. Tabs now keep a selection that is still listed after a reload or filter change, and fall back to the first row (STIGs/Assets) or nothing (Labels) otherwise. The helper only writes while its own tab is the current route (hidden tabs stay mounted), re-syncs when the tab comes back, and builds same-tick writes on each other so the Labels tab can change two keys at once.
 - **Still open:** the Collections page (meta) tabs; do them with #16.
@@ -167,8 +167,9 @@ Planned as its own effort and PR (decided 2026-10-28; merged here from `docs/tod
 - **Problem:** the selected STIG, asset and label in the collection tabs are plain refs (e.g. `selectedBenchmarkId` in `CollectionStigsTab.vue`). Back from Asset Review loses the selection, and you can't link to "collection X with STIG Y selected." Same gap in the meta-dash (Collections page) tabs. This is the biggest UX gap.
 - **Fix:** mirror them to the query the way Findings does (`?stig=` etc.).
 
-### 15. Collection Review selected rule isn't in the URL
+### 15. Collection Review selected rule isn't in the URL — ✅ uncommitted
 
+- **Done:** `selectedRuleId = useQuerySelection('ruleId')`, the same key as Asset Review. A rule restored from the URL is loaded once the checklist confirms it; an unknown one falls back to the first rule. When the STIG or revision changes on the same page (dropdowns, Back/Forward), the rule comes from the new URL, so a dropdown switch starts at the first rule.
 - **Where:** [CollectionReview.vue:100](../src/features/CollectionReview/components/CollectionReview.vue#L100)
 - **Problem:** `selectedRuleId` is a plain ref, while Asset Review keeps `?ruleId` in the URL.
 - **Fix:** mirror it to `?ruleId` like Asset Review.

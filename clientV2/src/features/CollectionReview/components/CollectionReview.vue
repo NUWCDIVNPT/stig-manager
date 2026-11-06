@@ -13,6 +13,7 @@ import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import { useLabelFilterQuery } from '../../../shared/composables/useLabelFilterQuery.js'
+import { useQuerySelection } from '../../../shared/composables/useQuerySelection.js'
 import { useStigRevisions } from '../../../shared/composables/useStigRevisions.js'
 import { useTours } from '../../../shared/composables/useTours.js'
 import { defaultFieldSettings, statusPayloadForAction } from '../../../shared/lib/reviewFormUtils.js'
@@ -96,7 +97,8 @@ const checklistEmptyMessage = computed(() =>
     : undefined,
 )
 
-const selectedRuleId = ref(null)
+// Kept in ?ruleId like Asset Review, so Back, reload and links return to the same rule
+const selectedRuleId = useQuerySelection('ruleId')
 
 const {
   state: loadedRule,
@@ -155,6 +157,10 @@ watch([stigKey, selectedLabelNames], ([key], [prevKey] = []) => {
   if (!(collectionId.value && benchmarkId.value && revisionStr.value)) {
     return
   }
+  // Back/Forward and the STIG dropdowns reuse this page, so the new URL's rule replaces the old one
+  if (prevKey && key !== prevKey) {
+    selectedRuleId.value = typeof route.query.ruleId === 'string' ? route.query.ruleId : null
+  }
   loadChecklist()
   loadAssets()
   if (key === prevKey && selectedRuleId.value) {
@@ -197,7 +203,21 @@ watch(gridData, (data) => {
   if (!stillValid) {
     selectedRuleId.value = data[0].ruleId
   }
+  else if (!loadedRule.value) {
+    // A rule restored from the URL never "changes", so the watcher below won't load it
+    loadSelectedRule(selectedRuleId.value)
+  }
 })
+
+function loadSelectedRule(ruleId) {
+  if (benchmarkId.value && revisionStr.value) {
+    loadRuleContent(ruleId)
+  }
+  if (collectionId.value) {
+    loadReviews(ruleId)
+  }
+}
+
 // load data when we have a selected rule and collection/benchmarkid/revisionstr
 watch(selectedRuleId, (ruleId) => {
   if (!ruleId) {
@@ -205,12 +225,7 @@ watch(selectedRuleId, (ruleId) => {
     reviewsData.value = []
     return
   }
-  if (benchmarkId.value && revisionStr.value) {
-    loadRuleContent(ruleId)
-  }
-  if (collectionId.value) {
-    loadReviews(ruleId)
-  }
+  loadSelectedRule(ruleId)
 })
 
 function onSelectRule(ruleId) {

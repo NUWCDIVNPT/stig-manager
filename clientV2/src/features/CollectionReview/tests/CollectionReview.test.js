@@ -405,6 +405,99 @@ describe('collectionReview.vue', () => {
     })
   })
 
+  describe('selected rule in the URL (?ruleId)', () => {
+    beforeEach(() => {
+      // Fresh arrays per call, like real fetches, so the grid watcher sees each reload
+      fetchCollectionChecklist.mockImplementation(async () => [{ ruleId: 'V-123' }, { ruleId: 'V-456' }])
+      // Query-only replaces update the mock route, as the real router would
+      mockRouterReplace.mockImplementation((to) => {
+        if (to.query && !to.name) {
+          routeState.query = to.query
+        }
+      })
+    })
+
+    it('puts the auto-selected first rule in the URL', async () => {
+      createWrapper()
+      await flushPromises()
+      expect(routeState.query).toEqual({ ruleId: 'V-123' })
+    })
+
+    it('writes a clicked rule to the URL, keeping the label filter', async () => {
+      routeState.query = { labelName: 'web' }
+      createWrapper()
+      await flushPromises()
+
+      await fireEvent.click(screen.getByTestId('emit-select-rule'))
+      await flushPromises()
+      expect(routeState.query).toEqual({ labelName: 'web', ruleId: 'V-456' })
+    })
+
+    it('restores the rule from the URL and loads only that rule', async () => {
+      routeState.query = { ruleId: 'V-456' }
+      createWrapper()
+      await flushPromises()
+
+      expect(fetchRule).toHaveBeenCalledTimes(1)
+      expect(fetchRule).toHaveBeenCalledWith('bench-1', 'rev-1', 'V-456')
+      expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-456', {})
+      expect(fetchReviewsByRule).not.toHaveBeenCalledWith('coll-1', 'V-123', expect.anything())
+      expect(screen.getByTestId('mock-rule-info').dataset.hasRule).toBe('true')
+    })
+
+    it('falls back to the first rule when the URL names one not in the checklist', async () => {
+      routeState.query = { ruleId: 'V-999' }
+      createWrapper()
+      await flushPromises()
+
+      expect(fetchRule).toHaveBeenCalledWith('bench-1', 'rev-1', 'V-123')
+      expect(fetchRule).not.toHaveBeenCalledWith('bench-1', 'rev-1', 'V-999')
+      expect(routeState.query).toEqual({ ruleId: 'V-123' })
+    })
+
+    it('keeps the rule through a label filter change and reloads only its reviews', async () => {
+      routeState.query = { ruleId: 'V-456' }
+      createWrapper()
+      await flushPromises()
+      fetchRule.mockClear()
+
+      routeState.query = { ruleId: 'V-456', labelName: 'web' }
+      await flushPromises()
+
+      expect(routeState.query.ruleId).toBe('V-456')
+      expect(fetchReviewsByRule).toHaveBeenLastCalledWith('coll-1', 'V-456', { labelName: ['web'] })
+      expect(fetchRule).not.toHaveBeenCalled()
+    })
+
+    it('takes the rule from the new URL when the STIG changes on this page (Back/Forward)', async () => {
+      routeState.query = { ruleId: 'V-123' }
+      createWrapper()
+      await flushPromises()
+      fetchRule.mockClear()
+
+      routeState.params.benchmarkId = 'bench-2'
+      routeState.query = { ruleId: 'V-456' }
+      await flushPromises()
+
+      expect(fetchRule).toHaveBeenCalledWith('bench-2', 'rev-1', 'V-456')
+      expect(routeState.query.ruleId).toBe('V-456')
+    })
+
+    it('starts at the first rule when a STIG switch drops ruleId', async () => {
+      routeState.query = { ruleId: 'V-456' }
+      createWrapper()
+      await flushPromises()
+      fetchRule.mockClear()
+
+      routeState.params.benchmarkId = 'bench-2'
+      routeState.query = {}
+      await flushPromises()
+
+      expect(fetchRule).toHaveBeenCalledWith('bench-2', 'rev-1', 'V-123')
+      expect(routeState.query).toEqual({ ruleId: 'V-123' })
+    })
+  })
+
   describe('bulk Action Handlers', () => {
     it('calls postReviewBatch correctly when emitting submit', async () => {
       createWrapper()
