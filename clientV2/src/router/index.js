@@ -243,7 +243,7 @@ if (import.meta.env.DEV) {
 }
 else {
   // Change when nextgen client is served from root instead of /client-v2
-  historyBase = STIGMAN.Env.pathPrefix ? `${STIGMAN.Env.pathPrefix}client-v2/` : null
+  historyBase = STIGMAN.Env.historyBase ? `${STIGMAN.Env.historyBase}client-v2/` : null
 }
 
 const router = createRouter({

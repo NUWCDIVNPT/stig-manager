@@ -17,8 +17,8 @@ if (import.meta.env.DEV) {
   // vite proxies /api to VITE_API_ORIGIN, keeping API calls same-origin
   STIGMAN.Env.apiBase = `${window.location.origin}/api`
 }
-else if (STIGMAN.Env.pathPrefix) {
-  STIGMAN.Env.apiBase = `${window.location.origin}${STIGMAN.Env.pathPrefix}api`
+else if (STIGMAN.Env.historyBase) {
+  STIGMAN.Env.apiBase = `${window.location.origin}${STIGMAN.Env.historyBase}api`
 }
 else {
   STIGMAN.Env.apiBase = new URL(`../api`, window.location.href).toString() // change when nextgen client is served from root instead of /client-v2
@@ -101,8 +101,8 @@ async function initializeOidcWorker() {
     clientV2ReauthUri = `${window.location.origin}/reauth.html`
   }
   else {
-    clientV2ReauthUri = STIGMAN.Env.pathPrefix
-      ? `${window.location.origin}${STIGMAN.Env.pathPrefix}client-v2/reauth.html`
+    clientV2ReauthUri = STIGMAN.Env.historyBase
+      ? `${window.location.origin}${STIGMAN.Env.historyBase}client-v2/reauth.html`
       : `${window.location.origin}${window.location.pathname.replace(/[^/]*$/, '')}reauth.html`
   }
 
@@ -244,7 +244,7 @@ async function setupOidcWorker() {
   // client picks its own. When the legacy client is sunset, move
   // client/src/js/workers/oidc-worker.js into this client and drop the
   // clientReauthUri branch.
-  const oidcworkerUrl = STIGMAN.Env.pathPrefix ? '../js/workers/oidc-worker.js' : new URL('../js/workers/oidc-worker.js', window.location.href).href
+  const oidcworkerUrl = STIGMAN.Env.historyBase ? '../js/workers/oidc-worker.js' : new URL('../js/workers/oidc-worker.js', window.location.href).href
   STIGMAN.oidcWorker = {
     async logout() {
       // Set first: the worker's noToken broadcast arrives before its reply.
@@ -323,7 +323,7 @@ async function setupStateWorker() {
   const SW = STIGMAN.stateWorker
   SW.worker.port.start()
 
-  // const apiBase = import.meta.env.DEV || STIGMAN.Env.pathPrefix? STIGMAN.Env.apiBase : `../${STIGMAN.Env.apiBase}` // ensure correct relative path in development vs production
+  // const apiBase = import.meta.env.DEV || STIGMAN.Env.historyBase? STIGMAN.Env.apiBase : `../${STIGMAN.Env.apiBase}` // ensure correct relative path in development vs production
   const response = await SW.sendWorkerRequest({ request: 'initialize', apiBase: STIGMAN.Env.apiBase })
   if (response.error) {
     console.error(`[init] Error initializing state worker:`, response.error)
