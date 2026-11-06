@@ -9,7 +9,7 @@ User Guide
 
 .. rubric:: The STIG Manager User Interface
 
-This Document describes every part of the STIG Manager UI available to all STIG Manager Users. This guide assumes the suggested setup, in which most Users have the Collection Creator privilege. This guide also assumes that the user has some familiarity with the terms and data associated with STIGs and tools commonly used in their evaluation. For more info about the data STIG Manager manages and the terms and concepts used to describe it, check out our :ref:`glossary <terminology>` or :ref:`data and permissions document <data-and-permissions>`.
+This Document describes every part of the STIG Manager UI available to all STIG Manager Users. This guide assumes the suggested setup, in which most Users have the Collection Creator privilege. This guide also assumes that the User has some familiarity with the terms and data associated with STIGs and tools commonly used in their evaluation. For more info about the data STIG Manager manages and the terms and concepts used to describe it, check out our :ref:`glossary <terminology>` or :ref:`data and permissions document <data-and-permissions>`.
 
 Please see the :ref:`admin-guide-doc` for Administrative functions.
 
@@ -101,7 +101,7 @@ The breadcrumb bar at the top of the content area shows the current location (fo
    The legacy client opened each workspace in a tab of the Content Panel, with a "Preview" tab that was replaced by the next workspace opened. The new client has no Content Panel tabs. Instead, your recent views are available from the Recent Views list (clock icon) in the Nav Rail, and your browser's history and multiple browser tabs also work.
 
 .. index::
-   single: Home Panel
+   single: Home
 
 
 Home
@@ -113,7 +113,7 @@ The Home page also provides information about the STIG Manager Open Source Softw
 .. thumbnail:: /assets/images/new/home-tab.png
       :width: 50% 
       :show_caption: True
-      :title: Home Tab
+      :title: Home
 
 
 What's New
@@ -131,7 +131,7 @@ The STIG Library entry in the Nav Rail provides tools to browse your imported Re
 Browse STIGs
 --------------------
 
-The Benchmarks list on the left shows every Reference STIG stored in the STIG Manager App, with its latest Revision, rule count, and date. Select a Benchmark to list its Rules in the center panel, and use the "View" dropdown to switch between Revisions. Select a Rule to see its full content on the right.
+The Benchmarks list on the left shows every Reference STIG stored in the STIG Manager App, with its latest Revision, Rule count, and date. Select a Benchmark to list its Rules in the center panel, and use the "View" dropdown to switch between Revisions. Select a Rule to see its full content on the right.
 
 
 .. thumbnail:: /assets/images/new/stig-library.png
@@ -198,7 +198,7 @@ Collection Overview
 
 The Collection Overview section at the left of the Collection Dashboard provides high-level statistics about the Collection. It can be collapsed with the chevron at its top to give the grids more room. 
 
-The Assets and STIGS presented in the Collection Dashboard can be filtered by Label using the filter in the breadcrumb bar at the top of the page. The same filter applies to every Collection Dashboard tab, to Collection Review, and to the Findings and metrics grids. Only those Assets with at least one of the selected Labels will contribute to the metrics summaries presented in this panel. 
+The Assets and STIGs presented in the Collection Dashboard can be filtered by Label using the filter in the breadcrumb bar at the top of the page. The same filter applies to every Collection Dashboard tab, to Collection Review, and to the Findings and metrics grids. Only those Assets with at least one of the selected Labels will contribute to the metrics summaries presented in this panel. 
 
 .. thumbnail:: /assets/images/new/collection-panel-overview.png
       :width: 25% 
@@ -208,20 +208,17 @@ The Assets and STIGS presented in the Collection Dashboard can be filtered by La
 |
 
 
-      - **Progress Chart** - Presents the proportion of Reviews that have been Assessed out of the total number of Assessments required in a Collection (ie. The total number of Rules contained in all STIGs that have been assigned to all Assets). The number of Assessed Reviews is further broken down by the Status of each of those Reviews. Depending on your process, you may want all your Reviews to wind up with an "Assessed," "Submitted," or "Accepted" status (The "Assessed" proportion here is the number of Reviews that have been "Saved" with :ref:`a valid Assessment Result <assessment note>`).  **The "Import CKL(B) or SCAP..." button in the Import Results box allows users to update their Reviews by importing .ckl(b) or XCCDF checklist files. Imports will NOT create new Assets and STIG assignments when initiated from the Collection Dashboard.**
-      - **CORA** - CORA scoring is calculated from a Weighted Average that reflects the number and severity of Open or Unassessed  rules.  The CORA panel displays a count of Open or Unassessed Rules for each Severity Category, the overall Weighted Percentage, and the Risk Rating for the Collection. The Risk Rating is color-coded to indicate the level of risk, with categories ranging from Very Low to Very High. The CORA panel is responsive to the filters applied in the Dashboard. The same scoring is available more granularly in the grid displays of the STIGs, Assets, and Labels tabs. See below for more information about the CORA Score calculation.
+      - **Progress Chart** - Presents the proportion of Reviews that have been Assessed out of the total number of Assessments required in a Collection (ie. The total number of Rules contained in all STIGs that have been assigned to all Assets). The number of Assessed Reviews is further broken down by the Status of each of those Reviews. Depending on your process, you may want all your Reviews to wind up with an "Assessed," "Submitted," or "Accepted" status (The "Assessed" proportion here is the number of Reviews that have been "Saved" with :ref:`a valid Assessment Result <assessment note>`).  **The "Import CKL(B) or SCAP..." button in the Import Results box allows Users to update their Reviews by importing .ckl(b) or XCCDF checklist files. Imports will NOT create new Assets and STIG assignments when initiated from the Collection Dashboard.**
+      - **CORA** - CORA scoring is calculated from a Weighted Average that reflects the number and severity of Open or Unassessed  Rules.  The CORA panel displays a count of Open or Unassessed Rules for each Severity Category, the overall Weighted Percentage, and the Risk Rating for the Collection. The Risk Rating is color-coded to indicate the level of risk, with categories ranging from Very Low to Very High. The CORA panel is responsive to the filters applied in the Dashboard. The same scoring is available more granularly in the grid displays of the STIGs, Assets, and Labels tabs. See below for more information about the CORA Score calculation.
       - **Inventory** - Total number of Assets, unique STIGs, and checklists (STIGs assigned to Assets) in this Collection. If you are a Manager or Owner for this Collection, the Management tab at the top of the Dashboard opens the :ref:`manage-collection-workspace`.
       - **Findings** - Total number of "Open" Findings in a Collection, broken down by Severity Category. Click the Findings tab at the top of the Dashboard to open the Findings Report. The Findings Report provides a way to engage with all "Open" findings in a Collection, and generate a precursor POA&M from them. See :ref:`Findings Report` for more info.
       - **Review Ages** - The age of the oldest Review in a Collection and the newest Review in a Collection. Whenever Review *content* (Result or commentary) is modified, its timestamp is updated, and this is used to calculate the ages presented here as "oldest" and "newest." The "Updated" block represents the last time the *Status* of a Review changed (ie. when a Saved, Submitted, Accepted, or Rejected status was applied).
       - **Export Metrics** - Various ways to export the data presented in this report. See below for more details. 
 
-.. note::
-      The Label filter in the breadcrumb bar applies to the Collection Overview panel and to the STIGs, Assets, Labels, and Findings tabs alike. 
-      
-      .. thumbnail:: /assets/images/new/collection-panel-filters.png
-            :width: 50% 
-            :show_caption: True
-            :title: Collection Dashboard Filtering
+.. thumbnail:: /assets/images/new/collection-panel-filters.png
+      :width: 50% 
+      :show_caption: True
+      :title: Collection Dashboard Filtering
 
 |
 
@@ -231,7 +228,7 @@ CORA Score Calculation
 
 **Cyber Operational Readiness Assessment (CORA)** evaluates the effectiveness of security controls and operational processes.
 
-**Risk Rating** is calculated from a **Weighted Average** that reflects the number and severity of *open* or *unassessed* rules.
+**Risk Rating** is calculated from a **Weighted Average** that reflects the number and severity of *open* or *unassessed* Rules.
 Reviews with *Open*, *Not a Finding*, or *Not Applicable* results are considered *assessed*.
 Reviews with other results (such as *Not Reviewed* or *Informational*) are treated as *unassessed*.
 
@@ -242,7 +239,7 @@ Each severity category (CAT I, II, III) is weighted differently when calculating
 ``(p₁·w₁ + p₂·w₂ + p₃·w₃) / (w₁ + w₂ + w₃)``
 
 where:
-  - ``pₙ`` = % of open + unassessed rules in that category
+  - ``pₙ`` = % of open + unassessed Rules in that category
   - ``wₙ`` = weight **(CAT I = 10, CAT II = 4, CAT III = 1)**
 
 The **Risk Rating** is primarily determined by the **Weighted Average**, except for the special "Low" risk condition. If a score would be evaluated as "Moderate" but meets the requirements for "Low" risk, it is assigned "Low" risk instead:
@@ -329,19 +326,19 @@ The table below describes the fields that are included in the exports available 
      - **X**
      - **X**
    * - maxTouch
-     - Date of the last time the *Status* of a Review in a Collection was changed (ie. when a review was last saved, submitted, accepted, or rejected). 
+     - Date of the last time the *Status* of a Review in a Collection was changed (ie. when a Review was last saved, submitted, accepted, or rejected). 
      - **X**
      - **X**
    * - low
-     - Number of failed Reviews for rules with a Severity 3 category. 
+     - Number of failed Reviews for Rules with a Severity 3 category. 
      - **X**
      - **X**
    * - medium
-     - Number of failed Reviews for rules with a Severity 2 category. 
+     - Number of failed Reviews for Rules with a Severity 2 category. 
      - **X**
      - **X**
    * - high
-     - Number of failed Reviews for rules with a Severity 1 category. 
+     - Number of failed Reviews for Rules with a Severity 1 category. 
      - **X**
      - **X**
    * - saved
@@ -482,7 +479,7 @@ STIGs Tab
 The STIGs tab of the Collection Dashboard provides a list of every STIG that is assigned to at least one Asset in this Collection (that the User has access to).
 
 
-Click the Shield icon in a STIG's row to open the :ref:`Collection Review Workspace`, from which the User can review ALL the assets they have access to for the STIG selected.
+Click the Shield icon in a STIG's row to open the :ref:`Collection Review Workspace`, from which the User can review ALL the Assets they have access to for the STIG selected.
 
 See :ref:`Collection Review Workspace` for more info.
 
@@ -575,7 +572,7 @@ POA&Ms can take different forms, and track more information than is available in
 
 Individual Findings
 ~~~~~~~~~~~~~~~~~~~~~~~
-Select an aggregated finding in the left panel, to bring up information about the specific assets with that finding in the Individual Findings Panel.
+Select an aggregated finding in the left panel, to bring up information about the specific Assets with that finding in the Individual Findings Panel.
 Information about the Asset, its Labels, the applicable STIG, the Review's Detail, Comment, origin, Status, Reviewer, and age can be found in the default columns.
 
 This section of the Report can be exported on its own.
@@ -652,7 +649,7 @@ The STIGs tab of the Meta Dashboard provides a list of every STIG that is assign
 .. thumbnail:: /assets/images/new/meta-collection-dashboard-stigs-tab.png
       :width: 50% 
       :show_caption: True
-      :title: Collections Tab of the Meta-Collection Dashboard
+      :title: STIGs Tab of the Meta-Collection Dashboard
 
 |
 
@@ -665,7 +662,7 @@ The STIGs tab of the Meta Dashboard provides a list of every STIG that is assign
 
 Collection Review Workspace
 ==============================
-The Collection Review Workspace allows the user to assess all the Assets they have access to that have been assigned the selected STIG. It can be accessed by clicking the Shield icon on a STIG in the STIGs Tab of the Collection Dashboard. The breadcrumb bar shows the Collection, STIG, and Revision, and the Label filter in the breadcrumb bar limits which Assets appear in the Reviews grid.
+The Collection Review Workspace allows the User to assess all the Assets they have access to that have been assigned the selected STIG. It can be accessed by clicking the Shield icon on a STIG in the STIGs Tab of the Collection Dashboard. The breadcrumb bar shows the Collection, STIG, and Revision, and the Label filter in the breadcrumb bar limits which Assets appear in the Reviews grid.
 
 The workspace has three parts: the Checklist grid at the top, the Reviews grid below it, and the Rule panel on the right.
 
@@ -763,7 +760,7 @@ Open the Review editor for an Asset and expand its Review Resources section. The
 Asset Review Workspace
 ====================================
 The Asset Review Workspace allows you to view and modify all the Reviews for a specific STIG on the selected Asset. It also presents useful information such as the Reviews for the same Rule on other Assets, the Review's Log, and Status Text.
-Users can also import and export results in .ckl or XCCDF checklist formats. 
+Users can also import and export results in .ckl, .cklb, or XCCDF checklist formats. 
 This workspace can be accessed by clicking the Shield icon on an Asset in the STIGs, Assets, or Labels Tabs of the Collection Dashboard. The breadcrumb bar shows the Collection, Asset, STIG, and Revision.
 
 The workspace has two parts: the Checklist grid, which fills most of the window, and the Rule panel on the right. Clicking a Rule in the Checklist opens the Review editor over the grid. 
@@ -820,7 +817,7 @@ Evaluation
 The Evaluation holds the actual Result of a compliance decision about this Rule on the selected Asset, and the required Details and/or Comment. The Results supported are: Open (O), Not a Finding (NF), Not Applicable (NA), Informational (I), and Not Reviewed (NR).  The colored badges on the attribution line at the bottom of the editor provide additional information about the source of the Result. 
 
 
-Reviews can be set to Saved or Submitted statuses from this interface, and edits to the Result, Detail, and Comment are saved when a status is set. "Saved" simply indicates that the review has been logged to the system. The "Submitted" status indicates that the Evaluator considers the review to be "complete"  and may be optionally be "Accepted" or "Rejected" by a User with proper grants in the Collection.
+Reviews can be set to Saved or Submitted statuses from this interface, and edits to the Result, Detail, and Comment are saved when a status is set. "Saved" simply indicates that the Review has been logged to the system. The "Submitted" status indicates that the Evaluator considers the Review to be "complete"  and may optionally be "Accepted" or "Rejected" by a User with proper Grants in the Collection.
 
 The requirements for a Review to be set to "Submitted" status can be configured in the Collection Management Workspace by Collection Owners and Managers. Fields required for submission are marked with an asterisk in the Review editor, and the Submit button is disabled until they are satisfied. 
 
@@ -829,7 +826,7 @@ The default Settings for Reviews in Collections are:
       - Require text in the Detail field in order to Submit. 
       - Display the Comment field for "Findings only".
       - Require text in the Comment field for "Findings only" in order to Submit.
-      - Review must have an Evaluation Result of "Not A Finding," "Not Applicable," or "Open. (Not Configurable)
+      - Review must have an Evaluation Result of "Not A Finding," "Not Applicable," or "Open." (Not Configurable)
 
 
 Attributions
@@ -893,7 +890,7 @@ If a Review was imported from a source of automated assessments, such as Evaluat
 |
 
 .. ATTENTION:: 
-      If a user modifies the Result of an "Automated" Review, it will lose its Automated status. This is indicated with the replacement of the tool's badge with a "Manual" one on the attribution line, and the absence of the gear symbol for that rule in the Checklist grid. 
+      If a User modifies the Result of an "Automated" Review, it will lose its Automated status. This is indicated with the replacement of the tool's badge with a "Manual" one on the attribution line, and the absence of the gear symbol for that Rule in the Checklist grid. 
 
 
 ==============================
@@ -966,14 +963,14 @@ The default Settings for Review Submission in Collections are:
       - Require text in the Detail field in order to Submit. 
       - Display the Comment field for "Findings only".
       - Require text in the Comment field for "Findings only" in order to Submit.
-      - Review must have an Evaluation Result of "Not A Finding," "Not Applicable," or "Open. (Not Configurable)
+      - Review must have an Evaluation Result of "Not A Finding," "Not Applicable," or "Open." (Not Configurable)
  
 
 Review Status 
 ++++++++++++++++++++++++++++++++++++
 
 
-Review Status Settings control the behavior of the Status fields of a Review.  Collection Owners or Managers can control whether they  want to allow certain Users to Accept or Reject reviews. The Grant levels required to do this can also be selected. 
+Review Status Settings control the behavior of the Status fields of a Review.  Collection Owners or Managers can control whether they  want to allow certain Users to Accept or Reject Reviews. The Grant levels required to do this can also be selected. 
 
 The default Settings for Review Status are: 
       - Reset Status to "Saved" only when the Review Result changes (As opposed to ANY Review field change, such as the Detail or Comments).
@@ -994,7 +991,7 @@ The default Settings for Review Status are:
 Review History
 ++++++++++++++++++++++++++++++++++++
 
-Every time an individual Review for an Asset changes, a History record of its previous state is recorded.  For each Collection, Owners and Managers can now limit how many of these History records they keep for for each Review, or turn Review History off entirely
+Every time an individual Review for an Asset changes, a History record of its previous state is recorded.  For each Collection, Owners and Managers can limit how many of these History records they keep for each Review, or turn Review History off entirely.
 
 By default, the number of History records is capped at 15 for each Review. 
 
@@ -1005,9 +1002,9 @@ Import Options
 ~~~~~~~~~~~~~~~~~~~~
 
 
-The Import Options section of the Configuration page allows you to have fine-grained control over how the reviews from .ckl and XCCDF files are imported into your STIG Manager Collection.  The settings specified here will become the default behavior for all users importing results from files into the collection.  **This includes any instances of the STIGMan Watcher utility that may be importing into your Collection.**  
+The Import Options section of the Configuration page allows you to have fine-grained control over how the Reviews from .ckl and XCCDF files are imported into your STIG Manager Collection.  The settings specified here will become the default behavior for all Users importing results from files into the Collection.  **This includes any instances of the STIGMan Watcher utility that may be importing into your Collection.**  
 
-These import setting preferences can be locked for your Collection, or you can allow other users to customize them as they see fit when they perform their own imports. 
+These import setting preferences can be locked for your Collection, or you can allow other Users to customize them as they see fit when they perform their own imports. 
 
 .. thumbnail:: /assets/images/new/collection-manage-review-import-options.png
       :width: 50% 
@@ -1018,23 +1015,23 @@ These import setting preferences can be locked for your Collection, or you can a
 
 
 Review Status Per Result:
-  This setting allows you to define the desired Review Status—Accepted, Submitted, Saved, or Keep Existing if possible (for existing reviews)—for each result type: Fail, Not Applicable, or Pass.
+  This setting allows you to define the desired Review Status—Accepted, Submitted, Saved, or Keep Existing if possible (for existing Reviews)—for each result type: Fail, Not Applicable, or Pass.
   
-  - **Keep Existing**: Keep the existing Status, if possible. New reviews are set to "Saved" status. The resulting Status will also take into consideration the "Reset to Saved" configuration that is set in the Review Status section of Collection Settings. 
-  - **Accepted**: If importing user has the proper grant, set Review to "Accepted." If they cannot Accept, Reviews will be set to "Submitted." If review does not meet Submit requirements, Review will be set to "Saved."
-  - **Submitted**: Set Review to "Submitted" status. If review does not meet Submit requirements, Review will be set to Saved.
+  - **Keep Existing**: Keep the existing Status, if possible. New Reviews are set to "Saved" status. The resulting Status will also take into consideration the "Reset to Saved" configuration that is set in the Review Status section of Collection Settings. 
+  - **Accepted**: If importing User has the proper Grant, set Review to "Accepted." If they cannot Accept, Reviews will be set to "Submitted." If Review does not meet Submit requirements, Review will be set to "Saved."
+  - **Submitted**: Set Review to "Submitted" status. If Review does not meet Submit requirements, Review will be set to Saved.
   - **Saved**:(**default setting**) Set Reviews to "Saved" status.
 
 
 Include Unreviewed Rules:
   Should Rule Results without a compliance result (NF, NA, O) be imported?
 
-  - **Never**: Ignore these rules. Existing STIG Manager results will not change.  
-  - **Having Comments**: (**default setting**) Import these rules only if Detail or Comment is provided. Existing STIG Manager Reviews will be overwritten with the provided Result and Commentary.
-  - **Always**: Always import these reviews. Replace any existing Review content.
+  - **Never**: Ignore these Rules. Existing STIG Manager results will not change.  
+  - **Having Comments**: (**default setting**) Import these Rules only if Detail or Comment is provided. Existing STIG Manager Reviews will be overwritten with the provided Result and Commentary.
+  - **Always**: Always import these Reviews. Replace any existing Review content.
 
 Unreviewed with a comment is:
-  If import includes reviews that do not have a compliance result (NF, NA, O), but includes Detail or Comment information, STIG Manager should import these Reviews with a Result of:
+  If import includes Reviews that do not have a compliance result (NF, NA, O), but includes Detail or Comment information, STIG Manager should import these Reviews with a Result of:
 
   - **Informational**: (**default setting**) Set Result to "Informational" to distinguish it from those Reviews that have no commentary. 
   - **Not Reviewed**: Leave the result as "Not_Reviewed"
@@ -1055,7 +1052,7 @@ Empty Comment text is:
   - **Imported**: This will have the effect of removing any existing Comment text in STIG Manager.
 
 Options can be customized for each import:
-  Allow users to customize these import options to suit their needs. The options specified here will always be the initial settings presented to all users for this Collection. (**default: allow**)
+  Allow Users to customize these import options to suit their needs. The options specified here will always be the initial settings presented to all Users for this Collection. (**default: allow**)
 
 
 
@@ -1072,7 +1069,7 @@ Clone Collection
 ++++++++++++++++++++
 
 The Clone Collection form in the Actions section of the Configuration page allows Managers or Owners to create another Collection that is a copy of the one they are currently viewing.  
-This feature can be useful for creating a "snapshot" of a Collection at a particular point in time that could be used to support certain process or reporting needs. At clone time, the new Collection can be created with all its STIGs "pinned" to the default Revisions of the Source Collection, which will ensure the Clone's reviews and metrics do not change when Reference STIGs are updated. 
+This feature can be useful for creating a "snapshot" of a Collection at a particular point in time that could be used to support certain process or reporting needs. At clone time, the new Collection can be created with all its STIGs "pinned" to the default Revisions of the Source Collection, which will ensure the Clone's Reviews and metrics do not change when Reference STIGs are updated. 
 
 
 .. thumbnail:: /assets/images/new/collection-manage-clone-button.png
@@ -1103,7 +1100,7 @@ Once the clone operation has started, a progress notification will appear.  The 
 .. warning::
       Large Collections can take several minutes to clone! During this time, Users will likely see a performance impact when accessing the source Collection. Making changes to the source Collection while it is being cloned may lead to inconsistent results in the cloned Collection.
       
-      You may want to alert your users before cloning a large Collection.
+      You may want to alert your Users before cloning a large Collection.
 
 |
 
@@ -1112,14 +1109,14 @@ Once the clone operation has started, a progress notification will appear.  The 
 Review Aging
 ++++++++++++++++++++
 
-Review Aging allows Collection Owners to define rules that automatically act on reviews that have not been updated within a configurable time period. Rules are processed by the **Update Aged Reviews** system job, which is scheduled and enabled by an App Manager.
+Review Aging allows Collection Owners to define rules that automatically act on Reviews that have not been updated within a configurable time period. Rules are processed by the **Update Aged Reviews** system job, which is scheduled and enabled by an App Manager.
 
 Collection Managers can view the configured rules and task output. Only Collection Owners can create, edit, or delete rules.
 
 Access Review Aging configuration from the **Tasks** form in the **Actions** section of the Configuration page. Select the **ReviewAging** task from the Task dropdown to display the rules grid and current schedule summary.
 
 .. important::
-   Rules defined here will not act on any reviews unless the **Update Aged Reviews** system job is enabled and scheduled by an App Manager. Coordinate with your App Manager to confirm the job is running on a cadence appropriate for your rules.
+   Rules defined here will not act on any Reviews unless the **Update Aged Reviews** system job is enabled and scheduled by an App Manager. Coordinate with your App Manager to confirm the job is running on a cadence appropriate for your rules.
 
 
 .. thumbnail:: /assets/images/new/collection-manage-tasks.png
@@ -1130,7 +1127,7 @@ Access Review Aging configuration from the **Tasks** form in the **Actions** sec
 
 .. rubric:: Rules and Ordinal
 
-A collection can have multiple rules, processed in ordinal order. Rules are independent — each rule scans the collection's reviews separately without awareness of other rules.
+A Collection can have multiple rules, processed in ordinal order. Rules are independent — each rule scans the Collection's Reviews separately without awareness of other rules.
 
 .. rubric:: Creating a Rule
 
@@ -1144,44 +1141,44 @@ Click **New Rule** (Owners only) to open the rule editor. Each rule has three se
 
 **Trigger**
 
-Defines which reviews are eligible and when:
+Defines which Reviews are eligible and when:
 
-- **Trigger field** — The review timestamp to evaluate:
+- **Trigger field** — The Review timestamp to evaluate:
 
-  - *Review timestamp* (``ts``) — When the review content (result or detail text) was last changed.
-  - *Status timestamp* (``statusTs``) — When the review status (Saved, Submitted, Accepted, Rejected) was last changed.
-  - *Touch timestamp* (``touchTs``) — When any aspect of the review was last touched (latest of the two above).
+  - *Review timestamp* (``ts``) — When the Review content (result or detail text) was last changed.
+  - *Status timestamp* (``statusTs``) — When the Review status (Saved, Submitted, Accepted, Rejected) was last changed.
+  - *Touch timestamp* (``touchTs``) — When any aspect of the Review was last touched (latest of the two above).
 
 - **Interval** — The age threshold. Reviews where the trigger field is older than this value   are eligible. Expressed in days, hours, minutes, or seconds.
 
 **Action**
 
-Defines what happens to eligible reviews:
+Defines what happens to eligible Reviews:
 
-- **Delete** — Permanently removes the review and its history records.
-- **Update** — Modifies a field on the review:
+- **Delete** — Permanently removes the Review and its history records.
+- **Update** — Modifies a field on the Review:
 
-  - *Set status to Saved* — Resets the review status to Saved.
-  - *Set status to Submitted* — Sets the review status to Submitted.
+  - *Set status to Saved* — Resets the Review status to Saved.
+  - *Set status to Submitted* — Sets the Review status to Submitted.
   - *Set result to Not Checked* — Changes the result to Not Checked and resets status to Saved.
   - *Set result to Informational* — Changes the result to Informational and resets status to Saved.
 
 .. note::
-   Update actions that change the result will also reset the review status to Saved, regardless of its current status.
+   Update actions that change the result will also reset the Review status to Saved, regardless of its current status.
 
 .. note::
-   Update actions skip reviews already in the target state. For example, a "Set status to Saved" rule will not reprocess reviews that are already Saved.
+   Update actions skip Reviews already in the target state. For example, a "Set status to Saved" rule will not reprocess Reviews that are already Saved.
 
 **Target**
 
-Optionally restricts which reviews the rule applies to. If no target is set, the rule applies to all reviews in the collection. Available targets:
+Optionally restricts which Reviews the rule applies to. If no target is set, the rule applies to all Reviews in the Collection. Available targets:
 
-- **Entire collection** (no target) — All reviews on all assets and STIGs.
-- **Asset** — All reviews on a specific asset, across all assigned STIGs.
-- **Asset + STIG** — Reviews on a specific asset for a specific STIG only.
-- **Label** — Reviews on any asset carrying a specific collection label.
-- **Label + STIG** — Reviews on labeled assets for a specific STIG only.
-- **STIG** — All reviews for a specific STIG across the entire collection.
+- **Entire Collection** (no target) — All Reviews on all Assets and STIGs.
+- **Asset** — All Reviews on a specific Asset, across all assigned STIGs.
+- **Asset + STIG** — Reviews on a specific Asset for a specific STIG only.
+- **Label** — Reviews on any Asset carrying a specific Collection Label.
+- **Label + STIG** — Reviews on labeled Assets for a specific STIG only.
+- **STIG** — All Reviews for a specific STIG across the entire Collection.
 
 .. rubric:: Managing Rules
 
@@ -1192,7 +1189,7 @@ Optionally restricts which reviews the rule applies to. If no target is set, the
 
 .. rubric:: Viewing Task Output
 
-Click **Task Output...** to open the output log for this collection's aging task runs. The log shows progress per batch processed, including how many reviews were acted on. Use this to confirm rules are matching the expected reviews and to diagnose unexpected results.
+Click **Task Output...** to open the output log for this Collection's aging task runs. The log shows progress per batch processed, including how many Reviews were acted on. Use this to confirm rules are matching the expected Reviews and to diagnose unexpected results.
 
 -------------------------------
 
@@ -1318,31 +1315,31 @@ The uploaded CSV must follow this format:
      - Description
      - Data Requirements
    * - Name
-     - The name of the asset
+     - The name of the Asset
      - (Required) Must be between 1 and 255 characters long. 
    * - Description
-     - Description of the asset
+     - Description of the Asset
      - (Optional) 255 characters max, any characters over 255 will be truncated
    * - IP
-     - The IP address of the asset
+     - The IP address of the Asset
      - (Optional) 255 characters max, any characters over 255 will be truncated
    * - FQDN
-     -  Fully Qualified Domain Name of the asset
+     -  Fully Qualified Domain Name of the Asset
      - (Optional) 255 characters max, any characters over 255 will be truncated
    * - MAC
-     - The MAC address of the asset
+     - The MAC address of the Asset
      - (Optional) 255 characters max, any characters over 255 will be truncated
    * - Non-Computing
-     - Indicates if the asset is a non-computing device
+     - Indicates if the Asset is a non-computing device
      - (Optional) Will default to FALSE if not provided. Valid values are TRUE or FALSE.
    * - STIGs
-     - The STIGs to be assigned to the asset
-     - (Optional) Newline separated list of STIG BenchmarkIds. STIG installed in STIG Manager before they can be assigned to an Asset.
+     - The STIGs to be assigned to the Asset
+     - (Optional) Newline separated list of STIG BenchmarkIds. STIGs must be installed in STIG Manager before they can be assigned to an Asset.
    * - Labels
-     - The labels to be assigned to the asset
+     - The Labels to be assigned to the Asset
      - (Optional) Newline separated list of Label Names. Labels in the file will be created if they do not already exist in the Collection.
    * - Metadata
-     - The metadata to be assigned to the asset
+     - The metadata to be assigned to the Asset
      - (Optional) JSON-encoded object for key-value metadata. Only one layer deep is supported. The keys and the values must be strings. The keys must be unique within the object.
 
 
@@ -1354,7 +1351,7 @@ Click Import Assets CSV to create Assets from a CSV file.
       :title: Select 'Import Assets CSV' button
 
 
-Begin by selecting a CSV that contains asset data. Once uploaded, the importer parses each row, validating the entries before proceeding. Only rows with valid data are considered for submission — any invalid rows are automatically ignored for submission with the respective errors on that row shown. During validation, the importer checks for non-existing labels referenced in the CSV and automatically marks them to be created upon submission. After validation completes, the user can submit the data. Submission is only enabled if at least one valid asset is detected.
+Begin by selecting a CSV that contains Asset data. Once uploaded, the importer parses each row, validating the entries before proceeding. Only rows with valid data are considered for submission — any invalid rows are automatically ignored for submission with the respective errors on that row shown. During validation, the importer checks for non-existing Labels referenced in the CSV and automatically marks them to be created upon submission. After validation completes, the User can submit the data. Submission is only enabled if at least one valid Asset is detected.
 
 .. thumbnail:: /assets/images/new/collection-manage-asset-csv-importer.png
       :width: 50% 
@@ -1368,7 +1365,7 @@ Begin by selecting a CSV that contains asset data. Once uploaded, the importer p
 Export Assets CSV File
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-To Export Assets as CSV, select one or more Assets (no assets selected will imply all assets), and click the "Export Assets CSV" button. The CSV export will contain the Asset Name, Description, IP, FQDN, MAC, Non-Computing, STIGs, Labels, and Metadata. The CSV will also contain the STIGs assigned to each Asset in the Collection.
+To Export Assets as CSV, select one or more Assets (no Assets selected will imply all Assets), and click the "Export Assets CSV" button. The CSV export will contain the Asset Name, Description, IP, FQDN, MAC, Non-Computing, STIGs, Labels, and Metadata.
 
 .. thumbnail:: /assets/images/new/collection-manage-results-export-assets-csv.png
       :width: 50% 
@@ -1393,7 +1390,7 @@ STIG Manager lets you populate your entire Collection from scratch or add to an 
 The Asset Name must match exactly. Check the :term:`ckl` and :term:`XCCDF` glossary entries for how their individual fields map to STIG Manager fields. 
 
 .. note::
-   When STIG Manager creates an Asset from an imported file, it will populate the Name, FQDN, IP, and MAC fields if they are present in the file. If the asset is already created, those fields are NOT updated when a file is imported. 
+   When STIG Manager creates an Asset from an imported file, it will populate the Name, FQDN, IP, and MAC fields if they are present in the file. If the Asset is already created, those fields are NOT updated when a file is imported. 
 
 
 .. note::
@@ -1460,11 +1457,8 @@ If the summary is appropriate, click the "Add to Collection..." button.
 
 |
 
-The user is presented with the log of the import. Select an item in the top grid for information about any "rejected" Reviews that were unable to be imported into STIG Manager. This may happen for Rules that are not currently assigned to this Asset, or for versions of STIGs that have not been loaded into STIG Manager.
+The User is presented with the log of the import. Select an item in the top grid for information about any "rejected" Reviews that were unable to be imported into STIG Manager. This may happen for Rules that are not currently assigned to this Asset, or for versions of STIGs that have not been loaded into STIG Manager.
 
-
-.. note::
-   STIG Manager does not retain the .ckl or XCCDF files that are imported. The files are parsed and the Reviews stored in STIG Manager's Database. STIG Manager can produce a new .ckl representation of its Reviews on demand. 
 
 .. note::
    STIG Manager will import and export .ckl files differently depending on the values of certain .ckl elements and Asset metadata. See :ref:`ckl-processing` for more information.    
@@ -1486,7 +1480,7 @@ Use the "Export to" radio buttons (Zip archive or Collection) at the bottom of t
 Export Results to Another Collection
 +++++++++++++++++++++++++++++++++++++++++++++++
 
-The user can export results from Assets in the current Collection to another Collection. The user must have "Manage" or "Owner" levels of access in the destination Collection. You will only see Collections that you have sufficient access to in the "Export To" pulldown.
+The User can export results from Assets in the current Collection to another Collection. The User must have "Manage" or "Owner" levels of access in the destination Collection. You will only see Collections that you have sufficient access to in the "Export To" pulldown.
 If the destination Collection does not have an Asset of the same name as the one being exported, a new Asset will be created in the destination Collection. If the destination Collection already has an Asset of the same name, any STIGs that are not already assigned to the Asset in the destination Collection will be assigned to it.  Any STIGs that are already assigned to the Asset in the destination Collection will be updated with the new results in accordance with the Collection settings of the destination.
 
 .. note::
@@ -1506,7 +1500,7 @@ If the destination Collection does not have an Asset of the same name as the one
 Export Results as CKL or XCCDF Archive
 +++++++++++++++++++++++++++++++++++++++++++++++
 
-Use the Format dropdown to select whether CKL, CKLB, or XCCDF files will be generated for every Asset selected, then click "Download archive". The package of files will be presented as a .zip file that will also contain a ``_manifest.json`` file describing its contents and any errors encountered while producing it.  Check the :term:`ckl` glossary entry for exact mappings of fields from STIG Manger to .ckl file.
+Use the Format dropdown to select whether CKL, CKLB, or XCCDF files will be generated for every Asset selected, then click "Download archive". The package of files will be presented as a .zip file that will also contain a ``_manifest.json`` file describing its contents and any errors encountered while producing it.  Check the :term:`ckl` glossary entry for exact mappings of fields from STIG Manager to .ckl file.
 
 .. thumbnail:: /assets/images/new/collection-manage-results-export-asset-archive.png
       :width: 50% 
@@ -1530,7 +1524,7 @@ Transfer Asset(s) to Another Collection
 Select one or more Assets with the checkboxes, click the "Transfer To" button, and choose the destination Collection from the menu.  You will be prompted with a confirmation pop-up. Click "Yes" to transfer the Assets to the new Collection. 
 
 You must have "Manage" or "Owner" levels of access on both the originating and destination Collections. You will only see Collections that you have sufficient access to in the "Transfer To" pulldown.  
-Individual Asset-STIG assignments to Restricted Users are removed when an Asset is moved to a new Collection. All other information (STIG Assignments, Assessments, etc.) transfers with the Asset.  
+Access Control List rules that reference an Asset are removed from Grants when the Asset is moved to a new Collection. All other information (STIG Assignments, Assessments, etc.) transfers with the Asset.  
 
 
 .. thumbnail:: /assets/images/new/transfer-asset.png
@@ -1636,7 +1630,7 @@ Use the "Export to" radio buttons (Zip archive or Collection) at the bottom of t
 Export Results to Another Collection
 +++++++++++++++++++++++++++++++++++++++++++++++
 
-The user can export results from STIGs in the current Collection to another Collection. The user must have "Manage" or "Owner" levels of access in the destination Collection. You will only see Collections that you have sufficient access to in the "Export To" pulldown.
+The User can export results from STIGs in the current Collection to another Collection. The User must have "Manage" or "Owner" levels of access in the destination Collection. You will only see Collections that you have sufficient access to in the "Export To" pulldown.
 If the destination Collection does not have an Asset of the same name as the one being exported, a new Asset will be created in the destination Collection. If the destination Collection already has an Asset of the same name, any STIGs that are not already assigned to the Asset in the destination Collection will be assigned to it.  Any STIGs that are already assigned to the Asset in the destination Collection will be updated with the new results in accordance with the Collection settings of the destination.
 
 .. note::
@@ -1647,7 +1641,7 @@ If the destination Collection does not have an Asset of the same name as the one
 .. thumbnail:: /assets/images/new/collection-manage-results-export-asset-collection.png
       :width: 50% 
       :show_caption: True
-      :title: Checklist Archive Export by Asset
+      :title: Checklist Archive Export by STIG
 
 |
 
@@ -1656,7 +1650,7 @@ If the destination Collection does not have an Asset of the same name as the one
 Export Results as CKL or XCCDF Archive
 +++++++++++++++++++++++++++++++++++++++++++++++
 
-Use the Format dropdown to select whether CKL, CKLB, or XCCDF files will be generated for every Asset selected, then click "Download archive". The package of files will be presented as a .zip file that will also contain a ``_manifest.json`` file describing its contents and any errors encountered while producing it.  Check the :term:`ckl` glossary entry for exact mappings of fields from STIG Manger to .ckl file.
+Use the Format dropdown to select whether CKL, CKLB, or XCCDF files will be generated for every Asset selected, then click "Download archive". The package of files will be presented as a .zip file that will also contain a ``_manifest.json`` file describing its contents and any errors encountered while producing it.  Check the :term:`ckl` glossary entry for exact mappings of fields from STIG Manager to .ckl file.
 
 .. thumbnail:: /assets/images/new/collection-manage-results-export-asset-archive.png
       :width: 50% 
@@ -1672,10 +1666,10 @@ Use the Format dropdown to select whether CKL, CKLB, or XCCDF files will be gene
 Labels Page
 --------------------
 
-The Labels page allows you to create various Labels and apply them to Assets. Labels are specific to Collections, and will be removed from Assets if they are moved to a different Collection. Labels exist only as an organizing tool, they do not affect the processing or function of the Assets or their Reviews. 
+The Labels page allows you to create various Labels and apply them to Assets. Labels are specific to Collections. When an Asset is moved to a different Collection, its Labels move with it, and any that do not already exist in the destination Collection are created there. Labels exist only as an organizing tool, they do not affect the processing or function of the Assets or their Reviews. 
 
-Create a label by clicking the "Create" button. Labels can be assigned a name, optional description, and color.
-Select an existing label and click "Edit" to change it. 
+Create a Label by clicking the "Create" button. Labels can be assigned a name, optional description, and color.
+Select an existing Label and click "Edit" to change it. 
 
 .. thumbnail:: /assets/images/new/collection-manage-labels.png
       :width: 50% 
@@ -1713,7 +1707,7 @@ See the :ref:`ckl-processing` section of this Documentation for more information
 |
 
 .. note::
-   See the :ref:`import-options` section of this document for information about STIG Manager's review import options.  
+   See the :ref:`import-options` section of this document for information about STIG Manager's Review import options.  
 
 
 |

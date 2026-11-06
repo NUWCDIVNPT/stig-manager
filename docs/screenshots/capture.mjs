@@ -13,6 +13,8 @@ import { login, setRail } from './lib/session.mjs'
 import { runSteps } from './lib/steps.mjs'
 import { addHighlights, removeHighlights } from './lib/annotate.mjs'
 
+const CLIP_BOTTOM_MARGIN = 16 // CSS pixels kept below a clipBottom target
+
 const [mode = 'capture', ...rest] = process.argv.slice(2)
 // --only accepts a comma-separated list of filename substrings
 const only = rest.includes('--only') ? rest[rest.indexOf('--only') + 1].split(',') : null
@@ -102,6 +104,12 @@ async function shoot(page, e, outPath) {
     const vp = page.viewportSize()
     const x = Math.max(0, box.x - pad), y = Math.max(0, box.y - pad)
     const clip = { x, y, width: Math.min(vp.width - x, box.width + pad * 2), height: Math.min(vp.height - y, box.height + pad * 2) }
+    if (e.clipBottom) {
+      // Tall elements such as the Nav Rail: stop just below their last content
+      const end = await page.locator(e.clipBottom).last().boundingBox()
+      if (!end) throw new Error(`clipBottom target not visible: ${e.clipBottom}`)
+      clip.height = Math.min(clip.height, end.y + end.height + CLIP_BOTTOM_MARGIN - y)
+    }
     await page.screenshot({ path: outPath, animations: 'disabled', clip })
   }
   else {

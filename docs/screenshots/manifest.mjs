@@ -5,6 +5,7 @@
 //   route      client route, or async (lookup) => route for name-based ids
 //   steps      [op, ...args] from lib/steps.mjs, run after navigation
 //   clip       selector; capture only that element (clipPad: extra pixels of context around it)
+//   clipBottom selector; end the clip just below the last match, for elements taller than their content
 //   highlights [{ selector, shape: 'ellipse'|'box'|'arrow', label?, pad?, from? }]
 //   rail       'expanded' to show the Nav Rail open; collapsed otherwise (the default)
 //   scale      device scale factor (2 for crisp close-ups)
@@ -23,6 +24,7 @@ const C = 'Miskatonic-Lab-Linux' // primary demo collection
 // give those entries a longer settle so the capture shows the finished chart.
 const CHART_SETTLE = 1500
 const NAV_PANEL = 'nav.nav-rail'
+const NAV_PANEL_END = '.nav-rail-recent-item, .nav-rail-recent-empty' // the rail fills the viewport height; its content ends here
 // With `rail: 'expanded'` the Nav Rail is opened before navigation, so dashboard
 // charts render once at the final layout. These steps then open its Collections list.
 const OPEN_RAIL_COLLECTIONS = [
@@ -80,6 +82,7 @@ export const manifest = [
     rail: 'expanded',
     steps: OPEN_RAIL_COLLECTIONS,
     clip: NAV_PANEL,
+    clipBottom: NAV_PANEL_END,
     scale: 2,
   },
   {
@@ -512,6 +515,7 @@ export const manifest = [
     rail: 'expanded',
     steps: OPEN_RAIL_COLLECTIONS,
     clip: NAV_PANEL,
+    clipBottom: NAV_PANEL_END,
     scale: 2,
     highlights: [{ selector: 'a.collection-list-link:has-text("Collections Dashboard")', shape: 'box', pad: 4 }],
   },
