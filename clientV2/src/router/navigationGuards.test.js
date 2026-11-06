@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createMemoryHistory, createRouter } from 'vue-router'
 
 const mockIsAdmin = { value: false }
@@ -16,7 +16,7 @@ vi.mock('../shared/composables/useCurrentUser.js', () => ({
   }),
 }))
 
-const { navigationGuard } = await import('./navigationGuards.js')
+const { navigationGuard, REFRESH_WAIT_MS } = await import('./navigationGuards.js')
 
 const Stub = { template: '<div>stub</div>' }
 
@@ -269,6 +269,61 @@ describe('navigation guards', () => {
       finishRefresh()
       await nav
       expect(router.currentRoute.value.name).toBe('collection-stigs')
+    })
+  })
+
+  describe('slow user refresh (capped wait)', () => {
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    it('denies with the current grants once the wait runs out, instead of hanging on a slow API', async () => {
+      vi.useFakeTimers()
+      mockRefreshUser.mockImplementation(() => new Promise(() => {}))
+      let settled = false
+      const nav = router.push('/collection/123/stigs').then(() => {
+        settled = true
+      })
+
+      await vi.advanceTimersByTimeAsync(REFRESH_WAIT_MS - 1)
+      expect(settled).toBe(false)
+
+      await vi.advanceTimersByTimeAsync(1)
+      await nav
+      expectNotFoundAt(router, '/collection/123/stigs')
+    })
+
+    it('uses a refresh that answers within the wait', async () => {
+      vi.useFakeTimers()
+      mockRefreshUser.mockImplementation(() => new Promise((resolve) => {
+        setTimeout(() => {
+          mockHasCollectionAccess.mockReturnValue(true)
+          resolve()
+        }, REFRESH_WAIT_MS / 2)
+      }))
+      const nav = router.push('/collection/123/stigs')
+      await vi.advanceTimersByTimeAsync(REFRESH_WAIT_MS / 2)
+      await nav
+      expect(router.currentRoute.value.name).toBe('collection-stigs')
+    })
+
+    it('lets a late refresh count for the next navigation', async () => {
+      vi.useFakeTimers()
+      mockRefreshUser.mockImplementationOnce(() => new Promise((resolve) => {
+        setTimeout(() => {
+          mockHasCollectionAccess.mockReturnValue(true)
+          resolve()
+        }, REFRESH_WAIT_MS * 2)
+      }))
+      const first = router.push('/collection/123/stigs')
+      await vi.advanceTimersByTimeAsync(REFRESH_WAIT_MS)
+      await first
+      expect(router.currentRoute.value.name).toBe('not-found')
+
+      await vi.advanceTimersByTimeAsync(REFRESH_WAIT_MS)
+      await router.push('/collection/123/stigs')
+      expect(router.currentRoute.value.name).toBe('collection-stigs')
+      expect(mockRefreshUser).toHaveBeenCalledTimes(1)
     })
   })
 

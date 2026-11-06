@@ -2,6 +2,7 @@ import { flushPromises } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
 import { fetchStigRevisions } from '../api/stigsApi.js'
+import { useGlobalError } from './useGlobalError.js'
 import { useStigRevisions } from './useStigRevisions.js'
 
 vi.mock('../api/stigsApi.js', () => ({
@@ -84,5 +85,14 @@ describe('useStigRevisions', () => {
     const { onUnknown } = setup()
     await flushPromises()
     expect(onUnknown).not.toHaveBeenCalled()
+  })
+
+  it('leaves a failed fetch to the breadcrumb picker instead of opening its own error modal', async () => {
+    const { error, clearError } = useGlobalError()
+    clearError()
+    fetchStigRevisions.mockRejectedValue(new Error('Server Error'))
+    setup()
+    await flushPromises()
+    expect(error.value).toBeNull()
   })
 })

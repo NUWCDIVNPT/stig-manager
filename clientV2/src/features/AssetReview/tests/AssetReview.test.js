@@ -173,7 +173,7 @@ describe('assetReview.vue', () => {
     // The router reuses this component when only params change (e.g. Recent
     // views or Back/Forward between two assets on the same STIG and revision),
     // so the checklist must follow the asset, not just the STIG/revision.
-    it('reloads the checklist and resets the selection when only assetId changes', async () => {
+    it('reloads the checklist when only assetId changes', async () => {
       const checklistData = ref([{ ruleId: 'V-123', result: 'pass' }])
       useChecklistData.mockReturnValue({
         accessMode: 'rw',
@@ -188,30 +188,32 @@ describe('assetReview.vue', () => {
       createWrapper()
       await flushPromises()
       expect(mockLoadChecklist).toHaveBeenCalledTimes(1)
-      mockSelectRule.mockClear()
 
       useRoute().params.assetId = 'asset-2'
       await nextTick()
 
-      expect(mockSelectRule).toHaveBeenCalledWith(null)
       expect(checklistData.value).toEqual([])
       expect(mockLoadChecklist).toHaveBeenCalledTimes(2)
     })
 
-    // A Recent view stores the full path, including ?ruleId, so the selection
-    // must follow the incoming query instead of being cleared (which would
-    // also strip ruleId from the new URL).
-    it('seeds the selection from ?ruleId when the asset changes', async () => {
+    // A Recent view or the Findings shield arrives with ?ruleId; the selection is the URL's
+    it('keeps the selection in ?ruleId, following the URL when the asset changes', async () => {
+      useRoute().query.ruleId = 'V-123'
       createWrapper()
       await flushPromises()
-      mockSelectRule.mockClear()
+      const { selectedRuleId } = useRuleDetail.mock.calls[0][0]
+      expect(selectedRuleId.value).toBe('V-123')
 
       const route = useRoute()
-      route.query.ruleId = 'V-789'
+      route.query = { ruleId: 'V-789' }
       route.params.assetId = 'asset-2'
       await nextTick()
+      expect(selectedRuleId.value).toBe('V-789')
 
-      expect(mockSelectRule).toHaveBeenCalledWith('V-789')
+      // a click writes it back to the URL without a history entry
+      selectedRuleId.value = 'V-456'
+      await nextTick()
+      expect(mockRouterReplace).toHaveBeenCalledWith({ query: { ruleId: 'V-456' } })
     })
   })
 
@@ -237,12 +239,22 @@ describe('assetReview.vue', () => {
       expect(mockRouterReplace).toHaveBeenCalledWith({
         name: 'not-found',
         params: { pathMatch: ['collections', 'coll-1', 'assets', 'asset-1', 'bench-1', 'rev-1'] },
+        query: {},
       })
     })
 
     // Shape of ApiError from apiClient: status from the response, body is the API's { error, detail }
     const apiError = (status, error) => Object.assign(new Error(`HTTP ${status}`), { status, body: { error } })
-    const notFoundCall = { name: 'not-found', params: { pathMatch: ['collections', 'coll-1', 'assets', 'asset-1', 'bench-1', 'rev-1'] } }
+    const notFoundCall = { name: 'not-found', params: { pathMatch: ['collections', 'coll-1', 'assets', 'asset-1', 'bench-1', 'rev-1'] }, query: {} }
+
+    it('keeps the URL\'s query and hash on the 404 page, like the route guard', async () => {
+      Object.assign(useRoute(), { query: { labelName: 'web', ruleId: 'V-1' }, hash: '#top' })
+      fetchAsset.mockRejectedValue(apiError(403, 'anything'))
+      createWrapper()
+      await flushPromises()
+
+      expect(mockRouterReplace).toHaveBeenCalledWith({ ...notFoundCall, query: { labelName: 'web', ruleId: 'V-1' }, hash: '#top' })
+    })
 
     it.each([400, 403, 404])('redirects to not-found when the asset fetch returns %i', async (status) => {
       fetchAsset.mockRejectedValue(apiError(status, 'anything'))
@@ -277,6 +289,7 @@ describe('assetReview.vue', () => {
       expect(mockRouterReplace).toHaveBeenCalledWith({
         name: 'not-found',
         params: { pathMatch: ['collections', 'coll-1', 'assets', 'asset-1', 'bench-1', 'rev-1'] },
+        query: {},
       })
     })
 
@@ -299,6 +312,7 @@ describe('assetReview.vue', () => {
       expect(mockRouterReplace).toHaveBeenCalledWith({
         name: 'not-found',
         params: { pathMatch: ['collections', 'coll-1', 'assets', 'asset-1', 'bench-1', 'rev-1'] },
+        query: {},
       })
     })
 

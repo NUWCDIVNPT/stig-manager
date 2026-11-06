@@ -181,4 +181,31 @@ describe('useQuerySelection', () => {
       expect(query().stig).toBe('B')
     })
   })
+
+  describe('writes build on the current URL', () => {
+    it('keeps the URL hash when writing a selection', async () => {
+      const selected = await setup('/stigs?labelName=web#top')
+      selected.value = 'A'
+      await flushPromises()
+      expect(router.currentRoute.value.fullPath).toBe('/stigs?labelName=web&stig=A#top')
+    })
+
+    it('does not bring back a query that another navigation replaced while its write was in flight', async () => {
+      const selected = await setup('/stigs?labelName=a')
+      // hold any navigation that writes stig=X, so that write is still in flight
+      router.beforeEach(to => (to.query.stig === 'X' ? new Promise(() => {}) : true))
+
+      selected.value = 'X'
+      await flushPromises()
+
+      // meanwhile the label filter changes on the same page (this cancels the held write)
+      await router.push('/stigs?labelName=b')
+      await flushPromises()
+      expect(query()).toEqual({ labelName: 'b' })
+
+      selected.value = 'Y'
+      await flushPromises()
+      expect(query()).toEqual({ labelName: 'b', stig: 'Y' })
+    })
+  })
 })

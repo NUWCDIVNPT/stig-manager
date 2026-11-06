@@ -2,9 +2,8 @@ import { computed, ref, watch } from 'vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { fetchRule } from '../api/assetReviewApi.js'
 
-export function useRuleDetail({ ruleLookupMap, collectionId, assetId, benchmarkId, revisionStr }) {
-  const selectedRuleId = ref(null)
-
+// selectedRuleId: optional ref to hold the selection (Asset Review passes one kept in ?ruleId)
+export function useRuleDetail({ ruleLookupMap, benchmarkId, revisionStr, selectedRuleId = ref(null) }) {
   const selectedChecklistItem = computed(() => {
     if (!selectedRuleId.value || !ruleLookupMap.value) {
       return null
@@ -22,18 +21,14 @@ export function useRuleDetail({ ruleLookupMap, collectionId, assetId, benchmarkI
     { immediate: false, initialState: null, onError: null },
   )
 
-  watch(selectedRuleId, (ruleId) => {
-    if (!ruleId) {
-      ruleContent.value = null
-      return
-    }
-
+  // Content depends on the STIG and revision too, so the same rule id on another revision reloads;
+  // immediate so a rule restored from the URL loads without having to "change"
+  watch([selectedRuleId, () => benchmarkId?.value, () => revisionStr?.value], ([ruleId]) => {
     ruleContent.value = null
-
-    if (benchmarkId?.value && revisionStr?.value) {
+    if (ruleId && benchmarkId?.value && revisionStr?.value) {
       loadRuleContent(ruleId)
     }
-  })
+  }, { immediate: true })
 
   function selectRule(ruleId) {
     if (ruleId === selectedRuleId.value) {

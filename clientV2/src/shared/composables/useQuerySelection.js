@@ -1,7 +1,8 @@
 import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-// Writes in the same tick (e.g. a tab clearing two keys) must build on each other, not on the not-yet-updated route
+// Writes in the same update (e.g. a tab clearing two keys) must build on each other, not on the not-yet-updated route.
+// Only for that update: a later write starts from the URL again, so another navigation's query isn't overwritten.
 const pendingQuery = new WeakMap()
 
 function writeQueryKey(router, route, key, value) {
@@ -19,11 +20,12 @@ function writeQueryKey(router, route, key, value) {
   }
   const entry = { path: route.path, query }
   pendingQuery.set(router, entry)
-  Promise.resolve(router.replace({ query })).finally(() => {
+  queueMicrotask(() => {
     if (pendingQuery.get(router) === entry) {
       pendingQuery.delete(router)
     }
   })
+  router.replace({ query, hash: route.hash })
 }
 
 // A selection kept in one URL query key (replace, no history entry), so Back, reload and links restore it.

@@ -5,9 +5,10 @@ import { useAsyncState } from './useAsyncState.js'
 // Revisions of the route's STIG, refetched per STIG. Calls onUnknown when the route names a
 // STIG with no revisions (doesn't exist) or a revision that isn't one of them (malformed or made up).
 export function useStigRevisions({ benchmarkId, revisionStr, onUnknown }) {
+  // No error modal here: the breadcrumb's revision picker fetches the same list on every review page and reports a failure
   const { state: revisions, execute } = useAsyncState(
     () => fetchStigRevisions(benchmarkId.value),
-    { immediate: false, initialState: [] },
+    { immediate: false, initialState: [], onError: null },
   )
 
   // The STIG the current list belongs to; null while loading or after a failed fetch

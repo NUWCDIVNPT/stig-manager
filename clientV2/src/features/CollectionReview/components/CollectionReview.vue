@@ -5,6 +5,7 @@ import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ArchiveProgressDialog from '../../../components/common/ArchiveProgressDialog.vue'
 import RuleInfo from '../../../components/common/RuleInfo.vue'
+import { notFoundLocation } from '../../../router/notFound.js'
 import { getHttpStatus } from '../../../shared/api/apiClient.js'
 import { stigRevisionSelections } from '../../../shared/api/archiveApi.js'
 import { fetchCollection } from '../../../shared/api/collectionsApi.js'
@@ -16,6 +17,7 @@ import { useLabelFilterQuery } from '../../../shared/composables/useLabelFilterQ
 import { useQuerySelection } from '../../../shared/composables/useQuerySelection.js'
 import { useStigRevisions } from '../../../shared/composables/useStigRevisions.js'
 import { useTours } from '../../../shared/composables/useTours.js'
+import { isRevisionStr } from '../../../shared/lib/checklistUtils.js'
 import { defaultFieldSettings, statusPayloadForAction } from '../../../shared/lib/reviewFormUtils.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
@@ -46,7 +48,7 @@ function recentViewKey(cId = collectionId.value, bId = benchmarkId.value) {
 
 function redirectToNotFound() {
   removeView(key => key.includes(`:${collectionId.value}:${benchmarkId.value}`))
-  router.replace({ name: 'not-found', params: { pathMatch: route.path.substring(1).split('/') } })
+  router.replace(notFoundLocation(route))
 }
 
 function handleRouteError(err) {
@@ -56,8 +58,18 @@ function handleRouteError(err) {
   }
 }
 
+// A malformed revision in the URL is a bad URL (the API answers 400); any other checklist error is reported
+function handleChecklistError(err) {
+  if (getHttpStatus(err) === 400 && !isRevisionStr(revisionStr.value)) {
+    redirectToNotFound()
+  }
+  else {
+    triggerError(err)
+  }
+}
+
 // A STIG or revision that doesn't exist anywhere is a bad URL; one not assigned here keeps the breadcrumb warning
-useStigRevisions({ benchmarkId, revisionStr, onUnknown: redirectToNotFound })
+const { revisions: stigRevisions } = useStigRevisions({ benchmarkId, revisionStr, onUnknown: redirectToNotFound })
 const { state: collection, execute: loadCollection } = useAsyncState(
   () => fetchCollection(collectionId.value),
   { immediate: false, initialState: null, onError: handleRouteError },
@@ -75,8 +87,7 @@ const canAccept = computed(() =>
 
 const { state: gridData, isLoading: isChecklistLoading, error: checklistError, execute: loadChecklist } = useAsyncState(
   () => fetchCollectionChecklist(collectionId.value, benchmarkId.value, revisionStr.value, labelFilterParams.value),
-  // A 400 is a malformed revision in the URL, which useStigRevisions sends to not-found
-  { immediate: false, initialState: [], onError: err => getHttpStatus(err) !== 400 && triggerError(err) },
+  { immediate: false, initialState: [], onError: handleChecklistError },
 )
 
 const { state: assets, isLoading: isAssetsLoading, error: assetsError, execute: loadAssets } = useAsyncState(
@@ -189,6 +200,9 @@ watch(checklistError, (err) => {
 // The tour points at the grids, so it waits for the checklist.
 offerTourWhen('collectionReview', () => Boolean(gridData.value?.length))
 
+// Which page and rule the panel was last loaded for
+let ruleLoadedFor = null
+
 // makes sure selectged is always valid or we pick first item
 watch(gridData, (data) => {
   if (!data?.length) {
@@ -199,13 +213,15 @@ watch(gridData, (data) => {
   if (!stillValid) {
     selectedRuleId.value = data[0].ruleId
   }
-  else if (!loadedRule.value) {
-    // A rule restored from the URL never "changes", so the watcher below won't load it
+  else if (ruleLoadedFor !== `${stigKey.value}|${selectedRuleId.value}`) {
+    // The rule didn't "change" (restored from the URL, or the same ruleId on another collection/STIG/revision),
+    // so the watcher below won't load it for this page
     loadSelectedRule(selectedRuleId.value)
   }
 })
 
 function loadSelectedRule(ruleId) {
+  ruleLoadedFor = `${stigKey.value}|${ruleId}`
   if (benchmarkId.value && revisionStr.value) {
     loadRuleContent(ruleId)
   }
@@ -389,6 +405,7 @@ async function onBatchEditConfirm(payload) {
                 :can-export-archive="canExportArchive"
                 :empty-message="checklistEmptyMessage"
                 :export-filename="benchmarkId"
+                :stig-revisions="stigRevisions"
                 @select-rule="onSelectRule"
                 @refresh="loadChecklist"
                 @export-archive="onExportArchive"

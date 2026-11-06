@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calculateChecklistStats, getEngineDisplay, getResultDisplay } from '../lib/checklistUtils.js'
+import { calculateChecklistStats, getEngineDisplay, getResultDisplay, isRevisionStr } from '../lib/checklistUtils.js'
 
 describe('getResultDisplay', () => {
   it('should map known results', () => {
@@ -93,5 +93,15 @@ describe('calculateChecklistStats', () => {
     ]
     const stats = calculateChecklistStats(data)
     expect(stats.statuses.saved).toBe(1)
+  })
+})
+
+describe('isRevisionStr', () => {
+  it.each(['V1R1', 'V2R10', 'V123R123', 'V1R1.2', 'latest'])('accepts %s', (value) => {
+    expect(isRevisionStr(value)).toBe(true)
+  })
+
+  it.each(['banana', 'rev-1', 'V1', 'R1', 'v1r1', 'V1234R1', 'V1R1.', 'V1R1.1234', 'Latest', '', ' V1R1', null, undefined, 12])('rejects %s', (value) => {
+    expect(isRevisionStr(value)).toBe(false)
   })
 })

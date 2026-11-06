@@ -126,3 +126,38 @@ describe('assetChecklistGrid search', () => {
     expect(screen.getByRole('button', { name: /Submit All/i })).toBeDisabled()
   })
 })
+
+describe('assetChecklistGrid selection while the checklist reloads', () => {
+  // Switching asset empties the grid and loads the new checklist; clearing the
+  // selection then would strip ?ruleId from the URL the route just arrived on
+  it('keeps the selection while an empty grid is loading', async () => {
+    const selectRule = vi.fn()
+    const { rerender } = render({ selectRule, selectedRuleId: 'r2' })
+    selectRule.mockClear()
+
+    await rerender({ gridData: [], isChecklistLoading: true })
+    expect(selectRule).not.toHaveBeenCalled()
+
+    // the new asset's checklist has the rule, so it stays selected
+    await rerender({ gridData: [SAVED_COMPLETE, SUBMITTED], isChecklistLoading: false })
+    expect(selectRule).not.toHaveBeenCalled()
+  })
+
+  it('clears the selection when the checklist finishes loading empty', async () => {
+    const selectRule = vi.fn()
+    const { rerender } = render({ selectRule, selectedRuleId: 'r2' })
+    await rerender({ gridData: [], isChecklistLoading: true })
+    selectRule.mockClear()
+
+    await rerender({ isChecklistLoading: false })
+    expect(selectRule).toHaveBeenCalledWith(null)
+  })
+
+  it('selects the first rule when the loaded checklist lacks the selected one', async () => {
+    const selectRule = vi.fn()
+    const { rerender } = render({ selectRule, selectedRuleId: 'r2' })
+    await rerender({ gridData: [], isChecklistLoading: true })
+    await rerender({ gridData: [ACCEPTED], isChecklistLoading: false })
+    expect(selectRule).toHaveBeenLastCalledWith('r3')
+  })
+})

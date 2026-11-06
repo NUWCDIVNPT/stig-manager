@@ -162,7 +162,8 @@ describe('collectionView route errors', () => {
     await renderWithCollectionError(apiError(status, 'anything'))
 
     expect(router.currentRoute.value.name).toBe('not-found')
-    expect(router.currentRoute.value.path).toBe('/collection/12/stigs')
+    // the whole URL is kept, query included, like the route guard's 404
+    expect(router.currentRoute.value.fullPath).toBe('/collection/12/stigs?labelName=web')
     expect(mockTriggerError).not.toHaveBeenCalled()
   })
 
