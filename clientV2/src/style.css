@@ -337,7 +337,7 @@ textarea:focus {
 
 /* Collection tab panel styles (shared across Assets, STIGs, Labels tabs) */
 .collection-tab-panel {
-  height: calc(100% - 1rem);
+  height: 100%;
   padding: 0.5rem;
   overflow: hidden;
 }
