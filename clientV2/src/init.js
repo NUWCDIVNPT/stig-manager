@@ -1,4 +1,5 @@
 import activityHandler from './auth/ActivityHandler.js'
+import { sendWorkerRequest } from './auth/workerRequest.js'
 import { resolveDocsUrl } from './shared/lib/docsUrl.js'
 
 // Same global console gate as the legacy client (client/src/js/init.js):
@@ -246,32 +247,28 @@ async function setupOidcWorker() {
   const oidcworkerUrl = STIGMAN.Env.pathPrefix ? '../js/workers/oidc-worker.js' : new URL('../js/workers/oidc-worker.js', window.location.href).href
   STIGMAN.oidcWorker = {
     async logout() {
-      const response = await this.sendWorkerRequest({ request: 'logout' })
+      // Set first: the worker's noToken broadcast arrives before its reply.
+      this.isLoggingOut = true
+      const response = await this.sendWorkerRequest({ request: 'logout' }).catch(err => ({ success: false, error: err.message }))
       if (response.success) {
         this.token = null
         this.tokenParsed = null
         window.location.href = response.redirect
       }
+      else {
+        this.isLoggingOut = false
+        console.error('[init] Logout failed:', response.error)
+      }
     },
     sendWorkerRequest(request) {
-      const requestId = crypto.randomUUID()
-      const port = this.worker.port
-      port.postMessage({ ...request, requestId })
-      return new Promise((resolve) => {
-        function handler(event) {
-          if (event.data.requestId === requestId) {
-            port.removeEventListener('message', handler)
-            resolve(event.data.response)
-          }
-        }
-        port.addEventListener('message', handler)
-      })
+      return sendWorkerRequest(this.worker.port, request)
     },
     postContextActiveMessage() {
       this.worker.port.postMessage({ requestId: 'contextActive' })
     },
     channelName: null,
     logoutAvailable: true,
+    isLoggingOut: false,
     token: null,
     tokenParsed: null,
     worker: new SharedWorker(oidcworkerUrl, { name: 'stigman-oidc-worker', type: 'module' }),
@@ -279,10 +276,18 @@ async function setupOidcWorker() {
 
   OW = STIGMAN.oidcWorker
   OW.worker.port.start()
+
+  // Back from the OP's logged-out page can restore this signed-out document
+  // from the back/forward cache, data still on screen.
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted && OW.isLoggingOut) {
+      window.location.reload()
+    }
+  })
+
   const response = await initializeOidcWorker()
-  if (response.error) {
-    appendError(response.error)
-    return
+  if (!response.success) {
+    throw new Error(response.error)
   }
   OW.channelName = response.channelName
   OW.logoutAvailable = response.logoutAvailable ?? true
@@ -310,18 +315,7 @@ async function setupStateWorker() {
   STIGMAN.stateWorker = {
     worker: new SharedWorker(`${import.meta.env.BASE_URL}workers/state-worker.js`, { name: 'stigman-state-worker', type: 'module' }),
     sendWorkerRequest(request) {
-      const requestId = crypto.randomUUID()
-      const port = this.worker.port
-      port.postMessage({ ...request, requestId })
-      return new Promise((resolve) => {
-        function handler(event) {
-          if (event.data.requestId === requestId) {
-            port.removeEventListener('message', handler)
-            resolve(event.data.response)
-          }
-        }
-        port.addEventListener('message', handler)
-      })
+      return sendWorkerRequest(this.worker.port, request)
     },
     workerChannel: null,
     state: null,
