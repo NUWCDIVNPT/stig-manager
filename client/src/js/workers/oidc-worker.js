@@ -4,6 +4,7 @@ const logPrefix = '[OIDCWorker]:'
 const tokens = {
   accessToken: null,
   refreshToken: null,
+  idToken: null,
 }
 let ENV = null
 let oidcConfiguration = null
@@ -18,6 +19,7 @@ let idleTimeoutM = null
 let isIdle = false
 let clientReauthUri = null
 let clientV2ReauthUri = null
+let sessionGeneration = 0
 
 // Worker entry point
 onconnect = function (e) {
@@ -87,6 +89,9 @@ async function exchangeCodeForToken({ code, codeVerifier, clientId = ENV.clientI
   try {
     isIdle = false
     await fetchTokens(params)
+    if (!tokens.accessToken) {
+      return { success: false, error: 'The session ended during sign-in' }
+    }
     return {
       success: true,
       accessToken: tokens.accessToken,
@@ -100,7 +105,6 @@ async function exchangeCodeForToken({ code, codeVerifier, clientId = ENV.clientI
 
 async function initialize(options) {
   if (!initialized) {
-    initialized = true
     const parsedRedirectUri = new URL(options.redirectUri)
     if (!parsedRedirectUri.protocol.startsWith('http')) {
       return { success: false, error: `Invalid redirectUri scheme: ${parsedRedirectUri.protocol}` }
@@ -112,19 +116,29 @@ async function initialize(options) {
     }
     catch (e) {
       console.error(logPrefix, 'Failed to fetch OIDC configuration', e)
+      resetConfiguration()
       return { success: false, error: 'Cannot connect to the Sign-in Service.' }
     }
     const validation = validateOidcConfiguration()
     if (!validation.success) {
       console.error(logPrefix, 'OIDC configuration validation failed', validation.error)
+      resetConfiguration()
       return { success: false, error: validation.error }
     }
+    initialized = true
   }
 
   clientReauthUri = options.clientReauthUri || clientReauthUri
   clientV2ReauthUri = options.clientV2ReauthUri || clientV2ReauthUri
 
-  return { success: true, env: ENV, channelName, logoutAvailable: !!oidcConfiguration.end_session_endpoint }
+  return { success: true, env: ENV, channelName, logoutAvailable: !!oidcConfiguration?.end_session_endpoint }
+}
+
+// A rejected configuration must not outlive the failure: every tab of either
+// client has to be refused until a later initialize succeeds.
+function resetConfiguration() {
+  ENV = null
+  oidcConfiguration = null
 }
 
 async function getStatus() {
@@ -137,11 +151,41 @@ async function getStatus() {
   }
 }
 
-function logout() {
-  if (!oidcConfiguration.end_session_endpoint) {
+// The tab's navigation can't be relied on to end this worker: other tabs of
+// either client hold it open, and so can a tab frozen in the back/forward
+// cache. The session has to end here.
+async function logout() {
+  if (!oidcConfiguration?.end_session_endpoint) {
     return { success: false, error: 'Logout not available' }
   }
-  return { success: true, redirect: oidcConfiguration.end_session_endpoint }
+
+  const { idToken } = tokens
+
+  // A refresh in flight must not restore the tokens cleared below.
+  sessionGeneration++
+
+  // Must run before the broadcast, which mints the reauth authorizations.
+  // Clearing afterwards would delete them, and exchangeCodeForToken only checks
+  // a verifier when an entry exists, so a missing one skips the check silently.
+  for (const redirectUri of Object.keys(authorizations)) {
+    delete authorizations[redirectUri]
+  }
+
+  clearTimeout(idleTimeoutId)
+  idleTimeoutId = null
+  isIdle = false
+
+  await clearTokens(true)
+
+  const endSessionUrl = new URL(oidcConfiguration.end_session_endpoint)
+  if (idToken) {
+    endSessionUrl.searchParams.set('id_token_hint', idToken)
+  }
+  else {
+    console.warn(logPrefix, 'No id_token available for id_token_hint on logout')
+    endSessionUrl.searchParams.set('client_id', ENV.clientId)
+  }
+  return { success: true, redirect: endSessionUrl.toString() }
 }
 
 async function onMessage(e) {
@@ -553,8 +597,11 @@ function validateAudience(payload) {
   return true
 }
 
-function setTokens(tokensResponse) {
+function setTokens(tokensResponse, isRefresh = false) {
+  // An OP may omit id_token from a refresh response. Logout still needs one.
+  const idToken = tokensResponse.id_token ?? (isRefresh ? tokens.idToken : null)
   clearTokens()
+  tokens.idToken = idToken
   if (tokensResponse.access_token && tokensResponse.refresh_token) {
     setTokensWithRefresh(tokensResponse)
     return true
@@ -574,12 +621,14 @@ function clearAccessToken(sendBroadcast = false) {
 function clearTokens(sendBroadcast = false) {
   tokens.accessToken = null
   tokens.refreshToken = null
+  tokens.idToken = null
   clearAccessTokenTimer()
   clearRefreshTokenTimer()
-  if (sendBroadcast) { broadcastNoToken() }
+  if (sendBroadcast) { return broadcastNoToken() }
 }
 
 async function fetchTokens(params) {
+  const generation = sessionGeneration
   if (isIdle) {
     console.log(logPrefix, 'Contexts are idle, will not fetch tokens')
     return
@@ -599,12 +648,16 @@ async function fetchTokens(params) {
     console.log(logPrefix, 'Contexts are idle, will not validate and set tokens')
     return
   }
+  if (generation !== sessionGeneration) {
+    console.log(logPrefix, 'Session ended during the request, will not set tokens')
+    return
+  }
 
   if (!response.ok) {
     throw new Error(tokensResponse.error_description)
   }
   validateTokensResponse(tokensResponse)
-  setTokens(tokensResponse)
+  setTokens(tokensResponse, params.get('grant_type') === 'refresh_token')
 }
 
 async function refreshAccessToken() {
@@ -612,6 +665,7 @@ async function refreshAccessToken() {
     await broadcastNoToken()
     return
   }
+  const generation = sessionGeneration
   const params = new URLSearchParams()
   params.append('grant_type', 'refresh_token')
   params.append('client_id', ENV.clientId)
@@ -621,7 +675,9 @@ async function refreshAccessToken() {
     return await fetchTokens(params)
   }
   catch (e) {
-    clearTokens(true) // broadcast no token
+    if (generation === sessionGeneration) {
+      clearTokens(true) // broadcast no token
+    }
     return { success: false, error: e.message }
   }
 }

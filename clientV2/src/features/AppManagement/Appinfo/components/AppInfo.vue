@@ -205,7 +205,7 @@ const tabPanelPt = {
   height: 100%;
   width: 100%;
   overflow: auto;
-  padding: 0.8rem;
+  padding: 0.3rem;
   background-color: var(--color-background-darkest);
   color: var(--color-text-primary);
 }
@@ -221,7 +221,7 @@ const tabPanelPt = {
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
-  padding: 0.8rem;
+  padding: 0.5rem;
   flex: 1;
   min-height: 0;
   overflow: hidden;
