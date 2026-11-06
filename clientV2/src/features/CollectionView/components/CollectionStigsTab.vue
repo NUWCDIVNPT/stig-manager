@@ -98,6 +98,7 @@ function handleChecklistAssetAction(rowData) {
       benchmarkId: selectedBenchmarkId.value,
       revisionStr: rowData.revisionStr,
     },
+    query: buildLabelFilterParams(props.selectedLabelNames),
   })
 }
 

@@ -14,23 +14,25 @@ Done items keep their original finding for reference. Line links reflect the cod
 | 4 | Bad STIG or revision handled three different ways | Bad URL | ✅ be3c8e30 |
 | 5 | Feature-flag gate has no guard test | Bad URL | ✅ a01ae6c8 |
 | 6 | Orphan route `/assets/:assetId` | Security | ✅ e169a965 |
-| 7 | Grants go stale | Security | ✅ uncommitted |
-| 8 | Denials aren't handled consistently | Security | ✅ uncommitted |
+| 7 | Grants go stale | Security | ✅ c8702432 |
+| 8 | Denials aren't handled consistently | Security | ✅ b34a3a59 |
 | 9 | Recent views leak between users | Security | ⏭️ Skipped (accepted risk) |
-| 10 | Nav rail admin check never updates | Security | ✅ uncommitted |
-| 11 | Error checks rely on message text | Security | ✅ uncommitted |
-| 12 | Label filter lost on the way into Asset Review | Label filter | Open |
+| 10 | Nav rail admin check never updates | Security | ✅ 74011beb |
+| 11 | Error checks rely on message text | Security | ✅ 3219802c |
+| 12 | Label filter lost on the way into Asset Review | Label filter | ✅ uncommitted |
 | 13 | Tab switches drop each tab's own query | URL state | Open (prototype stashed) |
 | 14 | Collection-tab selections are local state | URL state | Open |
 | 15 | Collection Review selected rule isn't in the URL | URL state | Open |
 | 16 | Collections page tab isn't in the URL | URL state | Open |
 | 17 | Grid rows aren't links | URL state | Open |
 | 18 | Every page has the same browser tab title | URL state | Open |
+| 19 | Recent-views cleanup matches by text | Found during fixes | Open |
+| 20 | Page-level 404 redirects drop the query | Found during fixes | Open |
 
 ## Suggested order
 
 1. ~~**#6** dead route (quick).~~ ✅
-2. **#12** label filter into Asset Review.
+2. ~~**#12** label filter into Asset Review.~~ ✅
 3. **#7–#11** route security cleanup.
 4. **#13–#18** the URL-state effort (its own PR): start with the stashed prototype (#13), then #14.
 
@@ -81,13 +83,13 @@ Done items keep their original finding for reference. Line links reflect the cod
 - **Problem:** no guard, no collectionId, and nothing links to it.
 - **Fix:** delete it.
 
-### 7. Grants go stale — ✅ uncommitted
+### 7. Grants go stale — ✅ c8702432
 
 - **Done:** the guard calls `refreshUser()` once before denying a grant or role check, then re-checks. Allowed navigations don't refetch, so the cost (one GET /user) only lands on a denial.
 - **Problem:** The user's grants only refresh after mutations they make themselves. If an admin gives them a new grant elsewhere, the guard silently bounces them to `/collections` until they reload. (`routing-and-authorization.md` documents this as an accepted trade-off.)
 - **Fix:** have the guard call `refreshUser()` once and re-check before denying.
 
-### 8. Denials aren't handled consistently — ✅ uncommitted
+### 8. Denials aren't handled consistently — ✅ b34a3a59
 
 - **Done:** no grant and non-admin now go to the 404 page with the URL kept, the same as an API 403 or a bad URL. The Management tab with too low a role still goes to that collection's dashboard. The 404 text now reads "doesn't exist, or you don't have access to it."
 - **Problem:**
@@ -103,14 +105,14 @@ Done items keep their original finding for reference. Line links reflect the cod
 - **Problem:** saved in localStorage under a single key that isn't tied to the user. On a shared workstation, the next user sees the previous user's collection and asset names.
 - **Fix:** add the userId to the key.
 
-### 10. Nav rail admin check never updates — ✅ uncommitted
+### 10. Nav rail admin check never updates — ✅ 74011beb
 
 - **Done:** the nav rail uses `useCurrentUser().isAdmin`, the same source as the guard. Tests swap the user in the real store and check the Admin item follows.
 - **Where:** [useNavItems.js:7](../src/features/NavRail/composables/useNavItems.js#L7)
 - **Problem:** destructures `user` from the store, so `isAdmin` keeps the value from startup.
 - **Fix:** use `useCurrentUser().isAdmin`.
 
-### 11. Error checks rely on message text — ✅ uncommitted
+### 11. Error checks rely on message text — ✅ 3219802c
 
 - **Done:** all three pages decide by status only: 400/403/404 → not-found, anything else → error popup. Checked against the API: `PrivilegeError` is always 403 and the body's `error` is only the message text (the spec's `Error` schema types it as a plain string), so the text check added nothing. CollectionView previously sent 404s and reworded 403s to the error popup.
 - **Where:** [CollectionView.vue:54](../src/features/CollectionView/components/CollectionView.vue#L54), [AssetReview.vue:44](../src/features/AssetReview/components/AssetReview.vue#L44), [CollectionReview.vue:53](../src/features/CollectionReview/components/CollectionReview.vue#L53)
@@ -128,8 +130,9 @@ Done items keep their original finding for reference. Line links reflect the cod
 - The collection breadcrumb and tab switches carry the filter, and Management drops it.
 - All of this has tests.
 
-### 12. Label filter lost on the way into Asset Review
+### 12. Label filter lost on the way into Asset Review — ✅ uncommitted
 
+- **Done (Fix A):** all six links now carry the filter. The tabs and the Findings grid use `buildLabelFilterParams(props.selectedLabelNames)`; Findings passes the filter down to its grid and merges it with `ruleId`. The Asset Review STIG and revision dropdowns use `pickLabelFilterQuery(route.query)`, which drops `ruleId` because it belongs to the old STIG. The breadcrumb's return trip was already tested in `labelFilterRoutes.test.js`.
 - **Problem:** Only STIGs tab → Collection Review carries it. These links drop it:
   - [CollectionAssetsTab.vue:86](../src/features/CollectionView/components/CollectionAssetsTab.vue#L86)
   - [CollectionStigsTab.vue:93](../src/features/CollectionView/components/CollectionStigsTab.vue#L93)
@@ -187,3 +190,19 @@ Planned as its own effort and PR (decided 2026-10-28; merged here from `docs/tod
 - Carry rules in one place (router guard) vs per call site?
 - Which keys are global (label filter) vs per view (`agg`, `stig`, `sel`)?
 - `replace` vs `push`: which state changes deserve a history entry?
+
+---
+
+## Found during fixes
+
+### 19. Recent-views cleanup matches by text
+
+- **Where:** [CollectionView.vue](../src/features/CollectionView/components/CollectionView.vue) (`onError` of the collection fetch); AssetReview and CollectionReview use the same `key.includes(...)` pattern.
+- **Problem:** `removeView(key => key.includes(':12'))` also matches `collection:123`, so a 404 on collection 12 drops collection 123's recent entries too.
+- **Fix:** match on whole key segments (e.g. split on `:` and compare the id), or remove by exact key.
+
+### 20. Page-level 404 redirects drop the query
+
+- **Where:** the `redirectToNotFound` / `onError` redirects in CollectionView, AssetReview and CollectionReview.
+- **Problem:** they pass only `pathMatch`, so `?labelName=…` (and any hash) is lost on the 404 page. The guard's redirect from #8 keeps the query and hash, so the two paths to the same 404 page disagree.
+- **Fix:** pass `query: route.query, hash: route.hash` too, ideally through one shared helper used by the guard and the pages.

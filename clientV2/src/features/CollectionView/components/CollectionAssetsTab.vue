@@ -91,6 +91,7 @@ function handleShieldClick(rowData) {
       benchmarkId: rowData.benchmarkId,
       revisionStr: rowData.revisionStr,
     },
+    query: buildLabelFilterParams(props.selectedLabelNames),
   })
 }
 </script>

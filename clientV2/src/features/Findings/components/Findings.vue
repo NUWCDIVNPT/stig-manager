@@ -211,6 +211,7 @@ function onSelectFinding(row) {
           :label-map="labelMap"
           :collection-id="props.collectionId"
           :selected-benchmark-id="selectedBenchmarkId"
+          :selected-label-names="props.selectedLabelNames"
           @retry="retryReviews"
         />
       </SplitterPanel>
