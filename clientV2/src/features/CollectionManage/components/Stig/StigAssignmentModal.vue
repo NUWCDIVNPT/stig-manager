@@ -91,7 +91,7 @@ const { isLoading: loadingStigs, execute: loadStigs } = useAsyncState(
   { immediate: false },
 )
 
-const { isLoading: loadingAssets, execute: loadAssets } = useAsyncState(
+const { isLoading: loadingAssets, error: assetsError, execute: loadAssets } = useAsyncState(
   () => fetchCollectionAssetsWithStigs(props.collectionId),
   { immediate: false },
 )
@@ -125,10 +125,13 @@ const isLoading = computed(
   () => loadingStigs.value || loadingAssets.value || loadingStigAssets.value,
 )
 
+// Save replaces the whole assignment, so both lists the picker is built from
+// must have loaded.
 const canSave = computed(
   () => !isLoading.value
     && !saving.value
     && !!selectedBenchmarkId.value
+    && !assetsError.value
     && !stigAssetsError.value,
 )
 
@@ -160,8 +163,13 @@ async function loadAssetsForBenchmark(benchmarkId) {
     stigAssets.value = []
     return
   }
+  stigAssets.value = []
+  // null when superseded by a newer load, which owns stigAssets, or on error
+  // (already surfaced, and canSave stays false)
   const result = await fetchStigAssetsAsync(benchmarkId)
-  stigAssets.value = result ?? []
+  if (result) {
+    stigAssets.value = result
+  }
 }
 
 function resetSelections() {
@@ -178,10 +186,16 @@ function resetSelections() {
 }
 
 async function loadLabels() {
-  labelMap.value = buildLabelMap(await fetchLabelsAsync())
+  const result = await fetchLabelsAsync()
+  if (result) {
+    labelMap.value = buildLabelMap(result)
+  }
 }
 
+let openGeneration = 0
+
 async function onOpen() {
+  const generation = ++openGeneration
   resetSelections()
   stigs.value = []
   assets.value = []
@@ -191,15 +205,18 @@ async function onOpen() {
 
   const benchId = selectedBenchmarkId.value
   const tasks = [
-    loadStigs().then(r => (stigs.value = r ?? [])),
-    loadAssets().then(r => (assets.value = r ?? [])),
+    loadStigs().then(r => r && (stigs.value = r)),
+    loadAssets().then(r => r && (assets.value = r)),
     loadLabels(),
   ]
   if (benchId) {
     tasks.push(loadAssetsForBenchmark(benchId))
   }
   await Promise.all(tasks)
-  rebuildPicker()
+  // A newer open owns the picker, and the user may already be editing it.
+  if (generation === openGeneration) {
+    rebuildPicker()
+  }
 }
 
 async function onBenchmarkChange(value) {
@@ -208,11 +225,12 @@ async function onBenchmarkChange(value) {
   rebuildPicker()
 }
 
+// immediate: a parent may mount the modal already visible.
 watch(() => props.visible, (open) => {
   if (open) {
     onOpen()
   }
-})
+}, { immediate: true })
 
 function rebuildPicker() {
   const benchId = selectedBenchmarkId.value
@@ -309,7 +327,7 @@ const selectPt = {
           option-label="label"
           option-value="value"
           :placeholder="loadingStigs ? 'Loading STIGs...' : 'Assign a STIG...'"
-          :disabled="isModify || loadingStigs"
+          :disabled="isModify || loadingStigs || loadingStigAssets"
           :filter="!isModify"
           filter-placeholder="Search benchmarks"
           class="selection-select"
