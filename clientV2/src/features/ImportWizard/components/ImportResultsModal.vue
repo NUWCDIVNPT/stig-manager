@@ -1,7 +1,7 @@
 <script setup>
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useImportProgressStore } from '../../../shared/stores/importProgressStore.js'
 import { useImportWizard } from '../composables/useImportWizard.js'
 import { importDialogPt, primaryBtnPt } from '../../../shared/lib/dialogPt.js'
@@ -80,6 +80,15 @@ watch(() => props.visible, (isOpen) => {
     }
   }
   closeAction.value = null
+})
+
+// The host may unmount this modal while it is still open (browser Back from the
+// route that owns it). Treat that like a minimize so the import stays visible
+// on the notification card instead of running on with no card and no results.
+onBeforeUnmount(() => {
+  if (props.visible && importInFlight()) {
+    progressStore.startBackground({ totalCount: parser.parseResults.value.taskAssets?.size ?? 0, executor })
+  }
 })
 
 function minimizeWizard() {
