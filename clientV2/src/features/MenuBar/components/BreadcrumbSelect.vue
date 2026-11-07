@@ -42,15 +42,6 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  // Given an option, whether to mark it with the pinned-revision glyph
-  isPinned: {
-    type: Function,
-    default: null,
-  },
-  pinnedTooltip: {
-    type: String,
-    default: '',
-  },
 })
 
 defineEmits(['update:modelValue'])
@@ -123,31 +114,19 @@ const selectPt = computed(() => {
           class="pi pi-exclamation-triangle"
           role="img"
           :aria-label="invalidTooltip"
-          style="margin-right: 0.35rem;"
         />
         <span>{{ displayLabel }}</span>
-        <span
-          v-if="selectedOption && isPinned?.(selectedOption)"
-          class="icon-pin breadcrumb-select-pin"
-          role="img"
-          aria-label="Pinned Revision"
-          :title="pinnedTooltip"
-        />
+        <slot v-if="selectedOption" name="after-label" :option="selectedOption" />
       </div>
       <span v-else>
         {{ placeholder }}
       </span>
     </template>
-    <template #option="{ option }">
+    <!-- Decorated options only when a caller supplies the slot; others keep PrimeVue's default option rendering -->
+    <template v-if="$slots['after-label']" #option="{ option }">
       <span class="breadcrumb-select-option">
         <span>{{ option[optionLabel] }}</span>
-        <span
-          v-if="isPinned?.(option)"
-          class="icon-pin breadcrumb-select-pin"
-          role="img"
-          aria-label="Pinned Revision"
-          :title="pinnedTooltip"
-        />
+        <slot name="after-label" :option="option" />
       </span>
     </template>
   </Select>
@@ -205,6 +184,7 @@ const selectPt = computed(() => {
 .breadcrumb-select-value {
   display: flex;
   align-items: center;
+  gap: 0.5rem;
 }
 
 .is-invalid {
@@ -216,14 +196,5 @@ const selectPt = computed(() => {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-}
-
-.breadcrumb-select-pin {
-  margin-left: 0.5rem;
-  color: var(--color-text-dim);
-}
-
-.breadcrumb-select-option .breadcrumb-select-pin {
-  margin-left: 0;
 }
 </style>

@@ -5,6 +5,7 @@ import Popover from 'primevue/popover'
 import { computed, inject, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import LabelFilterPills from '../../../components/common/LabelFilterPills.vue'
+import PinnedRevisionIcon from '../../../components/common/PinnedRevisionIcon.vue'
 import { formatDateTimeString } from '../../../shared/lib.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import { useEnv } from '../../../shared/stores/useEnv.js'
@@ -228,11 +229,13 @@ const pt = {
               option-value="revisionStr"
               :invalid-tooltip="TOOLTIPS.breadcrumb.revisionNotFound"
               :options-unavailable="isRevisionOptionsUnavailable"
-              :is-pinned="isRevisionPinned"
-              :pinned-tooltip="TOOLTIPS.pinnedRevision"
               placeholder="Revision"
               @update:model-value="navigateToRevision"
-            />
+            >
+              <template #after-label="{ option }">
+                <PinnedRevisionIcon v-if="isRevisionPinned(option)" />
+              </template>
+            </BreadcrumbSelect>
 
             <!-- Clickable link segment -->
             <router-link

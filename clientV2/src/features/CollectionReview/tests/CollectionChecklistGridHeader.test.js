@@ -109,14 +109,15 @@ describe('checklistGridHeader.vue', () => {
       expect(stigsApi.fetchStigRevisions).not.toHaveBeenCalled()
     })
 
-    it('shows a pin beside the title only when the revision is the Collection default', async () => {
-      useRoute.mockReturnValue({ params: { collectionId: '21', benchmarkId: 'RHEL_8', revisionStr: 'V1R2' } })
+    it('shows a pin beside the title when the revision is the Collection default', () => {
       checklistUtils.getRevisionInfo.mockReturnValue({ display: 'V1R2', pinned: true })
-      const { rerender } = createWrapper()
+      createWrapper()
       expect(screen.getByRole('img', { name: 'Pinned Revision' })).toBeInTheDocument()
+    })
 
+    it('shows no pin for an unpinned revision', () => {
       checklistUtils.getRevisionInfo.mockReturnValue({ display: 'V1R2', pinned: false })
-      await rerender({ stigRevisions: [] })
+      createWrapper()
       expect(screen.queryByRole('img', { name: 'Pinned Revision' })).toBeNull()
     })
 

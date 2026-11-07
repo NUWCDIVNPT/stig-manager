@@ -8,6 +8,7 @@ import ColumnToggle from '../../../components/common/ColumnToggle.vue'
 import DensityControls from '../../../components/common/DensityControls.vue'
 import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../components/common/GridSearch.vue'
+import PinnedRevisionIcon from '../../../components/common/PinnedRevisionIcon.vue'
 import { getRevisionInfo } from '../../../shared/lib/checklistUtils.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 
@@ -115,13 +116,7 @@ function toggleChecklistMenu(event) {
     <div class="checklist-grid__header-top">
       <div class="checklist-grid__title-row">
         <span class="checklist-grid__title">{{ headerTitle }}</span>
-        <span
-          v-if="revisionInfo?.pinned"
-          class="icon-pin checklist-grid__pin"
-          role="img"
-          aria-label="Pinned Revision"
-          :title="TOOLTIPS.pinnedRevision"
-        />
+        <PinnedRevisionIcon v-if="revisionInfo?.pinned" />
       </div>
     </div>
 
@@ -234,10 +229,6 @@ function toggleChecklistMenu(event) {
 .checklist-grid__menu-caret {
   font-size: var(--icon-xs);
   margin-left: 0.1rem;
-}
-
-.checklist-grid__pin {
-  color: var(--color-text-dim);
 }
 
 .checklist-grid__title {

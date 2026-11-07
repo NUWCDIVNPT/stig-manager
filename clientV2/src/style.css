@@ -315,15 +315,16 @@ textarea:focus {
   background: url('/src/assets/collection-new.svg') center / contain no-repeat;
 }
 
-/* Pinned-revision glyph (the legacy pin.svg), masked so it takes the current
-   text colour and so follows the theme or skin. Sized in em so it tracks the
-   text it sits beside (grid cells, headers, breadcrumb pickers) */
+/* Pinned-revision glyph, masked so it follows the theme
+   or skin via currentColor; dim by default, a consumer may set `color` for a
+   stronger glyph. Sized in em so it tracks the text it sits beside */
 .icon-pin {
   display: inline-block;
   width: 1em;
   height: 1em;
   vertical-align: -0.125em;
   flex-shrink: 0;
+  color: var(--color-text-dim);
   background-color: currentColor;
   mask: url('/src/assets/pin.svg') center / contain no-repeat;
 }

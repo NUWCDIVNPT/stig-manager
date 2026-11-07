@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calculateChecklistStats, getEngineDisplay, getResultDisplay, getRevisionInfo, isRevisionPinned, isRevisionStr } from '../lib/checklistUtils.js'
+import { calculateChecklistStats, getEngineDisplay, getResultDisplay, getRevisionInfo, isRevisionPinnedBy, isRevisionStr } from '../lib/checklistUtils.js'
 
 describe('getResultDisplay', () => {
   it('should map known results', () => {
@@ -106,29 +106,25 @@ describe('isRevisionStr', () => {
   })
 })
 
-describe('isRevisionPinned / getRevisionInfo.pinned', () => {
+describe('isRevisionPinnedBy / getRevisionInfo.pinned', () => {
   const revisions = [
     { revisionStr: 'V1R1', benchmarkDate: '2024-01-01', collectionIds: ['21', 7] },
     { revisionStr: 'V1R2', benchmarkDate: '2024-06-01', collectionIds: [] },
   ]
 
   it('is pinned when the Collection is among the revision collectionIds, comparing as strings', () => {
-    expect(isRevisionPinned('V1R1', revisions, '21')).toBe(true)
-    expect(isRevisionPinned('V1R1', revisions, 7)).toBe(true)
-    expect(isRevisionPinned('V1R2', revisions, '21')).toBe(false)
-    expect(isRevisionPinned('V1R1', revisions, '99')).toBe(false)
-  })
-
-  it('is not pinned without a Collection, a revision, or a match in the list', () => {
-    expect(isRevisionPinned('V1R1', revisions, null)).toBe(false)
-    expect(isRevisionPinned(null, revisions, '21')).toBe(false)
-    expect(isRevisionPinned('V9R9', revisions, '21')).toBe(false)
-    expect(isRevisionPinned('V1R1', undefined, '21')).toBe(false)
+    expect(isRevisionPinnedBy(revisions[0], '21')).toBe(true)
+    expect(isRevisionPinnedBy(revisions[0], 7)).toBe(true)
+    expect(isRevisionPinnedBy(revisions[1], '21')).toBe(false)
+    expect(isRevisionPinnedBy(revisions[0], '99')).toBe(false)
+    expect(isRevisionPinnedBy(revisions[0], null)).toBe(false)
+    expect(isRevisionPinnedBy(undefined, '21')).toBe(false)
   })
 
   it('getRevisionInfo carries the pinned flag for the given Collection', () => {
     expect(getRevisionInfo('V1R1', revisions, '21').pinned).toBe(true)
     expect(getRevisionInfo('V1R2', revisions, '21').pinned).toBe(false)
+    expect(getRevisionInfo('V9R9', revisions, '21').pinned).toBe(false)
     expect(getRevisionInfo('V1R1', revisions).pinned).toBe(false)
   })
 })

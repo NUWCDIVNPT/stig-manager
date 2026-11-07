@@ -90,14 +90,10 @@ export function isRevisionStr(value) {
   return typeof value === 'string' && REVISION_STR.test(value)
 }
 
-// Whether `collectionId` pins `revisionStr` as its default for the STIG the
-// revisions belong to (each revision lists the Collections pinning it).
-export function isRevisionPinned(revisionStr, revisionsArray, collectionId) {
-  if (!revisionStr || collectionId == null) {
-    return false
-  }
-  const rev = revisionsArray?.find(r => r.revisionStr === revisionStr)
-  return !!rev?.collectionIds?.some(id => String(id) === String(collectionId))
+// Whether `collectionId` pins `revision` (a GET /stigs/{benchmarkId}/revisions
+// row, which lists the Collections pinning it) as its default for that STIG.
+export function isRevisionPinnedBy(revision, collectionId) {
+  return !!revision?.collectionIds?.some(id => String(id) === String(collectionId))
 }
 
 export function getRevisionInfo(revisionStr, revisionsArray, collectionId) {
@@ -119,6 +115,6 @@ export function getRevisionInfo(revisionStr, revisionsArray, collectionId) {
     version,
     release,
     benchmarkDate,
-    pinned: isRevisionPinned(revisionStr, revisionsArray, collectionId),
+    pinned: isRevisionPinnedBy(rev, collectionId),
   }
 }

@@ -48,7 +48,7 @@ const leftHeaderBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify
 const tablePt = { footer: { style: 'padding: 0; border: none;' } }
 
 const metricColumns = [
-  { field: 'revisionStr', header: 'Revision', component: RevisionColumn, width: '5rem', pt: borderPt, alignLeft: true, searchable: true },
+  { field: 'revisionStr', header: 'Revision', component: RevisionColumn, width: '5rem', pt: borderPt, alignLeft: true },
   { field: 'ruleCount', header: 'Rules', component: CountColumn, width: '2.75rem', pt: borderPt },
   { field: 'assets', header: 'Assets', component: CountColumn, width: '2.75rem', pt: borderPt },
   { field: 'oldest', header: 'Oldest', component: DurationColumn, width: '2.75rem', pt: borderPt },
@@ -186,7 +186,7 @@ function openEditModal(stig) {
           <component
             :is="col.component"
             v-bind="col"
-            :search-term="col.searchable ? highlightTerm(col.field) : undefined"
+            :search-term="highlightTerm(col.field)"
             sortable
             :header-class="col.alignLeft ? null : 'metric-col'"
             :body-class="col.alignLeft ? null : 'metric-col'"

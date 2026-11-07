@@ -6,6 +6,7 @@ import { fetchStigRevisions } from '../../../shared/api/stigsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useLabelFilterQuery } from '../../../shared/composables/useLabelFilterQuery.js'
+import { isRevisionPinnedBy } from '../../../shared/lib/checklistUtils.js'
 import { pickLabelFilterQuery } from '../../../shared/lib/labelFilters.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 
@@ -255,11 +256,8 @@ export function useAppBreadcrumb() {
     }
   }
 
-  // Whether a revision option is the route Collection's pinned default (the
-  // option lists the Collections pinning it)
-  function isRevisionPinned(option) {
-    return !!option?.collectionIds?.some(id => String(id) === String(collectionId.value))
-  }
+  // Whether a revision option is the route Collection's pinned default
+  const isRevisionPinned = option => isRevisionPinnedBy(option, collectionId.value)
 
   // Navigation helper for revision dropdown (review)
   function navigateToRevision(newRevisionStr) {
