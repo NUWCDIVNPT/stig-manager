@@ -1,6 +1,6 @@
 <script setup>
 import Button from 'primevue/button'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import ImportResultsModal from '../../ImportWizard/components/ImportResultsModal.vue'
 
 const props = defineProps({
@@ -20,6 +20,12 @@ const buttonPt = {
     class: 'import-button',
   },
 }
+
+// The modal is keyed on the Collection below, so a change replaces the instance.
+// Close it first so the new instance does not mount already open.
+watch(() => props.collectionId, () => {
+  showImportModal.value = false
+})
 
 function onImported() {
   emit('imported')
@@ -44,7 +50,10 @@ function onImported() {
       />
     </div>
 
+    <!-- Keyed so a Collection change discards the wizard session (files parsed
+         against the previous Collection) and backgrounds a running import. -->
     <ImportResultsModal
+      :key="props.collectionId"
       v-model:visible="showImportModal"
       :collection-id="String(props.collectionId)"
       :create-objects="false"

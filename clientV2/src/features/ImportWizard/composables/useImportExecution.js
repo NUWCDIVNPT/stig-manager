@@ -17,6 +17,9 @@ export function useImportExecution({ collectionId, canUpdateAssetProps, parseRes
     abortController = new AbortController()
     const signal = abortController.signal
 
+    // Fixed for the whole run: the modal can stay mounted while the user moves to
+    // another collection, and the remaining assets still belong to this one.
+    const targetCollectionId = toValue(collectionId)
     const taskAssets = parseResults.value.taskAssets
     const doUpdateAssetProps = (importOptions.value?.updateAssetProps ?? false) && toValue(canUpdateAssetProps)
 
@@ -55,7 +58,7 @@ export function useImportExecution({ collectionId, canUpdateAssetProps, parseRes
           reviewsArray = reviewsArray.concat(taskAsset.checklists.get(benchmarkId)[0].reviews)
         }
         if (reviewsArray.length > 0) {
-          const apiResp = await postReviewsByAsset(toValue(collectionId), assetId, reviewsArray, { signal })
+          const apiResp = await postReviewsByAsset(targetCollectionId, assetId, reviewsArray, { signal })
           reviewResult = { inserted: apiResp.affected.inserted, updated: apiResp.affected.updated, rejected: apiResp.rejected }
         }
         importStatusRows.value.push({ ...statusRow, ...reviewResult })

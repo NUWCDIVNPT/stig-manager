@@ -505,6 +505,25 @@ describe('useImportExecution', () => {
       expect(e.importIsDone.value).toBe(false)
     })
 
+    it('keeps posting to the original collection when the collection changes mid-import', async () => {
+      const collectionId = ref('9')
+      postReviewsByAssetMock.mockImplementation(async () => {
+        collectionId.value = '77'
+        return { affected: { inserted: 1, updated: 0 }, rejected: [] }
+      })
+
+      const e = setup({
+        collectionId: () => collectionId.value,
+        taskAssetsObj: {
+          a: makeAsset({ assetId: 100, checklists: [makeChecklist('B1', [{ id: 'r1' }])] }),
+          b: makeAsset({ assetId: 101, checklists: [makeChecklist('B1', [{ id: 'r2' }])] }),
+        },
+      })
+      await e.runImport()
+
+      expect(postReviewsByAssetMock.mock.calls.map(call => call[0])).toEqual(['9', '9'])
+    })
+
     it('threads the same AbortSignal through createAsset, updateAsset, and postReviewsByAsset', async () => {
       updateAssetMock.mockResolvedValue({ assetId: 100, name: 'host' })
       postReviewsByAssetMock.mockResolvedValue({ affected: { inserted: 0, updated: 0 }, rejected: [] })
