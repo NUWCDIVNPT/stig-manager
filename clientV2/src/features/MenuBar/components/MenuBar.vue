@@ -5,6 +5,7 @@ import Popover from 'primevue/popover'
 import { computed, inject, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import LabelFilterPills from '../../../components/common/LabelFilterPills.vue'
+import PinnedRevisionIcon from '../../../components/common/PinnedRevisionIcon.vue'
 import { formatDateTimeString } from '../../../shared/lib.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import { useEnv } from '../../../shared/stores/useEnv.js'
@@ -29,6 +30,7 @@ const {
   isRevisionOptionsUnavailable,
   navigateToStig,
   navigateToRevision,
+  isRevisionPinned,
 } = useAppBreadcrumb()
 
 // Epoch-second claims also get a readable date, as in the legacy client.
@@ -229,7 +231,11 @@ const pt = {
               :options-unavailable="isRevisionOptionsUnavailable"
               placeholder="Revision"
               @update:model-value="navigateToRevision"
-            />
+            >
+              <template #after-label="{ option }">
+                <PinnedRevisionIcon v-if="isRevisionPinned(option)" />
+              </template>
+            </BreadcrumbSelect>
 
             <!-- Clickable link segment -->
             <router-link

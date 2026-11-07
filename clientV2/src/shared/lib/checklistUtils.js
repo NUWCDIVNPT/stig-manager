@@ -90,7 +90,13 @@ export function isRevisionStr(value) {
   return typeof value === 'string' && REVISION_STR.test(value)
 }
 
-export function getRevisionInfo(revisionStr, revisionsArray) {
+// Whether `collectionId` pins `revision` (a GET /stigs/{benchmarkId}/revisions
+// row, which lists the Collections pinning it) as its default for that STIG.
+export function isRevisionPinnedBy(revision, collectionId) {
+  return !!revision?.collectionIds?.some(id => String(id) === String(collectionId))
+}
+
+export function getRevisionInfo(revisionStr, revisionsArray, collectionId) {
   if (!revisionStr) {
     return null
   }
@@ -109,5 +115,6 @@ export function getRevisionInfo(revisionStr, revisionsArray) {
     version,
     release,
     benchmarkDate,
+    pinned: isRevisionPinnedBy(rev, collectionId),
   }
 }

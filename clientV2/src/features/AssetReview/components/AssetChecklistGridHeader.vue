@@ -13,6 +13,7 @@ import ColumnToggle from '../../../components/common/ColumnToggle.vue'
 import DensityControls from '../../../components/common/DensityControls.vue'
 import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../components/common/GridSearch.vue'
+import PinnedRevisionIcon from '../../../components/common/PinnedRevisionIcon.vue'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import AssetStigImportModal from '../../AssetStigImport/components/AssetStigImportModal.vue'
 import { CHECKLIST_EXPORT_FORMATS, exportAssetStigChecklist } from '../api/assetReviewApi.js'
@@ -243,6 +244,7 @@ function toggleChecklistMenu(event) {
     <div class="checklist-grid__header-top">
       <div class="checklist-grid__title-row">
         <span class="checklist-grid__title">{{ headerTitle }}</span>
+        <PinnedRevisionIcon v-if="revisionInfo?.pinned" />
         <template v-if="asset">
           <button type="button" class="asset-info__name" title="Asset details" aria-haspopup="true" @click="assetDetails.toggle($event)">
             <span class="asset-info__name-text">{{ asset.name }}</span>

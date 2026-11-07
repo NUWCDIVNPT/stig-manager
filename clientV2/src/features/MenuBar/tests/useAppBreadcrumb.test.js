@@ -253,3 +253,19 @@ describe('useAppBreadcrumb', () => {
     expect(stigInvalidTooltip.value).toBe(TOOLTIPS.breadcrumb.stigNotOnAsset)
   })
 })
+
+describe('isRevisionPinned', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    useRouter.mockReturnValue({ push: vi.fn() })
+    useCurrentUser.mockReturnValue({ user: ref({ collectionGrants: [] }) })
+    mockRoute()
+  })
+
+  it('is true only for a revision option listing the route Collection', () => {
+    const { isRevisionPinned } = useAppBreadcrumb()
+    expect(isRevisionPinned({ revisionStr: 'V1R1', collectionIds: ['coll-1'] })).toBe(true)
+    expect(isRevisionPinned({ revisionStr: 'V1R2', collectionIds: ['coll-2'] })).toBe(false)
+    expect(isRevisionPinned({ revisionStr: 'V1R3' })).toBe(false)
+  })
+})

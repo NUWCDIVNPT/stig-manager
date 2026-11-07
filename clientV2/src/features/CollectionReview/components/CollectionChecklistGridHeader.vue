@@ -8,6 +8,7 @@ import ColumnToggle from '../../../components/common/ColumnToggle.vue'
 import DensityControls from '../../../components/common/DensityControls.vue'
 import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../components/common/GridSearch.vue'
+import PinnedRevisionIcon from '../../../components/common/PinnedRevisionIcon.vue'
 import { getRevisionInfo } from '../../../shared/lib/checklistUtils.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 
@@ -50,7 +51,7 @@ const route = useRoute()
 const benchmarkId = computed(() => route.params.benchmarkId)
 const revisionStr = computed(() => route.params.revisionStr)
 
-const revisionInfo = computed(() => getRevisionInfo(revisionStr.value, props.stigRevisions))
+const revisionInfo = computed(() => getRevisionInfo(revisionStr.value, props.stigRevisions, route.params.collectionId))
 
 const headerTitle = computed(() => {
   if (benchmarkId.value && revisionInfo.value?.display) {
@@ -115,6 +116,7 @@ function toggleChecklistMenu(event) {
     <div class="checklist-grid__header-top">
       <div class="checklist-grid__title-row">
         <span class="checklist-grid__title">{{ headerTitle }}</span>
+        <PinnedRevisionIcon v-if="revisionInfo?.pinned" />
       </div>
     </div>
 
