@@ -48,7 +48,7 @@ const leftHeaderBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify
 const tablePt = { footer: { style: 'padding: 0; border: none;' } }
 
 const metricColumns = [
-  { field: 'revisionStr', header: 'Revision', component: RevisionColumn, width: '5rem', pt: borderPt, alignLeft: true },
+  { field: 'revisionStr', header: 'Revision', component: RevisionColumn, width: '6.5rem', pt: borderPt, alignLeft: true },
   { field: 'ruleCount', header: 'Rules', component: CountColumn, width: '2.75rem', pt: borderPt },
   { field: 'assets', header: 'Assets', component: CountColumn, width: '2.75rem', pt: borderPt },
   { field: 'oldest', header: 'Oldest', component: DurationColumn, width: '2.75rem', pt: borderPt },

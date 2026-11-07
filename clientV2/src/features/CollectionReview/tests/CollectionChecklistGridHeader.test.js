@@ -112,13 +112,13 @@ describe('checklistGridHeader.vue', () => {
     it('shows a pin beside the title when the revision is the Collection default', () => {
       checklistUtils.getRevisionInfo.mockReturnValue({ display: 'V1R2', pinned: true })
       createWrapper()
-      expect(screen.getByRole('img', { name: 'Pinned Revision' })).toBeInTheDocument()
+      expect(screen.getByRole('img', { name: 'Pinned as the Collection default Revision' })).toBeInTheDocument()
     })
 
     it('shows no pin for an unpinned revision', () => {
       checklistUtils.getRevisionInfo.mockReturnValue({ display: 'V1R2', pinned: false })
       createWrapper()
-      expect(screen.queryByRole('img', { name: 'Pinned Revision' })).toBeNull()
+      expect(screen.queryByRole('img', { name: 'Pinned as the Collection default Revision' })).toBeNull()
     })
 
     it('updates the title when the page passes another STIG\'s revisions', async () => {

@@ -14,7 +14,7 @@ vi.mock('primevue/datatable', () => ({
       <div data-testid="mock-datatable">
         <table>
           <thead><tr><slot /></tr></thead>
-          <tbody><tr v-for="row in value" :key="row.benchmarkId ?? row.assetId"><td>{{ row.benchmarkId ?? row.assetName }}</td><td data-cell="stigCnt">{{ row.stigCnt }}</td><td data-cell="notReviewed">{{ row.notReviewed }}</td></tr></tbody>
+          <tbody><tr v-for="row in value" :key="row.benchmarkId ?? row.assetId"><td>{{ row.benchmarkId ?? row.assetName }}</td><td data-cell="stigCnt">{{ row.stigCnt }}</td><td data-cell="notReviewed">{{ row.notReviewed }}</td><td data-cell="revisionPinned">{{ String(row.revisionPinned) }}</td></tr></tbody>
         </table>
         <slot v-if="!value.length" name="empty" />
       </div>
@@ -65,10 +65,10 @@ const metrics = {
 }
 
 const stigRows = [
-  { benchmarkId: 'RHEL_9_STIG', title: 'Red Hat Enterprise Linux 9', revisionStr: 'V1R2', assets: 3, metrics },
-  { benchmarkId: 'MS_Windows_11_STIG', title: 'Microsoft Windows 11', revisionStr: 'V2R8', assets: 3, metrics },
+  { benchmarkId: 'RHEL_9_STIG', title: 'Red Hat Enterprise Linux 9', revisionStr: 'V1R2', revisionPinned: true, assets: 3, metrics },
+  { benchmarkId: 'MS_Windows_11_STIG', title: 'Microsoft Windows 11', revisionStr: 'V2R8', revisionPinned: false, assets: 3, metrics },
 ]
-const checklistRows = [{ assetId: '1', name: 'host-1', labels: [], benchmarkId: 'RHEL_9_STIG', revisionStr: 'V1R2', metrics }]
+const checklistRows = [{ assetId: '1', name: 'host-1', labels: [], benchmarkId: 'RHEL_9_STIG', revisionStr: 'V1R2', revisionPinned: true, metrics }]
 const assetRows = [
   { assetId: '1', name: 'host-1', labels: [], benchmarkIds: ['RHEL_9_STIG', 'MS_Windows_11_STIG'], metrics },
   { assetId: '2', name: 'host-2', labels: [], benchmarkIds: [], metrics },
@@ -130,6 +130,21 @@ describe('metricsSummaryGrid column toggle', () => {
     })
 
     expect([...container.querySelectorAll('td[data-cell="notReviewed"]')].map(td => td.textContent)).toEqual(['5', '5'])
+  })
+
+  it('carries the pinned-revision flag onto STIG and checklist rows for RevisionColumn', () => {
+    const pinned = container => [...container.querySelectorAll('td[data-cell="revisionPinned"]')].map(td => td.textContent)
+
+    const stigGrid = renderWithProviders(MetricsSummaryGrid, {
+      props: { apiMetricsSummary: stigRows, aggType: 'stig', dataKey: 'benchmarkId' },
+    })
+    expect(pinned(stigGrid.container)).toEqual(['true', 'false'])
+    stigGrid.unmount()
+
+    const checklistGrid = renderWithProviders(MetricsSummaryGrid, {
+      props: { apiMetricsSummary: checklistRows, aggType: 'unagg', parentAggType: 'stig', dataKey: 'assetId' },
+    })
+    expect(pinned(checklistGrid.container)).toEqual(['true'])
   })
 
   it('counts the assigned STIGs for an asset row', () => {

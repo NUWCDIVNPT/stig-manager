@@ -27,7 +27,7 @@ describe('revisionColumn', () => {
 
     const cells = [...container.querySelectorAll('td')]
     expect(cells.map(c => c.textContent.trim())).toEqual(['V1R2', 'V2R8'])
-    expect(cells[0].querySelector('[aria-label="Pinned Revision"]')).not.toBeNull()
-    expect(cells[1].querySelector('[aria-label="Pinned Revision"]')).toBeNull()
+    expect(cells[0].querySelector('.icon-pin')).not.toBeNull()
+    expect(cells[1].querySelector('.icon-pin')).toBeNull()
   })
 })
