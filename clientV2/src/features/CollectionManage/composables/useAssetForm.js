@@ -52,17 +52,31 @@ export function useAssetForm({ collectionId, assetId, visible } = {}) {
     set: (v) => { form.labelIds = v },
   }))
 
-  const { isLoading, execute: loadFormData } = useAsyncState(
+  let loadGeneration = 0
+
+  const { isLoading, error: loadError, execute: loadFormData } = useAsyncState(
     async () => {
+      // The fetches outlive a reopen, and these writes are side effects the
+      // generation guard in useAsyncState can't discard.
+      const generation = ++loadGeneration
+      const requestedId = unref(assetId)
+      const isStale = () => generation !== loadGeneration
+
       const [labelList, stigs] = await Promise.all([
         fetchCollectionLabels(unref(collectionId)),
         fetchStigs(),
       ])
+      if (isStale()) {
+        return
+      }
       collectionLabels.value = labelList ?? []
       allStigs.value = stigs ?? []
 
-      if (isEditMode.value) {
-        const asset = await fetchAssetWithStigs(unref(assetId))
+      if (requestedId) {
+        const asset = await fetchAssetWithStigs(requestedId)
+        if (isStale()) {
+          return
+        }
         form.name = asset.name ?? ''
         form.description = asset.description ?? ''
         form.noncomputing = asset.noncomputing ?? false
@@ -79,7 +93,15 @@ export function useAssetForm({ collectionId, assetId, visible } = {}) {
         availableStigs.value = [...allStigs.value]
       }
     },
-    { immediate: false },
+    // The host shows loadError inline.
+    { immediate: false, onError: null },
+  )
+
+  // Save replaces the whole asset, so an edit form that never loaded must not
+  // save. A new asset has nothing to replace, so it can still be created
+  // without the label and STIG lists.
+  const canSave = computed(() =>
+    isValid.value && !isLoading.value && !(isEditMode.value && loadError.value),
   )
 
   async function initialize() {
@@ -160,6 +182,8 @@ export function useAssetForm({ collectionId, assetId, visible } = {}) {
     isLoading,
     isSubmitting,
     isValid,
+    canSave,
+    loadError,
     nameError,
 
     form,

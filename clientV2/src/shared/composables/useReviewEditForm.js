@@ -12,8 +12,9 @@ import { isFieldEnabled, isFieldRequired } from '../lib/reviewFormUtils.js'
  * @param {import('vue').Ref<object>} params.fieldSettings - Collection field settings
  * @param {import('vue').Ref<string>} params.accessMode - 'r' or 'rw'
  * @param {import('vue').Ref<boolean>} params.canAccept - Whether user can accept reviews
+ * @param {import('vue').Ref<boolean>} [params.isSaving] - A save is in flight; the form is locked
  */
-export function useReviewEditForm({ rowData, fieldSettings, accessMode, canAccept }) {
+export function useReviewEditForm({ rowData, fieldSettings, accessMode, canAccept, isSaving = ref(false) }) {
   // --- Local form state ---
   const formResult = ref('')
   const formDetail = ref('')
@@ -25,8 +26,27 @@ export function useReviewEditForm({ rowData, fieldSettings, accessMode, canAccep
     formComment.value = row?.comment ?? ''
   }
 
-  // Sync when rowData changes (popover opens with new row)
-  watch(rowData, row => syncFormFromRow(row))
+  function differsFromRow(row) {
+    return formResult.value !== (row?.result ?? '')
+      || formDetail.value !== (row?.detail ?? '')
+      || formComment.value !== (row?.comment ?? '')
+  }
+
+  // Grids replace row objects freely: hydrating a row, any reload, or a save to
+  // another row. Checklist rows have no assetId until hydrated, so a missing one
+  // can't tell two rows apart.
+  function isSameReview(a, b) {
+    return !!a && !!b && a.ruleId === b.ruleId
+      && (a.assetId == null || b.assetId == null || String(a.assetId) === String(b.assetId))
+  }
+
+  // Sync when the popover moves to another review. A replaced copy of the same
+  // review only updates a form the user hasn't changed.
+  watch(rowData, (row, previousRow) => {
+    if (!isSameReview(row, previousRow) || !differsFromRow(previousRow)) {
+      syncFormFromRow(row)
+    }
+  })
 
   // --- Status / editability ---
   const statusLabel = computed(() => {
@@ -37,16 +57,11 @@ export function useReviewEditForm({ rowData, fieldSettings, accessMode, canAccep
 
   const editable = computed(() => {
     const s = statusLabel.value
-    return accessMode.value === 'rw' && (s === '' || s === REVIEW_STATUS.SAVED || s === REVIEW_STATUS.REJECTED)
+    return !isSaving.value && accessMode.value === 'rw' && (s === '' || s === REVIEW_STATUS.SAVED || s === REVIEW_STATUS.REJECTED)
   })
 
   // --- Dirty tracking ---
-  const isDirty = computed(() => {
-    const row = rowData.value
-    return formResult.value !== (row?.result ?? '')
-      || formDetail.value !== (row?.detail ?? '')
-      || formComment.value !== (row?.comment ?? '')
-  })
+  const isDirty = computed(() => differsFromRow(rowData.value))
 
   const showResultEmphasis = computed(() => editable.value && !formResult.value)
 

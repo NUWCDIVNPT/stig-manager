@@ -132,7 +132,7 @@ const {
   error: reviewsError,
   retry: retryReviews,
   statusCounts,
-} = useFindingReviews({ collectionId, selectedFinding, aggregator, labelNames })
+} = useFindingReviews({ collectionId, selectedFinding, aggregator, benchmarkId: selectedBenchmarkId, labelNames })
 
 // Labels for decorating review rows. The reviews payload includes assetLabelIds
 // only; this endpoint supplies the full {name, color} objects LabelsRow needs.
@@ -211,6 +211,7 @@ function onSelectFinding(row) {
           :label-map="labelMap"
           :collection-id="props.collectionId"
           :selected-benchmark-id="selectedBenchmarkId"
+          :selected-label-names="props.selectedLabelNames"
           @retry="retryReviews"
         />
       </SplitterPanel>

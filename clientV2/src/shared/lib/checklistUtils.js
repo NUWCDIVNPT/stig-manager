@@ -83,7 +83,20 @@ export function calculateChecklistStats(data) {
   return { results, engine, statuses, total: data.length }
 }
 
-export function getRevisionInfo(revisionStr, revisionsArray) {
+// The API's RevisionStr pattern; a revision outside it gets a 400 from the checklist endpoints
+const REVISION_STR = /^(?:V\d{1,3}R\d{1,3}(?:\.\d{1,3})?|latest)$/
+
+export function isRevisionStr(value) {
+  return typeof value === 'string' && REVISION_STR.test(value)
+}
+
+// Whether `collectionId` pins `revision` (a GET /stigs/{benchmarkId}/revisions
+// row, which lists the Collections pinning it) as its default for that STIG.
+export function isRevisionPinnedBy(revision, collectionId) {
+  return !!revision?.collectionIds?.some(id => String(id) === String(collectionId))
+}
+
+export function getRevisionInfo(revisionStr, revisionsArray, collectionId) {
   if (!revisionStr) {
     return null
   }
@@ -102,5 +115,6 @@ export function getRevisionInfo(revisionStr, revisionsArray) {
     version,
     release,
     benchmarkDate,
+    pinned: isRevisionPinnedBy(rev, collectionId),
   }
 }

@@ -143,7 +143,11 @@ const activePlan = computed(() => {
 
 const activeSkipLines = computed(() => activePlan.value?.skipLines ?? [])
 
+// The batch ends in a checklist reload, as Refresh does (see onRefresh).
 function onBulkAction(action) {
+  if (blockIfUnsaved()) {
+    return
+  }
   pendingAction.value = action
 }
 
@@ -169,7 +173,7 @@ const editingRow = ref(null)
 
 const currentReview = computed(() => gridData.value.find(r => r.ruleId === editingRow.value?.ruleId) ?? null)
 
-const { isLoading: isSavingReview, execute: executeSaveReview } = useAsyncState(
+const { isLoading: isSavingReview, error: saveError, execute: executeSaveReview } = useAsyncState(
   async ({ ruleId, result, detail, comment, status }) => {
     const row = gridData.value.find(r => r.ruleId === ruleId)
     const resultChanged = row ? result !== row.result : true
@@ -184,15 +188,21 @@ const { isLoading: isSavingReview, execute: executeSaveReview } = useAsyncState(
     emit('review-saved', { ...saved, ruleId })
     return saved
   },
-  { immediate: false },
+  // The popover stays open and shows a failed save inline.
+  { immediate: false, onError: null },
 )
 
 const { isLoading: isSavingStatus, execute: executeSaveStatus } = useAsyncState(
   async ({ ruleId, actionType }) => {
     const status = statusPayloadForAction(actionType)
     if (status === null) { return null }
-    const saved = await patchReview(collectionId.value, assetId.value, ruleId, { status })
-    emit('review-saved', { ...saved, ruleId })
+    const savedAssetId = assetId.value
+    const saved = await patchReview(collectionId.value, savedAssetId, ruleId, { status })
+    // Submit and Accept don't hold the reviewer here, so the grid may show
+    // another asset by now; rows merge by ruleId and would take this review.
+    if (String(assetId.value) === String(savedAssetId)) {
+      emit('review-saved', { ...saved, ruleId })
+    }
     return saved
   },
   { immediate: false },
@@ -289,7 +299,23 @@ function openRowEditor(event, rowData) {
   reviewEditPopover.value.openForRow(event, isSameRow)
 }
 
-const scrollLocked = computed(() => !!editingRow.value && !!reviewEditPopover.value?.isDirty)
+const scrollLocked = computed(() => !!editingRow.value && (!!reviewEditPopover.value?.isDirty || isSaving.value))
+
+// True when the open review must not be left yet: a save is in flight, or the
+// form has unsaved edits, which also raises the popover's warning. Submit and
+// Accept close the popover first, so moving on doesn't wait for them.
+function blockIfUnsaved() {
+  if (editingRow.value && isSaving.value) {
+    return true
+  }
+  if (reviewEditPopover.value?.isDirty) {
+    reviewEditPopover.value.triggerUnsavedWarning()
+    return true
+  }
+  return false
+}
+
+defineExpose({ blockIfUnsaved })
 
 function onGridWheel(event) {
   if (scrollLocked.value) {
@@ -297,16 +323,26 @@ function onGridWheel(event) {
   }
 }
 
+// A failed reload replaces the grid with an error, taking the open editor with it.
+function onRefresh() {
+  if (!blockIfUnsaved()) {
+    emit('refresh')
+  }
+}
+
 function onGridScroll() {
-  if (!editingRow.value) {
+  if (!editingRow.value || blockIfUnsaved()) {
     return
   }
   reviewEditPopover.value?.hide()
 }
 
-watch(() => gridData.value, (data) => {
+watch([() => gridData.value, () => isLoading.value], ([data, loading]) => {
   if (!data?.length) {
-    selectRule(null)
+    // An empty grid while a checklist loads (e.g. switching asset) keeps the selection, so ?ruleId survives
+    if (!loading) {
+      selectRule(null)
+    }
     return
   }
 
@@ -329,11 +365,7 @@ watch(() => gridData.value, (data) => {
 
 function guardUnsaved(targetRuleId) {
   const isSameRow = editingRow.value?.ruleId === targetRuleId
-  if (!isSameRow && reviewEditPopover.value?.isDirty) {
-    reviewEditPopover.value.triggerUnsavedWarning()
-    return false
-  }
-  return true
+  return isSameRow || !blockIfUnsaved()
 }
 
 function onSelectionChange(newRow) {
@@ -374,7 +406,7 @@ function onRowClick(event) {
       :can-accept="canAccept"
       :submit-count="submitPlan.eligible.length"
       :accept-count="acceptPlan.eligible.length"
-      @refresh="emit('refresh')"
+      @refresh="onRefresh"
       @bulk-action="onBulkAction"
       @apply-preset="key => setShown(DISPLAY_PRESETS[key])"
     />
@@ -388,7 +420,7 @@ function onRowClick(event) {
       :item-size="itemSize"
       :export-filename="exportFilename"
       @update:selected-row="onSelectionChange" @row-click="onRowClick"
-      @refresh="emit('refresh')"
+      @refresh="onRefresh"
     />
 
     <ReviewEditPopover
@@ -401,6 +433,7 @@ function onRowClick(event) {
       :access-mode="accessMode"
       :can-accept="canAccept"
       :is-saving="isSaving"
+      :save-error="saveError"
       @save="onPopoverSave"
       @status-action="onPopoverStatusAction"
       @close="editingRow = null"

@@ -13,6 +13,7 @@ import ColumnToggle from '../../../components/common/ColumnToggle.vue'
 import DensityControls from '../../../components/common/DensityControls.vue'
 import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../components/common/GridSearch.vue'
+import PinnedRevisionIcon from '../../../components/common/PinnedRevisionIcon.vue'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import AssetStigImportModal from '../../AssetStigImport/components/AssetStigImportModal.vue'
 import { CHECKLIST_EXPORT_FORMATS, exportAssetStigChecklist } from '../api/assetReviewApi.js'
@@ -224,11 +225,11 @@ const checklistMenuItems = computed(() => {
 
 const checklistMenuPT = {
   root: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 4px; box-shadow: 0 6px 24px rgba(0,0,0,0.6); padding: 0.25rem 0; min-width: 12rem;' },
-  menu: { style: 'background: transparent; outline: none;' },
-  menuitem: { style: 'margin: 0;' },
-  content: { style: 'padding: 0.4rem 0.8rem; color: var(--color-text-primary); border-radius: 0; transition: background-color 0.1s; display: flex; align-items: center;' },
-  icon: { style: 'color: var(--color-text-dim); margin-right: 0.5rem; font-size: var(--text-md);' },
-  label: { style: 'font-size: var(--text-md);' },
+  rootList: { style: 'background: transparent; outline: none;' },
+  item: { style: 'margin: 0;' },
+  itemContent: { style: 'color: var(--color-text-primary); border-radius: 0; transition: background-color 0.1s;' },
+  itemIcon: { style: 'color: var(--color-text-dim); font-size: var(--text-md);' },
+  itemLabel: { style: 'font-size: var(--text-md);' },
   separator: { style: 'border-top: 1px solid var(--color-border-light); margin: 0.25rem 0;' },
   submenuIcon: { style: 'color: var(--color-text-dim); font-size: var(--icon-xs); margin-left: auto;' },
 }
@@ -243,6 +244,7 @@ function toggleChecklistMenu(event) {
     <div class="checklist-grid__header-top">
       <div class="checklist-grid__title-row">
         <span class="checklist-grid__title">{{ headerTitle }}</span>
+        <PinnedRevisionIcon v-if="revisionInfo?.pinned" />
         <template v-if="asset">
           <button type="button" class="asset-info__name" title="Asset details" aria-haspopup="true" @click="assetDetails.toggle($event)">
             <span class="asset-info__name-text">{{ asset.name }}</span>

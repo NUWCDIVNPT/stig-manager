@@ -6,7 +6,7 @@ describe('resolveDocsUrl', () => {
     expect(resolveDocsUrl('https://stigman.example.test/api')).toBe('https://stigman.example.test/docs/')
   })
 
-  it('keeps a path prefix (STIGMAN_CLIENT_PATH_PREFIX)', () => {
+  it('keeps a path prefix (STIGMAN_CLIENT_HISTORY_BASE)', () => {
     expect(resolveDocsUrl('https://example.test/stigman/api')).toBe('https://example.test/stigman/docs/')
   })
 

@@ -1,7 +1,7 @@
 <script setup>
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useImportProgressStore } from '../../../shared/stores/importProgressStore.js'
 import { useImportWizard } from '../composables/useImportWizard.js'
 import { importDialogPt, primaryBtnPt } from '../../../shared/lib/dialogPt.js'
@@ -52,9 +52,6 @@ const progressStore = useImportProgressStore()
 // can branch between "minimize, keep importing" and "cancel and stop".
 // null means the dialog X / Esc / scrim — those cancel.
 const closeAction = ref(null)
-// Set true when reopening from the notification's "View Results" click so the
-// visibility watcher preserves the finished state instead of resetting to step 1.
-let reopeningForResults = false
 
 function importInFlight() {
   return step.value === 'importProgress'
@@ -65,11 +62,6 @@ function importInFlight() {
 watch(() => props.visible, (isOpen) => {
   if (isOpen) {
     closeAction.value = null
-    if (reopeningForResults) {
-      reopeningForResults = false
-      progressStore.dismiss()
-      return
-    }
     if (importInFlight()) {
       progressStore.dismiss()
     }
@@ -81,7 +73,7 @@ watch(() => props.visible, (isOpen) => {
 
   if (importInFlight()) {
     if (closeAction.value === 'minimize') {
-      progressStore.startBackground({ totalCount: parser.parseResults.value.taskAssets?.size ?? 0 })
+      progressStore.startBackground({ totalCount: parser.parseResults.value.taskAssets?.size ?? 0, executor })
     }
     else {
       executor.cancel()
@@ -90,32 +82,19 @@ watch(() => props.visible, (isOpen) => {
   closeAction.value = null
 })
 
-watch(() => progressStore.state.viewResultsRequestId, (id, prev) => {
-  if (id === prev) { return }
-  // Only the modal instance whose own import finished should reopen.
-  if (!executor.importIsDone.value) { return }
-  reopeningForResults = true
-  visible.value = true
+// The host may unmount this modal while it is still open (browser Back from the
+// route that owns it). Treat that like a minimize so the import stays visible
+// on the notification card instead of running on with no card and no results.
+onBeforeUnmount(() => {
+  if (props.visible && importInFlight()) {
+    progressStore.startBackground({ totalCount: parser.parseResults.value.taskAssets?.size ?? 0, executor })
+  }
 })
 
 function minimizeWizard() {
   closeAction.value = 'minimize'
   visible.value = false
 }
-
-// Keep the notification in sync with executor state while it's active
-watch(
-  [executor.importProgressText, () => executor.importStatusRows.value.length, executor.importIsDone],
-  ([text, count, done]) => {
-    if (!progressStore.isActive()) { return }
-    if (done) {
-      progressStore.finish()
-    }
-    else {
-      progressStore.update(text, count)
-    }
-  },
-)
 
 function closeWizard() { visible.value = false }
 function doneImport() { visible.value = false }

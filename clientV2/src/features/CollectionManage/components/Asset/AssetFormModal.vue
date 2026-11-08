@@ -37,7 +37,8 @@ const {
   isEditMode,
   isLoading,
   isSubmitting,
-  isValid,
+  canSave,
+  loadError,
   nameError,
   form,
   metadataRows,
@@ -129,7 +130,17 @@ const checkboxPt = {
       <i class="pi pi-spin pi-spinner" style="font-size: var(--text-display); color: var(--color-text-dim)" />
     </div>
 
+    <div v-else-if="loadError && isEditMode" class="load-error">
+      <i class="pi pi-exclamation-triangle" />
+      <span>Could not load this asset, so it can't be changed. Cancel and try again.</span>
+    </div>
+
     <div v-else class="form-body">
+      <div v-if="loadError" class="load-error">
+        <i class="pi pi-exclamation-triangle" />
+        <span>Could not load Labels and STIGs. You can still create the Asset and assign them later.</span>
+      </div>
+
       <!-- ── Asset details ────────────────────────────────────────────────────── -->
       <div class="form-section">
         <!-- Name + description -->
@@ -280,7 +291,7 @@ const checkboxPt = {
           :label="isEditMode ? 'Save asset' : 'Create asset'"
           :pt="primaryBtnPt"
           :loading="isSubmitting"
-          :disabled="!isValid"
+          :disabled="!canSave"
           @click="save"
         />
       </div>
@@ -289,6 +300,17 @@ const checkboxPt = {
 </template>
 
 <style scoped>
+.load-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem;
+  padding: 0.6rem 1rem;
+  color: var(--color-text-dim);
+  border: 1px dashed var(--color-border-default);
+  border-radius: 6px;
+}
+
 /* ── Modal header ──────────────────────────────────────────────────────────── */
 
 .modal-header {

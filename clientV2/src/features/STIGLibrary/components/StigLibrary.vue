@@ -4,6 +4,7 @@ import SplitterPanel from 'primevue/splitterpanel'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import RuleInfo from '../../../components/common/RuleInfo.vue'
+import { notFoundLocation } from '../../../router/notFound.js'
 import { getHttpStatus } from '../../../shared/api/apiClient.js'
 import { fetchStigRevisions } from '../../../shared/api/stigsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
@@ -33,7 +34,7 @@ const diffMode = computed(() => !!compareRev.value)
 function handleRouteError(err) {
   const status = getHttpStatus(err)
   if (status === 403 || status === 404 || status === 400) {
-    router.push({ name: 'not-found', params: { pathMatch: route.path.substring(1).split('/') } })
+    router.replace(notFoundLocation(route))
   }
 }
 
@@ -125,7 +126,7 @@ watch([benchmarks, benchmarkIdParam], ([list, bm]) => {
     return
   }
   if (!list.find(b => b.benchmarkId === bm)) {
-    router.push({ name: 'not-found', params: { pathMatch: route.path.substring(1).split('/') } })
+    router.replace(notFoundLocation(route))
   }
 })
 

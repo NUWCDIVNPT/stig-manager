@@ -35,7 +35,7 @@ const { appManagementItems } = useAppManagementItems()
 }
 
 .admin-nav {
-  flex: 0 0 220px;
+  flex: 0 0 16rem;
   display: flex;
   flex-direction: column;
   gap: 0.25rem;

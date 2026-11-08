@@ -10,10 +10,11 @@ vi.mock('../api/findingsApi.js', () => ({
 
 const { fetchFailedReviews } = await import('../api/findingsApi.js')
 
-function setup({ collectionId = '17', aggregator = 'groupId', selectedFinding = null, labelNames = [] } = {}) {
+function setup({ collectionId = '17', aggregator = 'groupId', selectedFinding = null, labelNames = [], benchmarkId = null } = {}) {
   const refs = {
     collectionId: ref(collectionId),
     aggregator: ref(aggregator),
+    benchmarkId: ref(benchmarkId),
     selectedFinding: ref(selectedFinding),
     labelNames: ref(labelNames),
   }
@@ -63,6 +64,40 @@ describe('useFindingReviews', () => {
       aggregatorValue: 'V-219148',
       labelMatch: 'null',
     }, { signal: expect.any(AbortSignal) })
+  })
+
+  it('scopes the request to the selected STIG', async () => {
+    fetchFailedReviews.mockClear()
+    fetchFailedReviews.mockResolvedValue([{ assetId: '1' }])
+    setup({ aggregator: 'cci', selectedFinding: { cci: 'CCI-000366' }, benchmarkId: 'Windows_11_STIG' })
+    await flushPromises()
+    expect(fetchFailedReviews).toHaveBeenCalledWith('17', {
+      aggregator: 'cci',
+      aggregatorValue: 'CCI-000366',
+      benchmarkId: 'Windows_11_STIG',
+    }, { signal: expect.any(AbortSignal) })
+  })
+
+  it('omits benchmarkId for All Collection STIGs', async () => {
+    fetchFailedReviews.mockClear()
+    fetchFailedReviews.mockResolvedValue([])
+    setup({ aggregator: 'cci', selectedFinding: { cci: 'CCI-000366' }, benchmarkId: null })
+    await flushPromises()
+    expect(fetchFailedReviews.mock.calls[0][1]).not.toHaveProperty('benchmarkId')
+  })
+
+  it('refetches when the selected STIG changes under the same finding', async () => {
+    fetchFailedReviews.mockClear()
+    fetchFailedReviews.mockResolvedValue([])
+    const { benchmarkId } = setup({ aggregator: 'cci', selectedFinding: { cci: 'CCI-000366' }, benchmarkId: 'STIG_A' })
+    await flushPromises()
+    fetchFailedReviews.mockClear()
+
+    benchmarkId.value = 'STIG_B'
+    await flushPromises()
+
+    expect(fetchFailedReviews).toHaveBeenCalledTimes(1)
+    expect(fetchFailedReviews.mock.calls[0][1].benchmarkId).toBe('STIG_B')
   })
 
   it('clears reviews without fetching when the selection is cleared', async () => {

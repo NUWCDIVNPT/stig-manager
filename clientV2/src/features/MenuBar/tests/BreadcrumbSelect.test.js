@@ -60,3 +60,35 @@ describe('breadcrumbSelect', () => {
     expect(warningIcon()).toBeNull()
   })
 })
+
+describe('breadcrumbSelect after-label slot', () => {
+  function renderWithSlot(modelValue) {
+    return renderWithProviders({
+      components: { BreadcrumbSelect },
+      data: () => ({
+        modelValue,
+        revisions: [
+          { revisionStr: 'V1R1', collectionIds: ['21'] },
+          { revisionStr: 'V1R2', collectionIds: [] },
+        ],
+      }),
+      template: `
+        <BreadcrumbSelect :model-value="modelValue" :options="revisions" option-label="revisionStr" option-value="revisionStr">
+          <template #after-label="{ option }">
+            <span v-if="option.collectionIds.includes('21')" data-testid="decoration">pinned</span>
+          </template>
+        </BreadcrumbSelect>
+      `,
+    })
+  }
+
+  it('renders the slot after the selected value with that option', () => {
+    renderWithSlot('V1R1')
+    expect(screen.getByTestId('decoration')).toBeInTheDocument()
+  })
+
+  it('renders nothing extra when the slot yields nothing for the value', () => {
+    renderWithSlot('V1R2')
+    expect(screen.queryByTestId('decoration')).toBeNull()
+  })
+})

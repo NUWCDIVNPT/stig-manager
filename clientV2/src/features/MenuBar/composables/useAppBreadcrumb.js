@@ -6,6 +6,7 @@ import { fetchStigRevisions } from '../../../shared/api/stigsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useLabelFilterQuery } from '../../../shared/composables/useLabelFilterQuery.js'
+import { isRevisionPinnedBy } from '../../../shared/lib/checklistUtils.js'
 import { pickLabelFilterQuery } from '../../../shared/lib/labelFilters.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 
@@ -250,9 +251,13 @@ export function useAppBreadcrumb() {
           benchmarkId: newBenchmarkId,
           revisionStr: stigData?.revisionStr || undefined,
         },
+        query: pickLabelFilterQuery(route.query),
       })
     }
   }
+
+  // Whether a revision option is the route Collection's pinned default
+  const isRevisionPinned = option => isRevisionPinnedBy(option, collectionId.value)
 
   // Navigation helper for revision dropdown (review)
   function navigateToRevision(newRevisionStr) {
@@ -283,6 +288,7 @@ export function useAppBreadcrumb() {
           benchmarkId: route.params.benchmarkId,
           revisionStr: newRevisionStr,
         },
+        query: pickLabelFilterQuery(route.query),
       })
     }
   }
@@ -298,5 +304,6 @@ export function useAppBreadcrumb() {
     isRevisionOptionsUnavailable,
     navigateToStig,
     navigateToRevision,
+    isRevisionPinned,
   }
 }

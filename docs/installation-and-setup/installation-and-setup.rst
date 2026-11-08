@@ -131,6 +131,11 @@ The Welcome Message and Image can be customized with environment variables to pr
   :show_caption: True 
   :title: Welcome Message Customizable Elements
 
+Hashless URLs for the New Web Client
+------------------------------------------------
+
+The new web client uses ``#`` fragment URLs by default. If links shared by your users pass through systems that strip or rewrite URL fragments (link scanners, ticketing systems, some SSO flows), set ``STIGMAN_CLIENT_HISTORY_BASE`` to serve hashless URLs instead. See :ref:`Hashless URLs <hashless-urls>` in the reverse proxy guide for the proxy requirements.
+
 Add Extra CA Certificates
 ------------------------------------------------
 
@@ -374,4 +379,4 @@ Up until this point, the setup has concerned the actual operational deployment o
 #. Log in to STIG Manager using an Administrator user to import STIGs. For information on how to do this, and other STIG Manager Admin functions, see the :ref:`stig-import` portion of the :ref:`admin-quickstart`. 
 
 
-For additional information about getting started with STIG Manager, see the :ref:`Admin Walkthrough <admin-quickstart>`.
+For additional information about getting started with STIG Manager, see the :ref:`Admin Walkthrough <admin-quickstart>`.

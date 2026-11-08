@@ -9,6 +9,7 @@ import GlobalNotifications from './components/global/GlobalNotifications.vue'
 import GlobalServiceOverlay from './components/global/GlobalServiceOverlay.vue'
 import TourHost from './components/global/TourHost.vue'
 import WhatsNew from './components/global/WhatsNew.vue'
+import ImportResultsViewer from './features/ImportWizard/components/ImportResultsViewer.vue'
 import HomePage from './Home/Home.vue'
 
 const oidcWorker = useOidcWorker()
@@ -29,6 +30,7 @@ const whatsNewSettled = ref(false)
   <GlobalServiceOverlay />
   <WhatsNew @settled="whatsNewSettled = true" />
   <GlobalNotifications />
+  <ImportResultsViewer />
   <GridCopyMenu />
   <HomePage />
   <TourHost v-if="whatsNewSettled" />

@@ -114,12 +114,19 @@ const selectPt = computed(() => {
           class="pi pi-exclamation-triangle"
           role="img"
           :aria-label="invalidTooltip"
-          style="margin-right: 0.35rem;"
         />
         <span>{{ displayLabel }}</span>
+        <slot v-if="selectedOption" name="after-label" :option="selectedOption" />
       </div>
       <span v-else>
         {{ placeholder }}
+      </span>
+    </template>
+    <!-- Decorated options only when a caller supplies the slot; others keep PrimeVue's default option rendering -->
+    <template v-if="$slots['after-label']" #option="{ option }">
+      <span class="breadcrumb-select-option">
+        <span>{{ option[optionLabel] }}</span>
+        <slot name="after-label" :option="option" />
       </span>
     </template>
   </Select>
@@ -177,10 +184,17 @@ const selectPt = computed(() => {
 .breadcrumb-select-value {
   display: flex;
   align-items: center;
+  gap: 0.5rem;
 }
 
 .is-invalid {
   color: var(--color-text-error);
   font-weight: 600;
+}
+
+.breadcrumb-select-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 </style>

@@ -37,9 +37,9 @@ vi.mock('../components/AggregatedFindingsGrid.vue', () => ({
 vi.mock('../components/IndividualFindingsGrid.vue', () => ({
   default: {
     name: 'IndividualFindingsGrid',
-    props: ['rows', 'selectedAggregated'],
+    props: ['rows', 'selectedAggregated', 'selectedLabelNames'],
     template: `
-      <div data-testid="ind-grid">
+      <div data-testid="ind-grid" :data-labels="JSON.stringify(selectedLabelNames)">
         <span data-testid="selected-value">{{ selectedAggregated?.groupId ?? selectedAggregated?.ruleId ?? 'none' }}</span>
       </div>
     `,
@@ -57,12 +57,12 @@ const GROUP_ROWS = [
 
 let replace
 
-function mountFindings({ query = {} } = {}) {
+function mountFindings({ query = {}, selectedLabelNames = [] } = {}) {
   useRoute.mockReturnValue({ query })
   replace = vi.fn()
   useRouter.mockReturnValue({ replace })
   return renderWithProviders(Findings, {
-    props: { collectionId: '17', selectedLabelNames: [] },
+    props: { collectionId: '17', selectedLabelNames },
   })
 }
 
@@ -100,6 +100,18 @@ describe('findings URL state', () => {
     }, { signal: expect.any(AbortSignal) })
   })
 
+  it('scopes the right pane to the STIG in the URL', async () => {
+    mountFindings({ query: { stig: 'VPN_SRG_TEST', sel: 'V-219150' } })
+    await waitFor(() =>
+      expect(screen.getByTestId('selected-value')).toHaveTextContent('V-219150'),
+    )
+    expect(fetchFailedReviews).toHaveBeenCalledWith('17', {
+      aggregator: 'groupId',
+      aggregatorValue: 'V-219150',
+      benchmarkId: 'VPN_SRG_TEST',
+    }, { signal: expect.any(AbortSignal) })
+  })
+
   it('restores nothing when ?sel= matches no loaded row', async () => {
     mountFindings({ query: { sel: 'V-999999' } })
     await waitFor(() => expect(fetchFindings).toHaveBeenCalled())
@@ -130,5 +142,15 @@ describe('findings URL state', () => {
       aggregator: 'cci',
       benchmarkId: undefined,
     }, { signal: expect.any(AbortSignal) })
+  })
+})
+
+describe('findings label filter', () => {
+  // The grid needs it to carry the filter into Asset Review
+  it('passes the label filter to the individual findings grid', async () => {
+    mountFindings({ selectedLabelNames: ['Alpha', null] })
+    await waitFor(() => expect(fetchFindings).toHaveBeenCalled())
+
+    expect(JSON.parse(screen.getByTestId('ind-grid').dataset.labels)).toEqual(['Alpha', null])
   })
 })

@@ -91,6 +91,46 @@ describe('useAppBreadcrumb', () => {
     }))
   })
 
+  describe('on Asset Review', () => {
+    const assetParams = { collectionId: 'coll-1', assetId: 'asset-1', benchmarkId: 'bench-1', revisionStr: 'V1R1' }
+
+    it('carries the label filter when switching STIG', () => {
+      mockRoute({ name: 'collection-asset-review', params: assetParams, query: { labelName: 'label-a', ruleId: 'SV-1' } })
+      const { navigateToStig } = useAppBreadcrumb()
+
+      navigateToStig('bench-2')
+
+      // ruleId belongs to the old STIG, so only the filter rides along
+      expect(mockPush).toHaveBeenCalledWith(expect.objectContaining({
+        name: 'collection-asset-review',
+        params: expect.objectContaining({ assetId: 'asset-1', benchmarkId: 'bench-2' }),
+        query: { labelName: ['label-a'] },
+      }))
+    })
+
+    it('carries the label filter when switching revision', () => {
+      mockRoute({ name: 'collection-asset-review', params: assetParams, query: { labelMatch: 'null', ruleId: 'SV-1' } })
+      const { navigateToRevision } = useAppBreadcrumb()
+
+      navigateToRevision('V2R1')
+
+      expect(mockPush).toHaveBeenCalledWith({
+        name: 'collection-asset-review',
+        params: { ...assetParams, revisionStr: 'V2R1' },
+        query: { labelMatch: 'null' },
+      })
+    })
+
+    it('sends an empty query without a label filter', () => {
+      mockRoute({ name: 'collection-asset-review', params: assetParams, query: {} })
+      const { navigateToRevision } = useAppBreadcrumb()
+
+      navigateToRevision('V2R1')
+
+      expect(mockPush).toHaveBeenCalledWith(expect.objectContaining({ query: {} }))
+    })
+  })
+
   it('limits the Collection Review STIG list to the label filter', () => {
     useAppBreadcrumb()
 
@@ -211,5 +251,21 @@ describe('useAppBreadcrumb', () => {
     const { stigInvalidTooltip } = useAppBreadcrumb()
 
     expect(stigInvalidTooltip.value).toBe(TOOLTIPS.breadcrumb.stigNotOnAsset)
+  })
+})
+
+describe('isRevisionPinned', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    useRouter.mockReturnValue({ push: vi.fn() })
+    useCurrentUser.mockReturnValue({ user: ref({ collectionGrants: [] }) })
+    mockRoute()
+  })
+
+  it('is true only for a revision option listing the route Collection', () => {
+    const { isRevisionPinned } = useAppBreadcrumb()
+    expect(isRevisionPinned({ revisionStr: 'V1R1', collectionIds: ['coll-1'] })).toBe(true)
+    expect(isRevisionPinned({ revisionStr: 'V1R2', collectionIds: ['coll-2'] })).toBe(false)
+    expect(isRevisionPinned({ revisionStr: 'V1R3' })).toBe(false)
   })
 })

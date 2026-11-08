@@ -169,6 +169,9 @@ The claims presented by the authentication provider the last time this User auth
     archiveXccdf: `Download an archive with results in XCCDF format for each asset in the collection`,
   }),
 
+  // Pin glyph beside a Revision that is the Collection default (grids, review headers, breadcrumb).
+  pinnedRevision: `Pinned as the Collection default Revision`,
+
   // Breadcrumb STIG/revision pickers, when the current value isn't among the options.
   breadcrumb: Object.freeze({
     stigNotInCollection: `This STIG is not assigned to any Asset in this Collection. Choose another STIG.`,

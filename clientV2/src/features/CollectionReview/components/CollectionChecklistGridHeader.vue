@@ -1,6 +1,6 @@
 <script setup>
 import TieredMenu from 'primevue/tieredmenu'
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
 import shieldGreenCheck from '../../../assets/shield-green-check.svg'
@@ -8,8 +8,7 @@ import ColumnToggle from '../../../components/common/ColumnToggle.vue'
 import DensityControls from '../../../components/common/DensityControls.vue'
 import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../components/common/GridSearch.vue'
-import { fetchStigRevisions } from '../../../shared/api/stigsApi.js'
-import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import PinnedRevisionIcon from '../../../components/common/PinnedRevisionIcon.vue'
 import { getRevisionInfo } from '../../../shared/lib/checklistUtils.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 
@@ -35,6 +34,11 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  // The route STIG's revisions, from the page (useStigRevisions), for the revision date in the title
+  stigRevisions: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const emit = defineEmits(['apply-preset', 'export-archive'])
@@ -47,18 +51,7 @@ const route = useRoute()
 const benchmarkId = computed(() => route.params.benchmarkId)
 const revisionStr = computed(() => route.params.revisionStr)
 
-const { state: stigRevisions, execute: loadStigRevisions } = useAsyncState(
-  () => fetchStigRevisions(benchmarkId.value),
-  { immediate: false, initialState: [] },
-)
-
-onMounted(() => {
-  if (benchmarkId.value) {
-    loadStigRevisions()
-  }
-})
-
-const revisionInfo = computed(() => getRevisionInfo(revisionStr.value, stigRevisions.value))
+const revisionInfo = computed(() => getRevisionInfo(revisionStr.value, props.stigRevisions, route.params.collectionId))
 
 const headerTitle = computed(() => {
   if (benchmarkId.value && revisionInfo.value?.display) {
@@ -104,12 +97,11 @@ const checklistMenuItems = computed(() => [
 
 const checklistMenuPT = {
   root: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 4px; box-shadow: 0 6px 24px rgba(0,0,0,0.6); padding: 0.25rem 0; min-width: 12rem;' },
-  menu: { style: 'background: transparent; outline: none;' },
-  menuitem: { style: 'margin: 0;' },
-  item: ({ context }) => ({ title: context.item.tooltip }),
-  content: { style: 'padding: 0.4rem 0.8rem; color: var(--color-text-primary); border-radius: 0; transition: background-color 0.1s; display: flex; align-items: center;' },
-  icon: { style: 'color: var(--color-text-dim); margin-right: 0.5rem; font-size: var(--text-md);' },
-  label: { style: 'font-size: var(--text-md);' },
+  rootList: { style: 'background: transparent; outline: none;' },
+  item: ({ context }) => ({ title: context.item.tooltip, style: 'margin: 0;' }),
+  itemContent: { style: 'color: var(--color-text-primary); border-radius: 0; transition: background-color 0.1s;' },
+  itemIcon: { style: 'color: var(--color-text-dim); font-size: var(--text-md);' },
+  itemLabel: { style: 'font-size: var(--text-md);' },
   separator: { style: 'border-top: 1px solid var(--color-border-light); margin: 0.25rem 0;' },
   submenuIcon: { style: 'color: var(--color-text-dim); font-size: var(--icon-xs); margin-left: auto;' },
 }
@@ -124,6 +116,7 @@ function toggleChecklistMenu(event) {
     <div class="checklist-grid__header-top">
       <div class="checklist-grid__title-row">
         <span class="checklist-grid__title">{{ headerTitle }}</span>
+        <PinnedRevisionIcon v-if="revisionInfo?.pinned" />
       </div>
     </div>
 

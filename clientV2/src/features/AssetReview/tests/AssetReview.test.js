@@ -2,13 +2,14 @@ import { fireEvent, screen } from '@testing-library/vue'
 import { flushPromises } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick, reactive, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 
 // API Mocks
-import { fetchAsset, fetchCollection, fetchStigRevisions } from '../api/assetReviewApi.js'
+import { fetchAsset, fetchCollection } from '../api/assetReviewApi.js'
 
 // Composables Mocks
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
+import { useStigRevisions } from '../../../shared/composables/useStigRevisions.js'
 import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 import { useChecklistData } from '../composables/useChecklistData.js'
 import { useRuleDetail } from '../composables/useRuleDetail.js'
@@ -19,7 +20,10 @@ import AssetReview from '../components/AssetReview.vue'
 vi.mock('../api/assetReviewApi.js', () => ({
   fetchAsset: vi.fn(),
   fetchCollection: vi.fn(),
-  fetchStigRevisions: vi.fn(),
+}))
+
+vi.mock('../../../shared/composables/useStigRevisions.js', () => ({
+  useStigRevisions: vi.fn(),
 }))
 
 vi.mock('../../../shared/composables/useCurrentUser.js', () => ({
@@ -41,9 +45,13 @@ vi.mock('../composables/useRuleDetail.js', () => ({
 vi.mock('vue-router', () => ({
   useRoute: vi.fn(),
   useRouter: vi.fn(),
+  onBeforeRouteLeave: vi.fn(),
+  onBeforeRouteUpdate: vi.fn(),
 }))
 
 // Child Component Mocks
+const gridApi = vi.hoisted(() => ({ blockIfUnsaved: vi.fn(() => false) }))
+
 vi.mock('../components/AssetChecklistGrid.vue', () => ({
   default: {
     name: 'AssetChecklistGrid',
@@ -55,6 +63,10 @@ vi.mock('../components/AssetChecklistGrid.vue', () => ({
         <button data-testid="emit-review-saved" @click="$emit('review-saved', { ruleId: 'V-123', result: 'pass' })">Save Review</button>
       </div>
     `,
+    setup(_, { expose }) {
+      expose(gridApi)
+      return {}
+    },
   },
 }))
 
@@ -67,13 +79,14 @@ vi.mock('primevue/splitter', () => ({ default: { name: 'Splitter', template: '<d
 vi.mock('primevue/splitterpanel', () => ({ default: { name: 'SplitterPanel', template: '<div><slot></slot></div>' } }))
 
 describe('assetReview.vue', () => {
-  let mockRouterPush, mockAddView, mockRemoveView
+  let mockRouterPush, mockRouterReplace, mockAddView, mockRemoveView
   let mockLoadChecklist, mockUpsertReview, mockSelectRule, mockClearSelectedRule
 
   beforeEach(() => {
     vi.clearAllMocks()
 
     mockRouterPush = vi.fn()
+    mockRouterReplace = vi.fn()
     mockAddView = vi.fn()
     mockRemoveView = vi.fn()
     mockLoadChecklist = vi.fn()
@@ -81,7 +94,7 @@ describe('assetReview.vue', () => {
     mockSelectRule = vi.fn()
     mockClearSelectedRule = vi.fn()
 
-    useRouter.mockReturnValue({ push: mockRouterPush })
+    useRouter.mockReturnValue({ push: mockRouterPush, replace: mockRouterReplace })
     useRoute.mockReturnValue(reactive({
       params: {
         collectionId: 'coll-1',
@@ -125,9 +138,9 @@ describe('assetReview.vue', () => {
     })
 
     // Setup default API resolutions
-    fetchAsset.mockResolvedValue({ assetId: 'asset-1', name: 'Test Asset' })
+    fetchAsset.mockResolvedValue({ assetId: 'asset-1', name: 'Test Asset', collection: { collectionId: 'coll-1', name: 'Test Collection' } })
     fetchCollection.mockResolvedValue({ name: 'Test Collection', settings: { status: { canAccept: true, minAcceptGrant: 3 } } })
-    fetchStigRevisions.mockResolvedValue([{ revisionStr: 'rev-1' }])
+    useStigRevisions.mockReturnValue({ revisions: ref([{ revisionStr: 'rev-1' }]) })
   })
 
   function createWrapper() {
@@ -149,7 +162,6 @@ describe('assetReview.vue', () => {
 
       expect(fetchAsset).toHaveBeenCalledWith('asset-1')
       expect(fetchCollection).toHaveBeenCalledWith('coll-1')
-      expect(fetchStigRevisions).toHaveBeenCalledWith('bench-1')
       expect(mockLoadChecklist).toHaveBeenCalled()
     })
 
@@ -169,7 +181,7 @@ describe('assetReview.vue', () => {
     // The router reuses this component when only params change (e.g. Recent
     // views or Back/Forward between two assets on the same STIG and revision),
     // so the checklist must follow the asset, not just the STIG/revision.
-    it('reloads the checklist and resets the selection when only assetId changes', async () => {
+    it('reloads the checklist when only assetId changes', async () => {
       const checklistData = ref([{ ruleId: 'V-123', result: 'pass' }])
       useChecklistData.mockReturnValue({
         accessMode: 'rw',
@@ -184,30 +196,71 @@ describe('assetReview.vue', () => {
       createWrapper()
       await flushPromises()
       expect(mockLoadChecklist).toHaveBeenCalledTimes(1)
-      mockSelectRule.mockClear()
 
       useRoute().params.assetId = 'asset-2'
       await nextTick()
 
-      expect(mockSelectRule).toHaveBeenCalledWith(null)
       expect(checklistData.value).toEqual([])
       expect(mockLoadChecklist).toHaveBeenCalledTimes(2)
     })
 
-    // A Recent view stores the full path, including ?ruleId, so the selection
-    // must follow the incoming query instead of being cleared (which would
-    // also strip ruleId from the new URL).
-    it('seeds the selection from ?ruleId when the asset changes', async () => {
+    // A Recent view or the Findings shield arrives with ?ruleId; the selection is the URL's
+    it('keeps the selection in ?ruleId, following the URL when the asset changes', async () => {
+      useRoute().query.ruleId = 'V-123'
       createWrapper()
       await flushPromises()
-      mockSelectRule.mockClear()
+      const { selectedRuleId } = useRuleDetail.mock.calls[0][0]
+      expect(selectedRuleId.value).toBe('V-123')
 
       const route = useRoute()
-      route.query.ruleId = 'V-789'
+      route.query = { ruleId: 'V-789' }
       route.params.assetId = 'asset-2'
       await nextTick()
+      expect(selectedRuleId.value).toBe('V-789')
 
-      expect(mockSelectRule).toHaveBeenCalledWith('V-789')
+      // a click writes it back to the URL without a history entry
+      selectedRuleId.value = 'V-456'
+      await nextTick()
+      expect(mockRouterReplace).toHaveBeenCalledWith({ query: { ruleId: 'V-456' } })
+    })
+  })
+
+  describe('unsaved edits and navigation', () => {
+    const here = { path: '/collection/1/asset/1/stig/S/revision/V1R1' }
+
+    function guards() {
+      createWrapper()
+      return {
+        leave: onBeforeRouteLeave.mock.calls[0][0],
+        update: onBeforeRouteUpdate.mock.calls[0][0],
+      }
+    }
+
+    beforeEach(() => {
+      gridApi.blockIfUnsaved.mockReset().mockReturnValue(false)
+    })
+
+    it('allows leaving when there is nothing unsaved', () => {
+      expect(guards().leave({ path: '/' }, here)).toBe(true)
+    })
+
+    it('blocks leaving with unsaved edits', () => {
+      gridApi.blockIfUnsaved.mockReturnValue(true)
+
+      expect(guards().leave({ path: '/' }, here)).toBe(false)
+    })
+
+    it('blocks moving to another asset, where the router reuses this view', () => {
+      gridApi.blockIfUnsaved.mockReturnValue(true)
+
+      expect(guards().update({ path: '/collection/1/asset/2/stig/S/revision/V1R1' }, here)).toBe(false)
+    })
+
+    it('ignores the ?ruleId rewrite as the user clicks through rules', () => {
+      gridApi.blockIfUnsaved.mockReturnValue(true)
+
+      expect(guards().update({ ...here, query: { ruleId: 'R2' } }, here)).toBe(true)
+      expect(gridApi.blockIfUnsaved).not.toHaveBeenCalled()
     })
   })
 
@@ -219,7 +272,7 @@ describe('assetReview.vue', () => {
       await flushPromises()
 
       expect(screen.getByText('Error: Server Error')).toBeInTheDocument()
-      expect(mockRouterPush).not.toHaveBeenCalled()
+      expect(mockRouterReplace).not.toHaveBeenCalledWith(expect.objectContaining({ name: 'not-found' }))
     })
 
     it('redirects to not-found and removes recent view if asset fetch fails with 403', async () => {
@@ -230,9 +283,83 @@ describe('assetReview.vue', () => {
       await flushPromises()
 
       expect(mockRemoveView).toHaveBeenCalled()
-      expect(mockRouterPush).toHaveBeenCalledWith({
+      expect(mockRouterReplace).toHaveBeenCalledWith({
         name: 'not-found',
         params: { pathMatch: ['collections', 'coll-1', 'assets', 'asset-1', 'bench-1', 'rev-1'] },
+        query: {},
+      })
+    })
+
+    // Shape of ApiError from apiClient: status from the response, body is the API's { error, detail }
+    const apiError = (status, error) => Object.assign(new Error(`HTTP ${status}`), { status, body: { error } })
+    const notFoundCall = { name: 'not-found', params: { pathMatch: ['collections', 'coll-1', 'assets', 'asset-1', 'bench-1', 'rev-1'] }, query: {} }
+
+    it('keeps the URL\'s query and hash on the 404 page, like the route guard', async () => {
+      Object.assign(useRoute(), { query: { labelName: 'web', ruleId: 'V-1' }, hash: '#top' })
+      fetchAsset.mockRejectedValue(apiError(403, 'anything'))
+      createWrapper()
+      await flushPromises()
+
+      expect(mockRouterReplace).toHaveBeenCalledWith({ ...notFoundCall, query: { labelName: 'web', ruleId: 'V-1' }, hash: '#top' })
+    })
+
+    it.each([400, 403, 404])('redirects to not-found when the asset fetch returns %i', async (status) => {
+      fetchAsset.mockRejectedValue(apiError(status, 'anything'))
+      createWrapper()
+      await flushPromises()
+
+      expect(mockRouterReplace).toHaveBeenCalledWith(notFoundCall)
+    })
+
+    it('redirects on a 403 from the collection fetch whatever the message says', async () => {
+      fetchCollection.mockRejectedValue(apiError(403, 'Access denied by proxy'))
+      createWrapper()
+      await flushPromises()
+
+      expect(mockRouterReplace).toHaveBeenCalledWith(notFoundCall)
+    })
+
+    it('decides by status, not message text: a 500 with the privilege message does not redirect', async () => {
+      fetchAsset.mockRejectedValue(apiError(500, 'User has insufficient privilege to complete this request.'))
+      createWrapper()
+      await flushPromises()
+
+      expect(mockRouterReplace).not.toHaveBeenCalledWith(expect.objectContaining({ name: 'not-found' }))
+    })
+
+    it('redirects to not-found if the asset belongs to a different collection than the URL', async () => {
+      fetchAsset.mockResolvedValue({ assetId: 'asset-1', name: 'Test Asset', collection: { collectionId: 'coll-2', name: 'Other' } })
+      createWrapper()
+      await flushPromises()
+
+      expect(mockRemoveView).toHaveBeenCalled()
+      expect(mockRouterReplace).toHaveBeenCalledWith({
+        name: 'not-found',
+        params: { pathMatch: ['collections', 'coll-1', 'assets', 'asset-1', 'bench-1', 'rev-1'] },
+        query: {},
+      })
+    })
+
+    it('does not redirect when the asset belongs to the URL collection', async () => {
+      createWrapper()
+      await flushPromises()
+
+      expect(mockRouterReplace).not.toHaveBeenCalledWith(expect.objectContaining({ name: 'not-found' }))
+    })
+
+    it('redirects to not-found when the STIG or revision is unknown', async () => {
+      createWrapper()
+      await flushPromises()
+      const [{ benchmarkId, revisionStr, onUnknown }] = useStigRevisions.mock.calls[0]
+      expect(benchmarkId.value).toBe('bench-1')
+      expect(revisionStr.value).toBe('rev-1')
+
+      onUnknown()
+      expect(mockRemoveView).toHaveBeenCalled()
+      expect(mockRouterReplace).toHaveBeenCalledWith({
+        name: 'not-found',
+        params: { pathMatch: ['collections', 'coll-1', 'assets', 'asset-1', 'bench-1', 'rev-1'] },
+        query: {},
       })
     })
 

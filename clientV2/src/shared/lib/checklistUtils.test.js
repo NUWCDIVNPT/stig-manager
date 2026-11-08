@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calculateChecklistStats, getEngineDisplay, getResultDisplay } from '../lib/checklistUtils.js'
+import { calculateChecklistStats, getEngineDisplay, getResultDisplay, getRevisionInfo, isRevisionPinnedBy, isRevisionStr } from '../lib/checklistUtils.js'
 
 describe('getResultDisplay', () => {
   it('should map known results', () => {
@@ -93,5 +93,38 @@ describe('calculateChecklistStats', () => {
     ]
     const stats = calculateChecklistStats(data)
     expect(stats.statuses.saved).toBe(1)
+  })
+})
+
+describe('isRevisionStr', () => {
+  it.each(['V1R1', 'V2R10', 'V123R123', 'V1R1.2', 'latest'])('accepts %s', (value) => {
+    expect(isRevisionStr(value)).toBe(true)
+  })
+
+  it.each(['banana', 'rev-1', 'V1', 'R1', 'v1r1', 'V1234R1', 'V1R1.', 'V1R1.1234', 'Latest', '', ' V1R1', null, undefined, 12])('rejects %s', (value) => {
+    expect(isRevisionStr(value)).toBe(false)
+  })
+})
+
+describe('isRevisionPinnedBy / getRevisionInfo.pinned', () => {
+  const revisions = [
+    { revisionStr: 'V1R1', benchmarkDate: '2024-01-01', collectionIds: ['21', 7] },
+    { revisionStr: 'V1R2', benchmarkDate: '2024-06-01', collectionIds: [] },
+  ]
+
+  it('is pinned when the Collection is among the revision collectionIds, comparing as strings', () => {
+    expect(isRevisionPinnedBy(revisions[0], '21')).toBe(true)
+    expect(isRevisionPinnedBy(revisions[0], 7)).toBe(true)
+    expect(isRevisionPinnedBy(revisions[1], '21')).toBe(false)
+    expect(isRevisionPinnedBy(revisions[0], '99')).toBe(false)
+    expect(isRevisionPinnedBy(revisions[0], null)).toBe(false)
+    expect(isRevisionPinnedBy(undefined, '21')).toBe(false)
+  })
+
+  it('getRevisionInfo carries the pinned flag for the given Collection', () => {
+    expect(getRevisionInfo('V1R1', revisions, '21').pinned).toBe(true)
+    expect(getRevisionInfo('V1R2', revisions, '21').pinned).toBe(false)
+    expect(getRevisionInfo('V9R9', revisions, '21').pinned).toBe(false)
+    expect(getRevisionInfo('V1R1', revisions).pinned).toBe(false)
   })
 })
