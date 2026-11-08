@@ -220,7 +220,12 @@ Keycloak settings for the "stigman" realm:
   * Settings:
 
     * Enable Authorization Code Flow with PKCE (Called "Standard Flow" in Keycloak)
-    * Valid Redirect URIs - The URI at which your users will access STIG Manager
+    * Valid Redirect URIs - The URI at which your users will access STIG Manager, and the re-authentication page beside it. For a deployment at ``https://stigman.example.com/``, register these exact URIs:
+
+      * ``https://stigman.example.com/`` and ``https://stigman.example.com/reauth.html`` for the web app
+      * ``https://stigman.example.com/client-v2/`` and ``https://stigman.example.com/client-v2/reauth.html`` for the next-generation web app
+
+      Behind a reverse proxy that serves STIG Manager under a path, include that path, for example ``https://example.com/stigman/client-v2/``. The next-generation web app always returns to ``client-v2/`` after sign-in, then reopens the page the user asked for, so no wildcard is needed.
     * Web Origins - Configure according to Organizational requirements. Often the same as the Valid Redirect URIs
 
   * Client Scopes:
