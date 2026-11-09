@@ -60,6 +60,18 @@ ________________________________________________________
 Some proxies such as nginx may have default limits on request body size that are quite small (e.g. 5MB). You will likely need to increase this limit using the appropriate directive (e.g. ``client_max_body_size 100M;`` in nginx). A 100MB limit is a reasonable starting point.
 
 
+.. _hashless-urls:
+
+Hashless URLs for the New Web Client
+________________________________________________________
+
+By default the new web client (``/client-v2``) keeps its page state after a ``#`` in the URL, such as ``https://host/client-v2/#/collections/12``. Fragments are never sent to the server, so this works at any path without special proxy configuration, but some environments do not preserve them: link scanners and email security gateways, ticketing and chat systems that rewrite links, and some SSO redirect flows may drop or alter everything after the ``#``. Users in those environments arrive at the landing page instead of the shared or bookmarked view.
+
+Setting ``STIGMAN_CLIENT_HISTORY_BASE`` switches the new client to hashless (HTML5 history) URLs such as ``https://host/client-v2/collections/12``. The value is the URL path at which STIG Manager is served, for example ``/`` or ``/stigman/``. With this set, the API serves the client ``index.html`` for any ``/client-v2/`` path that does not name a file, so a deep link or page reload reaches the right view.
+
+The variable only tells the browser its public path; the API itself continues to serve ``/api``, ``/client-v2``, and ``/docs`` at its root, so an existing proxy rule that forwards a prefix such as ``/stigman/`` to the API root needs no change. A proxy that allows only specific paths must permit everything under ``/client-v2/``, because hashless deep links are extensionless paths that the API answers with the client ``index.html``. The legacy web client is not affected by this variable. See the :ref:`Environment Variables` reference for details.
+
+
 Proxy Requirements for Streaming, SSE, and WebSocket Endpoints
 ________________________________________________________________________________
 

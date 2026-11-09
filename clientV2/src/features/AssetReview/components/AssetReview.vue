@@ -92,7 +92,7 @@ const canAccept = computed(() =>
 
 const { revisions: stigRevisions } = useStigRevisions({ benchmarkId, revisionStr, onUnknown: redirectToNotFound })
 
-const revisionInfo = computed(() => getRevisionInfo(revisionStr.value, stigRevisions.value))
+const revisionInfo = computed(() => getRevisionInfo(revisionStr.value, stigRevisions.value, collectionId.value))
 
 const {
   accessMode,
