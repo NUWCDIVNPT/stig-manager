@@ -3,7 +3,7 @@
 {%- if pagename.startswith('legacy-client/') and pagename != 'legacy-client/index' %}
 <div class="admonition warning">
   <p class="admonition-title">Legacy UI documentation</p>
-  <p>This page describes the legacy UI. The current version of STIG Manager includes two versions of its web UI, and the legacy UI will be deprecated and then removed in a future release, in favor of the new UI. See <a href="{{ pathto('legacy-client/index') }}">Legacy Client</a> for more information, or the <a href="{{ pathto('new-client/index') }}">New Client</a> documentation.</p>
+  <p>This page describes the legacy UI. The current version of STIG Manager includes two versions of its web UI, and the legacy UI will be deprecated and then removed in a future release, replaced by the new UI. See <a href="{{ pathto('legacy-client/index') }}">Legacy Client</a> for more information, or the <a href="{{ pathto('new-client/index') }}">New Client</a> documentation.</p>
 </div>
 {%- endif %}
 {{ super() }}

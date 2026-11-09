@@ -7,7 +7,7 @@ Legacy Client
   :description: How to use the legacy STIG Manager web UI.
 
 .. note::
-   The current version of STIG Manager includes two versions of its web UI: the legacy UI, which is the default, and a preview of the new UI. Both work with the same API and data, so your Collections, Assets, and Reviews are the same in each. The legacy UI will be deprecated and then removed in a future release, in favor of the new UI.
+   The current version of STIG Manager includes two versions of its web UI: the legacy UI, which is the default, and a preview of the new UI. Both work with the same API and data, so your Collections, Assets, and Reviews are the same in each. The legacy UI will be deprecated and then removed in a future release, replaced by the new UI.
 
 These pages describe the legacy UI. To try the new UI, use the "Try the new UI" link at the bottom of the Navigation Tree.
 
@@ -17,6 +17,21 @@ These pages describe the legacy UI. To try the new UI, use the "Try the new UI" 
       :title: The "Try the new UI" link in the legacy UI's Navigation Tree
 
 See the :ref:`new-client-index` section for documentation of the new UI.
+
+.. rubric:: Which UI am I using?
+
+The legacy UI has a Navigation Tree down the left side and opens each workspace as a tab across the top. The new UI has a Nav Rail of icons down the left side and a header across the top that shows the app name and a breadcrumb trail for navigation.
+
+.. thumbnail:: /assets/images/client-comparison.png
+      :width: 70%
+      :show_caption: True
+      :title: The Home page in the legacy UI (left) and the new UI (right)
+
+
+.. thumbnail:: /assets/images/client-comparison-collection.png
+      :width: 70%
+      :show_caption: True
+      :title: A Collection open in the legacy UI (left) and the new UI (right)
 
 .. rubric:: For Users
 
