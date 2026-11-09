@@ -1459,6 +1459,8 @@ If the summary is appropriate, click the "Add to Collection..." button.
 
 The User is presented with the log of the import. Select an item in the top grid for information about any "rejected" Reviews that were unable to be imported into STIG Manager. This may happen for Rules that are not currently assigned to this Asset, or for versions of STIGs that have not been loaded into STIG Manager.
 
+Large imports can be minimized with the Minimize button in the dialog header. The import continues in the background against the Collection it was started from, even if you navigate to another workspace or Collection, and a progress notification tracks it. When it finishes, the notification offers "View Results" to reopen the import log.
+
 
 .. note::
    STIG Manager will import and export .ckl files differently depending on the values of certain .ckl elements and Asset metadata. See :ref:`ckl-processing` for more information.    
@@ -1589,7 +1591,7 @@ To set a specific default Revision of a STIG for a Collection, select the STIG o
 
 The Save action may take a moment, as STIG Manager will need to recalculate all metrics based on the new Revision.
 
-The "pinned" Revision is indicated with a pin icon on the STIGs page and in the Collection Dashboard.
+The "pinned" Revision is indicated with a pin icon on the STIGs page, in the Collection Dashboard, in the Collection and Asset Review Workspace headers, and next to the Revision in the breadcrumb bar Revision selector.
 
 .. note::
     A STIG must be assigned to at least one Asset in a Collection in order to be Pinned!
