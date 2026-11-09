@@ -4,7 +4,9 @@ import Textarea from 'primevue/textarea'
 import { computed, nextTick, onBeforeUnmount, provide, ref, toRefs, watch } from 'vue'
 import { useReviewEditForm } from '../../shared/composables/useReviewEditForm.js'
 import { REVIEW_STATUS } from '../../shared/lib/reviewConstants.js'
-import { formatReviewDate, resultOptions } from '../../shared/lib/reviewFormUtils.js'
+import { formatReviewDate, getReviewFieldTooltipHtml, resultOptions } from '../../shared/lib/reviewFormUtils.js'
+import { TOOLTIPS } from '../../shared/lib/tooltips.js'
+import HelpIcon from './HelpIcon.vue'
 import ResultBadge from './ResultBadge.vue'
 import ResultEngineBadges from './ResultEngineBadges.vue'
 import ReviewResources from './ReviewResources/ReviewResources.vue'
@@ -121,6 +123,9 @@ const {
 } = reviewEditForm
 
 provide('reviewEditForm', reviewEditForm)
+
+const detailTooltipHtml = computed(() => getReviewFieldTooltipHtml('detail', fieldSettings.value?.detail))
+const commentTooltipHtml = computed(() => getReviewFieldTooltipHtml('comment', fieldSettings.value?.comment))
 
 // Checklist rows carry the status timestamp as `statusTs` beside a string
 // status; full review objects nest it under `status.ts`.
@@ -423,6 +428,7 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
           <label class="review-edit-popover__label">
             Result
             <span class="review-edit-popover__required">*</span>
+            <HelpIcon :content="TOOLTIPS.reviewFields.result" />
           </label>
           <ul class="review-edit-popover__result-list">
             <li
@@ -445,6 +451,7 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
           <label class="review-edit-popover__label">
             Detail
             <span v-if="detailRequired" class="review-edit-popover__required">*</span>
+            <HelpIcon :content="detailTooltipHtml" />
           </label>
           <Textarea
             v-model="formDetail"
@@ -459,6 +466,7 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
           <label class="review-edit-popover__label">
             Comment
             <span v-if="commentRequired" class="review-edit-popover__required">*</span>
+            <HelpIcon :content="commentTooltipHtml" />
           </label>
           <Textarea
             v-model="formComment"

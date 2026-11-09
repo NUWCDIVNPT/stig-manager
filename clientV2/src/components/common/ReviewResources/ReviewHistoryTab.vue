@@ -199,6 +199,8 @@ const historyStats = computed(() => {
       :value="filteredRows"
       :loading="isInternalHistoryLoading"
       data-key="touchTs"
+      sort-field="touchTs"
+      :sort-order="-1"
       export-filename="History"
       scrollable
       scroll-height="flex"

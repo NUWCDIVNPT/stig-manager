@@ -79,7 +79,7 @@ defineExpose({ reload })
 <template>
   <div class="manage-users">
     <div class="users-table-wrapper">
-      <PanelTitle title="Effective Users" icon="pi pi-users">
+      <PanelTitle title="Users" icon="pi pi-users">
         <template #end>
           <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
         </template>
@@ -98,7 +98,7 @@ defineExpose({ reload })
         :pt="tablePt"
       >
         <template #empty>
-          {{ isFiltered && displayUsers.length ? 'No users match the filters.' : 'No effective users.' }}
+          {{ isFiltered && displayUsers.length ? 'No users match the filters.' : 'No users.' }}
         </template>
 
         <Column field="displayName" header="User" sortable>

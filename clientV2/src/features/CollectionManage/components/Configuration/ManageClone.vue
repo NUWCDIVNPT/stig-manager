@@ -38,8 +38,6 @@ const cloneForm = ref({
   name: '',
   description: '',
   grants: true,
-  labels: true,
-  assets: true,
   stigMappings: 'withReviews',
   pinRevisions: 'matchSource',
 })
@@ -47,7 +45,6 @@ const cloneForm = ref({
 const stigMappingOptions = [
   { label: 'Assignments and Reviews', value: 'withReviews' },
   { label: 'Assignments but not Reviews', value: 'withoutReviews' },
-  { label: 'Do not clone assignments or reviews', value: 'none' },
 ]
 
 const pinRevisionOptions = [
@@ -73,10 +70,6 @@ const cloneValidationError = computed(() => {
   if (descriptionError) {
     return descriptionError
   }
-  // Clone-specific: at least one content option must be selected.
-  if (!cloneForm.value.assets && !cloneForm.value.labels && !cloneForm.value.grants) {
-    return 'Must select at least one clone option (assets, labels, or grants)'
-  }
   return null
 })
 
@@ -95,8 +88,6 @@ const startClone = async () => {
       description: cloneForm.value.description?.trim() || null,
       options: {
         grants: cloneForm.value.grants,
-        labels: cloneForm.value.labels,
-        assets: cloneForm.value.assets,
         stigMappings: cloneForm.value.stigMappings,
         pinRevisions: cloneForm.value.pinRevisions,
       },
@@ -187,7 +178,7 @@ const textareaPt = collectionTextareaPt
           <h3>Clone Collection</h3>
         </div>
         <p class="group-desc">
-          Create a duplicate of this collection with customizable options. Cloning large collections can take several minutes and may impact users of the source collection.
+          Create a duplicate of this Collection, including its Assets, Labels, and STIG assignments. Cloning large Collections can take several minutes and may impact users of the source Collection.
         </p>
       </div>
 
@@ -224,23 +215,18 @@ const textareaPt = collectionTextareaPt
 
         <div class="options-grid">
           <div class="option-col">
-            <h4>Include Content</h4>
+            <h4>Include</h4>
             <div class="checkbox-field">
               <Checkbox v-model="cloneForm.grants" :binary="true" input-id="cloneGrants" />
               <label for="cloneGrants">Grants <HelpIcon :content="TOOLTIPS.cloneOptions.grants" /></label>
             </div>
-            <div class="checkbox-field">
-              <Checkbox v-model="cloneForm.labels" :binary="true" input-id="cloneLabels" />
-              <label for="cloneLabels">Labels <HelpIcon :content="TOOLTIPS.cloneOptions.labels" /></label>
-            </div>
-            <div class="checkbox-field">
-              <Checkbox v-model="cloneForm.assets" :binary="true" input-id="cloneAssets" />
-              <label for="cloneAssets">Assets <HelpIcon :content="TOOLTIPS.cloneOptions.assets" /></label>
-            </div>
+            <p class="option-note">
+              Assets, their core properties, and Labels are always cloned.
+            </p>
           </div>
 
           <div class="option-col">
-            <h4>Asset Settings</h4>
+            <h4>STIG Options</h4>
             <div class="dropdown-field">
               <label class="flabel">STIGs <HelpIcon :content="TOOLTIPS.cloneOptions.stigs" /></label>
               <Select
@@ -248,7 +234,6 @@ const textareaPt = collectionTextareaPt
                 :options="stigMappingOptions"
                 option-label="label"
                 option-value="value"
-                :disabled="!cloneForm.assets"
                 :pt="collectionSelectPt"
                 class="w-full"
               />
@@ -260,7 +245,6 @@ const textareaPt = collectionTextareaPt
                 :options="pinRevisionOptions"
                 option-label="label"
                 option-value="value"
-                :disabled="!cloneForm.assets || cloneForm.stigMappings === 'none'"
                 :pt="collectionSelectPt"
                 class="w-full"
               />
@@ -360,6 +344,12 @@ const textareaPt = collectionTextareaPt
   align-items: center;
   gap: 0.5rem;
   color: var(--color-text-primary);
+  font-size: var(--text-md);
+}
+
+.option-note {
+  margin: 0;
+  color: var(--color-text-dim);
   font-size: var(--text-md);
 }
 

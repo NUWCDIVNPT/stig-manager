@@ -1,4 +1,4 @@
-// Framework-independent helpers for the Collection Manage Grants and Effective Users panels.
+// Framework-independent helpers for the Collection Manage Grants and Users panels.
 // See collection-manage-grants-users-tabs-notes.md for the backend behavior these mirror.
 
 import { granteeLabels } from '../../../components/common/grants/granteeDisplay.js'

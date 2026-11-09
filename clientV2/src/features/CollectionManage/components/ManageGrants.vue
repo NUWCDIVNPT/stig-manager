@@ -14,7 +14,7 @@ defineProps({
 
 const sections = [
   { id: 'grants', title: 'Grants', icon: 'pi-shield', desc: 'Add, edit, and remove user and group access grants for this collection' },
-  { id: 'users', title: 'Effective Users', icon: 'pi-users', desc: 'Resolved user access, including permissions inherited from group memberships' },
+  { id: 'users', title: 'Users', icon: 'pi-users', desc: 'Resolved user access, including permissions inherited from group memberships' },
 ]
 
 // Grant ACL editor

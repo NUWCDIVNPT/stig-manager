@@ -172,7 +172,7 @@ For example, Asset-123 has the label "Current Priorities" and is assigned the Wi
 
 In this case, since Asset-123 has Label "Current Priorities" and is also assigned Windows_10_STIG, both rules could apply since they have the same specificity. However, Read access is more restrictive so STIG Manager would allow only Read access to the Windows_10_STIG on Asset-123. 
 
-To display the Effective ACL for a User, navigate to the Effective Users section of the Users & Grants page in the Collection Management workspace. Click the target icon at the end of the User's row to open the display.
+To display the Effective ACL for a User, navigate to the Users section of the Users & Grants page in the Collection Management workspace. Click the target icon at the end of the User's row to open the display.
 
 Examples of ACL Management
 --------------------------------------------------------

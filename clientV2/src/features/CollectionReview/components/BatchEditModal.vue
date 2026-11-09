@@ -6,7 +6,7 @@ import Textarea from 'primevue/textarea'
 import { computed, ref, watch } from 'vue'
 import HelpIcon from '../../../components/common/HelpIcon.vue'
 import ResultBadge from '../../../components/common/ResultBadge.vue'
-import { resultOptions } from '../../../shared/lib/reviewFormUtils.js'
+import { getReviewFieldTooltipHtml, resultOptions } from '../../../shared/lib/reviewFormUtils.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 
 const props = defineProps({
@@ -70,36 +70,9 @@ const isMeaningfulChange = computed(() => {
   return resultChanged || detailChanged || commentChanged
 })
 
-const resultTooltipHtml = TOOLTIPS.batchEdit.result
-
-function getFieldTooltipHtml(title, desc, fs, ckl, xccdf) {
-  const enabledText = fs?.enabled === 'findings' ? 'for findings only.' : 'for any result.'
-  let requiredText = 'optional.'
-  if (fs?.required === 'always') {
-    requiredText = 'required to submit a review.'
-  }
-  else if (fs?.required === 'findings') {
-    requiredText = 'required to submit a finding.'
-  }
-
-  return `<b>${title}</b><br>${desc}<br><br><b>Collection Settings</b><br>This field is enabled ${enabledText}<br>Content in this field is ${requiredText}<br><br><b>Export Mappings</b><br><b>CKL:</b> ${ckl}<br><b>XCCDF:</b> ${xccdf}`
-}
-
-const detailTooltipHtml = computed(() => getFieldTooltipHtml(
-  TOOLTIPS.batchEdit.detail.title,
-  TOOLTIPS.batchEdit.detail.desc,
-  props.fieldSettings?.detail,
-  TOOLTIPS.batchEdit.detail.ckl,
-  TOOLTIPS.batchEdit.detail.xccdf,
-))
-
-const commentTooltipHtml = computed(() => getFieldTooltipHtml(
-  TOOLTIPS.batchEdit.comment.title,
-  TOOLTIPS.batchEdit.comment.desc,
-  props.fieldSettings?.comment,
-  TOOLTIPS.batchEdit.comment.ckl,
-  TOOLTIPS.batchEdit.comment.xccdf,
-))
+const resultTooltipHtml = TOOLTIPS.reviewFields.result
+const detailTooltipHtml = computed(() => getReviewFieldTooltipHtml('detail', props.fieldSettings?.detail))
+const commentTooltipHtml = computed(() => getReviewFieldTooltipHtml('comment', props.fieldSettings?.comment))
 
 const dialogPt = {
   root: {

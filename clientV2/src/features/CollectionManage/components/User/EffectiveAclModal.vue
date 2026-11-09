@@ -127,7 +127,7 @@ watch([visible, () => props.user?.userId], ([isVisible, userId]) => {
           :pt="tablePt"
         >
           <template #empty>
-            {{ isFiltered && displayAcl.length ? 'No rows match the filters.' : 'No effective access.' }}
+            {{ isFiltered && displayAcl.length ? 'No rows match the filters.' : `No access rules to display. Default access (${defaultAccess}) applies to every Asset and STIG.` }}
           </template>
           <Column field="assetName" header="Asset" sortable />
           <Column field="benchmarkId" header="STIG" sortable />
