@@ -2,7 +2,7 @@
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { RouterLink } from 'vue-router'
 import bot2 from '../../../assets/bot2.svg'
 import shieldGreenCheck from '../../../assets/shield-green-check.svg'
 import LabelsRow from '../../../components/columns/LabelsRow.vue'
@@ -51,8 +51,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['retry'])
-
-const router = useRouter()
 
 const dataTableRef = ref(null)
 
@@ -135,12 +133,12 @@ function pickStigForRow(row) {
   return stigs[0] ?? null
 }
 
-function openAssetReview(row) {
+function assetReviewTo(row) {
   const stig = pickStigForRow(row)
   if (!stig?.benchmarkId || !stig?.revisionStr || !props.collectionId) {
-    return
+    return null
   }
-  router.push({
+  return {
     name: 'collection-asset-review',
     params: {
       collectionId: props.collectionId,
@@ -149,7 +147,7 @@ function openAssetReview(row) {
       revisionStr: stig.revisionStr,
     },
     query: { ...buildLabelFilterParams(props.selectedLabelNames), ruleId: row.ruleId },
-  })
+  }
 }
 
 // Standard app table PT (compactTablePt) with two density-specific additions:
@@ -236,14 +234,11 @@ const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-con
                   <div class="asset-cell__name" :title="data.assetName">
                     <HighlightText :text="data.assetName" :term="highlightTerm('assetName')" />
                   </div>
-                  <button
-                    type="button"
-                    class="shield-action"
-                    title="Open Asset Review"
-                    @click.stop="openAssetReview(data)"
-                  >
-                    <img :src="shieldGreenCheck" width="14" height="14" alt="Review">
-                  </button>
+                  <RouterLink v-if="assetReviewTo(data)" v-slot="{ href, navigate }" :to="assetReviewTo(data)" custom>
+                    <a :href="href" class="shield-action" title="Open Asset Review" @click.stop="navigate">
+                      <img :src="shieldGreenCheck" width="14" height="14" alt="Review">
+                    </a>
+                  </RouterLink>
                 </div>
                 <LabelsRow v-if="data.labels?.length" :labels="data.labels" :search-term="highlightTerm('labels')" compact />
               </div>
@@ -521,6 +516,7 @@ const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-con
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  text-decoration: none;
   opacity: 0.5;
   transition: opacity 0.15s, transform 0.15s, background-color 0.15s;
 }

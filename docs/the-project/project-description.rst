@@ -28,9 +28,9 @@ Assets and Resources Maintained
 
 **Deliverable Artifacts:**
 
-- OpenAPI 3.1 Specification
+- OpenAPI 3.0 Specification
 
-  - Fully defined OpenAPI 3.1 Specification 
+  - Fully defined OpenAPI 3.0 Specification 
   - Fully defined to validate both request and response objects
   - Appropriate scopes and endpoint security definitions
 
@@ -130,8 +130,9 @@ Products, Systems, Tools and Methods Used
 -  OAuth 2.0
 -  OIDC
 -  OpenAPI 3.0+
--  Azure
--  Keycloak
+-  Okta
+-  F5
+-  Azure Entra ID
 -  Mocha
 -  Chai
 -  Chai-http

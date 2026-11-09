@@ -2,7 +2,6 @@
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
 import { computed, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
 import MetricsSummaryGrid from '../../../components/common/MetricsSummaryGrid.vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { fetchCollectionChecklistAssets, fetchMetaMetricsSummaryByCollection, fetchMetaMetricsSummaryByStig } from '../api/metaApi.js'
@@ -14,7 +13,6 @@ const props = defineProps({
   },
 })
 
-const router = useRouter()
 const revisionStrRe = /V(\d+)R(\d+(?:\.\d+)?)/
 
 const fetchStigs = () => {
@@ -95,19 +93,25 @@ function handleCollectionSelect(collectionId) {
   selectedCollectionId.value = collectionId
 }
 
-function handleCollectionIconClick(rowData) {
-  router.push({
+function stigReviewTo(rowData) {
+  if (!selectedStig.value) {
+    return null
+  }
+  return {
     name: 'collection-benchmark-review',
     params: {
       collectionId: rowData.collectionId,
       benchmarkId: selectedStig.value.benchmarkId,
       revisionStr: selectedStig.value.revisionStr,
     },
-  })
+  }
 }
 
-function handleAssetStigAction(rowData) {
-  router.push({
+function assetReviewTo(rowData) {
+  if (!selectedStig.value || !selectedCollectionId.value) {
+    return null
+  }
+  return {
     name: 'collection-asset-review',
     params: {
       collectionId: selectedCollectionId.value,
@@ -115,7 +119,7 @@ function handleAssetStigAction(rowData) {
       benchmarkId: selectedStig.value.benchmarkId,
       revisionStr: selectedStig.value.revisionStr,
     },
-  })
+  }
 }
 </script>
 
@@ -158,10 +162,9 @@ function handleAssetStigAction(rowData) {
               :empty-message="selectedStig ? 'No collections found for the selected STIG. Try refresh.' : 'Select a STIG to view associated collections.'"
               selectable
               data-key="collectionId"
-              show-shield
+              :shield-to="stigReviewTo"
               :selected-key="selectedCollectionId"
               @row-select="(row) => handleCollectionSelect(row.collectionId)"
-              @shield-click="handleCollectionIconClick"
               @refresh="loadCollections"
             />
           </div>
@@ -179,8 +182,7 @@ function handleAssetStigAction(rowData) {
               :is-loading="assetsLoading"
               :empty-message="selectedCollectionId ? 'No assets associated with this STIG in the selected collection. Try refresh.' : 'Select a collection to view its assets for this STIG.'"
               parent-agg-type="stig"
-              show-shield
-              @shield-click="handleAssetStigAction"
+              :shield-to="assetReviewTo"
               @refresh="loadAssets"
             />
           </div>

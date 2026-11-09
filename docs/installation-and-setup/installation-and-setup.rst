@@ -39,7 +39,7 @@ Every STIG Manager deployment consists of:
 **OpenID Connect (OIDC) Provider** (Authentication Service, deployer-provided)
   - Manages user accounts and authentication
   - Issues OAuth2 JWT tokens for API access
-  - Tested providers: Red Hat Keycloak, Okta, F5, Azure Entra
+  - Tested providers: Keycloak, Okta, F5, and Azure Entra ID
   - Must support Authorization Code Flow with PKCE for web clients
 
 **MySQL Database** (Data Persistence, deployer-provided)
@@ -173,7 +173,7 @@ Essential Environment Variables
 ----------------------------------
 
 STIG Manager is configured via :ref:`Environment Variables <Environment Variables>`
- passed to the API container or process.  At minimum, configure:
+passed to the API container or process.  At minimum, configure:
 
 **Database Connection:**
   - ``STIGMAN_DB_HOST`` - MySQL server address
@@ -246,7 +246,7 @@ Deploy STIG Manager using Docker or any container runtime. Suitable for Kubernet
 
 **Basic Steps:**
 
-#. Pull the image: ``docker pull nuwcdivnpt/stig-manager:latest-ironbank``
+#. Pull the image: ``docker pull nuwcdivnpt/stig-manager:latest``
 #. Configure environment variables for your infrastructure
 #. Run the container:
 
@@ -256,7 +256,7 @@ Deploy STIG Manager using Docker or any container runtime. Suitable for Kubernet
       -p 54000:54000 \
       -e STIGMAN_DB_HOST=<DATABASE_IP> \
       -e STIGMAN_OIDC_PROVIDER=<OIDC_URL> \
-      nuwcdivnpt/stig-manager
+      nuwcdivnpt/stig-manager:latest
 
 #. Verify startup in logs: ``docker logs stig-manager``
 
@@ -337,9 +337,9 @@ First Steps
 Configure Users
 --------------------------
 
-Users are not created in the STIG Manager application itself. All users must be created and authenticated by your Authentication Provider (often, Keycloak), which must provide the appropriate tokens, scopes, and privileges before they can access the system. Upon first access after successful Authentication, STIGMan will create a user profile to which it assigns Collection Grants and assignments. 
+Users are not created in the STIG Manager application itself. All Users must be created and authenticated by your Authentication Provider (often, Keycloak), which must provide the appropriate tokens, scopes, and privileges before they can access the system. Upon first access after successful Authentication, STIGMan will create a User profile to which it assigns Collection Grants and assignments. 
 
-User privileges are controlled by the OIDC Provider. This can be done by configuring the OIDC provider to generate tokens for Users that include their privileges and scopes in the specified claims (``STIGMAN_JWT_PRIVILEGES_CLAIM`` and ``STIGMAN_JWT_SCOPE_CLAIM``).  In most OIDC Providers, this can be done in multiple ways, depending on your use case.  One option for Keycloak is using the "Role Mappings" tab for that user, or you can set these privileges as defaults using the Configure->Roles->Default Roles interface.  See the :ref:`Authentication and Identity<authentication>` section for more information. 
+User privileges are controlled by the OIDC Provider. This can be done by configuring the OIDC provider to generate tokens for Users that include their privileges and scopes in the specified claims (``STIGMAN_JWT_PRIVILEGES_CLAIM`` and ``STIGMAN_JWT_SCOPE_CLAIM``).  In most OIDC Providers, this can be done in multiple ways, depending on your use case.  One option for Keycloak is using the "Role Mappings" tab for that User, or you can set these privileges as defaults using the Configure->Roles->Default Roles interface.  See the :ref:`Authentication and Identity<authentication>` section for more information. 
 
 Assign at least one User the ``admin`` privilege when setting up STIG Manager for the first time. 
 
@@ -364,9 +364,9 @@ Assign at least one User the ``admin`` privilege when setting up STIG Manager fo
 .. note::
    All Users must be explicitly granted access to Collections in order to see the Assets, STIGs, and Evaluations contained therein. Administrators can grant themselves or others access to any Collection. 
 
-It is recommended that most users should be "Collection Creator Users"(ie. assigned the "create_collection" privilege).  Collection Creator Users can create and manage their own collections, as well as be assigned grants from other users.
+It is recommended that most Users should be "Collection Creator Users" (i.e. assigned the "create_collection" privilege).  Collection Creator Users can create and manage their own Collections, as well as be assigned Grants from other Users.
 
-STIG Manager will automatically create its own user associations for Collection grants once an authenticated user accesses the system. User Privileges (ie. "admin" and/or "create_collection") are visible in the User administrative tab, but must be managed in the Authentication Provider. Specific Grants to Collections and Assets/STIGs are managed in the STIG Manager app.
+STIG Manager will automatically create its own User associations for Collection Grants once an authenticated User accesses the system. User Privileges (ie. "admin" and/or "create_collection") are visible in the User administrative tab, but must be managed in the Authentication Provider. Specific Grants to Collections and Assets/STIGs are managed in the STIG Manager app.
 
 
 Import STIGs

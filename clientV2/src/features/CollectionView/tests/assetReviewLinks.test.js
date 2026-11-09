@@ -1,13 +1,12 @@
 import { fireEvent, screen } from '@testing-library/vue'
 import { flushPromises } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { useRouter } from 'vue-router'
+import { describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '../../../testUtils/utils.js'
 import CollectionAssetsTab from '../components/CollectionAssetsTab.vue'
 import CollectionLabelsTab from '../components/CollectionLabelsTab.vue'
 import CollectionStigsTab from '../components/CollectionStigsTab.vue'
 
-vi.mock('vue-router', () => ({ useRouter: vi.fn(), useRoute: () => ({ name: 'collection-tab', query: {} }) }))
+vi.mock('vue-router', () => ({ useRouter: () => ({ replace: vi.fn() }), useRoute: () => ({ name: 'collection-tab', query: {} }) }))
 
 // One row that satisfies every grid in every tab
 const row = { benchmarkId: 'RHEL_9', revisionStr: 'V2R1', assetId: 'a1', labelId: 'l1', name: 'web-01' }
@@ -22,16 +21,16 @@ vi.mock('../../../shared/api/collectionsApi.js', () => ({
   fetchCollectionAssetSummary: vi.fn(async () => [row]),
 }))
 
-// Each grid exposes select and shield buttons keyed by its aggType
+// Each grid exposes a select button and its first row's shield target, keyed by its aggType
 vi.mock('../../../components/common/MetricsSummaryGrid.vue', () => ({
   default: {
     name: 'MetricsSummaryGrid',
-    props: ['aggType', 'apiMetricsSummary'],
-    emits: ['row-select', 'shield-click', 'refresh'],
+    props: ['aggType', 'apiMetricsSummary', 'shieldTo'],
+    emits: ['row-select', 'refresh'],
     template: `
       <div>
         <button :data-testid="'select-' + aggType" @click="$emit('row-select', apiMetricsSummary[0])">select</button>
-        <button :data-testid="'shield-' + aggType" @click="$emit('shield-click', apiMetricsSummary[0])">shield</button>
+        <output :data-testid="'shield-' + aggType">{{ JSON.stringify(apiMetricsSummary?.[0] && shieldTo ? shieldTo(apiMetricsSummary[0]) : null) }}</output>
       </div>
     `,
   },
@@ -44,33 +43,27 @@ async function click(testId) {
   await flushPromises()
 }
 
-// Click path from each tab's first grid down to its checklist shield
+// Click path from each tab's first grid down to its checklist grid
 const tabs = [
   ['STIGs', CollectionStigsTab, ['select-stig']],
   ['Assets', CollectionAssetsTab, ['select-asset']],
   ['Labels', CollectionLabelsTab, ['select-label', 'select-asset']],
 ]
 
+const shieldTarget = aggType => JSON.parse(screen.getByTestId(`shield-${aggType}`).textContent)
+
 describe('asset Review links from the collection tabs', () => {
-  let mockPush
-
-  beforeEach(() => {
-    mockPush = vi.fn()
-    useRouter.mockReturnValue({ push: mockPush, replace: vi.fn() })
-  })
-
-  async function openAssetReview(Tab, path, selectedLabelNames) {
+  async function checklistShieldTarget(Tab, path, selectedLabelNames) {
     renderWithProviders(Tab, { props: { collectionId: 'c1', selectedLabelNames } })
     await flushPromises()
     for (const testId of path) {
       await click(testId)
     }
-    await click('shield-unagg')
-    return mockPush.mock.calls.find(([to]) => to.name === 'collection-asset-review')?.[0]
+    return shieldTarget('unagg')
   }
 
   it.each(tabs)('%s tab carries the label filter into Asset Review', async (_, Tab, path) => {
-    const to = await openAssetReview(Tab, path, ['Alpha', null])
+    const to = await checklistShieldTarget(Tab, path, ['Alpha', null])
 
     expect(to).toEqual({
       name: 'collection-asset-review',
@@ -80,7 +73,7 @@ describe('asset Review links from the collection tabs', () => {
   })
 
   it.each(tabs)('%s tab sends an empty query when no labels are selected', async (_, Tab, path) => {
-    const to = await openAssetReview(Tab, path, [])
+    const to = await checklistShieldTarget(Tab, path, [])
 
     expect(to.query).toEqual({})
   })

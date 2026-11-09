@@ -21,8 +21,8 @@ Our Project incorporates software developed since 2012 by the `U.S. Naval Unders
 
    features/index
    installation-and-setup/index
-   user-guide/index
-   admin-guide/index
+   new-client/index
+   legacy-client/index
    the-project/index
    the-project/contributing
    reference/index
