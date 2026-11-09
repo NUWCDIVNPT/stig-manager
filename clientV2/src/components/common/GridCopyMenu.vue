@@ -84,8 +84,8 @@ function cellValueText(cell, rowData, dt) {
  * @param {object} dt the DataTable component instance
  */
 function show(event, rowData, dt) {
-  // Editable cells keep the browser menu so paste still works.
-  if (event.target.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])')) {
+  // Editable cells keep the browser menu so paste still works; links keep it for Open in new tab / Copy link.
+  if (event.target.closest('a[href], input, textarea, select, [contenteditable]:not([contenteditable="false"])')) {
     return
   }
   const cell = event.target.closest('td')
