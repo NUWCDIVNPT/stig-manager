@@ -48,7 +48,7 @@ const { state: acl, isLoading, error, execute } = useAsyncState(
 const aclDt = ref()
 
 // get the default access for a user based on their role
-const defaultAccess = computed(() => getDefaultAccessForRole(props.roleId))
+const defaultAccess = computed(() => accessLabel(getDefaultAccessForRole(props.roleId)))
 
 // mapping users for the data table for ui display
 const displayAcl = computed(() => (acl.value ?? []).map((row) => {
@@ -127,7 +127,7 @@ watch([visible, () => props.user?.userId], ([isVisible, userId]) => {
           :pt="tablePt"
         >
           <template #empty>
-            {{ isFiltered && displayAcl.length ? 'No rows match the filters.' : 'No effective access.' }}
+            {{ isFiltered && displayAcl.length ? 'No rows match the filters.' : `No access rules to display. Default access (${defaultAccess}) applies to every Asset and STIG.` }}
           </template>
           <Column field="assetName" header="Asset" sortable />
           <Column field="benchmarkId" header="STIG" sortable />

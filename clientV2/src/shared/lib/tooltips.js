@@ -97,10 +97,11 @@ The claims presented by the authentication provider the last time this User auth
     html: `<b>Cyber Operational Readiness Assessment (CORA)</b> evaluates the effectiveness of security controls and operational processes.<br><br><b>Risk Rating</b> is calculated from a <b>Weighted Average</b> that reflects the number and severity of <i>open</i> or <i>unassessed</i> rules.<br>Reviews with <i>Open</i>, <i>Not a Finding</i>, or <i>Not Applicable</i> results are considered <i>assessed</i>.<br>Reviews with other results (such as <i>Not Reviewed</i> or <i>Informational</i>) are treated as <i>unassessed</i>.<br><br>Each severity category (CAT I, II, III) is weighted differently when calculating the overall score:<br><b>Weighted Average</b> formula:<br><code class="formula">(p₁·w₁ + p₂·w₂ + p₃·w₃) / (w₁ + w₂ + w₃)</code><br>where:<br>- <code>pₙ</code> = % of open + unassessed rules in that category<br>- <code>wₙ</code> = weight <b>(CAT I = 10, CAT II = 4, CAT III = 1)</b><br><br>The <b>Risk Rating</b> is primarily determined by the <b>Weighted Average</b>, except for the special "Low" risk condition:<ul class="risk-list"><li><span class="tooltip-label sm-cora-risk-very-high"><b>Very High</b></span><b> ≥ 20%</b></li><li><span class="tooltip-label sm-cora-risk-high"><b>High</b></span><b> ≥ 10% and &lt; 20%</b></li><li><span class="tooltip-label sm-cora-risk-moderate"><b>Moderate</b></span><b> &gt; 0% and &lt; 10%</b></li><li><span class="tooltip-label sm-cora-risk-low"><b>Low</b></span><b> CAT I = 0; CAT II &amp; III each &lt; 5% <i>unweighted</i></b></li><li><span class="tooltip-label sm-cora-risk-very-low"><b>Very Low</b></span><b> 0% total</b></li></ul>`,
   }),
 
-  // Batch edit modal help icons. `result` is static HTML; `detail`/`comment`
-  // supply the static field copy consumed by the component's HTML builder
-  // (which also folds in dynamic collection-settings text).
-  batchEdit: Object.freeze({
+  // Review field help icons (review edit popover, batch edit modal). `result`
+  // is static HTML; `detail`/`comment` supply the static field copy consumed by
+  // getReviewFieldTooltipHtml() below, which folds in the Collection field
+  // settings.
+  reviewFields: Object.freeze({
     result: '<b>Result</b><br>The result of an evaluation of a STIG ruleId.<br><br><b>Export Mappings</b><br><b>CKL:</b> &lt;CHECKLIST&gt;&lt;STIGS&gt;&lt;iSTIG&gt;&lt;VULN&gt;&lt;STATUS&gt;<br><b>XCCDF:</b> &lt;TestResult&gt;&lt;rule-result&gt;&lt;result&gt;',
     detail: Object.freeze({
       title: 'Detail',
@@ -135,9 +136,7 @@ The claims presented by the authentication provider the last time this User auth
   cloneOptions: Object.freeze({
     clickThru: `<span class="sm-warning-header">Warning</span><br><br>Cloning large Collections can take several minutes! Users may see performance impacts when accessing the source Collection during this time.<br><br>Making changes to the source Collection while it is being cloned may lead to inconsistent results in the cloned Collection.<br><br><b>Before proceeding, it is recommended that you warn other Users to refrain from modifying any components of the source Collection while the cloning process is underway.</b>`,
     grants: `<b>Clone the source Collection's users and their grants.</b><br><br>Whether this option is selected or not, the creator of the cloned Collection (ie. you) will be given an Owner grant in the clone.`,
-    labels: `<b>Clone the source Collection's available labels.</b><br><br>You must select this option AND the Assets option for labels to be mapped to Assets in the clone.`,
-    assets: `<b>Clone the source Collection's Assets and their core properties.</b><br><br>This option must be selected to enable the STIGs and Pin Revisions options below.`,
-    stigs: `<b>Assignments and Reviews:</b> Assets will be cloned with their current STIG assignments and ALL stored Reviews. This will include Reviews that are no longer associated with a current STIG assignment or are associated with a non-default Revision of a STIG.<br><br><b>Assignments but not Reviews:</b> Assets will be cloned with their current STIG assignments but NO stored Reviews will be cloned. All Metrics will be set to zero.<br><br><b>Do not clone assignments or Reviews:</b> Assets will be cloned with only their core properties and no STIG assignments or Reviews. The Pin Revisions option will be disabled.`,
+    stigs: `<b>Assignments and Reviews:</b> Assets will be cloned with their current STIG assignments and ALL stored Reviews. This will include Reviews that are no longer associated with a current STIG assignment or are associated with a non-default Revision of a STIG.<br><br><b>Assignments but not Reviews:</b> Assets will be cloned with their current STIG assignments but NO stored Reviews will be cloned. All Metrics will be set to zero.`,
     revisions: `<b>Match the source's pinned Revisions:</b> STIGs in the source Collection that are pinned to a specific Revision will be pinned to that Revision in the clone. STIGs that track the latest Revision (unpinned) in the source will be unpinned in the clone.<br><br><b>Pin the source's default revisions:</b> All STIGs in the clone will be pinned to a specific Revision. STIGs that are pinned to a specific Revision in the source Collection will be pinned to that Revision in the clone. STIGs that track the latest Revision in the source will be pinned to the current latest Revision in the clone.`,
   }),
 
@@ -184,3 +183,22 @@ The claims presented by the authentication provider the last time this User auth
     experimental: `This feature is experimental and may change or be removed. It is only available when the API's <code>STIGMAN_EXPERIMENTAL_LOGSTREAM</code> setting is enabled. It live-tails the server's structured log over a WebSocket and requires admin privileges.`,
   }),
 })
+
+/**
+ * Help-icon HTML for the Detail or Comment review field: static field copy
+ * from TOOLTIPS.reviewFields plus the Collection's field settings.
+ * @param {'detail'|'comment'} field
+ * @param {{enabled?: string, required?: string}} [fieldSetting]
+ */
+export function getReviewFieldTooltipHtml(field, fieldSetting) {
+  const { title, desc, ckl, xccdf } = TOOLTIPS.reviewFields[field]
+  const enabledText = fieldSetting?.enabled === 'findings' ? 'for findings only.' : 'for any result.'
+  let requiredText = 'optional.'
+  if (fieldSetting?.required === 'always') {
+    requiredText = 'required to submit a review.'
+  }
+  else if (fieldSetting?.required === 'findings') {
+    requiredText = 'required to submit a finding.'
+  }
+  return `<b>${title}</b><br>${desc}<br><br><b>Collection Settings</b><br>This field is enabled ${enabledText}<br>Content in this field is ${requiredText}<br><br><b>Export Mappings</b><br><b>CKL:</b> ${ckl}<br><b>XCCDF:</b> ${xccdf}`
+}

@@ -1201,7 +1201,7 @@ Collection Owners can delete the Collection from the Danger Zone section. A conf
 
 Users & Grants Page
 -----------------------
-The Users & Grants page is divided into the Grants and Effective Users sections.
+The Users & Grants page is divided into the Grants and Users sections.
 
 .. _grants-panel:
 
@@ -1247,10 +1247,10 @@ See the :ref:`Roles and Access<roles-and-access>` section for more information a
 
 .. _users-panel:
 
-Effective Users
+Users
 ~~~~~~~~~~~~~~~~~~~~
 
-The Effective Users section displays all the Users that have been granted access to this Collection, with either a Direct Grant to the User or via a Grant to a User Group. Click the "target" icon at the end of a User's row to view an expanded list of every Asset and STIG that the User has access to in this Collection. This view is the "effective access" of the User to the Collection that has been calculated based on the User's Role and the Access Control Lists associated with their Grant.
+The Users section displays all the Users that have been granted access to this Collection, with either a Direct Grant to the User or via a Grant to a User Group. Click the "target" icon at the end of a User's row to view an expanded list of every Asset and STIG that the User has access to in this Collection. This view is the "effective access" of the User to the Collection that has been calculated based on the User's Role and the Access Control Lists associated with their Grant.
 
 
 .. thumbnail:: /assets/images/new/collection-manage-effective-access.png
