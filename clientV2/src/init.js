@@ -1,4 +1,5 @@
 import activityHandler from './auth/ActivityHandler.js'
+import { appRootUrl, classifyCallback, restoreTarget } from './auth/oidcRedirect.js'
 import { sendWorkerRequest } from './auth/workerRequest.js'
 import { resolveDocsUrl } from './shared/lib/docsUrl.js'
 
@@ -25,6 +26,14 @@ else {
 }
 STIGMAN.Env.apiUrl = STIGMAN.Env.apiBase
 STIGMAN.Env.docsUrl = resolveDocsUrl(STIGMAN.Env.apiUrl, STIGMAN.Env.docsDisabled)
+
+// The one redirect URI the OP returns to, whatever page the user opened
+const appRoot = appRootUrl({
+  origin: window.location.origin,
+  pathname: window.location.pathname,
+  historyBase: STIGMAN.Env.historyBase,
+  dev: import.meta.env.DEV,
+})
 
 const statusEl = document.getElementById('loading-text')
 let OW // aka STIGMAN.oidcWorker, created in setupOidcWorker()
@@ -61,19 +70,20 @@ else {
 }
 
 async function authorize() {
-  const url = new URL(window.location.href)
-  const redirectUri = `${url.origin}${url.pathname}`
-  const hash = url.hash
+  const { pathname, search, hash } = window.location
 
   appendStatus(`Authorizing`)
 
-  const paramStr = extractParamString(url)
-  if (paramStr) {
-    return handleRedirectAndParameters(redirectUri, paramStr)
+  const callback = classifyCallback(search, sessionStorage.getItem('oidcState'))
+  if (callback.type === 'callback') {
+    return handleRedirectAndParameters(callback.params)
   }
-  else {
-    return handleNoParameters(redirectUri, hash)
+  if (callback.type === 'stale') {
+    console.log(`[init] State mismatch. Redirecting to ${appRoot}.`)
+    window.location.href = appRoot
+    return false
   }
+  return handleNoParameters(`${pathname}${search}${hash}`)
 }
 
 async function getOidcMetadata() {
@@ -96,21 +106,11 @@ async function initializeOidcWorker() {
   if (response.error) {
     throw new Error(`OIDC Worker getStatus error: ${response.error}`)
   }
-  let clientV2ReauthUri
-  if (import.meta.env.DEV) {
-    clientV2ReauthUri = `${window.location.origin}/reauth.html`
-  }
-  else {
-    clientV2ReauthUri = STIGMAN.Env.historyBase
-      ? `${window.location.origin}${STIGMAN.Env.historyBase}client-v2/reauth.html`
-      : `${window.location.origin}${window.location.pathname.replace(/[^/]*$/, '')}reauth.html`
-  }
-
   const initRequest = {
     request: 'initialize',
-    redirectUri: `${window.location.origin}${window.location.pathname}`,
+    redirectUri: appRoot,
     env: STIGMAN.Env.oauth,
-    clientV2ReauthUri,
+    clientV2ReauthUri: `${appRoot}reauth.html`,
   }
 
   if (!response.initialized) {
@@ -121,23 +121,8 @@ async function initializeOidcWorker() {
   return OW.sendWorkerRequest(initRequest)
 }
 
-function extractParamString(url) {
-  // if (url.hash) return url.hash.substring(1) // Remove the leading '#'
-  if (url.search) { return url.search.substring(1) } // Remove the leading '?'
-  return ''
-}
-
-function processRedirectParams(paramStr) {
-  const params = {}
-  const usp = new URLSearchParams(paramStr)
-  for (const [key, value] of usp) {
-    params[key] = value
-  }
-  return params
-}
-
-async function handleNoParameters(redirectUri, hash) {
-  const response = await OW.sendWorkerRequest({ request: 'getAccessToken', redirectUri })
+async function handleNoParameters(deepLink) {
+  const response = await OW.sendWorkerRequest({ request: 'getAccessToken', redirectUri: appRoot })
   if (response.accessToken) {
     OW.token = response.accessToken
     OW.tokenParsed = response.accessTokenPayload
@@ -146,14 +131,13 @@ async function handleNoParameters(redirectUri, hash) {
   else if (response.redirectOidc) {
     sessionStorage.setItem('codeVerifier', response.codeVerifier)
     sessionStorage.setItem('oidcState', response.state)
-    sessionStorage.setItem('hash', hash)
+    sessionStorage.setItem('deepLink', deepLink)
     window.location.href = response.redirectOidc
     return false
   }
 }
 
-async function handleRedirectAndParameters(redirectUri, paramStr) {
-  const params = processRedirectParams(paramStr)
+async function handleRedirectAndParameters(params) {
   if (!params.code) {
     let errorMessage = 'No authorization code provided in the URL parameters.'
     if (params.error) {
@@ -165,26 +149,20 @@ async function handleRedirectAndParameters(redirectUri, paramStr) {
     appendError(errorMessage)
     return false
   }
-  if (!params.state || params.state !== sessionStorage.getItem('oidcState')) {
-    const reauthHref = window.location.origin + window.location.pathname
-    console.log(`[init] State mismatch. Redirecting to ${reauthHref}.`)
-    window.location.href = reauthHref
-    return false
-  }
   const response = await OW.sendWorkerRequest({
     request: 'exchangeCodeForToken',
     code: params.code,
     codeVerifier: sessionStorage.getItem('codeVerifier'),
     clientId: STIGMAN.Env.oauth.clientId,
-    redirectUri,
+    redirectUri: appRoot,
   })
   if (response.success) {
     OW.token = response.accessToken
     OW.tokenParsed = response.accessTokenPayload
-    window.history.replaceState(window.history.state, '', redirectUri + sessionStorage.getItem('hash')) // restore original hash if it existed
+    window.history.replaceState(window.history.state, '', restoreTarget(sessionStorage.getItem('deepLink'), window.location.origin, appRoot))
     sessionStorage.removeItem('codeVerifier')
     sessionStorage.removeItem('oidcState')
-    sessionStorage.removeItem('hash')
+    sessionStorage.removeItem('deepLink')
     return true
   }
   else {
