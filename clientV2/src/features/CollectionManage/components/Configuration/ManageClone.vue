@@ -220,9 +220,6 @@ const textareaPt = collectionTextareaPt
               <Checkbox v-model="cloneForm.grants" :binary="true" input-id="cloneGrants" />
               <label for="cloneGrants">Grants <HelpIcon :content="TOOLTIPS.cloneOptions.grants" /></label>
             </div>
-            <p class="option-note">
-              Assets, their core properties, and Labels are always cloned.
-            </p>
           </div>
 
           <div class="option-col">
@@ -344,12 +341,6 @@ const textareaPt = collectionTextareaPt
   align-items: center;
   gap: 0.5rem;
   color: var(--color-text-primary);
-  font-size: var(--text-md);
-}
-
-.option-note {
-  margin: 0;
-  color: var(--color-text-dim);
   font-size: var(--text-md);
 }
 

@@ -48,7 +48,7 @@ const { state: acl, isLoading, error, execute } = useAsyncState(
 const aclDt = ref()
 
 // get the default access for a user based on their role
-const defaultAccess = computed(() => getDefaultAccessForRole(props.roleId))
+const defaultAccess = computed(() => accessLabel(getDefaultAccessForRole(props.roleId)))
 
 // mapping users for the data table for ui display
 const displayAcl = computed(() => (acl.value ?? []).map((row) => {

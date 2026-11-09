@@ -6,8 +6,8 @@ import Textarea from 'primevue/textarea'
 import { computed, ref, watch } from 'vue'
 import HelpIcon from '../../../components/common/HelpIcon.vue'
 import ResultBadge from '../../../components/common/ResultBadge.vue'
-import { getReviewFieldTooltipHtml, resultOptions } from '../../../shared/lib/reviewFormUtils.js'
-import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
+import { resultOptions } from '../../../shared/lib/reviewFormUtils.js'
+import { getReviewFieldTooltipHtml, TOOLTIPS } from '../../../shared/lib/tooltips.js'
 
 const props = defineProps({
   visible: {
