@@ -1,11 +1,9 @@
-import { fireEvent, screen } from '@testing-library/vue'
+import { screen } from '@testing-library/vue'
 import { flushPromises } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { useRouter } from 'vue-router'
+import { createMemoryHistory, createRouter } from 'vue-router'
 import { renderWithProviders } from '../../../testUtils/utils.js'
 import IndividualFindingsGrid from '../components/IndividualFindingsGrid.vue'
-
-vi.mock('vue-router', () => ({ useRouter: vi.fn() }))
 
 // The VirtualScroller renders no rows in JSDOM, so render each Column's body slot once per row
 vi.mock('primevue/datatable', async () => {
@@ -53,36 +51,50 @@ const row = {
   stigs: [{ benchmarkId: 'RHEL_9', revisionStr: 'V2R1' }],
 }
 
-describe('individualFindingsGrid Asset Review link', () => {
-  let mockPush
+const Empty = { template: '<div />' }
+const params = { collectionId: 'c1', assetId: 'a1', benchmarkId: 'RHEL_9', revisionStr: 'V2R1' }
 
-  beforeEach(() => {
-    mockPush = vi.fn()
-    useRouter.mockReturnValue({ push: mockPush })
+describe('individualFindingsGrid Asset Review link', () => {
+  let router
+
+  beforeEach(async () => {
+    router = createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        { path: '/', component: Empty },
+        { path: '/collection/:collectionId/asset/:assetId/stig/:benchmarkId/revision/:revisionStr', name: 'collection-asset-review', component: Empty },
+      ],
+    })
+    await router.push('/')
+    await router.isReady()
   })
 
-  async function openAssetReview(selectedLabelNames) {
+  async function render(props) {
     renderWithProviders(IndividualFindingsGrid, {
-      props: { rows: [row], collectionId: 'c1', selectedAggregated: { groupId: 'V-1' }, selectedLabelNames },
+      props: { rows: [row], collectionId: 'c1', selectedAggregated: { groupId: 'V-1' }, ...props },
+      global: { plugins: [router] },
     })
     await flushPromises()
-    await fireEvent.click(screen.getByTitle('Open Asset Review'))
-    return mockPush.mock.calls[0][0]
+    return screen.queryByTitle('Open Asset Review')
   }
 
-  it('carries the label filter alongside ruleId', async () => {
-    const to = await openAssetReview(['Alpha', null])
+  const hrefFor = query => router.resolve({ name: 'collection-asset-review', params, query }).href
 
-    expect(to).toEqual({
-      name: 'collection-asset-review',
-      params: { collectionId: 'c1', assetId: 'a1', benchmarkId: 'RHEL_9', revisionStr: 'V2R1' },
-      query: { labelName: ['Alpha'], labelMatch: 'null', ruleId: 'SV-1_rule' },
-    })
+  it('links the label filter alongside ruleId', async () => {
+    const link = await render({ selectedLabelNames: ['Alpha', null] })
+
+    expect(link.getAttribute('href')).toBe(hrefFor({ labelMatch: 'null', labelName: ['Alpha'], ruleId: 'SV-1_rule' }))
   })
 
-  it('sends only ruleId when no labels are selected', async () => {
-    const to = await openAssetReview([])
+  it('links only ruleId when no labels are selected', async () => {
+    const link = await render({ selectedLabelNames: [] })
 
-    expect(to.query).toEqual({ ruleId: 'SV-1_rule' })
+    expect(link.getAttribute('href')).toBe(hrefFor({ ruleId: 'SV-1_rule' }))
+  })
+
+  it('renders no link when the row reports no STIG', async () => {
+    const link = await render({ rows: [{ ...row, stigs: [] }] })
+
+    expect(link).toBeNull()
   })
 })

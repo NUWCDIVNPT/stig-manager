@@ -2,7 +2,6 @@
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
 import { watch } from 'vue'
-import { useRouter } from 'vue-router'
 import MetricsSummaryGrid from '../../../components/common/MetricsSummaryGrid.vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useQuerySelection } from '../../../shared/composables/useQuerySelection.js'
@@ -28,8 +27,6 @@ const props = defineProps({
     default: true,
   },
 })
-
-const router = useRouter()
 
 // Queries
 const fetchStigs = () => {
@@ -92,8 +89,11 @@ function handleStigSelect(benchmarkId) {
   selectedBenchmarkId.value = benchmarkId
 }
 
-function handleChecklistAssetAction(rowData) {
-  router.push({
+function checklistAssetTo(rowData) {
+  if (!selectedBenchmarkId.value) {
+    return null
+  }
+  return {
     name: 'collection-asset-review',
     params: {
       collectionId: props.collectionId,
@@ -102,13 +102,13 @@ function handleChecklistAssetAction(rowData) {
       revisionStr: rowData.revisionStr,
     },
     query: buildLabelFilterParams(props.selectedLabelNames),
-  })
+  }
 }
 
 // Carries the dashboard label filter along so Collection Review opens scoped
 // to the same Assets the grid was showing.
-function handleStigShieldClick(rowData) {
-  router.push({
+function stigReviewTo(rowData) {
+  return {
     name: 'collection-benchmark-review',
     params: {
       collectionId: props.collectionId,
@@ -116,7 +116,7 @@ function handleStigShieldClick(rowData) {
       revisionStr: rowData.revisionStr,
     },
     query: buildLabelFilterParams(props.selectedLabelNames),
-  })
+  }
 }
 </script>
 
@@ -140,10 +140,9 @@ function handleStigShieldClick(rowData) {
               :selected-key="selectedBenchmarkId"
               selectable
               data-key="benchmarkId"
-              show-shield
+              :shield-to="stigReviewTo"
               @row-select="(row) => handleStigSelect(row.benchmarkId)"
               @refresh="loadStigs(); loadChecklistAssets()"
-              @shield-click="handleStigShieldClick"
             />
           </div>
         </div>
@@ -160,9 +159,8 @@ function handleStigShieldClick(rowData) {
               :is-loading="checklistAssetsLoading"
               :empty-message="selectedBenchmarkId ? 'No checklists found for this STIG. Try refresh.' : 'Select a STIG to view checklists.'"
               parent-agg-type="stig"
-              show-shield
+              :shield-to="checklistAssetTo"
               data-key="assetId"
-              @shield-click="handleChecklistAssetAction"
               @refresh="loadChecklistAssets"
             />
           </div>

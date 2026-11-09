@@ -2,29 +2,21 @@
 import Column from 'primevue/column'
 import shieldGreenCheck from '../../assets/shield-green-check.svg'
 import HighlightText from '../common/HighlightText.vue'
+import RowLinkIcon from '../common/RowLinkIcon.vue'
 
-const props = defineProps({
+defineProps({
   field: String,
   header: String,
   searchTerm: {
     type: String,
     default: '',
   },
-  showShield: {
-    type: Boolean,
-    default: false,
-  },
-  onShieldClick: {
+  // (row) => route location for the shield link, or null for no link
+  shieldTo: {
     type: Function,
     default: null,
   },
 })
-
-function handleShieldClick(rowData) {
-  if (props.showShield && props.onShieldClick) {
-    props.onShieldClick(rowData)
-  }
-}
 </script>
 
 <template>
@@ -34,15 +26,13 @@ function handleShieldClick(rowData) {
         <div class="sm-info">
           <HighlightText :text="slotProps.data.assetName" :term="searchTerm" />
         </div>
-        <button
-          v-if="showShield"
-          type="button"
-          class="shield-action"
+        <RowLinkIcon
+          v-if="shieldTo"
+          :to="shieldTo(slotProps.data)"
+          :icon="shieldGreenCheck"
           title="Open Asset Review"
-          @click.stop="handleShieldClick(slotProps.data)"
-        >
-          <img :src="shieldGreenCheck" width="14" height="14" alt="Review">
-        </button>
+          alt="Review"
+        />
       </div>
     </template>
   </Column>

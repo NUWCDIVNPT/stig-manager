@@ -2,7 +2,6 @@
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
 import { computed, watch } from 'vue'
-import { useRouter } from 'vue-router'
 import MetricsSummaryGrid from '../../../components/common/MetricsSummaryGrid.vue'
 import { fetchCollectionAssetSummary } from '../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
@@ -29,8 +28,6 @@ const props = defineProps({
     default: true,
   },
 })
-
-const router = useRouter()
 
 // Queries
 const fetchAssets = () => {
@@ -85,8 +82,11 @@ function handleAssetSelect(assetId) {
   selectedAssetId.value = assetId
 }
 
-function handleShieldClick(rowData) {
-  router.push({
+function assetReviewTo(rowData) {
+  if (!selectedAssetId.value) {
+    return null
+  }
+  return {
     name: 'collection-asset-review',
     params: {
       collectionId: props.collectionId,
@@ -95,7 +95,7 @@ function handleShieldClick(rowData) {
       revisionStr: rowData.revisionStr,
     },
     query: buildLabelFilterParams(props.selectedLabelNames),
-  })
+  }
 }
 </script>
 
@@ -137,9 +137,8 @@ function handleShieldClick(rowData) {
               :is-loading="selectedAssetStigsLoading"
               :empty-message="selectedAssetId ? 'No checklists found for this asset.' : 'Select an asset to view its checklists.'"
               parent-agg-type="asset"
-              show-shield
+              :shield-to="assetReviewTo"
               @refresh="loadSelectedAssetStigs"
-              @shield-click="handleShieldClick"
             />
           </div>
         </div>

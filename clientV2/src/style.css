@@ -471,7 +471,7 @@ textarea:focus {
   white-space: nowrap;
 }
 
-/* Icon button that navigates (shield, collection icon); always visible, dim
+/* Icon link that navigates (shield, collection icon); always visible, dim
    until hovered. */
 .shield-action {
   width: 24px;
@@ -484,6 +484,7 @@ textarea:focus {
   border-radius: 4px;
   cursor: pointer;
   flex-shrink: 0;
+  text-decoration: none;
   opacity: 0.5;
   transition: opacity 0.15s, transform 0.15s, background-color 0.15s;
 }
