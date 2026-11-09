@@ -11,7 +11,7 @@ Securing and Assessing STIG Manager Deployments
 The STIG Manager application can be orchestrated several ways, each with unique security requirements and goals. We know many deployments must comply with the Application Security and Development STIG - commonly known as the ASD. Therefore we have organized this section around ASD requirements, to provide guidance for those tasked with securing and assessing STIG-compliant STIG Manager deployments.
 
 .. note::
-  The ASD assesses many application components, and application governance, using a single checklist of 286 checks (as of V5R1).  Unfortunately, the current ASD provides limited guidance if you're using modern security technologies such as Single Sign On, OpenID Connect, OAuth2 authorization, and containerization. If you are required to complete an ASD assessment, we encourage focusing on the spirit of the checklist until it is updated or re-imagined.
+  The ASD assesses many application components, and application governance, using a single checklist of 286 checks (as of V5R1).  Unfortunately, the current ASD provides limited guidance if you're using modern security technologies such as Single Sign On, OpenID Connect, OAuth2 authorization, and containerization. If you are required to complete an ASD assessment, we encourage focusing on the spirit of the checklist.
 
 Securing Your Deployment
 ========================
@@ -89,7 +89,7 @@ The claims described in the sections above are contained in OAuth2 JWT formatted
 The Web Client on startup redirects users to the OIDC Provider to authenticate and obtain an access token that defines the scope of API access the user grants that client. For most ASD-compliant deployments, the connection to the OIDC Provider's authorization_endpoint will use MTLS and CAC PKI.
 
 .. note::
-  Communication between the API and clients include the access_token and should occur using TLS but do not require Mutual TLS (MTLS). 
+  Communication between the API and clients includes the access_token and should occur using TLS but does not require Mutual TLS (MTLS). 
 
 The Web Client is a single-page application (SPA) that executes entirely in the browser. Browsers are low- to zero-trust environments where OAuth2 access tokens should have short lifetimes to mitigate the risk of token diversion. Just what is considered 'short' is for you (or your organization) to decide, but 15 minutes or even less is not uncommon.
 
@@ -116,7 +116,7 @@ Several ASD checks address the management of data storage. It is important to un
 Logging and Analysis
 -----------------------
 
-Many ASD checks specify requirements for how application log entries should collected, aggregated, managed, audited, and analysed. The STIG Manager application role in this is simple: it outputs all its log entries to STDOUT.  These log entries must be captured and retained in accordance with your log retention policy.  The developers of the STIG Manager API component have made efforts to ensure that the logs the application emits conform to requirements specified in the ASD where appropriate. However, there are several other components of a successful deployment that will produce logs that may also require management by your logging solution, such as the OIDC Provider, Database, and Container Platform.  
+Many ASD checks specify requirements for how application log entries should be collected, aggregated, managed, audited, and analysed. The STIG Manager application role in this is simple: it outputs all its log entries to STDOUT.  These log entries must be captured and retained in accordance with your log retention policy.  The developers of the STIG Manager API component have made efforts to ensure that the logs the application emits conform to requirements specified in the ASD where appropriate. However, there are several other components of a successful deployment that will produce logs that may also require management by your logging solution, such as the OIDC Provider, Database, and Container Platform.  
 
 Transport Layer Security
 ---------------------------

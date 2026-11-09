@@ -23,9 +23,9 @@ issue tracker <https://github.com/NUWCDIVNPT/stig-manager/issues>`__. When repor
 Code Contributions
 ======================================
 
-STIG Manager is being developed using a `Forking Workflow <https://www.atlassian.com/git/tutorials/comparing-workflows/forking-workflow>`_. All contributions to the codebase are expected to come via a GitHub Pull Request(PR) from a fork of the appropriate repository. 
+STIG Manager is being developed using a `Forking Workflow <https://www.atlassian.com/git/tutorials/comparing-workflows/forking-workflow>`_. All contributions to the codebase are expected to come via a GitHub Pull Request (PR) from a fork of the appropriate repository. 
 
-Contributors should be comfortable with the `licences <https://github.com/NUWCDIVNPT/stig-manager/blob/main/LICENSE.md>`__ governing the project and any other conditions specified in the Project's `Contributing.md <https://github.com/NUWCDIVNPT/stig-manager/blob/main/CONTRIBUTING.md>`_ document.
+Contributors should be comfortable with the `licenses <https://github.com/NUWCDIVNPT/stig-manager/blob/main/LICENSE.md>`__ governing the project and any other conditions specified in the Project's `Contributing.md <https://github.com/NUWCDIVNPT/stig-manager/blob/main/CONTRIBUTING.md>`_ document.
 
 To ensure smooth integration and maintain project quality, please adhere to these guidelines:
 
@@ -96,28 +96,20 @@ This section outlines the main components of the STIG Manager project, their tec
    * - API definition
      - OpenAPI 3.0
      - @csmig
-     - - Refine API Definition to enable automated validation of API responses. 
-       - Update to OpenAPI Spec 3.1 when suitable middleware support is available. 
+     - - Update to OpenAPI Spec 3.1 when suitable middleware support is available. 
      - `OAS <https://github.com/NUWCDIVNPT/stig-manager/issues?q=is%3Aissue+is%3Aopen+label%3AOAS>`__
    * - Express middleware
      - | Node.js
        | Express
      - @csmig
-     - - Identify suitable middleware replacement for oas-tools, which does not seem well supported at the moment, and includes unneeded dependencies. 
+     - - Keep ``express-openapi-validator`` and other middleware dependencies current. 
      - | `API <https://github.com/NUWCDIVNPT/stig-manager/issues?q=is%3Aopen+is%3Aissue+label%3AAPI>`__
        | `dependencies <https://github.com/NUWCDIVNPT/stig-manager/issues?q=is%3Aopen+is%3Aissue+label%3Adependencies>`__
    * - MySQL service
      - | Node.js
-       | MySQL 8
+       | MySQL 8.4
      - @csmig
-     - - Keep in sync with MSSQL Server service, which is the primary development focus at the moment. 
-     - | `DB <https://github.com/NUWCDIVNPT/stig-manager/issues?q=is%3Aopen+is%3Aissue+label%3ADB>`__
-       | `API <https://github.com/NUWCDIVNPT/stig-manager/issues?q=is%3Aopen+is%3Aissue+label%3AAPI>`__
-   * - Microsoft SQL Server service
-     - | Node.js
-       | MSSQL 2019
-     - @csmig
-     - - Implementation of MS SQL Server service to match or exceed current MySQL feature support.
+     -
      - | `DB <https://github.com/NUWCDIVNPT/stig-manager/issues?q=is%3Aopen+is%3Aissue+label%3ADB>`__
        | `API <https://github.com/NUWCDIVNPT/stig-manager/issues?q=is%3Aopen+is%3Aissue+label%3AAPI>`__
    * - Test suites

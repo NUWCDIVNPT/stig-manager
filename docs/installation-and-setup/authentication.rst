@@ -4,9 +4,9 @@
 Authentication and Identity
 ########################################
 
-The API requires an OAuth2 JSON Web Token (JWT) that conforms to the OpenID Connect specification to determine client and user access. The STIG Manager OSS Project suggests the use of the **Authorization Code Flow with Proof Key for Code Exchange** (PKCE)​ flavor of OAuth 2.0​ for use with the project web application.  To support users that wish to develop their own utilities, we also suggest enabling the Device Authorization Grant Flow.
+The API requires an OAuth2 JSON Web Token (JWT) that conforms to the OpenID Connect specification to determine client and user access. The project web application requires the **Authorization Code Flow with Proof Key for Code Exchange** (PKCE)​ flavor of OAuth 2.0​.  To support users that wish to develop their own utilities, we also suggest enabling the Device Authorization Grant Flow.
 
-STIG Manager OSS has been tested to work with Keycloak, Okta, and AzureAD as OIDC providers.  It is expected to work with other OIDC providers if they can be configured to provide a token that meets the requirements specified below. Please create an Issue with details on our GitHub project if you experience issues with other providers.
+STIG Manager OSS has been tested to work with Keycloak, Okta, F5, and Azure Entra ID as OIDC providers.  It is expected to work with other OIDC providers if they can be configured to provide a token that meets the requirements specified below. Please create an Issue with details on our GitHub project if you experience issues with other providers.
 
 .. note::
   If you are using the demonstration Keycloak container from the Project's Docker Hub page, you may not need to change any settings or variables described in this section. 
@@ -24,7 +24,7 @@ The JWT produced by the Identity Provider should provide the claims specified be
     * User Email - ``STIGMAN_JWT_EMAIL_CLAIM`` - (optional) **default:** ``email``
     * User Privileges - ``STIGMAN_JWT_PRIVILEGES_CLAIM`` - **default:** ``realm_access.roles``
     * Scope - ``STIGMAN_JWT_SCOPE_CLAIM`` **default:** ``scope``. Some OIDC Providers (Okta, Azure Entra ID) use the claim ``scp`` to enumerate scopes. May name more than one claim, as a comma-separated list such as ``scp,roles``, in which case the scopes found in each named claim are combined. See :ref:`service-account-setup`.
-    * Assertion ID - ``STIGMAN_JWT_ASSERTION_CLAIM`` **default** ``jti``. Some OIDC Providers (ADFS, Azure Entra ID?) use the claim ``uti`` instead of ``jti`` to protect against replay attacks.
+    * Assertion ID - ``STIGMAN_JWT_ASSERTION_CLAIM`` **default:** ``jti``. Some OIDC Providers (ADFS, Azure Entra ID) use the claim ``uti`` instead of ``jti`` to protect against replay attacks.
     * Service Name - ``STIGMAN_JWT_SERVICENAME_CLAIM`` - **default:** ``clientId``. Used for service account clients.
     * Audience - ``STIGMAN_JWT_AUD_VALUE`` - (optional) **no default**. If specified, the ``aud`` claim must include this value.
 
@@ -39,7 +39,7 @@ The JWT produced by the Identity Provider should provide the claims specified be
    * **Audience**: String or array of strings. If ``STIGMAN_JWT_AUD_VALUE`` is set, it must be present in the ``aud`` claim value.
 
 .. note::
-  STIG Manager will use the value specified in the ``STIGMAN_JWT_USERNAME_CLAIM`` environment variable as the Claim that should hold a users unique username. This value defaults to the Keycloak default, which is ``preferred_username``
+  STIG Manager will use the value specified in the ``STIGMAN_JWT_USERNAME_CLAIM`` environment variable as the Claim that should hold a User's unique username. This value defaults to the Keycloak default, which is ``preferred_username``
 
 
 .. code-block:: JSON
@@ -135,7 +135,7 @@ To grant an Entra ID service account access:
 
 .. _oidc-scopes:
 
-Scopes, and Privileges
+Scopes and Privileges
 ---------------------------------
 
 The STIG Manager API restricts endpoint access using the "scope" claims in the JWT. See the `API specification <https://github.com/NUWCDIVNPT/stig-manager/blob/main/api/source/specification/stig-manager.yaml>`_ for details. 
@@ -157,7 +157,7 @@ Authentication Example - RedHat Keycloak 19
 .. note::
   The Keycloak project updates frequently, and may introduce changes that will make this guide incompatible with later versions. The information provided below is just one way to configure Keycloak 19 to provide a JWT that will work with STIG Manager. Please make sure you configure Keycloak in accordance with your organization's Security Policy.
 
-The web client is an OpenID Connect (OIDC) OAuth2 Relying Party and the API is an OAuth2 Resource Server. User authentication is provided by an external Identity Provider (IdP). All API access is controlled by OAUth2 JSON Web Tokens (JWTs) issued by the IdP. User privileges are extracted from token claims and endpoint access is controlled by token scope. 
+The web client is an OpenID Connect (OIDC) OAuth2 Relying Party and the API is an OAuth2 Resource Server. User authentication is provided by an external Identity Provider (IdP). All API access is controlled by OAuth2 JSON Web Tokens (JWTs) issued by the IdP. User privileges are extracted from token claims and endpoint access is controlled by token scope. 
 Keycloak is readily available, actively maintained by a major OSS vendor, supports Identity Brokering and User Federation, and is used by major DoD projects such as Air Force Iron Bank.
 Keycloak supports many External Identity Providers, but has only been tested using its own authentication. 
 `More information about RedHat Keycloak. <https://www.keycloak.org/documentation>`_
@@ -238,7 +238,7 @@ Other suggested Keycloak settings for the stig-manager client:
   * Revoke refresh token: yes
   * Refresh Token Max Reuse: 0
   * Client or SSO Session Idle: 10 minutes
-  * The "preferred_username" claim in the token should hold the username you intend to be used in STIG Manager (this is the default setting). If changed, use ``STIGMAN_JWT_USER_CLAIM`` to specify.
+  * The "preferred_username" claim in the token should hold the username you intend to be used in STIG Manager (this is the default setting). If changed, use ``STIGMAN_JWT_USERNAME_CLAIM`` to specify.
   * Set "OAuth 2.0 Device Authorization Grant Enabled" to "On."
 
 For other settings, the default Keycloak settings should work.
@@ -250,7 +250,7 @@ Most commonly, STIG Manager will require the below Environment Variable to be sp
 
  * ``STIGMAN_OIDC_PROVIDER`` - Sample value:  ``http://localhost:8080/auth/realms/stigman`` - The base URL of the OIDC provider issuing signed JWTs for the API.  The string ``/.well-known/openid-configuration`` will be appended when fetching metadata.
  * ``STIGMAN_CLIENT_OIDC_PROVIDER``  - Default value: Value of ``STIGMAN_OIDC_PROVIDER`` - Client override of the base URL of the OIDC provider issuing signed JWTs for the API.  The string ``/.well-known/openid-configuration`` will be appended by the client when fetching metadata.
- * ``STIGMAN_CLIENT_KEYCLOAK_CLIENTID`` - Suggested value: ``stig-manager``
+ * ``STIGMAN_CLIENT_ID`` - Suggested value: ``stig-manager``
  * ``STIGMAN_JWT_PRIVILEGES_CLAIM`` - Sample value: ``realm_access.roles``
  * ``STIGMAN_CLIENT_EXTRA_SCOPES`` - Sample value: ``offline_access`` 
 

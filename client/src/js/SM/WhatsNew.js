@@ -27,7 +27,7 @@ SM.WhatsNew.Sources = [
 
     <p><img src="img/whatsnew/2026-05-18-collection-manage-tasks.png" /></p>
 
-    <p>Documentation is available in the <a target="_blank" href="./docs/user-guide/user-guide.html#review-aging-rules">STIGMan User Guide</a> and the <a target="_blank" href="./docs/admin-guide/admin-quickstart.html#enable-service-jobs">App Manager Walkthrough</a>.</p>`
+    <p>Documentation is available in the <a target="_blank" href="./docs/legacy-client/user-guide/user-guide.html#legacy-review-aging-rules">STIGMan User Guide</a> and the <a target="_blank" href="./docs/legacy-client/admin-guide/admin-quickstart.html#enable-service-jobs">App Manager Walkthrough</a>.</p>`
   },
   {
     date: '2025-10-29',
@@ -35,7 +35,7 @@ SM.WhatsNew.Sources = [
     body: `
     <p>This feature provides App Managers with real-time streaming of log records from the STIG Manager backend to the web client. This stream can be recorded to help troubleshoot issues that would otherwise require direct access to the backend logs.</p>
     
-    <p>Documentation is available in the <a target="_blank" href="./docs/admin-guide/admin-guide.html#log-stream">STIGMan Application Manager (Administrator) Guide</a>.</p>
+    <p>Documentation is available in the <a target="_blank" href="./docs/legacy-client/admin-guide/admin-guide.html#legacy-log-stream">STIGMan Application Manager (Administrator) Guide</a>.</p>
 
     <p>The Log Stream interface is accessible from the <b>Application Management -> Log Stream</b> workspace in the Navigation Tree.</p>
 
@@ -48,7 +48,7 @@ SM.WhatsNew.Sources = [
     <p>Application Managers can use the new Service Jobs feature to control and schedule background operations in the STIG Manager database.</p>
     <p>The initial implementation provides database maintenance and cleanup jobs that are disabled by default. <b>It is highly recommended that Application Managers enable and schedule these jobs to run periodically to help maintain optimal system performance and minimize resource usage.</b></p>
     
-    <p>Documentation and guidance is available in the <a target="_blank" href="./docs/admin-guide/admin-quickstart.html#enable-service-jobs">STIGMan Application Manager (Administrator) Walkthrough</a> and <a target="_blank" href="./docs/admin-guide/admin-guide.html#service-jobs-panel">Guide</a>.</p>
+    <p>Documentation and guidance is available in the <a target="_blank" href="./docs/legacy-client/admin-guide/admin-quickstart.html#enable-service-jobs">STIGMan Application Manager (Administrator) Walkthrough</a> and <a target="_blank" href="./docs/legacy-client/admin-guide/admin-guide.html#service-jobs-panel">Guide</a>.</p>
 
     <p>The Service Jobs interface is accessible from the <b>Application Management -> Service Jobs</b> workspace in the Navigation Tree.</p>
 
@@ -155,7 +155,7 @@ SM.WhatsNew.Sources = [
 
     <p>To generate a CSV file representation of the Assets in your Collection, click the "Export Assets CSV" button in the Collection Management workspace. If Assets are selected, this will create a CSV file representation of all of the selected Assets, including their Labels and STIG assignments. If no Assets are selected, all Assets will be included in the CSV.</p>
 
-    <p>For the required CSV format, <a target="_blank" href="docs/user-guide/user-guide.html#create-asset-batch">refer to our documentation for detailed field requirements,</a> or click the "Export Assets CSV" button and modify its contents.</p>
+    <p>For the required CSV format, <a target="_blank" href="docs/legacy-client/user-guide/user-guide.html#create-asset-batch">refer to our documentation for detailed field requirements,</a> or click the "Export Assets CSV" button and modify its contents.</p>
 
     <p><img src="img/whatsnew/2025-04-17-asset-csv.png" width=750/></p>
 
@@ -181,7 +181,7 @@ SM.WhatsNew.Sources = [
     <p> Access Control for these grants can be defined by creating multiple Access Control Rules with any combination of Collection, STIG, Label, or Asset properties, which will combine to granularly control a User's access to Collection Reviews.</p>
     <p>For example, if two Access Control Rules are defined to allow a User to "Read Only" Reviews for a "Databases" label, and "Read/Write" for a the "Databases" label and the "PostgreSQL_9-x_STIG" STIG, the user will be able to view all Reviews for Assets labeled with "Databases" but will only be able to modify Reviews in the "PostgreSQL_9-x_STIG".</p>
 
-    <p>Please see the <a target="_blank" href="docs/user-guide/roles-and-access.html">STIG Manager Documentation for more details about these new Features!</a>.</p>
+    <p>Please see the <a target="_blank" href="docs/legacy-client/user-guide/roles-and-access.html">STIG Manager Documentation for more details about these new Features!</a>.</p>
 
     <p><img src="img/whatsnew/2025-01-21-collection-manage-acl-popup.png" width=750/></p>
 
@@ -379,7 +379,7 @@ SM.WhatsNew.Sources = [
 
     <p><img src="img/whatsnew/2023-04-25-review-key-differ.png"/></p>
 
-    <p>There are a very small number of exceptions to this behavior, please see the <a target="_blank" href="docs/user-guide/rule-exceptions.html">STIG Manager Documentation for more details.</a></p>`    
+    <p>There are a very small number of exceptions to this behavior, please see the <a target="_blank" href="docs/legacy-client/user-guide/rule-exceptions.html">STIG Manager Documentation for more details.</a></p>`    
   },
   {
     date: '2023-01-11',
@@ -422,7 +422,7 @@ SM.WhatsNew.Sources = [
     </ul>         
 
 
-    <p>Please see the <a target="_blank" href="docs/user-guide/user-guide.html#collection-dashboard">STIG Manager Documentation for more details about this new feature!</a></p>`
+    <p>Please see the <a target="_blank" href="docs/legacy-client/user-guide/user-guide.html#collection-dashboard">STIG Manager Documentation for more details about this new feature!</a></p>`
   },       
   {
     date: '2023-01-10',
@@ -442,7 +442,7 @@ SM.WhatsNew.Sources = [
     
     <p>Available to all users from the NavTree, the new Metrics Report provides a much easier to digest view of the overall Status and Evaluation progress of your entire Collection, as well as metrics export options and various pivoted presentations of your Collection's assessment statistics.</p>
     
-    <p>Please see the <a target="_blank" href="docs/user-guide/user-guide.html#metrics-report-workspace">STIG Manager Documentation for more details about this new feature!</a></p>
+    <p>Please see the <a target="_blank" href="docs/legacy-client/user-guide/user-guide.html#metrics-report-workspace">STIG Manager Documentation for more details about this new feature!</a></p>
     <p><img src="img/whatsnew/2022-10-12-metrics-report1.png"/></p>`
   },        
   {
@@ -540,7 +540,7 @@ SM.WhatsNew.Sources = [
   {
     date: '2022-05-16',
     header: 'New Import Options and Additional Result Values',
-    body: `The App now provides Users with more fine-grained control over the way they import .ckl and XCCDF files. Please see the <a target="_blank" href="docs/user-guide/user-guide.html#collection-settings-tab">STIG Manager Documentation for more details about these new Collection Settings</a>.
+    body: `The App now provides Users with more fine-grained control over the way they import .ckl and XCCDF files. Please see the <a target="_blank" href="docs/legacy-client/user-guide/user-guide.html#collection-settings-tab">STIG Manager Documentation for more details about these new Collection Settings</a>.
     <p/>
     <b>Control these Import Options from the Collection -> Manage workspace or from the import interfaces.</b>
     <p/>

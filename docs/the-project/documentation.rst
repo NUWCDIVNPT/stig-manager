@@ -17,7 +17,7 @@ Build with Docker
 #. Clone the STIG Manager repository from GitHub.
 #. Navigate to /docs folder of the repository. 
 #. Build the Docker image using the following command: ``docker build -t sphinx-w-requirements .``
-#. Run the Docker image using the following command: ``docker run --rm -v "$(pwd):/docs" sphinx-w-requirements``
+#. Run the Docker image using the following command: ``docker run --rm -v "$(realpath ..)":/stig-manager -w /stig-manager/docs sphinx-w-requirements make html``
 #. The build product is located in ``_build`` in the docs directory.
 
 Alternatively, you can run the ``build.sh`` script located in the /docs directory of the repository. This script will build the Docker image and run the container, generating the documentation.

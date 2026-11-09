@@ -7,11 +7,11 @@ STIG Review Handling and Matching
 
 STIG Manager treats STIGs as checklists broken out into hundreds of individual Rules.  These Rules include Check Content elements that describe the actual check that must be performed to Evaluate the Rule. 
 
-**Each Review for a Rule is tracked using a key created from the Check Contents and Version of the Rule being evaluated, independent of a specific STIG. This allows STIG Manager to track Reviews across STIG revisions as long as the Check Content has stayed the same.**
+**Each Review for a Rule is tracked using a key created from the Check Content and Version of the Rule being evaluated, independent of a specific STIG. This allows STIG Manager to track Reviews across STIG revisions as long as the Check Content has stayed the same.**
 
-When DISA Reference STIG releases are imported into STIG Manager, the Check Content is recorded for each Rule in that revision.  When viewing Review workspaces, STIG Manager will present the Rules contained in the selected STIG Revision, and all the Reviews that are attached to those Rule's specific keys.
+When DISA Reference STIG releases are imported into STIG Manager, the Check Content is recorded for each Rule in that revision.  When viewing Review workspaces, STIG Manager will present the Rules contained in the selected STIG Revision, and all the Reviews that are attached to those Rules' specific keys.
 
-**This behavior lets a large proportion of Reviews that were performed with the previous STIG Revision to be presented when viewing the new STIG Revision. Reviewers will only need to perform Reviews on the Rules that have been added or where the actual Check they are performing has changed.**
+**This behavior lets a large proportion of Reviews that were performed with the previous STIG Revision be presented when viewing the new STIG Revision. Reviewers will only need to perform Reviews on the Rules that have been added or where the actual Check they are performing has changed.**
 
 .. note::
   To be exactly technical, STIG Manager uses a combination of the following identifiers to track Reviews:
@@ -38,9 +38,9 @@ Rule Matching Example
 ----------------------------------------------------
 
 
-STIG Viewer is limited because it operates only on the current set of STIGs, while STIG Manager has a history of older STIG Revisions. This means STIGMan can compare Rule Check Content between STIG and Rule changes, and only present Reviews that exactly match the Check Content of the Rule being evaluated.
+STIG Viewer is limited because it operates only on the current set of STIGs, while STIG Manager has a history of older STIG Revisions. This means STIGMan can compare Rule Check Content across STIG Revisions, and only present Reviews that exactly match the Check Content of the Rule being evaluated.
 
-Below is a screenshot of the STIGMan STIG Compare tool, showing a one-character difference between two related Rules from different STIG revisions.  The STIG Viewer feature would apply the Review from the previous STIG revision to the new Rule, even though the Check Content has changed.
+Below is a screenshot of the Compare Revisions feature of the STIG Library, showing a one-character difference between two related Rules from different STIG revisions.  The STIG Viewer feature would apply the Review from the previous STIG revision to the new Rule, even though the Check Content has changed.
 
 .. thumbnail:: /assets/images/check-change-example-stig-viewer-crop2.png
       :width: 50% 

@@ -15,7 +15,7 @@ If other projects want to contribute a client or other stand-alone enhancements 
 STIGMan Watcher
 ===========================
 
-The STIG Manager Watcher utility is separately maintained by a member of the NUWCDIVNPT STIG Manager team, and serves as the reference Command Line Utility. It is a Node.js app that will monitor a specific folder for .ckl or XCCDF .xml files and automatically import them into a designated Collection. 
+The STIG Manager Watcher utility is separately maintained by a member of the NUWCDIVNPT STIG Manager team, and serves as the reference Command Line Utility. It is a Node.js app that will monitor a specific folder for .ckl, .cklb, or XCCDF .xml files and automatically import them into a designated Collection. 
 
 See the `STIGMan Watcher Repo <https://github.com/NUWCDIVNPT/stigman-watcher>`_ for more details. 
 
