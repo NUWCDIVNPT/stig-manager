@@ -423,7 +423,7 @@ export const manifest = [
     section: 'user-guide > Collection Management > Create Asset Batch (importer)',
     user: 'admin',
     route: l => `/collection/${l.collectionId(C)}/management`,
-    steps: [['click', 'button.p-togglebutton:has-text("Assets")'], ['wait', 800], ['upload', 'button:has-text("Import Assets CSV")', '../user-guide/Stig-Manager-Asset-Batch-Import.csv'], ['waitFor', '.p-dialog'], ['wait', 800]],
+    steps: [['click', 'button.p-togglebutton:has-text("Assets")'], ['wait', 800], ['upload', 'button:has-text("Import Assets CSV")', '../../docs/user-guide/Stig-Manager-Asset-Batch-Import.csv'], ['waitFor', '.p-dialog'], ['wait', 800]],
     clip: '.p-dialog',
     clipPad: 24,
     scale: 2,

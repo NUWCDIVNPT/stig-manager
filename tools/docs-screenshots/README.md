@@ -17,7 +17,7 @@ Generates the client screenshots in `docs/assets/images` from `manifest.mjs`, an
 ## Local run
 
 ```
-cd docs/screenshots
+cd tools/docs-screenshots
 npm ci
 npx playwright install chromium-headless-shell   # first time only
 npm run db                                      # throwaway MySQL on :3308

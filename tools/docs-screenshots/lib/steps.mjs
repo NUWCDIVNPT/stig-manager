@@ -20,7 +20,7 @@ const ops = {
   idle: page => page.waitForLoadState('load'),
   scrollTo: (page, sel) => page.locator(sel).first().scrollIntoViewIfNeeded(),
   check: (page, sel) => page.locator(sel).first().check(),
-  // click a control that opens the file chooser, then supply files (paths relative to docs/screenshots)
+  // click a control that opens the file chooser, then supply files (paths relative to tools/docs-screenshots)
   upload: async (page, sel, ...files) => {
     const [chooser] = await Promise.all([page.waitForEvent('filechooser'), page.locator(sel).first().click()])
     await chooser.setFiles(files.map(f => path.resolve(PKG_DIR, f)))

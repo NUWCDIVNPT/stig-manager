@@ -28,7 +28,7 @@ export const config = {
   stackDir: here('.stack/'),
 
   // Capture settings
-  outDir: env.SHOTS_OUT_DIR || here('../assets/images/'),
+  outDir: env.SHOTS_OUT_DIR || here('../../docs/assets/images/'),
   workDir: here('.out/'),
   // Unannotated copy of every capture that has highlights, for hand-editing
   rawDir: env.SHOTS_RAW_DIR || here('raw/'),
