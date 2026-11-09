@@ -61,13 +61,14 @@ const props = defineProps({
     type: String,
     default: null,
   },
-  showShield: {
-    type: Boolean,
-    default: false,
+  // (row) => route location for the row's shield / collection icon link, or null for no link
+  shieldTo: {
+    type: Function,
+    default: null,
   },
-  showCollectionIcon: {
-    type: Boolean,
-    default: false,
+  collectionIconTo: {
+    type: Function,
+    default: null,
   },
   selectedKey: {
     type: [String, Number],
@@ -80,7 +81,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['row-select', 'shield-click', 'collection-icon-click', 'refresh'])
+const emit = defineEmits(['row-select', 'refresh'])
 
 const hasBadge = computed(() => props.badge !== '' && props.badge !== null)
 
@@ -119,14 +120,6 @@ const selectedRow = ref(null)
 
 function onRowSelect(event) {
   emit('row-select', event.data)
-}
-
-function onShieldClick(rowData) {
-  emit('shield-click', rowData)
-}
-
-function onCollectionIconClick(rowData) {
-  emit('collection-icon-click', rowData)
 }
 
 const aggregationType = computed(() => {
@@ -197,16 +190,16 @@ const columns = computed(() => {
     { field: 'assessedCat2', header: 'CAT 2 Assessed', group: SEVERITY, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.severity), bodyStyle: CENTER },
     { field: 'assessedCat1', header: 'CAT 1 Assessed', group: SEVERITY, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.severity), bodyStyle: CENTER },
   ]
-  const benchmarkColumn = { field: 'benchmarkId', header: 'Benchmark', group: 'STIG', component: BenchmarkColumn, locked: true, searchable: true, showShield: props.showShield, onShieldClick, style: cellStyle(WIDTH.benchmark), pt: LEFT_HEADER }
+  const benchmarkColumn = { field: 'benchmarkId', header: 'Benchmark', group: 'STIG', component: BenchmarkColumn, locked: true, searchable: true, shieldTo: props.shieldTo, style: cellStyle(WIDTH.benchmark), pt: LEFT_HEADER }
   const titleColumn = { field: 'title', header: 'Title', group: 'STIG', defaultHidden: true, component: TextColumn, searchable: true, style: cellStyle(WIDTH.title), pt: LEFT_HEADER }
   const revisionColumn = { field: 'revisionStr', header: 'Revision', group: 'STIG', component: RevisionColumn, searchable: true, style: cellStyle(WIDTH.revision), pt: LEFT_HEADER }
-  const assetColumn = { field: 'assetName', header: 'Asset', group: 'Asset', component: AssetColumn, locked: true, searchable: true, showShield: props.showShield, onShieldClick, style: cellStyle(WIDTH.name), pt: LEFT_HEADER }
+  const assetColumn = { field: 'assetName', header: 'Asset', group: 'Asset', component: AssetColumn, locked: true, searchable: true, shieldTo: props.shieldTo, style: cellStyle(WIDTH.name), pt: LEFT_HEADER }
   const stigNames = r => r.stigs
   const labelsColumn = { field: 'labels', header: 'Labels', group: 'Asset', component: LabelsColumn, searchable: true, filterValues: r => r.labels, multiple: true, style: cellStyle(WIDTH.labels), pt: LEFT_HEADER }
   switch (aggregationType.value) {
     case 'collection':
       return [
-        { field: 'collectionName', header: 'Collection', group: 'Collection', component: CollectionColumn, locked: true, searchable: true, showShield: props.showShield, onShieldClick, showCollectionIcon: props.showCollectionIcon, onCollectionIconClick, style: cellStyle(WIDTH.benchmark), pt: LEFT_HEADER },
+        { field: 'collectionName', header: 'Collection', group: 'Collection', component: CollectionColumn, locked: true, searchable: true, shieldTo: props.shieldTo, collectionIconTo: props.collectionIconTo, style: cellStyle(WIDTH.benchmark), pt: LEFT_HEADER },
         { field: 'assetCnt', header: 'Assets', group: 'Collection', component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
         { field: 'stigCnt', header: 'STIGs', group: 'Collection', component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
         { field: 'checklistCnt', header: 'Checklists', group: 'Collection', component: CountColumn, style: cellStyle(WIDTH.checklists), bodyStyle: CENTER },

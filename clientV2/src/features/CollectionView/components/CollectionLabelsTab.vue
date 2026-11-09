@@ -2,7 +2,6 @@
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
 import { computed, watch } from 'vue'
-import { useRouter } from 'vue-router'
 import MetricsSummaryGrid from '../../../components/common/MetricsSummaryGrid.vue'
 import { fetchCollectionAssetSummary } from '../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
@@ -45,8 +44,6 @@ const selectedLabelName = computed(() => {
   }
   return labels.value?.find(l => l.labelId === selectedLabelId.value)?.name ?? 'No label'
 })
-
-const router = useRouter()
 
 const { state: assets, isLoading: assetsLoading, execute: loadAssets } = useAsyncState(
   () => {
@@ -120,8 +117,11 @@ function handleAssetSelect(assetId) {
   selectedAssetId.value = assetId
 }
 
-function handleAssetStigAction(rowData) {
-  router.push({
+function assetReviewTo(rowData) {
+  if (!selectedAssetId.value) {
+    return null
+  }
+  return {
     name: 'collection-asset-review',
     params: {
       collectionId: props.collectionId,
@@ -130,7 +130,7 @@ function handleAssetStigAction(rowData) {
       revisionStr: rowData.revisionStr,
     },
     query: buildLabelFilterParams(props.selectedLabelNames),
-  })
+  }
 }
 </script>
 
@@ -193,8 +193,7 @@ function handleAssetStigAction(rowData) {
               :is-loading="assetStigsLoading"
               :empty-message="selectedAssetId ? 'No checklists associated with this asset. Try refresh.' : 'Select an asset to view its checklists.'"
               parent-agg-type="asset"
-              show-shield
-              @shield-click="handleAssetStigAction"
+              :shield-to="assetReviewTo"
               @refresh="loadAssetStigs"
             />
           </div>

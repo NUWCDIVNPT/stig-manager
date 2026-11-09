@@ -29,7 +29,7 @@ vi.mock('../../../components/common/MetricsSummaryGrid.vue', () => ({
   default: {
     name: 'MetricsSummaryGrid',
     props: ['aggType', 'apiMetricsSummary', 'selectedKey', 'dataKey'],
-    emits: ['row-select', 'shield-click', 'refresh'],
+    emits: ['row-select', 'refresh'],
     template: `
       <div :data-testid="'grid-' + aggType" :data-selected="String(selectedKey)">
         <button

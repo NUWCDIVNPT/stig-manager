@@ -37,6 +37,9 @@ const Harness = {
         <Column header="Edit">
           <template #body><input data-testid="editor" value="x"></template>
         </Column>
+        <Column header="Open">
+          <template #body><a href="/somewhere" data-testid="link"><img alt="Review"></a></template>
+        </Column>
       </DataTable>
       <GridCopyMenu />
     </div>
@@ -100,6 +103,12 @@ describe('gridCopyMenu via the global DataTable pass-through', () => {
   it('keeps the browser menu for editable cells', async () => {
     renderHarness()
     await rightClick(screen.getAllByTestId('editor')[0])
+    expect(screen.queryByText('Copy row as CSV')).toBeNull()
+  })
+
+  it('keeps the browser menu for links, including on the icon inside them', async () => {
+    renderHarness()
+    await rightClick(screen.getAllByAltText('Review')[0])
     expect(screen.queryByText('Copy row as CSV')).toBeNull()
   })
 
