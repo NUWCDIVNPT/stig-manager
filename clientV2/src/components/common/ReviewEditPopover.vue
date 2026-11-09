@@ -4,7 +4,7 @@ import Textarea from 'primevue/textarea'
 import { computed, nextTick, onBeforeUnmount, provide, ref, toRefs, watch } from 'vue'
 import { useReviewEditForm } from '../../shared/composables/useReviewEditForm.js'
 import { REVIEW_STATUS } from '../../shared/lib/reviewConstants.js'
-import { defaultFieldSettings, formatReviewDate, resultOptions } from '../../shared/lib/reviewFormUtils.js'
+import { formatReviewDate, resultOptions } from '../../shared/lib/reviewFormUtils.js'
 import { getReviewFieldTooltipHtml, TOOLTIPS } from '../../shared/lib/tooltips.js'
 import HelpIcon from './HelpIcon.vue'
 import ResultBadge from './ResultBadge.vue'
@@ -34,7 +34,7 @@ const props = defineProps({
   // Field/form config
   fieldSettings: {
     type: Object,
-    default: () => defaultFieldSettings,
+    default: null,
   },
   accessMode: {
     type: String,
@@ -107,6 +107,7 @@ const {
   formResult,
   formDetail,
   formComment,
+  settings,
   statusLabel,
   editable,
   isDirty,
@@ -124,8 +125,8 @@ const {
 
 provide('reviewEditForm', reviewEditForm)
 
-const detailTooltipHtml = computed(() => getReviewFieldTooltipHtml('detail', fieldSettings.value.detail))
-const commentTooltipHtml = computed(() => getReviewFieldTooltipHtml('comment', fieldSettings.value.comment))
+const detailTooltipHtml = computed(() => getReviewFieldTooltipHtml('detail', settings.value.detail))
+const commentTooltipHtml = computed(() => getReviewFieldTooltipHtml('comment', settings.value.comment))
 
 // Checklist rows carry the status timestamp as `statusTs` beside a string
 // status; full review objects nest it under `status.ts`.

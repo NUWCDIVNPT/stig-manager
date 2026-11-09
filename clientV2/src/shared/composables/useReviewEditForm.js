@@ -1,7 +1,7 @@
 import { computed, ref, watch } from 'vue'
 import { REVIEW_STATUS } from '../lib/reviewConstants.js'
 import { getReviewButtonStates } from '../lib/reviewButtonStates.js'
-import { isFieldEnabled, isFieldRequired } from '../lib/reviewFormUtils.js'
+import { defaultFieldSettings, isFieldEnabled, isFieldRequired } from '../lib/reviewFormUtils.js'
 
 /**
  * Manages form state, dirty tracking, submittability, and button states
@@ -66,10 +66,12 @@ export function useReviewEditForm({ rowData, fieldSettings, accessMode, canAccep
   const showResultEmphasis = computed(() => editable.value && !formResult.value)
 
   // --- Field enable/require ---
-  const detailEnabled = computed(() => isFieldEnabled(fieldSettings.value.detail, formResult.value, editable.value))
-  const commentEnabled = computed(() => isFieldEnabled(fieldSettings.value.comment, formResult.value, editable.value))
-  const detailRequired = computed(() => isFieldRequired(fieldSettings.value.detail, formResult.value))
-  const commentRequired = computed(() => isFieldRequired(fieldSettings.value.comment, formResult.value))
+  // Callers may forward a null prop; fall back to the Collection defaults once here.
+  const settings = computed(() => fieldSettings.value ?? defaultFieldSettings)
+  const detailEnabled = computed(() => isFieldEnabled(settings.value.detail, formResult.value, editable.value))
+  const commentEnabled = computed(() => isFieldEnabled(settings.value.comment, formResult.value, editable.value))
+  const detailRequired = computed(() => isFieldRequired(settings.value.detail, formResult.value))
+  const commentRequired = computed(() => isFieldRequired(settings.value.comment, formResult.value))
 
   // --- Submittability (reuses detailRequired/commentRequired) ---
   const isSubmittable = computed(() => {
@@ -142,6 +144,7 @@ export function useReviewEditForm({ rowData, fieldSettings, accessMode, canAccep
     formComment,
 
     // Derived state
+    settings,
     statusLabel,
     editable,
     isDirty,

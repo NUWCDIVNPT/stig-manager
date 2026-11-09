@@ -19,15 +19,12 @@ describe('getReviewFieldTooltipHtml', () => {
     expect(html).toContain('required to submit a finding.')
   })
 
-  it('describes an optional field', () => {
-    const html = getReviewFieldTooltipHtml('comment', { enabled: 'always', required: 'optional' })
-    expect(html).toContain('Content in this field is optional.')
-  })
-
-  it('falls back to any-result / optional when the setting is missing', () => {
-    const html = getReviewFieldTooltipHtml('detail', undefined)
-    expect(html).toContain('enabled for any result.')
-    expect(html).toContain('Content in this field is optional.')
-    expect(html).not.toContain('undefined')
+  it('treats an explicit optional setting and a missing setting the same', () => {
+    for (const setting of [{ enabled: 'always', required: 'optional' }, undefined]) {
+      const html = getReviewFieldTooltipHtml('detail', setting)
+      expect(html).toContain('enabled for any result.')
+      expect(html).toContain('Content in this field is optional.')
+      expect(html).not.toContain('undefined')
+    }
   })
 })
