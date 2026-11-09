@@ -156,7 +156,7 @@ async function onSave() {
         <img :src="targetSvg" alt="Target icon">
         <div class="title-text">
           <span class="title-main">Access Control List for {{ granteeName }}</span>
-          <span class="title-sub">Default access = {{ defaultAccess }}</span>
+          <span class="title-sub">Default access = {{ accessLabel(defaultAccess) }}</span>
         </div>
       </div>
     </template>
@@ -212,7 +212,7 @@ async function onSave() {
       <!-- Rules table -->
       <div class="acl-col rules-col">
         <h4 class="col-header col-header--with-filter">
-          <span>ACL Rules, default access = {{ defaultAccess }}</span>
+          <span>ACL Rules, default access = {{ accessLabel(defaultAccess) }}</span>
           <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
         </h4>
         <AclRulesTable
