@@ -167,6 +167,18 @@
 :: set STIGMAN_CLIENT_ID=
 
 ::==============================================================================
+:: STIGMAN_CLIENT_NEXT_DIRECTORY
+::
+::  | Default: "../../clientV2/dist" | The location of the new web client (clientV2)
+::  files, relative to the API source directory. The API serves these files at
+::  `/client-v2`. In the binary distribution the default points at the bundled
+::  clientV2 build.
+::
+::  Affects: API, Client
+::==============================================================================
+:: set STIGMAN_CLIENT_NEXT_DIRECTORY=
+
+::==============================================================================
 :: STIGMAN_CLIENT_OIDC_PROVIDER
 ::
 ::  | Default: Value of "STIGMAN_OIDC_PROVIDER" | Client override of the base

@@ -10,6 +10,8 @@ on:
       - 'api/source/**'
       - 'client/src/**'
       - 'client/build.sh'
+      - 'clientV2/**'
+      - '!clientV2/docs/**'
       - 'docs/**'
       - 'Dockerfile'
       - '.github/workflows/build-client.yml'
@@ -20,11 +22,11 @@ on:
       - 1.**
 jobs:
   build-client:
-    uses: nuwcdivnpt/stig-manager/.github/workflows/build-client.yml@main
+    uses: ./.github/workflows/build-client.yml
   build-client-v2:
     uses: ./.github/workflows/build-client-v2.yml
   build-docs:
-    uses: nuwcdivnpt/stig-manager/.github/workflows/build-docs.yml@main
+    uses: ./.github/workflows/build-docs.yml
   build-push-alpine:
     name: Build and push from Alpine base
     needs:

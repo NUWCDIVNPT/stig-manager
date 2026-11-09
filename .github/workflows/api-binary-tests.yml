@@ -10,7 +10,10 @@ on:
       - "test/api/**"
       - ".github/workflows/api-binary-tests.yml"
       - "api/build.sh"
+      - "api/pkg.config.json"
       - "client/build.sh"
+      - "clientV2/**"
+      - "!clientV2/docs/**"
       - "docs/build.sh"
 
   push:
@@ -21,7 +24,10 @@ on:
       - "test/api/**"
       - ".github/workflows/api-binary-tests.yml"
       - "api/build.sh"
+      - "api/pkg.config.json"
       - "client/build.sh"
+      - "clientV2/**"
+      - "!clientV2/docs/**"
       - "docs/build.sh"
 
       
@@ -131,7 +137,13 @@ jobs:
 
       - name: Wait for bootstrap
         run: for i in {1..10}; do [ $i -gt 1 ] && sleep 5; curl --output /dev/null --silent --fail http://localhost:64001/api/op/configuration && s=0 && break || s=$?; printf '.'; done; (exit $s)
-          
+
+      - name: Verify both web clients are served from the binary
+        run: |
+          curl --output /dev/null --silent --fail --show-error http://localhost:64001/index.html
+          curl --output /dev/null --silent --fail --show-error http://localhost:64001/client-v2/index.html
+          curl --output /dev/null --silent --fail --show-error http://localhost:64001/client-v2/Env.js
+
       - name: Install test dependencies
         run: npm ci
         working-directory: ./test/api/
