@@ -55,6 +55,7 @@ spawnLogged('api', process.execPath, ['index.js'], {
     STIGMAN_CLIENT_DIRECTORY: process.env.STIGMAN_CLIENT_DIRECTORY || '../../client/src',
     STIGMAN_EXPERIMENTAL_APPDATA: 'true',
     STIGMAN_SWAGGER_ENABLED: 'false',
+    STIGMAN_CLASSIFICATION: process.env.STIGMAN_CLASSIFICATION || 'U',
     STIGMAN_LOG_LEVEL: process.env.STIGMAN_LOG_LEVEL || '2',
   },
 })
