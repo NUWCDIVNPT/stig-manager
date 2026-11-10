@@ -17,6 +17,7 @@ import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { dashZero } from '../../../../shared/lib/numberFormat.js'
 import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
+import { earlierRevisions } from '../../../../shared/lib/stigRevisions.js'
 
 const props = defineProps({
   stigs: {
@@ -50,7 +51,7 @@ const selectedStigs = computed({
 const rows = computed(() => props.stigs.map(s => ({
   ...s,
   collectionCount: s.collectionIds?.length ?? 0,
-  earlierRevisions: s.revisionStrs?.slice(1).join(', ') ?? '',
+  earlierRevisions: earlierRevisions(s).join(', '),
 })))
 
 const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibility([
@@ -79,11 +80,11 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-content: center;' } }
 const wrappedBorderPt = { ...borderPt, columnHeaderContent: { style: 'flex-wrap: wrap;' }, columnTitle: { style: 'white-space: normal; line-height: 1.1;' } }
 
-function formatEarlierRevisions(revs) {
-  if (!revs || revs.length <= 1) {
+function formatEarlierRevisions(stig) {
+  const earlier = earlierRevisions(stig)
+  if (!earlier.length) {
     return '—'
   }
-  const earlier = revs.slice(1)
   const shown = earlier.slice(0, 3)
   const overflow = earlier.length - shown.length
   return shown.join(', ') + (overflow > 0 ? ` (+${overflow})` : '')
@@ -306,8 +307,8 @@ function onRemoveAll() {
           style="width: 10%;"
         >
           <template #body="{ data }">
-            <span :class="{ 'dim-value': !data.revisionStrs || data.revisionStrs.length <= 1 }">
-              {{ formatEarlierRevisions(data.revisionStrs) }}
+            <span :class="{ 'dim-value': !earlierRevisions(data).length }">
+              {{ formatEarlierRevisions(data) }}
             </span>
           </template>
         </Column>

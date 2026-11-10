@@ -15,6 +15,7 @@ import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useColumnVisibility } from '../../../shared/composables/useColumnVisibility.js'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
+import { earlierRevisions } from '../../../shared/lib/stigRevisions.js'
 import { paneColumnPt, paneTablePt } from '../tablePt.js'
 import EarlierRevisionsPills from './EarlierRevisionsPills.vue'
 
@@ -39,7 +40,7 @@ const dataTableRef = ref(null)
 
 // materialize earlierRevisions so the column sorts and exports
 const rows = computed(() =>
-  (props.benchmarks ?? []).map(b => ({ ...b, earlierRevisions: b.revisionStrs?.slice(1).join(', ') ?? '' })),
+  (props.benchmarks ?? []).map(b => ({ ...b, earlierRevisions: earlierRevisions(b).join(', ') })),
 )
 
 const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibility([
@@ -208,7 +209,7 @@ function onRowClick(event) {
           :style="{ width: '16rem', minWidth: '12rem' }"
         >
           <template #body="{ data }">
-            <EarlierRevisionsPills :revisions="data.revisionStrs" :max="4" />
+            <EarlierRevisionsPills :revisions="earlierRevisions(data)" :max="4" />
           </template>
         </Column>
 

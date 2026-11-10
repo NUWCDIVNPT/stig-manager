@@ -6,6 +6,7 @@ import ActionButton from '../../../components/common/ActionButton.vue'
 import ClassificationBadge from '../../../components/common/ClassificationBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
+import { earlierRevisions } from '../../../shared/lib/stigRevisions.js'
 import { paneColumnPt, paneTablePt } from '../tablePt.js'
 import EarlierRevisionsPills from './EarlierRevisionsPills.vue'
 
@@ -34,8 +35,7 @@ const props = defineProps({
 
 const emit = defineEmits(['select', 'back', 'retry'])
 
-// The first entry is the latest revision, shown in its own column.
-const exportEarlierRevisions = ({ data }) => (data ?? []).slice(1).join(', ')
+const exportEarlierRevisions = ({ record }) => earlierRevisions(record).join(', ')
 
 const filter = defineModel('filter', { type: String, default: '' })
 
@@ -140,7 +140,7 @@ function clearFilter() {
                 <span class="bm-cell__meta">
                   {{ data.lastRevisionStr }} · {{ data.ruleCount }} rules · {{ data.lastRevisionDate }}
                 </span>
-                <EarlierRevisionsPills :revisions="data.revisionStrs" :max="2" />
+                <EarlierRevisionsPills :revisions="earlierRevisions(data)" :max="2" />
               </div>
             </div>
           </template>
