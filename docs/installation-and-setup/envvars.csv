@@ -33,6 +33,8 @@
 | Turns on HTML5 history (hashless) routing for clientV2. The value is the URL path at which the application is served: ``/`` at the origin root, or a path such as ``/stigman/``. The value must begin with ``/``; a trailing slash is added if missing. The API does not move its routes to that path, so a reverse proxy serving a non-root path must remove the path before forwarding requests. clientV2 uses ``{value}client-v2/`` as its history base, and the API injects a ``<base>`` tag with that path into the clientV2 ``index.html``. Sign-in always returns to ``{value}client-v2/``, which is the redirect URI to register with the OIDC Provider. If this variable is not set, clientV2 uses hash routing, which works at any path. The legacy client does not use this variable.","Client"
 "STIGMAN_CLIENT_ID","| **Default** ``stig-manager``
 | The OIDC clientId of the web client","Client"
+"STIGMAN_CLIENT_NEXT_DIRECTORY","| **Default** ``../../clientV2/dist``
+| The location of the new web client (clientV2) files, relative to the API source directory. The API serves these files at ``/client-v2``. In the Docker image and binary distributions the default points at the bundled clientV2 build.","API, Client"
 "STIGMAN_CLIENT_OIDC_PROVIDER","| **Default** Value of ``STIGMAN_OIDC_PROVIDER``
 | Client override of the base URL of the OIDC provider issuing signed JWTs for the API.  The string ``/.well-known/openid-configuration`` will be appended by the client when fetching metadata.","Client "
 "STIGMAN_CLIENT_REAUTH_ACTION","| **Default** ``popup``

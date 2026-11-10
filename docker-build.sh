@@ -4,7 +4,7 @@
 
 ./client/build.sh
 ./docs/build.sh
-(cd clientV2 && npm run build)
+(cd clientV2 && npm ci && npm run build)
 
 BRANCH=$(git symbolic-ref --short HEAD)
 SHA=$(git rev-parse --short=10 HEAD)

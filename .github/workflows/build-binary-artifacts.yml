@@ -9,7 +9,11 @@ on:
       - 'api/source/**'
       - 'client/src/**'
       - 'client/build.sh'
+      - 'clientV2/**'
+      - '!clientV2/docs/**'
       - 'docs/**'
+      - 'api/build.sh'
+      - 'api/pkg.config.json'
       - '.github/workflows/build-client.yml'
       - '.github/workflows/build-docs.yml'
       - '.github/workflows/build-binary-artifacts.yml'
@@ -25,6 +29,9 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
 
       - name: Get repository metadata
         id: repo
