@@ -10,10 +10,10 @@ import { fetchCollection } from '../../../shared/api/collectionsApi.js'
 import { useArchiveProgress } from '../../../shared/composables/useArchiveProgress.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
+import { useTrackRecentView } from '../../../shared/composables/useRecentViews.js'
 import { useStigRevisions } from '../../../shared/composables/useStigRevisions.js'
 
 import { renderWithProviders } from '../../../testUtils/utils.js'
-import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 
 import { fetchAssetsByCollectionStig, fetchCollectionChecklist, fetchReviewsByRule, fetchRule, postReviewBatch } from '../api/collectionReviewApi.js'
 import CollectionReview from '../components/CollectionReview.vue'
@@ -47,8 +47,8 @@ vi.mock('../../../shared/composables/useCurrentUser.js', () => ({
   useCurrentUser: vi.fn(),
 }))
 
-vi.mock('../../NavRail/composables/useRecentViews.js', () => ({
-  useRecentViews: vi.fn(),
+vi.mock('../../../shared/composables/useRecentViews.js', () => ({
+  useTrackRecentView: vi.fn(),
 }))
 
 vi.mock('../composables/useReviewActionAvailability.js', () => ({
@@ -138,15 +138,13 @@ vi.mock('primevue/splitter', () => ({ default: { name: 'Splitter', template: '<d
 vi.mock('primevue/splitterpanel', () => ({ default: { name: 'SplitterPanel', template: '<div><slot></slot></div>' } }))
 
 describe('collectionReview.vue', () => {
-  let mockRouterPush, mockRouterReplace, mockAddView, mockRemoveView, mockDownload, routeState
+  let mockRouterPush, mockRouterReplace, mockDownload, routeState
 
   beforeEach(() => {
     vi.clearAllMocks()
 
     mockRouterPush = vi.fn()
     mockRouterReplace = vi.fn()
-    mockAddView = vi.fn()
-    mockRemoveView = vi.fn()
 
     useRouter.mockReturnValue({ push: mockRouterPush, replace: mockRouterReplace })
     // reactive so tests can change the query in place, as router.replace would
@@ -164,11 +162,6 @@ describe('collectionReview.vue', () => {
 
     useCurrentUser.mockReturnValue({
       getCollectionRoleId: vi.fn().mockReturnValue(3),
-    })
-
-    useRecentViews.mockReturnValue({
-      addView: mockAddView,
-      removeView: mockRemoveView,
     })
 
     mockDownload = vi.fn()
@@ -220,7 +213,7 @@ describe('collectionReview.vue', () => {
       expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-123', expected)
     })
 
-    it('reloads checklist, assets and the selected rule reviews on a label change, and refreshes the recent view', async () => {
+    it('reloads checklist, assets and the selected rule reviews on a label change', async () => {
       createWrapper()
       await flushPromises()
       vi.clearAllMocks()
@@ -236,10 +229,6 @@ describe('collectionReview.vue', () => {
       expect(fetchAssetsByCollectionStig).toHaveBeenCalledTimes(1)
       expect(fetchAssetsByCollectionStig).toHaveBeenCalledWith('coll-1', 'bench-1', expected)
       expect(fetchReviewsByRule).toHaveBeenCalledWith('coll-1', 'V-123', expected)
-      expect(mockAddView).toHaveBeenLastCalledWith(expect.objectContaining({
-        key: 'collection-review:coll-1:bench-1',
-        url: '/collections/coll-1/bench-1/rev-1?labelName=label-a',
-      }))
     })
 
     it('clears the rule panel when the filtered checklist comes back empty', async () => {
@@ -273,15 +262,17 @@ describe('collectionReview.vue', () => {
       expect(screen.getByTestId('mock-rule-info').dataset.hasRule).toBe('false')
     })
 
-    it('adds recent view entry when collection metadata loads', async () => {
+    it('describes its recent view once the collection loads', async () => {
       createWrapper()
-      await flushPromises()
+      const [describeView] = useTrackRecentView.mock.calls[0]
+      expect(describeView()).toBeFalsy()
 
-      expect(mockAddView).toHaveBeenCalledWith({
-        key: 'collection-review:coll-1:bench-1',
-        url: '/collections/coll-1/bench-1/rev-1',
-        label: 'Test Collection / bench-1',
+      await flushPromises()
+      expect(describeView()).toEqual({
         type: 'collection-review',
+        collectionId: 'coll-1',
+        benchmarkId: 'bench-1',
+        label: 'Test Collection / bench-1',
       })
     })
 
@@ -300,12 +291,11 @@ describe('collectionReview.vue', () => {
       })
     })
 
-    it('removes recent view and redirects on 403 error', async () => {
+    it('redirects on 403 error', async () => {
       fetchCollection.mockRejectedValue({ status: 403 })
       createWrapper()
       await flushPromises()
 
-      expect(mockRemoveView).toHaveBeenCalled()
       expect(mockRouterReplace).toHaveBeenCalledWith({
         name: 'not-found',
         params: { pathMatch: ['collections', 'coll-1', 'bench-1', 'rev-1'] },
@@ -344,14 +334,6 @@ describe('collectionReview.vue', () => {
       expect(mockRouterReplace).not.toHaveBeenCalledWith(expect.objectContaining({ name: 'not-found' }))
     })
 
-    it('removes recent view if checklist load fails', async () => {
-      fetchCollectionChecklist.mockRejectedValue(new Error('Bad params'))
-      createWrapper()
-      await flushPromises()
-
-      expect(mockRemoveView).toHaveBeenCalled()
-    })
-
     it('passes its STIG revisions to the checklist grid (one fetch for the page)', async () => {
       createWrapper()
       await flushPromises()
@@ -366,7 +348,6 @@ describe('collectionReview.vue', () => {
       expect(revisionStr.value).toBe('rev-1')
 
       onUnknown()
-      expect(mockRemoveView).toHaveBeenCalled()
       expect(mockRouterReplace).toHaveBeenCalledWith({
         name: 'not-found',
         params: { pathMatch: ['collections', 'coll-1', 'bench-1', 'rev-1'] },

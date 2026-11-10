@@ -1,40 +1,59 @@
 import { onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useRecentViews } from './useRecentViews.js'
+import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
+import { useRecentViews } from '../../../shared/composables/useRecentViews.js'
+
+// The Recent views a bad URL pointed to. Pages send their bad URLs to the 404 page as is (notFoundLocation),
+// so resolving it again gives the page and IDs the user asked for.
+function viewsOfBadUrl({ name, params: { collectionId, assetId, benchmarkId } }) {
+  if (!collectionId) {
+    return null
+  }
+  if (name === 'collection-asset-review') {
+    return { type: 'asset-review', collectionId, assetId, benchmarkId }
+  }
+  // A bad revision says nothing about the Asset Reviews of the STIG, so only this view goes
+  if (name === 'collection-benchmark-review') {
+    return { type: 'collection-review', collectionId, benchmarkId }
+  }
+  return { collectionId }
+}
 
 export function useRouteTracking() {
   const router = useRouter()
-  const { addView } = useRecentViews()
+  const { addView, forget } = useRecentViews()
+  const { hasCollectionAccess } = useCurrentUser()
 
   const unregister = router.afterEach((to) => {
     const { name, fullPath } = to
+
+    if (name === 'not-found') {
+      const match = viewsOfBadUrl(router.resolve(to.path))
+      // No grant is the guard's 404; those views stay hidden until the grant returns
+      if (match && hasCollectionAccess(match.collectionId)) {
+        forget(match)
+      }
+      return
+    }
 
     // Admin routes → one entry per admin section, labeled from the route's
     // breadcrumb meta so the label lives only in router/index.js
     if (name?.startsWith('admin')) {
       const section = to.meta?.breadcrumbs?.at(-1)?.label
-      const label = section ? `Admin / ${section}` : 'Admin'
       addView({
-        key: name,
-        url: fullPath,
-        label,
         type: 'admin',
+        section: name,
+        url: fullPath,
+        label: section ? `Admin / ${section}` : 'Admin',
       })
       return
     }
 
-    // STIG Library - TODO: when theres are routes for the library, we should add them here
-    if (name === 'stig-library' || name === 'library') {
-      addView({
-        key: 'library',
-        url: fullPath,
-        label: 'STIG Library',
-        type: 'library',
-      })
+    if (name === 'stig-library') {
+      addView({ type: 'library', url: fullPath, label: 'STIG Library' })
     }
   })
 
-  // Ensures we perfectly clean up the route watcher if component unmounts
   onUnmounted(() => {
     if (unregister) {
       unregister()

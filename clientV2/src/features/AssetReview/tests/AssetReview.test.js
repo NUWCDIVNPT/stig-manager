@@ -9,8 +9,8 @@ import { fetchAsset, fetchCollection } from '../api/assetReviewApi.js'
 
 // Composables Mocks
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
+import { useTrackRecentView } from '../../../shared/composables/useRecentViews.js'
 import { useStigRevisions } from '../../../shared/composables/useStigRevisions.js'
-import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 import { useChecklistData } from '../composables/useChecklistData.js'
 import { useRuleDetail } from '../composables/useRuleDetail.js'
 
@@ -30,8 +30,10 @@ vi.mock('../../../shared/composables/useCurrentUser.js', () => ({
   useCurrentUser: vi.fn(),
 }))
 
-vi.mock('../../NavRail/composables/useRecentViews.js', () => ({
-  useRecentViews: vi.fn(),
+const mockForget = vi.hoisted(() => vi.fn())
+vi.mock('../../../shared/composables/useRecentViews.js', () => ({
+  useRecentViews: vi.fn(() => ({ forget: mockForget })),
+  useTrackRecentView: vi.fn(),
 }))
 
 vi.mock('../composables/useChecklistData.js', () => ({
@@ -79,7 +81,7 @@ vi.mock('primevue/splitter', () => ({ default: { name: 'Splitter', template: '<d
 vi.mock('primevue/splitterpanel', () => ({ default: { name: 'SplitterPanel', template: '<div><slot></slot></div>' } }))
 
 describe('assetReview.vue', () => {
-  let mockRouterPush, mockRouterReplace, mockAddView, mockRemoveView
+  let mockRouterPush, mockRouterReplace
   let mockLoadChecklist, mockUpsertReview, mockSelectRule, mockClearSelectedRule
 
   beforeEach(() => {
@@ -87,8 +89,6 @@ describe('assetReview.vue', () => {
 
     mockRouterPush = vi.fn()
     mockRouterReplace = vi.fn()
-    mockAddView = vi.fn()
-    mockRemoveView = vi.fn()
     mockLoadChecklist = vi.fn()
     mockUpsertReview = vi.fn()
     mockSelectRule = vi.fn()
@@ -109,11 +109,6 @@ describe('assetReview.vue', () => {
 
     useCurrentUser.mockReturnValue({
       getCollectionRoleId: vi.fn().mockReturnValue(3),
-    })
-
-    useRecentViews.mockReturnValue({
-      addView: mockAddView,
-      removeView: mockRemoveView,
     })
 
     useChecklistData.mockReturnValue({
@@ -165,15 +160,48 @@ describe('assetReview.vue', () => {
       expect(mockLoadChecklist).toHaveBeenCalled()
     })
 
-    it('adds to recent views after asset is loaded', async () => {
+    it('describes its recent view once the asset is loaded', async () => {
+      createWrapper()
+      const [describeView] = useTrackRecentView.mock.calls[0]
+      expect(describeView()).toBeFalsy()
+
+      await flushPromises()
+      expect(describeView()).toEqual({
+        type: 'asset-review',
+        collectionId: 'coll-1',
+        assetId: 'asset-1',
+        benchmarkId: 'bench-1',
+        label: 'Test Asset / bench-1',
+      })
+    })
+
+    it('drops its recent view when the asset has no such checklist', async () => {
+      const checklistError = ref(null)
+      useChecklistData.mockReturnValue({ ...useChecklistData(), checklistError })
+      createWrapper()
+      await flushPromises()
+      const [describeView] = useTrackRecentView.mock.calls[0]
+
+      checklistError.value = { status: 404, message: 'Not found' }
+      await flushPromises()
+      expect(describeView()).toBeFalsy()
+      expect(mockForget).toHaveBeenCalledWith({
+        type: 'asset-review',
+        collectionId: 'coll-1',
+        assetId: 'asset-1',
+        benchmarkId: 'bench-1',
+      })
+    })
+
+    it('keeps its recent view when the checklist fails for another reason', async () => {
+      const checklistError = ref(null)
+      useChecklistData.mockReturnValue({ ...useChecklistData(), checklistError })
       createWrapper()
       await flushPromises()
 
-      expect(mockAddView).toHaveBeenCalledWith(expect.objectContaining({
-        key: 'review:coll-1:asset-1:bench-1',
-        label: 'Test Asset / bench-1',
-        type: 'asset-review',
-      }))
+      checklistError.value = { status: 500, message: 'Server error' }
+      await flushPromises()
+      expect(mockForget).not.toHaveBeenCalled()
     })
   })
 
@@ -275,14 +303,13 @@ describe('assetReview.vue', () => {
       expect(mockRouterReplace).not.toHaveBeenCalledWith(expect.objectContaining({ name: 'not-found' }))
     })
 
-    it('redirects to not-found and removes recent view if asset fetch fails with 403', async () => {
+    it('redirects to not-found if asset fetch fails with 403', async () => {
       const error403 = new Error('Forbidden')
       error403.status = 403
       fetchAsset.mockRejectedValue(error403)
       createWrapper()
       await flushPromises()
 
-      expect(mockRemoveView).toHaveBeenCalled()
       expect(mockRouterReplace).toHaveBeenCalledWith({
         name: 'not-found',
         params: { pathMatch: ['collections', 'coll-1', 'assets', 'asset-1', 'bench-1', 'rev-1'] },
@@ -332,7 +359,6 @@ describe('assetReview.vue', () => {
       createWrapper()
       await flushPromises()
 
-      expect(mockRemoveView).toHaveBeenCalled()
       expect(mockRouterReplace).toHaveBeenCalledWith({
         name: 'not-found',
         params: { pathMatch: ['collections', 'coll-1', 'assets', 'asset-1', 'bench-1', 'rev-1'] },
@@ -355,7 +381,6 @@ describe('assetReview.vue', () => {
       expect(revisionStr.value).toBe('rev-1')
 
       onUnknown()
-      expect(mockRemoveView).toHaveBeenCalled()
       expect(mockRouterReplace).toHaveBeenCalledWith({
         name: 'not-found',
         params: { pathMatch: ['collections', 'coll-1', 'assets', 'asset-1', 'bench-1', 'rev-1'] },
