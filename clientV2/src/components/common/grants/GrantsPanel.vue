@@ -213,7 +213,10 @@ const { filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOpti
 ])
 
 const exportRole = ({ data }) => getRoleLabel(data)
-const exportUserGroup = ({ record }) => userGroupSortValue(record)
+// Legacy format: `displayName:username` for users, `name:description` for groups
+const exportUserGroup = ({ record }) => record.user
+  ? `${record.user.displayName ?? ''}:${record.user.username ?? ''}`
+  : `${record.userGroup?.name ?? ''}:${record.userGroup?.description ?? ''}`
 // Compact, flush-footer table styling via PassThrough (no scoped ::v-deep).
 // Shared base, with a slightly larger header than the compact default.
 const baseTablePt = compactTablePt()

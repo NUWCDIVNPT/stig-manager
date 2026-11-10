@@ -85,13 +85,13 @@ const decoratedRows = computed(() => {
 
 const TOGGLE_COLUMNS = [
   { field: 'assetName', header: 'Asset', locked: true },
+  { field: 'ts', header: 'Last changed' },
   { field: 'stigs', header: 'STIGs' },
   { field: 'detail', header: 'Detail' },
   { field: 'comment', header: 'Comment' },
   { field: 'resultEngine', header: 'Engine' },
   { field: 'status', header: 'Status' },
   { field: 'username', header: 'Reviewer' },
-  { field: 'ts', header: 'Last changed' },
 ]
 const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibility(TOGGLE_COLUMNS, 'findingsIndividual.columns')
 
@@ -248,6 +248,14 @@ const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-con
                varies per row under the CCI aggregator. -->
           <Column field="labels" header="Labels" hidden />
           <Column field="ruleId" header="Rule" hidden />
+          <Column v-if="visibleFields.has('ts')" field="ts" export-header="Last changed" sortable :style="{ width: '4.5rem', minWidth: '4.5rem', textAlign: 'center' }" :pt="centerBorderPt">
+            <template #header>
+              <i class="pi pi-clock" title="Last action" />
+            </template>
+            <template #body="{ data }">
+              <span class="dim-value" :title="data._tsFormatted">{{ data._durationLabel }}</span>
+            </template>
+          </Column>
           <Column v-if="visibleFields.has('stigs')" header="STIGs" field="stigs" :style="{ width: '14rem', minWidth: '11rem' }" :pt="borderPt">
             <template #body="{ data }">
               <span class="cell-text cell-text--clamped" :title="(data.stigs ?? []).map(s => s.benchmarkId).join(', ')"><HighlightText :text="(data.stigs ?? []).map(s => s.benchmarkId).join(', ') || '—'" :term="highlightTerm('stigs')" /></span>
@@ -279,14 +287,6 @@ const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-con
           <Column v-if="visibleFields.has('username')" field="username" header="Reviewer" sortable :style="{ width: '8rem', minWidth: '7rem' }" :pt="borderPt">
             <template #body="{ data }">
               <span :title="data.username"><HighlightText :text="data.username || '—'" :term="highlightTerm('username')" /></span>
-            </template>
-          </Column>
-          <Column v-if="visibleFields.has('ts')" field="ts" export-header="Last Changed" sortable :style="{ width: '4.5rem', minWidth: '4.5rem', textAlign: 'center' }" :pt="centerBorderPt">
-            <template #header>
-              <i class="pi pi-clock" title="Last action" />
-            </template>
-            <template #body="{ data }">
-              <span class="dim-value" :title="data._tsFormatted">{{ data._durationLabel }}</span>
             </template>
           </Column>
 

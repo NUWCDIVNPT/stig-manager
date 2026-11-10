@@ -41,8 +41,8 @@ describe('diffRuleTable CSV export', () => {
 
     const csv = await savedCsvText()
     expect(csv.split('\n')).toEqual([
-      'Marking,STIG ID,Left rule,Right rule,CAT,Changed properties',
-      '(U),RHEL-08-010000,SV-1r1_rule,SV-1r2_rule,CAT 1,"ruleId, check"',
+      'Marking,STIG Id,Left rule,Right rule,CAT,Changed properties',
+      '(U),RHEL-08-010000,SV-1r1_rule,SV-1r2_rule,CAT 1,ruleId check',
       '(U),RHEL-08-010001,SV-2r1_rule,,CAT 2,rule removed',
     ])
     expect(saveAs.mock.calls.at(-1)[1]).toMatch(/^Changed Rules_.*\.csv$/)

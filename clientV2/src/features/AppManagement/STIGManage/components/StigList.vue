@@ -39,6 +39,9 @@ const emit = defineEmits(['update:selection', 'import', 'remove-stig', 'remove-r
 const ROW_HEIGHT = rowHeightPx('compact')
 
 const dataTableRef = ref(null)
+// Legacy formats: raw lowercase status, `--` when no earlier revisions
+const exportRaw = ({ data }) => data
+const exportEarlier = ({ data }) => data || '--'
 
 const selectedStigs = computed({
   get: () => props.selection ?? [],
@@ -262,7 +265,7 @@ function onRemoveAll() {
 
         <Column
           v-if="visibleFields.has('status')"
-          field="status" header="Status"
+          field="status" header="Status" :export-value="exportRaw"
           sortable
           :pt="borderPt"
           style="width: 7%;"
@@ -274,7 +277,7 @@ function onRemoveAll() {
 
         <Column
           v-if="visibleFields.has('lastRevisionStr')"
-          field="lastRevisionStr" export-header="Latest Revision"
+          field="lastRevisionStr" export-header="Latest revision"
           sortable
           header="Latest Revision"
           :pt="wrappedBorderPt"
@@ -287,7 +290,7 @@ function onRemoveAll() {
 
         <Column
           v-if="visibleFields.has('lastRevisionDate')"
-          field="lastRevisionDate" export-header="Revision Date"
+          field="lastRevisionDate" export-header="Revision date"
           sortable
           header="Revision Date"
           :pt="wrappedBorderPt"
@@ -300,7 +303,7 @@ function onRemoveAll() {
 
         <Column
           v-if="visibleFields.has('earlierRevisions')"
-          field="earlierRevisions" export-header="Earlier Revisions"
+          field="earlierRevisions" export-header="Earlier revisions" :export-value="exportEarlier"
           sortable
           header="Earlier Revisions"
           :pt="wrappedBorderPt"

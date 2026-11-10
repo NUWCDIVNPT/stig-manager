@@ -30,6 +30,11 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  // STIG grids: add a Collections count column (multi-collection summaries)
+  collectionCount: {
+    type: Boolean,
+    default: false,
+  },
   emptyMessage: {
     type: String,
     default: 'No data here yet. Try refresh.',
@@ -179,7 +184,7 @@ const columns = computed(() => {
     { field: 'fail', header: 'Fail', group: RESULTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
     { field: 'notapplicable', header: 'N/A', group: RESULTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
     { field: 'other', header: 'Other', group: RESULTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
-    { field: 'cora', header: 'CORA', group: FINDINGS, component: CoraColumn, style: cellStyle(WIDTH.badge) },
+    { field: 'cora', header: 'CORA', exportHeader: 'CORA %', group: FINDINGS, component: CoraColumn, style: cellStyle(WIDTH.badge) },
     { field: 'cat3', header: 'CAT 3', group: FINDINGS, component: CatColumn, category: 3, style: cellStyle(WIDTH.badge) },
     { field: 'cat2', header: 'CAT 2', group: FINDINGS, component: CatColumn, category: 2, style: cellStyle(WIDTH.badge) },
     { field: 'cat1', header: 'CAT 1', group: FINDINGS, component: CatColumn, category: 1, style: cellStyle(WIDTH.badge) },
@@ -221,6 +226,8 @@ const columns = computed(() => {
         titleColumn,
         revisionColumn,
         { field: 'ruleCount', header: 'Rules', group: 'STIG', defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
+        // Multi-collection (meta) summaries only
+        ...(props.collectionCount ? [{ field: 'collectionCnt', header: 'Collections', group: 'STIG', component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER }] : []),
         { field: 'assetCnt', header: 'Assets', group: 'STIG', component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
         ...commonColumns,
       ]
@@ -338,6 +345,7 @@ const data = computed(() => {
           title: r.title,
           revisionStr: r.revisionStr,
           revisionPinned: r.revisionPinned,
+          collectionCnt: r.collections,
           assetCnt: r.assets,
           ruleCount: r.ruleCount,
           ...commonData,

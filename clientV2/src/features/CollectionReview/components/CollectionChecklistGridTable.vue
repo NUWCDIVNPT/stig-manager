@@ -231,7 +231,7 @@ const dataTablePt = {
         <span class="cell-text">{{ dashZero(data.counts?.statuses?.rejected) }}</span>
       </template>
     </Column>
-    <Column v-if="visibleFields.has('accepted')" field="counts.statuses.accepted" export-header="Accepted" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.center">
+    <Column v-if="visibleFields.has('accepted')" field="counts.statuses.accepted" export-header="Approved" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.center">
       <template #header>
         <StatusBadge status="accepted" />
       </template>

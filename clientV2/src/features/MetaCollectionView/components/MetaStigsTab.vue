@@ -142,6 +142,7 @@ function assetReviewTo(rowData) {
               agg-type="stig"
               :is-loading="stigsLoading"
               selectable
+              collection-count
               data-key="revisionKey"
               :selected-key="selectedStig?.revisionKey"
               @row-select="handleStigSelect"

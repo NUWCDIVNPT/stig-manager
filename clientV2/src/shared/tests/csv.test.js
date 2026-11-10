@@ -77,6 +77,11 @@ describe('escapeCsv', () => {
     expect(escapeCsv('asset-01')).toBe('asset-01')
     expect(escapeCsv('1.2.3.4')).toBe('1.2.3.4')
   })
+
+  it('leaves all-dash placeholders bare', () => {
+    expect(escapeCsv('-')).toBe('-')
+    expect(escapeCsv('--')).toBe('--')
+  })
 })
 
 describe('csvMarking', () => {

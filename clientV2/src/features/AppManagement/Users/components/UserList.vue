@@ -13,6 +13,7 @@ import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { useColumnVisibility } from '../../../../shared/composables/useColumnVisibility.js'
 import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
+import { exportTimestamp } from '../../../../shared/lib/exportCells.js'
 import { formatDateTime, formatLastAccess, sortedGroupNames, statusDetail } from '../lib/userDisplay.js'
 
 const props = defineProps({
@@ -37,6 +38,8 @@ const props = defineProps({
 const emit = defineEmits(['update:selection', 'preregister', 'unregister', 'set-status', 'refresh'])
 
 const exportLastAccess = ({ data }) => (data ? formatLastAccess(data) : '')
+// Legacy exported a check mark for granted privileges
+const exportCheck = ({ data }) => (data ? '✔' : '')
 
 const dataTableRef = ref(null)
 
@@ -201,7 +204,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 
         <CountColumn v-if="visibleFields.has('grantCount')" key="grantCount" field="grantCount" header="Grants" sortable class="center-header" :pt="borderPt" style="width: 7%; text-align: center;" />
 
-        <Column v-if="visibleFields.has('statistics.created')" field="statistics.created" header="Added" sortable :pt="borderPt" style="width: 9%">
+        <Column v-if="visibleFields.has('statistics.created')" field="statistics.created" header="Added" :export-value="exportTimestamp" sortable :pt="borderPt" style="width: 9%">
           <template #body="{ data }">
             {{ formatDateTime(data.statistics?.created) }}
           </template>
@@ -213,7 +216,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           </template>
         </Column>
 
-        <Column v-if="visibleFields.has('privileges.create_collection')" field="privileges.create_collection" export-header="Create Collection" sortable class="center-header wrapped-header" :pt="borderPt" style="width: 6.5%; text-align: center;">
+        <Column v-if="visibleFields.has('privileges.create_collection')" field="privileges.create_collection" export-header="Create Collection" :export-value="exportCheck" sortable class="center-header wrapped-header" :pt="borderPt" style="width: 6.5%; text-align: center;">
           <template #header>
             <span style="display: inline-block; text-align: center; line-height: 1.1; white-space: normal;">
               Create Collection
@@ -224,7 +227,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           </template>
         </Column>
 
-        <Column v-if="visibleFields.has('privileges.admin')" field="privileges.admin" export-header="Administrator" sortable class="center-header wrapped-header" :pt="borderPt" style="width: 6.5%; text-align: center;">
+        <Column v-if="visibleFields.has('privileges.admin')" field="privileges.admin" export-header="Administrator" :export-value="exportCheck" sortable class="center-header wrapped-header" :pt="borderPt" style="width: 6.5%; text-align: center;">
           <template #header>
             <span style="display: inline-block; text-align: center; line-height: 1.1; white-space: normal;">
               Administrator
@@ -235,7 +238,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
           </template>
         </Column>
 
-        <Column v-if="visibleFields.has('userId')" field="userId" header="ID" sortable class="center-header" style="width: 5%; text-align: center;">
+        <Column v-if="visibleFields.has('userId')" field="userId" header="ID" export-header="userId" sortable class="center-header" style="width: 5%; text-align: center;">
           <template #body="{ data }">
             <HighlightText :text="data.userId" :term="highlightTerm('userId')" />
           </template>

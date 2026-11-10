@@ -48,6 +48,8 @@ const props = defineProps({
 const emit = defineEmits(['select-row'])
 
 const exportCat = ({ data }) => catLabel(data)
+// Legacy separated changed properties with spaces
+const exportChanged = ({ data }) => (data ?? []).join(' ')
 
 const dataTableRef = ref(null)
 const { itemSize, gridStyle } = useGridDensity('stig-library-rules')
@@ -81,7 +83,7 @@ function onRowClick(event) {
     :pt="dataTablePt"
     @row-click="onRowClick"
   >
-    <Column header="STIG ID" field="stigId" sortable :style="{ width: '15rem' }" :pt="paneColumnPt.left">
+    <Column header="STIG ID" export-header="STIG Id" field="stigId" sortable :style="{ width: '15rem' }" :pt="paneColumnPt.left">
       <template #body="{ data }">
         <span class="stiglib-cell-text"><HighlightText :text="data.stigId" :term="highlightTerm('stigId')" /></span>
       </template>
@@ -127,7 +129,7 @@ function onRowClick(event) {
         <CatBadge v-if="data.cat" :category="severityMap[data.cat] ?? 3" variant="label" centered />
       </template>
     </Column>
-    <Column field="changed" export-header="Changed properties" :style="{ minWidth: '16rem' }" :pt="paneColumnPt.left">
+    <Column field="changed" export-header="Changed properties" :export-value="exportChanged" :style="{ minWidth: '16rem' }" :pt="paneColumnPt.left">
       <template #header>
         Changed properties
         <HelpIcon :content="TOOLTIPS.rulePropertyDiffs" />

@@ -1,5 +1,6 @@
 <script setup>
 import Column from 'primevue/column'
+import { exportPct } from '../../shared/lib/exportCells.js'
 
 defineProps({
   field: String,
@@ -23,7 +24,7 @@ function renderPct(v) {
 </script>
 
 <template>
-  <Column :field="field" :header="header" :pt="pt">
+  <Column :field="field" :header="header" :pt="pt" :export-value="exportPct">
     <template #body="slotProps">
       <span v-html="renderPct(slotProps.data[slotProps.field])" />
     </template>

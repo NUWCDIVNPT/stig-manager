@@ -158,7 +158,7 @@ function openEditModal(stig) {
         </template>
 
         <Column
-          field="benchmarkId" header="Benchmark ID"
+          field="benchmarkId" header="Benchmark ID" export-header="BenchmarkId"
           sortable
           :pt="borderPt"
           style="min-width: 9rem; width: 12.75rem;"
