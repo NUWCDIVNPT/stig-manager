@@ -12,8 +12,8 @@ const summaryText = computed(() => {
   if (!props.summary) {
     return ''
   }
-  return `Data ≈ ${formatBytesBinary(props.summary.dataLength)} ｜ Indexes ≈ ${formatBytesBinary(props.summary.indexLength)} `
-    + `｜ Version ${props.summary.version} ｜ Up ${formatUptime(props.summary.uptime)}`
+  return `Data ≈ ${formatBytesBinary(props.summary.dataLength)} | Indexes ≈ ${formatBytesBinary(props.summary.indexLength)} `
+    + `| Version ${props.summary.version} | Up ${formatUptime(props.summary.uptime)}`
 })
 
 const COLUMNS = [
@@ -42,7 +42,7 @@ const COLUMNS = [
     column-toggle
   >
     <template v-if="summaryText" #title-extra>
-      <span class="title-sep">｜</span>
+      <span class="title-sep">|</span>
       <span class="title-summary">{{ summaryText }}</span>
     </template>
   </ReportTableBase>

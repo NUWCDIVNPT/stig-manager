@@ -11,7 +11,7 @@ import labelIcon from '../../../../assets/label.svg'
 import shieldGreenCheckIcon from '../../../../assets/shield-green-check.svg'
 import targetIcon from '../../../../assets/target.svg'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
-import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
+import { frameDialogScrollPt, primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import {
   fetchAssetStigs,
@@ -256,14 +256,6 @@ const inputNumberPt = (invalid = false) => {
     },
   }
 }
-
-const dialogPt = {
-  root: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 8px; color: var(--color-text-primary); display: flex; flex-direction: column; overflow: hidden;' },
-  header: { style: 'background: var(--color-background-dark); padding: 0; border-bottom: 1px solid var(--color-border-default); flex-shrink: 0;' },
-  content: { style: 'background: var(--color-background-dark); padding: 0; flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column;' },
-  footer: { style: 'flex-shrink: 0; padding: 0; border: none;' },
-  closeButton: { style: 'color: var(--color-text-dim);' },
-}
 </script>
 
 <template>
@@ -272,7 +264,7 @@ const dialogPt = {
     modal
     :draggable="false"
     :style="{ width: 'min(650px, 96vw)', height: 'min(890px, 92vh)' }"
-    :pt="dialogPt"
+    :pt="frameDialogScrollPt"
   >
     <template #header>
       <div class="modal-header">

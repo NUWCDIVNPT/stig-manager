@@ -9,7 +9,7 @@ import { isDuplicateEntryError } from '../../../../shared/api/apiErrors.js'
 import { fetchUserGroups, fetchUsers } from '../../../../shared/api/userApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
-import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
+import { frameDialogPt, primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { inputTextPt, textareaPt } from '../../../../shared/lib/formPt.js'
 import {
   COLLECTION_DESCRIPTION_MAX_LENGTH,
@@ -112,14 +112,6 @@ async function onSave() {
     saving.value = false
   }
 }
-
-const dialogPt = {
-  root: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 8px; color: var(--color-text-primary); display: flex; flex-direction: column; overflow: hidden;' },
-  header: { style: 'background: var(--color-background-dark); padding: 0; border-bottom: 1px solid var(--color-border-default); flex-shrink: 0;' },
-  content: { style: 'background: var(--color-background-dark); padding: 0; flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column;' },
-  footer: { style: 'flex-shrink: 0; padding: 0; border: none;' },
-  closeButton: { style: 'color: var(--color-text-dim);' },
-}
 </script>
 
 <template>
@@ -128,7 +120,7 @@ const dialogPt = {
     modal
     :draggable="false"
     :style="{ width: '950px', maxWidth: '95vw', height: '850px', maxHeight: '95vh' }"
-    :pt="dialogPt"
+    :pt="frameDialogPt"
   >
     <template #header>
       <div class="modal-header">

@@ -46,19 +46,25 @@ const emit = defineEmits(['update:visible', 'submit'])
 ## 3. Styling: PrimeVue Passthrough (PT) & Scoped CSS
 We use PrimeVue `pt` props to style the internals of complex components (like Dialogs, Tables, Panels) to match our dark theme, and standard scoped CSS for layout.
 
-```javascript
-// Example PT object for a Dialog
-const dialogPt = {
-  root: { style: 'background-color: var(--color-background-dark); border: 1px solid var(--color-border-default);' },
-  header: { style: 'background-color: var(--color-background-dark);' }
-}
-```
+Dialogs take their PT object from `src/shared/lib/dialogPt.js` rather than declaring one per component:
+
+*   `frameDialogPt`: the modal renders its own `#header` slot (icon, title, subtitle); the body clips and manages its own scrolling.
+*   `frameDialogScrollPt`: same frame, but the body scrolls.
+*   `importDialogPt`: the stock PrimeVue title bar with padded header and content.
+
+The same module exports `primaryBtnPt`, `secondaryBtnPt` and `dangerBtnPt` for the footer buttons.
 
 ```vue
+<script setup>
+import { frameDialogPt, primaryBtnPt, secondaryBtnPt } from '../../shared/lib/dialogPt.js'
+</script>
+
 <template>
-  <Dialog :pt="dialogPt" ... />
+  <Dialog :pt="frameDialogPt" ... />
 </template>
 ```
+
+A component-local PT object is for widgets without a shared one (a Select, an InputText) and for layout the shared object cannot express; a one-off visual tweak belongs in the shared object or nowhere.
 
 Sizes come from the type scale and the rem row-height tokens; see [Typography and Sizing](TypographyAndSizing.md). In short: `font-size: var(--text-md)` (never a literal), `var(--font-mono)` for identifiers and code, `rowHeightPx(kind)` or `useGridDensity(gridKey)` for virtual scroller rows, and rem for column widths.
 

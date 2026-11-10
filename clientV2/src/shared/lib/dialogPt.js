@@ -7,6 +7,27 @@ export const importDialogPt = {
   title: { style: 'font-size: var(--text-xl); font-weight: 600;' },
 }
 
+// Framed dialog: the modal renders its own #header slot (icon, title, subtitle),
+// so the PrimeVue header carries only the close button and a right inset that
+// keeps it off the frame edge. Content clips; use frameDialogScrollPt when the
+// body should scroll instead.
+function frameContent(overflow) {
+  return { style: `background: var(--color-background-dark); padding: 0; flex: 1; min-height: 0; overflow: ${overflow}; display: flex; flex-direction: column;` }
+}
+
+export const frameDialogPt = {
+  root: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 8px; color: var(--color-text-primary); display: flex; flex-direction: column; overflow: hidden;' },
+  header: { style: 'background: var(--color-background-dark); padding: 0 0.75rem 0 0; border-bottom: 1px solid var(--color-border-default); flex-shrink: 0;' },
+  content: frameContent('hidden'),
+  footer: { style: 'flex-shrink: 0; padding: 0; border: none;' },
+  closeButton: { style: 'color: var(--color-text-dim);' },
+}
+
+export const frameDialogScrollPt = {
+  ...frameDialogPt,
+  content: frameContent('auto'),
+}
+
 export const primaryBtnPt = {
   root: ({ context }) => ({
     style: `border: 1px solid ${context.disabled ? 'var(--color-border-default)' : 'var(--color-action-blue-dark)'}; padding: 0.5rem 1.5rem; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem;`,
