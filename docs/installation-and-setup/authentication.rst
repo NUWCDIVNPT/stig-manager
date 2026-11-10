@@ -25,7 +25,7 @@ The JWT produced by the Identity Provider should provide the claims specified be
     * User Privileges - ``STIGMAN_JWT_PRIVILEGES_CLAIM`` - **default:** ``realm_access.roles``
     * Scope - ``STIGMAN_JWT_SCOPE_CLAIM`` **default:** ``scope``. Some OIDC Providers (Okta, Azure Entra ID) use the claim ``scp`` to enumerate scopes. May name more than one claim, as a comma-separated list such as ``scp,roles``, in which case the scopes found in each named claim are combined. See :ref:`service-account-setup`.
     * Assertion ID - ``STIGMAN_JWT_ASSERTION_CLAIM`` **default:** ``jti``. Some OIDC Providers (ADFS, Azure Entra ID) use the claim ``uti`` instead of ``jti`` to protect against replay attacks.
-    * Service Name - ``STIGMAN_JWT_SERVICENAME_CLAIM`` - **default:** ``clientId``. Used for service account clients.
+    * Service Name - ``STIGMAN_JWT_SERVICENAME_CLAIM`` - (optional) **no default**. Used for service account clients. If not set, the first of ``azp``, ``client_id`` or ``clientId`` that is present is used.
     * Audience - ``STIGMAN_JWT_AUD_VALUE`` - (optional) **no default**. If specified, the ``aud`` claim must include this value.
 
 .. important::
@@ -52,7 +52,7 @@ The JWT produced by the Identity Provider should provide the claims specified be
       "iat": 1630360166,
       "auth_time": 1630354418,
       "jti": "5b17970e-428a-4b54-a0bd-7ed29a436803",
-      "iss": "http://localhost:8080/auth/realms/stigman",
+      "iss": "http://localhost:8080/realms/stigman",
       "aud": [
         "realm-management",
         "account"
@@ -109,7 +109,7 @@ Alternatively, you could situate your OIDC Provider and the Client server behind
 Service Account Client Setup
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you are using a service account to connect to the STIGMan API, the ``STIGMAN_JWT_SERVICENAME_CLAIM`` Environment Variable must specify the claim that will hold the client ID. The default is ``clientId``. There may be other OIDC Provider configuration required. 
+If you are using a service account to connect to the STIGMan API, the token must identify the client in one of the claims ``azp``, ``client_id`` or ``clientId``. If your OIDC Provider uses a different claim, name it with the ``STIGMAN_JWT_SERVICENAME_CLAIM`` Environment Variable. There may be other OIDC Provider configuration required. 
 
 Some OIDC Providers convey a service account's permissions in a different claim than they use for interactive users. Azure Entra ID is one: a token issued for a signed-in user carries delegated permissions in the ``scp`` claim, as a space-separated string, while a token issued through the client credentials flow carries the application's own permissions in the ``roles`` claim, as an array of strings, and has no ``scp`` claim. Either claim may be absent entirely — an application with no app roles assigned receives no ``roles`` claim.
 
@@ -248,7 +248,7 @@ Configure STIG Manager to use your Authentication provider
 
 Most commonly, STIG Manager will require the below Environment Variable to be specified, unless their default values are appropriate.  Check the :ref:`Environment Variables` document for an exhaustive list of Environment Variables and their default values.
 
- * ``STIGMAN_OIDC_PROVIDER`` - Sample value:  ``http://localhost:8080/auth/realms/stigman`` - The base URL of the OIDC provider issuing signed JWTs for the API.  The string ``/.well-known/openid-configuration`` will be appended when fetching metadata.
+ * ``STIGMAN_OIDC_PROVIDER`` - Sample value:  ``http://localhost:8080/realms/stigman`` - The base URL of the OIDC provider issuing signed JWTs for the API.  The string ``/.well-known/openid-configuration`` will be appended when fetching metadata.
  * ``STIGMAN_CLIENT_OIDC_PROVIDER``  - Default value: Value of ``STIGMAN_OIDC_PROVIDER`` - Client override of the base URL of the OIDC provider issuing signed JWTs for the API.  The string ``/.well-known/openid-configuration`` will be appended by the client when fetching metadata.
  * ``STIGMAN_CLIENT_ID`` - Suggested value: ``stig-manager``
  * ``STIGMAN_JWT_PRIVILEGES_CLAIM`` - Sample value: ``realm_access.roles``

@@ -39,13 +39,26 @@ Common
         "component": {
           "type": "string",
           "enum": [
-            "index",
-            "initData",
-            "oidc",
+            "app",
+            "auth",
+            "bootstrapUtils",
+            "configureSwaggerUI",
+            "dependencies",
+            "eventBus",
+            "jwksCache",
+            "logger",
+            "logSocket",
+            "middleware",
             "mysql",
-            "static",
             "rest",
-            "logger"
+            "serveApiDocs",
+            "serveClient",
+            "serveDocs",
+            "serveStaticFiles",
+            "server",
+            "signals",
+            "state",
+            "static"
           ]
         },
         "type": {
@@ -81,13 +94,26 @@ Common
       component:
         type: string
         enum:
-        - index
-        - initData
-        - oidc
-        - mysql
-        - static
-        - rest
+        - app
+        - auth
+        - bootstrapUtils
+        - configureSwaggerUI
+        - dependencies
+        - eventBus
+        - jwksCache
         - logger
+        - logSocket
+        - middleware
+        - mysql
+        - rest
+        - serveApiDocs
+        - serveClient
+        - serveDocs
+        - serveStaticFiles
+        - server
+        - signals
+        - state
+        - static
       type:
         type: string
       data:

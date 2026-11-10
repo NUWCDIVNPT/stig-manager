@@ -21,8 +21,8 @@
 | The base URL for Client requests to the API relative to ``window.location`` ","Client"
 "STIGMAN_CLIENT_CONSOLE_MODE","| **Default** ``production``
 | The console mode of the web client, setting to ``development`` enables console logging which is otherwise disabled","Client"
-"STIGMAN_CLIENT_DIRECTORY","| **Default** ``./clients``
-| The location of the web client files, relative to the API source directory. Note that if running source from a clone of the GitHub repository, the client is located at `../../clients` relative to the API directory. ","API, Client"
+"STIGMAN_CLIENT_DIRECTORY","| **Default** ``../../client/dist``
+| The location of the web client files, relative to the API source directory. The Docker image sets this to ``./client``, the bundled client build.","API, Client"
 "STIGMAN_CLIENT_DISABLED","| **Default** ``false``
 | Whether to *not* serve the reference web client","Client"
 "STIGMAN_CLIENT_DISPLAY_APPMANAGERS","| **Default** ``true``
@@ -83,8 +83,8 @@
 | Controls whether the API will track API operation statistics used for populating ``Requests`` portion of ``/op/appinfo`` response body. Setting to 'false' is NOT recommended for production environments, as this info can be useful for troubleshooting. ","API"
 "STIGMAN_DEV_RESPONSE_VALIDATION","| **Default** ``none``
 | Controls whether the API will perform response validation on API responses. If set to 'logOnly' the API will output log entries indicating deviations from the OAS specification. Intended for development/testing purposes. Available values: ``none``, ``logOnly`` ","API"
-"STIGMAN_DOCS_DIRECTORY","| **Default** ``./docs``
-| The location of the documentation files, relative to the API source directory. Note that if running source from a clone of the GitHub repository, the docs are located at `../../docs/_build/html` relative to the API directory. ","API, Documentation"
+"STIGMAN_DOCS_DIRECTORY","| **Default** ``../../docs/_build/html``
+| The location of the documentation files, relative to the API source directory. The Docker image sets this to ``./docs``, the bundled documentation build.","API, Documentation"
 "STIGMAN_DOCS_DISABLED","| **Default** ``false``
 | Whether to *not* serve the project Documentation.  NOTE: If you choose to serve the Client from the API container but not the Documentation, the links do the Docs on the home page will not work. ","Documentation"
 "STIGMAN_EVENTS_ENABLED","| **Default** ``true``
@@ -114,13 +114,13 @@
 "STIGMAN_JWT_SCOPE_CLAIM","| **Default** ``scope``
 | The access token claim whose value is the user's scopes. Some OIDC Providers (Okta, Azure AD) use the claim ``scp`` to enumerate scopes. MAY name more than one claim, as a comma-separated list such as ``scp,roles``, in which case the scopes found in each named claim are combined. A named claim that is absent from a token, or whose value is neither a string nor an array of strings, contributes no scopes.
 | Each named claim MUST NOT be nested and MUST be a valid ECMAScript identifier. See :ref:`jwt_requirements` for token value format requirements.","API, Client"
-"STIGMAN_JWT_SERVICENAME_CLAIM","| **Default** ``clientId``
-| The access token claim whose value is the service account's client. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier. See :ref:`jwt_requirements` for token value format requirements.","API, Client"
+"STIGMAN_JWT_SERVICENAME_CLAIM","| **No default**
+| The access token claim whose value is the service account's client. If not set, or if the claim is absent from a token, the API uses the first of ``azp``, ``client_id`` or ``clientId`` that is present. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier. See :ref:`jwt_requirements` for token value format requirements.","API, Client"
 "STIGMAN_JWT_USERNAME_CLAIM","| **Default** ``preferred_username``
 | The access token claim whose value is the user's username. The claim MUST NOT be nested and MUST be a valid ECMAScript identifier. See :ref:`jwt_requirements` for token value format requirements.","API, Client"
 "STIGMAN_OIDC_CA_CERTS","| **No default**
 | The full path to a file with one or more PEM-encoded CA certificates for validating TLS connections to the OIDC Provider.","API"
-"STIGMAN_OIDC_PROVIDER","| **Default** ``http://localhost:8080/auth/realms/stigman``
+"STIGMAN_OIDC_PROVIDER","| **Default** ``http://localhost:8080/realms/stigman``
 | The base URL of the OIDC provider issuing signed JWTs for the API.  The string ``/.well-known/openid-configuration`` will be appended when fetching metadata.","API, Client"
 "STIGMAN_SWAGGER_ENABLED","| **Default** ``false``
 | Whether to enable the SwaggerUI SPA at /api-docs ","API"
