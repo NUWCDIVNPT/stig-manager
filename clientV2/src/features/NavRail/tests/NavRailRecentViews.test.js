@@ -14,7 +14,7 @@ vi.mock('../composables/useNavItems.js', () => ({
 
 const clearViewsMock = vi.fn()
 
-vi.mock('../composables/useRecentViews.js', () => ({
+vi.mock('../../../shared/composables/useRecentViews.js', () => ({
   useRecentViews: () => ({
     recentViews: ref([
       {

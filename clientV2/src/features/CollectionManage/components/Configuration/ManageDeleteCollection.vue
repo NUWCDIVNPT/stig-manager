@@ -7,7 +7,6 @@ import { useRouter } from 'vue-router'
 import { deleteCollection } from '../../../../shared/api/collectionsApi.js'
 import { useCurrentUser } from '../../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
-import { useRecentViews } from '../../../NavRail/composables/useRecentViews.js'
 import { useCollectionResource } from '../../composables/useCollectionResource.js'
 import { collectionDialogPt, collectionInputTextPt } from './pt.js'
 
@@ -21,7 +20,6 @@ const props = defineProps({
 const router = useRouter()
 const { triggerError } = useGlobalError()
 const { refreshUser } = useCurrentUser()
-const { removeView } = useRecentViews()
 
 const { collection } = useCollectionResource()
 
@@ -60,9 +58,8 @@ const performDelete = async () => {
   try {
     await deleteCollection(props.collectionId)
     showDeleteModal.value = false
-    removeView(key => key.includes(`:${props.collectionId}`))
-    // The collection's grant no longer exists; refresh so the nav rail and
-    // breadcrumb drop the deleted collection.
+    // The collection's grant no longer exists; refresh so the nav rail,
+    // breadcrumb and Recent views drop the deleted collection.
     await refreshUser()
     // Redirect to the collections list after delete
     router.push('/collections')

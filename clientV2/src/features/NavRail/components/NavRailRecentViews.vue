@@ -1,8 +1,8 @@
 <script setup>
 import Popover from 'primevue/popover'
 import { ref } from 'vue'
+import { useRecentViews } from '../../../shared/composables/useRecentViews.js'
 import { useNavItems } from '../composables/useNavItems.js'
-import { useRecentViews } from '../composables/useRecentViews.js'
 
 defineProps({
   expanded: {
@@ -50,7 +50,7 @@ function toggleRecentViewsPopover(event) {
       >
         <span
           class="nav-rail-recent-icon"
-          :class="view.icon || typeIcon(view.type)"
+          :class="typeIcon(view.type)"
         />
         <span class="nav-rail-recent-label">{{ view.label }}</span>
       </router-link>
@@ -89,7 +89,7 @@ function toggleRecentViewsPopover(event) {
         >
           <span
             class="nav-rail-recent-icon"
-            :class="view.icon || typeIcon(view.type)"
+            :class="typeIcon(view.type)"
           />
           <span>{{ view.label }}</span>
         </router-link>

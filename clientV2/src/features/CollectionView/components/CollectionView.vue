@@ -14,6 +14,7 @@ import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import { useLabelFilterQuery } from '../../../shared/composables/useLabelFilterQuery.js'
+import { useTrackRecentView } from '../../../shared/composables/useRecentViews.js'
 import { useTours } from '../../../shared/composables/useTours.js'
 import { viewTabListPt, viewTabPt, viewTabsPt } from '../../../shared/lib/tabPt.js'
 import CollectionManage from '../../CollectionManage/components/CollectionManage.vue'
@@ -21,7 +22,6 @@ import CollectionExportMetrics from '../../CollectionMetrics/components/Collecti
 import CollectionImportResults from '../../CollectionMetrics/components/CollectionImportResults.vue'
 import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
 import Findings from '../../Findings/components/Findings.vue'
-import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 import { fetchCollection } from '../api/collectionApi.js'
 import CollectionAssetsTab from './CollectionAssetsTab.vue'
 import CollectionLabelsTab from './CollectionLabelsTab.vue'
@@ -37,9 +37,7 @@ const props = defineProps({
 const route = useRoute()
 const router = useRouter()
 const { offerTourWhen } = useTours()
-const { removeView } = useRecentViews()
 const { triggerError } = useGlobalError()
-const { addView } = useRecentViews()
 const { getCollectionRoleId } = useCurrentUser()
 
 const canManage = computed(() => {
@@ -55,7 +53,6 @@ const { state: collection, execute: loadCollection } = useAsyncState(
     onError: (err) => {
       // 403 = no grant (API PrivilegeError), 404 = gone, 400 = malformed id; same as the review pages
       if ([400, 403, 404].includes(getHttpStatus(err))) {
-        removeView(key => key.includes(`:${props.collectionId}`))
         router.replace(notFoundLocation(route))
       }
       else {
@@ -70,29 +67,19 @@ const collectionName = computed(() => collection.value?.name || 'Collection')
 // Label filter (set from the breadcrumb) shared by the dashboard metrics and every tab.
 const { selectedLabelNames, labelFilterParams } = useLabelFilterQuery()
 
-// Track Recent Views on data load, route change and label filter change
-watch([collection, () => route.name, selectedLabelNames], ([col, routeName]) => {
-  if (col?.name && routeName?.startsWith('collection')) {
-    let label = col.name
-    let key = `collection:${props.collectionId}`
-
-    if (routeName === 'collection-findings') {
-      label = `${col.name} / Findings`
-      key = `collection-findings:${props.collectionId}`
-    }
-    else if (routeName === 'collection-management') {
-      label = `${col.name} / Manage`
-      key = `collection-manage:${props.collectionId}`
-    }
-
-    addView({
-      key,
-      url: route.fullPath,
-      label,
-      type: 'collection',
-    })
+// Findings and Manage get their own Recent entries; the other tabs share one
+const RECENT_SECTIONS = {
+  'collection-findings': { section: 'findings', suffix: ' / Findings' },
+  'collection-management': { section: 'manage', suffix: ' / Manage' },
+}
+useTrackRecentView(() => {
+  const name = collection.value?.name
+  if (!name || !route.name?.startsWith('collection')) {
+    return null
   }
-}, { immediate: true })
+  const { section, suffix = '' } = RECENT_SECTIONS[route.name] ?? {}
+  return { type: 'collection', section, collectionId: props.collectionId, label: name + suffix }
+})
 
 // Initial Data Load
 watch([() => props.collectionId], () => {

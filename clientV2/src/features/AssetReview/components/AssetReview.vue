@@ -9,11 +9,11 @@ import { getHttpStatus } from '../../../shared/api/apiClient.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useQuerySelection } from '../../../shared/composables/useQuerySelection.js'
+import { useTrackRecentView } from '../../../shared/composables/useRecentViews.js'
 import { useStigRevisions } from '../../../shared/composables/useStigRevisions.js'
 import { useTours } from '../../../shared/composables/useTours.js'
 import { getRevisionInfo } from '../../../shared/lib/checklistUtils.js'
 import { defaultFieldSettings } from '../../../shared/lib/reviewFormUtils.js'
-import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 import {
   fetchAsset,
   fetchCollection,
@@ -24,7 +24,6 @@ import AssetChecklistGrid from './AssetChecklistGrid.vue'
 
 const route = useRoute()
 const router = useRouter()
-const { addView, removeView } = useRecentViews()
 const { getCollectionRoleId } = useCurrentUser()
 const { offerTourWhen } = useTours()
 
@@ -37,7 +36,6 @@ const revisionStr = computed(() => route.params.revisionStr)
 // Only used for fetchAsset and fetchCollection — the two resources that define
 // whether this page is accessible at all. Any error on these → redirect.
 function redirectToNotFound() {
-  removeView(key => key.includes(`:${collectionId.value}:${assetId.value}`))
   router.replace(notFoundLocation(route))
 }
 
@@ -126,26 +124,12 @@ watch([assetId, benchmarkId, revisionStr], () => {
   }
 }, { immediate: true })
 
-watch(
-  [asset, () => route.params.benchmarkId, () => route.params.revisionStr],
-  ([a]) => {
-    if (a?.name && route.params.benchmarkId) {
-      addView({
-        key: `review:${collectionId.value}:${assetId.value}:${route.params.benchmarkId}`,
-        url: route.fullPath,
-        label: `${a.name} / ${route.params.benchmarkId}`,
-        type: 'asset-review',
-      })
-    }
-  },
-)
-
-// If the checklist fetch fails (e.g. bad benchmarkId/revisionStr), remove the
-// recent view entry so the nav rail doesn't pin a broken route.
-watch(checklistError, (err) => {
-  if (err) {
-    removeView(key => key.includes(`:${collectionId.value}:${assetId.value}`))
-  }
+useTrackRecentView(() => asset.value?.name && {
+  type: 'asset-review',
+  collectionId: collectionId.value,
+  assetId: assetId.value,
+  benchmarkId: benchmarkId.value,
+  label: `${asset.value.name} / ${benchmarkId.value}`,
 })
 
 // The tour points at the checklist and Rule panels, so it waits for them.

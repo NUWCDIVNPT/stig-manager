@@ -15,12 +15,12 @@ import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
 import { useLabelFilterQuery } from '../../../shared/composables/useLabelFilterQuery.js'
 import { useQuerySelection } from '../../../shared/composables/useQuerySelection.js'
+import { useTrackRecentView } from '../../../shared/composables/useRecentViews.js'
 import { useStigRevisions } from '../../../shared/composables/useStigRevisions.js'
 import { useTours } from '../../../shared/composables/useTours.js'
 import { isRevisionStr } from '../../../shared/lib/checklistUtils.js'
 import { defaultFieldSettings, statusPayloadForAction } from '../../../shared/lib/reviewFormUtils.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
-import { useRecentViews } from '../../NavRail/composables/useRecentViews.js'
 import { fetchAssetsByCollectionStig, fetchCollectionChecklist, fetchReviewsByRule, fetchRule, postReviewBatch } from '../api/collectionReviewApi.js'
 import { useReviewActionAvailability } from '../composables/useReviewActionAvailability.js'
 import BatchEditModal from './BatchEditModal.vue'
@@ -31,7 +31,6 @@ import RuleTable from './RuleTable.vue'
 const route = useRoute()
 const router = useRouter()
 const { offerTourWhen } = useTours()
-const { addView, removeView } = useRecentViews()
 const { getCollectionRoleId } = useCurrentUser()
 const { triggerError } = useGlobalError()
 
@@ -42,12 +41,7 @@ const revisionStr = computed(() => route.params.revisionStr)
 // Label filter from the route query (set from the breadcrumb); the API takes the names as is.
 const { selectedLabelNames, labelFilterParams } = useLabelFilterQuery()
 
-function recentViewKey(cId = collectionId.value, bId = benchmarkId.value) {
-  return `collection-review:${cId}:${bId}`
-}
-
 function redirectToNotFound() {
-  removeView(key => key.includes(`:${collectionId.value}:${benchmarkId.value}`))
   router.replace(notFoundLocation(route))
 }
 
@@ -181,26 +175,11 @@ watch([stigKey, selectedLabelNames], ([key], [prevKey] = []) => {
   }
 }, { immediate: true })
 
-watch(
-  [collection, () => route.params.benchmarkId, () => route.params.revisionStr, selectedLabelNames],
-  ([c]) => {
-    if (c?.name && route.params.benchmarkId) {
-      addView({
-        key: recentViewKey(collectionId.value, route.params.benchmarkId),
-        url: route.fullPath,
-        label: `${c.name} / ${route.params.benchmarkId}`,
-        type: 'collection-review',
-      })
-    }
-  },
-)
-
-// If the checklist fetch fails (e.g. bad benchmarkId/revisionStr), remove the
-// recent view entry so the nav rail doesn't pin a broken route.
-watch(checklistError, (err) => {
-  if (err) {
-    removeView(recentViewKey())
-  }
+useTrackRecentView(() => collection.value?.name && {
+  type: 'collection-review',
+  collectionId: collectionId.value,
+  benchmarkId: benchmarkId.value,
+  label: `${collection.value.name} / ${benchmarkId.value}`,
 })
 
 // The tour points at the grids, so it waits for the checklist.

@@ -20,7 +20,7 @@ const { refetch, tabStub } = vi.hoisted(() => {
   })
   return { refetch, tabStub }
 })
-const { mockRemoveView, mockTriggerError } = vi.hoisted(() => ({ mockRemoveView: vi.fn(), mockTriggerError: vi.fn() }))
+const { mockTrackRecentView, mockTriggerError } = vi.hoisted(() => ({ mockTrackRecentView: vi.fn(), mockTriggerError: vi.fn() }))
 
 vi.mock('../components/CollectionStigsTab.vue', () => tabStub('stigs'))
 vi.mock('../components/CollectionAssetsTab.vue', () => tabStub('assets'))
@@ -40,8 +40,8 @@ let mockRoleId = 1
 vi.mock('../../../shared/composables/useCurrentUser.js', () => ({
   useCurrentUser: () => ({ getCollectionRoleId: () => mockRoleId }),
 }))
-vi.mock('../../NavRail/composables/useRecentViews.js', () => ({
-  useRecentViews: () => ({ addView: vi.fn(), removeView: mockRemoveView }),
+vi.mock('../../../shared/composables/useRecentViews.js', () => ({
+  useTrackRecentView: mockTrackRecentView,
 }))
 vi.mock('../../../shared/composables/useGlobalError.js', () => ({
   useGlobalError: () => ({ triggerError: mockTriggerError }),
@@ -154,7 +154,6 @@ describe('collectionView route errors', () => {
   }
 
   beforeEach(() => {
-    mockRemoveView.mockClear()
     mockTriggerError.mockClear()
   })
 
@@ -173,22 +172,12 @@ describe('collectionView route errors', () => {
     expect(router.currentRoute.value.name).toBe('not-found')
   })
 
-  it('drops only this collection from recent views', async () => {
-    await renderWithCollectionError(apiError(403, 'anything'))
-
-    const [matcher] = mockRemoveView.mock.calls[0]
-    expect(matcher('collection:12')).toBe(true)
-    expect(matcher('review:12:5:RHEL_9')).toBe(true)
-    expect(matcher('collection:3')).toBe(false)
-  })
-
   it('shows the error popup and stays put on other errors, even with the privilege message', async () => {
     const err = apiError(500, 'User has insufficient privilege to complete this request.')
     await renderWithCollectionError(err)
 
     expect(mockTriggerError).toHaveBeenCalledWith(err)
     expect(router.currentRoute.value.name).toBe('collection-stigs')
-    expect(mockRemoveView).not.toHaveBeenCalled()
   })
 
   it('shows the error popup for a network error with no status', async () => {
@@ -309,5 +298,38 @@ describe('collectionView per-tab query', () => {
     router.back()
     await vi.waitFor(() => expect(router.currentRoute.value.name).toBe('collection-findings'))
     expect(query()).toEqual({ agg: 'ruleId', sel: 'SV-1' })
+  })
+})
+
+describe('collectionView recent view', () => {
+  let router, describeView, beforeLoad
+
+  beforeEach(async () => {
+    mockTrackRecentView.mockClear()
+    router = makeRouter()
+    await router.push({ name: 'collection-stigs', params: { collectionId: '12' } })
+    await router.isReady()
+    renderWithProviders(CollectionView, {
+      props: { collectionId: '12' },
+      global: { plugins: [router] },
+    })
+    describeView = mockTrackRecentView.mock.calls[0][0]
+    beforeLoad = describeView()
+  })
+
+  it('describes nothing until the collection loads', () => {
+    expect(beforeLoad).toBeFalsy()
+  })
+
+  it.each([
+    ['stigs', {}, 'Test Collection'],
+    ['assets', {}, 'Test Collection'],
+    ['findings', { section: 'findings' }, 'Test Collection / Findings'],
+    ['management', { section: 'manage' }, 'Test Collection / Manage'],
+  ])('describes the %s tab', async (tab, section, label) => {
+    await router.push({ name: `collection-${tab}`, params: { collectionId: '12' } })
+    await flushPromises()
+
+    expect(describeView()).toEqual({ type: 'collection', ...section, collectionId: '12', label })
   })
 })
