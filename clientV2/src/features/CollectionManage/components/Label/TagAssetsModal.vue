@@ -11,7 +11,7 @@ import PickListTable from '../../../../components/common/PickListTable.vue'
 import { fetchCollectionLabels } from '../../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 
-import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
+import { frameDialogPt, primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { dashZero } from '../../../../shared/lib/numberFormat.js'
 import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
 import { listTooltip } from '../../../../shared/lib/tooltips.js'
@@ -102,14 +102,6 @@ async function onSave() {
   localVisible.value = false
 }
 
-const dialogPt = {
-  root: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 8px; color: var(--color-text-primary); display: flex; flex-direction: column; overflow: hidden;' },
-  header: { style: 'background: var(--color-background-dark); padding: 0; border-bottom: 1px solid var(--color-border-default); flex-shrink: 0;' },
-  content: { style: 'background: var(--color-background-dark); padding: 0; flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column;' },
-  footer: { style: 'flex-shrink: 0; padding: 0; border: none;' },
-  closeButton: { style: 'color: var(--color-text-dim);' },
-}
-
 // Rows are pinned to the scroller's itemSize so its n × itemSize placement holds.
 const tablePt = {
   bodyRow: { style: `font-size: var(--text-md); height: ${VIRTUAL_SCROLLER_OPTIONS.itemSize}px;` },
@@ -126,7 +118,7 @@ const tablePt = {
     modal
     :draggable="false"
     :style="{ width: 'min(1040px, 96vw)', height: '74vh', maxHeight: '720px', minHeight: '480px' }"
-    :pt="dialogPt"
+    :pt="frameDialogPt"
   >
     <template #header>
       <div class="modal-header">

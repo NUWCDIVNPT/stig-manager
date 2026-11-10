@@ -7,7 +7,7 @@ import { computed, watch } from 'vue'
 import StatusFooter from '../../../../components/common/StatusFooter.vue'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { formatDateTimeString } from '../../../../shared/lib.js'
-import { secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
+import { frameDialogPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { fetchTaskOutput, taskNameToPathParam } from '../../api/tasksManageApi.js'
 
 const props = defineProps({
@@ -43,14 +43,6 @@ watch(() => props.visible, (open) => {
   }
 })
 
-const dialogPt = {
-  root: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 8px; color: var(--color-text-primary); display: flex; flex-direction: column; overflow: hidden;' },
-  header: { style: 'background: var(--color-background-dark); padding: 0; border-bottom: 1px solid var(--color-border-default); flex-shrink: 0;' },
-  content: { style: 'background: var(--color-background-dark); padding: 0; flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column;' },
-  footer: { style: 'flex-shrink: 0; padding: 0; border: none;' },
-  closeButton: { style: 'color: var(--color-text-dim);' },
-}
-
 const tablePt = {
   root: { style: 'background-color: var(--color-background-dark);' },
   wrapper: { style: 'background-color: var(--color-background-dark); flex: 1 1 auto; display: flex; flex-direction: column;' },
@@ -67,7 +59,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
     modal
     :draggable="false"
     :style="{ width: 'min(1000px, 96vw)', height: '78vh', maxHeight: '820px', minHeight: '420px' }"
-    :pt="dialogPt"
+    :pt="frameDialogPt"
   >
     <template #header>
       <div class="modal-header">

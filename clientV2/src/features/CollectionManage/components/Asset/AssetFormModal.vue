@@ -12,7 +12,7 @@ import MetadataEditor from '../../../../components/common/MetadataEditor.vue'
 import CommonPickList from '../../../../components/common/PickList.vue'
 
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
-import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
+import { frameDialogPt, primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { pickListVirtualScrollerOptions } from '../../../../shared/lib/pickListPt.js'
 import { useAssetForm } from '../../composables/useAssetForm.js'
 
@@ -85,14 +85,6 @@ async function save() {
 
 // ── Passthrough objects ───────────────────────────────────────────────────────
 
-const dialogPt = {
-  root: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 8px; color: var(--color-text-primary); box-shadow: 0 24px 64px rgba(0,0,0,0.6); display: flex; flex-direction: column; overflow: hidden;' },
-  header: { style: 'background: var(--color-background-dark); padding: 0; border-bottom: 1px solid var(--color-border-default); flex-shrink: 0;' },
-  content: { style: 'background: var(--color-background-dark); padding: 0; flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column;' },
-  footer: { style: 'flex-shrink: 0; padding: 0; border: none;' },
-  closeButton: { style: 'color: var(--color-text-dim); border-radius: 4px;' },
-}
-
 const inputTextPt = {
   root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: var(--text-md); padding: 0.6rem 0.8rem;' },
 }
@@ -110,7 +102,7 @@ const checkboxPt = {
     modal
     :draggable="false"
     :style="{ width: 'min(950px, 96vw)', height: '90vh' }"
-    :pt="dialogPt"
+    :pt="frameDialogPt"
   >
     <template #header>
       <div class="modal-header">
@@ -389,13 +381,24 @@ const checkboxPt = {
   align-items: end;
 }
 
+/* Labels and Metadata side by side. Each column is a 2-row subgrid (header,
+   box) sharing the parent's row tracks, so the Metadata header's Add button
+   sets one header height for both columns and the two boxes start level. */
 .row--labels-meta {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.25rem;
-  align-items: stretch;
+  grid-template-rows: auto minmax(0, 1fr);
+  column-gap: 1.25rem;
+  row-gap: 0.35rem;
   flex: 1;
   min-height: 0;
+}
+
+.row--labels-meta > .labeled-field,
+.row--labels-meta > :deep(.metadata-editor) {
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-row: span 2;
 }
 
 .field--grow {
@@ -435,7 +438,7 @@ const checkboxPt = {
 
 .field-header-row {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
 }
 

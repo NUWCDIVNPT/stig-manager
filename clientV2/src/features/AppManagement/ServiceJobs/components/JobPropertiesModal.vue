@@ -10,7 +10,7 @@ import Tabs from 'primevue/tabs'
 import { computed, ref, watch } from 'vue'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../../shared/composables/useCurrentUser.js'
-import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
+import { frameDialogPt, primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { inputTextPt, tabListPt, tabPanelPt, tabPanelsPt, tabPt, tabsPt } from '../../../../shared/lib/formPt.js'
 import { fetchTasks } from '../api/serviceJobsApi.js'
 import { buildEventPayload, defaultSchedule, hydrateSchedule, isSystemJob as isSystemJobRecord, splitTasks } from '../lib/serviceJobsFormat.js'
@@ -110,14 +110,6 @@ function onSave() {
     event: buildEventPayload(schedule.value),
   })
 }
-
-const dialogPt = {
-  root: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 8px; color: var(--color-text-primary); display: flex; flex-direction: column; overflow: hidden;' },
-  header: { style: 'background: var(--color-background-dark); padding: 0; border-bottom: 1px solid var(--color-border-default); flex-shrink: 0;' },
-  content: { style: 'background: var(--color-background-dark); padding: 0; flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column;' },
-  footer: { style: 'flex-shrink: 0; padding: 0; border: none;' },
-  closeButton: { style: 'color: var(--color-text-dim);' },
-}
 </script>
 
 <template>
@@ -126,7 +118,7 @@ const dialogPt = {
     modal
     :draggable="false"
     :style="{ width: '820px', maxWidth: '95vw', height: '640px', maxHeight: '95vh' }"
-    :pt="dialogPt"
+    :pt="frameDialogPt"
   >
     <template #header>
       <div class="modal-header">

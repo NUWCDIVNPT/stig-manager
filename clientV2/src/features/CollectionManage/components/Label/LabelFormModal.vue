@@ -8,8 +8,8 @@ import { computed, ref, watch } from 'vue'
 import LabelChip from '../../../../components/common/Label.vue'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
 import { normalizeColor } from '../../../../shared/lib/colorUtils.js'
+import { frameDialogScrollPt, primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { LABEL_NAME_MAX_LENGTH } from '../../../../shared/lib/labelFilters.js'
-import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { createCollectionLabel, patchCollectionLabel } from '../../api/labelManageApi.js'
 import { DEFAULT_LABEL_COLOR, LABEL_COLOR_PALETTE, validateLabelName } from './labelPalette.js'
 
@@ -117,14 +117,6 @@ async function onSave() {
   }
 }
 
-const dialogPt = {
-  root: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 8px; color: var(--color-text-primary); display: flex; flex-direction: column; overflow: hidden;' },
-  header: { style: 'background: var(--color-background-dark); padding: 0; border-bottom: 1px solid var(--color-border-default); flex-shrink: 0;' },
-  content: { style: 'background: var(--color-background-dark); padding: 0; flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column;' },
-  footer: { style: 'flex-shrink: 0; padding: 0; border: none;' },
-  closeButton: { style: 'color: var(--color-text-dim);' },
-}
-
 const inputTextPt = {
   root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: var(--text-md); padding: 0.6rem 0.8rem; width: 100%;' },
 }
@@ -140,7 +132,7 @@ const textareaPt = {
     modal
     :draggable="false"
     :style="{ width: '49rem', maxWidth: '95vw', maxHeight: '90vh' }"
-    :pt="dialogPt"
+    :pt="frameDialogScrollPt"
   >
     <template #header>
       <div class="modal-header">

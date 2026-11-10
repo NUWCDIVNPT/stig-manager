@@ -72,29 +72,29 @@ function onDeleteConfirmed() {
         </div>
       </div>
     </div>
-  </div>
 
-  <DeleteModal
-    v-model:visible="deleteModalVisible"
-    title="Remove Metadata"
-    :message="`Remove the '${pendingDeleteIndex !== null ? modelValue[pendingDeleteIndex]?.key || 'this' : 'this'}' metadata key and its value?`"
-    @confirm="onDeleteConfirmed"
-  />
+    <DeleteModal
+      v-model:visible="deleteModalVisible"
+      title="Remove Metadata"
+      :message="`Remove the '${pendingDeleteIndex !== null ? modelValue[pendingDeleteIndex]?.key || 'this' : 'this'}' metadata key and its value?`"
+      @confirm="onDeleteConfirmed"
+    />
+  </div>
 </template>
 
 <style scoped>
 .metadata-editor {
   display: flex;
   flex-direction: column;
+  gap: 0.35rem;
   min-height: 0;
   flex: 1;
 }
 
 .field-header-row {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.35rem;
 }
 
 .flabel {
