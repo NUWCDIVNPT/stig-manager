@@ -154,6 +154,8 @@ const mergedReviewsData = computed(() => {
 
 watch(collectionId, () => {
   if (collectionId.value) {
+    // Clear first so the Recent view is not labeled with the previous collection while this one loads
+    collection.value = null
     loadCollection()
   }
 }, { immediate: true })
