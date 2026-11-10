@@ -43,6 +43,8 @@ const emit = defineEmits(['select-rule'])
 const dataTableRef = ref(null)
 const { itemSize, gridStyle } = useGridDensity('stig-library-rules')
 
+const exportCcis = ({ data }) => (data ?? []).map(c => c.cci).join('\n')
+
 const selectedRow = computed(() =>
   props.selectedRuleId ? props.rules.find(r => r.ruleId === props.selectedRuleId) ?? null : null,
 )
@@ -77,16 +79,18 @@ function onRowClick(event) {
         <CatBadge :category="severityMap[data.severity] ?? 3" variant="label" centered />
       </template>
     </Column>
-    <Column header="STIG ID" field="version" sortable :style="{ width: '12rem', minWidth: '10rem' }" :pt="paneColumnPt.left">
+    <Column header="STIG ID" export-header="STIG Id" field="version" sortable :style="{ width: '12rem', minWidth: '10rem' }" :pt="paneColumnPt.left">
       <template #body="{ data }">
         <span class="stiglib-cell-text"><HighlightText :text="data.version" :term="highlightTerm('version')" /></span>
       </template>
     </Column>
-    <Column header="Group" field="groupId" sortable :style="{ width: '6rem', minWidth: '6rem' }" :pt="paneColumnPt.left">
+    <Column header="Group" export-header="Group Id" field="groupId" sortable :style="{ width: '6rem', minWidth: '6rem' }" :pt="paneColumnPt.left">
       <template #body="{ data }">
         <span class="stiglib-cell-text"><HighlightText :text="data.groupId" :term="highlightTerm('groupId')" /></span>
       </template>
     </Column>
+    <!-- Hidden columns are export-only, for parity with the legacy STIG export -->
+    <Column header="Group Title" field="groupTitle" hidden />
     <Column header="Rule Id" field="ruleId" sortable :style="{ width: '15rem', minWidth: '14rem' }" :pt="paneColumnPt.left">
       <template #body="{ data }">
         <span class="stiglib-cell-text"><HighlightText :text="data.ruleId" :term="highlightTerm('ruleId')" /></span>
@@ -97,6 +101,10 @@ function onRowClick(event) {
         <span class="stiglib-cell-text stiglib-cell-text--clamped" :title="data.title"><HighlightText :text="data.title" :term="highlightTerm('title')" /></span>
       </template>
     </Column>
+    <Column header="Check" field="check.content" hidden />
+    <Column header="Fix" field="fix.text" hidden />
+    <Column header="Discussion" field="detail.vulnDiscussion" hidden />
+    <Column header="CCIs" field="ccis" :export-value="exportCcis" hidden />
     <template #empty>
       <div class="stiglib-empty">
         {{ filtered ? 'No rules match the search.' : 'No rules in this revision.' }}
