@@ -42,6 +42,9 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
+      - name: Create empty client distribution directory
+        # The Dockerfile copies ./clientV2/dist, which only exists after a client build
+        run: mkdir -p clientV2/dist
       - name: Build image for ${{ matrix.container.name }}
         id: image-build
         run: |
