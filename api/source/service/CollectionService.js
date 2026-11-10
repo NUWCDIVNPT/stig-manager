@@ -2508,7 +2508,7 @@ exports.exportToCollection = async function ({srcCollectionId, dstCollectionId, 
     progressJson.message = 'Unhandled error'
     progressJson.error = err
     progressJson.stack = err?.stack
-    progressCb({progressJson})
+    progressCb(progressJson)
     return null
   }
   finally {
