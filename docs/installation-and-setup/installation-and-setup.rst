@@ -108,7 +108,7 @@ TLS and Proxy Configuration
 STIG Manager supports native TLS connections configured via environment variables. A reverse proxy is only required for mTLS/CAC authentication or when mandated by environmental requirements.
 
 **Native TLS:**
-  - Configure HTTPS directly using environment variables
+  - Enable HTTPS by setting ``STIGMAN_API_TLS_CERT_FILE`` and ``STIGMAN_API_TLS_KEY_FILE`` to the paths of your PEM encoded server certificate and private key
   - No reverse proxy needed for basic TLS encryption
   - See :ref:`Environment Variables` beginning with ``STIGMAN_API_TLS_*`` for TLS configuration options
 
