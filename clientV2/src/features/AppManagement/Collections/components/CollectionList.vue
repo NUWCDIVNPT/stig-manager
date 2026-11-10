@@ -13,6 +13,7 @@ import { useColumnVisibility } from '../../../../shared/composables/useColumnVis
 import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
 import { formatDateTimeString } from '../../../../shared/lib.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
+import { exportTimestamp } from '../../../../shared/lib/exportCells.js'
 
 const props = defineProps({
   collections: {
@@ -31,7 +32,8 @@ const props = defineProps({
 
 const emit = defineEmits(['update:selection', 'create', 'delete', 'refresh'])
 
-const exportOwners = ({ data }) => (data ?? []).map(o => o.displayName || o.username).filter(Boolean).join(', ')
+// Legacy format: owner usernames one per line
+const exportOwners = ({ data }) => (data ?? []).map(o => o.username).filter(Boolean).join('\n')
 
 const dataTableRef = ref(null)
 
@@ -131,7 +133,7 @@ const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-con
         <CountColumn v-if="visibleFields.has('statistics.userCount')" key="statistics.userCount" field="statistics.userCount" header="Users" sortable :pt="centerBorderPt" style="width: 13%" body-style="text-align: center;" />
         <CountColumn v-if="visibleFields.has('statistics.assetCount')" key="statistics.assetCount" field="statistics.assetCount" header="Assets" sortable :pt="centerBorderPt" style="width: 13%" body-style="text-align: center;" />
         <CountColumn v-if="visibleFields.has('statistics.checklistCount')" key="statistics.checklistCount" field="statistics.checklistCount" header="Checklists" sortable :pt="centerBorderPt" style="width: 13%" body-style="text-align: center;" />
-        <Column v-if="visibleFields.has('statistics.created')" field="statistics.created" header="Created" sortable :pt="borderPt" style="width: 17%">
+        <Column v-if="visibleFields.has('statistics.created')" field="statistics.created" header="Created" :export-value="exportTimestamp" sortable :pt="borderPt" style="width: 17%">
           <template #body="{ data }">
             {{ formatDateTimeString(data.statistics?.created) || '-' }}
           </template>
