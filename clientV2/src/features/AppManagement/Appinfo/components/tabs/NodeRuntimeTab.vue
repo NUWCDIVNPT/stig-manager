@@ -22,7 +22,7 @@ const environmentTitle = computed(() => {
     return 'Environment'
   }
   const { version, uptime } = buildNodejsSummary(props.nodejs)
-  return `Environment ｜ Version ${version} ｜ up ${formatUptime(uptime)}`
+  return `Environment | Version ${version} | up ${formatUptime(uptime)}`
 })
 
 const ENVIRONMENT_CONFIG = {

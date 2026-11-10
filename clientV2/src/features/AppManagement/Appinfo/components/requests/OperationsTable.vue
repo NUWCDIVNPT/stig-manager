@@ -56,7 +56,7 @@ const COLUMNS = [
     @update:selection="emit('update:selection', $event)"
   >
     <template v-if="summaryText" #title-extra>
-      <span class="title-sep">｜</span>
+      <span class="title-sep">|</span>
       <span class="title-summary">{{ summaryText }}</span>
     </template>
   </ReportTableBase>

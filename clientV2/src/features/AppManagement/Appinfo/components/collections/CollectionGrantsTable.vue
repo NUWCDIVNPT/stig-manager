@@ -31,7 +31,7 @@ const COLUMNS = [
   >
     <template #title-extra>
       <template v-if="collectionName">
-        <span class="title-sep">｜</span>
+        <span class="title-sep">|</span>
         <span class="title-summary">{{ collectionName }}</span>
       </template>
       <span v-else class="title-hint">Select a collection to display its grants</span>
