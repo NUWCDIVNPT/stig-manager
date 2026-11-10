@@ -35,6 +35,8 @@ watch(() => props.collectionId, id => id && reload(), { immediate: true })
 
 // data table ref for footer actions
 const usersDt = ref()
+// Legacy format: `displayName:username`
+const exportUser = ({ record }) => `${record.displayName ?? ''}:${record.username ?? ''}`
 
 // mapping users for the data table for ui display
 const displayUsers = computed(() => (users.value ?? []).map((row) => {
@@ -101,7 +103,7 @@ defineExpose({ reload })
           {{ isFiltered && displayUsers.length ? 'No users match the filters.' : 'No users.' }}
         </template>
 
-        <Column field="displayName" header="User" sortable>
+        <Column field="displayName" header="User" :export-value="exportUser" sortable>
           <template #body="{ data }">
             <div class="user-cell">
               <i class="pi pi-user" />

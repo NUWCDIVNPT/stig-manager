@@ -145,7 +145,7 @@ const dataTableRef = ref(null)
 
       <Column
         v-if="visibleFields.has('uses')"
-        field="uses" export-header="Uses"
+        field="uses" export-header="AssetCount"
         sortable
         :pt="borderPt"
         style="min-width: 5.5rem; width: 13.75rem;"
