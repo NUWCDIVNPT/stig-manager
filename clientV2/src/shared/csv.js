@@ -24,7 +24,8 @@ export function escapeCsv(value) {
   let str = String(value)
   // Guard against CSV formula injection by prepending a tab to any value
   // that starts with formula trigger characters: =, +, -, @
-  if (/^[=+\-@]/.test(str)) {
+  // All-dash placeholders ('-', '--') can't be formulas, so they stay bare.
+  if (!/^-+$/.test(str) && /^[=+\-@]/.test(str)) {
     str = `\t${str}`
   }
   return /[",\n\t]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str

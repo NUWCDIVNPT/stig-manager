@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { catLabel, exportDisplayValue, labelNames } from '../lib/exportCells.js'
+import { catLabel, exportDisplayValue, exportPct, exportTimestamp, labelNames } from '../lib/exportCells.js'
 
 const cell = (field, data, record = {}) => exportDisplayValue({ data, field, record })
 
@@ -51,5 +51,23 @@ describe('exportDisplayValue', () => {
     const obj = { deep: true }
     expect(cell('anything', obj)).toBe(obj)
     expect(cell('touchTs', '2026-01-01T00:00:00Z')).toBe('2026-01-01T00:00:00Z')
+  })
+})
+
+describe('display-twin exporters', () => {
+  it('exportPct exports a plain 2-decimal number; partial never reads as 0 or 100', () => {
+    expect(exportPct({ data: 99.5575221238938 })).toBe(99.56)
+    expect(exportPct({ data: 100 })).toBe(100)
+    expect(exportPct({ data: 0 })).toBe(0)
+    expect(exportPct({ data: 99.996 })).toBe(99.99)
+    expect(exportPct({ data: 0.003 })).toBe(0.01)
+    expect(exportPct({ data: null })).toBe('')
+  })
+
+  it('exportTimestamp normalizes to ISO 8601 UTC, blank when missing', () => {
+    expect(exportTimestamp({ data: '2025-07-03T04:00:36Z' })).toBe('2025-07-03T04:00:36Z')
+    expect(exportTimestamp({ data: '2025-07-03T04:00:36.000Z' })).toBe('2025-07-03T04:00:36Z')
+    expect(exportTimestamp({ data: new Date('2025-07-03T04:00:36.250Z') })).toBe('2025-07-03T04:00:36.250Z')
+    expect(exportTimestamp({ data: null })).toBe('')
   })
 })

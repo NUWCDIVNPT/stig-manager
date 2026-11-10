@@ -3,6 +3,35 @@ import { REVIEW_STATUS } from './reviewConstants.js'
 
 const REVIEW_STATUSES = new Set(Object.values(REVIEW_STATUS))
 
+/** `:export-value` for date cells: ISO 8601 UTC (`2025-07-03T04:00:36Z`), blank when missing. */
+export function exportTimestamp({ data }) {
+  if (data == null || data === '') {
+    return ''
+  }
+  const d = new Date(data)
+  // One shape for API strings and client-made Dates; ms only when non-zero
+  return Number.isNaN(d.getTime()) ? String(data) : d.toISOString().replace('.000Z', 'Z')
+}
+
+/**
+ * `:export-value` for percent cells: a plain 0–100 number (no `%`) at 2 decimals.
+ * Partial progress never rounds to 0 or 100, so `100` always means complete.
+ */
+export function exportPct({ data }) {
+  const v = Number(data)
+  if (data == null || data === '' || Number.isNaN(v)) {
+    return ''
+  }
+  const r = Math.round(v * 100) / 100
+  if (r === 0 && v > 0) {
+    return 0.01
+  }
+  if (r === 100 && v < 100) {
+    return 99.99
+  }
+  return r
+}
+
 export function capitalize(text) {
   return text ? text.charAt(0).toUpperCase() + text.slice(1) : ''
 }
