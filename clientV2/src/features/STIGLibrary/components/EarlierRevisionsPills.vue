@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 
 const props = defineProps({
+  // Earlier revisions only (see earlierRevisions in shared/lib/stigRevisions.js)
   revisions: {
     type: Array,
     default: () => [],
@@ -12,7 +13,7 @@ const props = defineProps({
   },
 })
 
-const earlier = computed(() => (props.revisions ?? []).slice(1))
+const earlier = computed(() => props.revisions ?? [])
 const shown = computed(() => earlier.value.slice(0, props.max))
 const overflow = computed(() => Math.max(0, earlier.value.length - shown.value.length))
 const overflowTitle = computed(() => earlier.value.slice(props.max).join(', '))
