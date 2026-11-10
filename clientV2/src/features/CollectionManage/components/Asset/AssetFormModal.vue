@@ -85,12 +85,6 @@ async function save() {
 
 // ── Passthrough objects ───────────────────────────────────────────────────────
 
-const dialogPt = {
-  ...frameDialogPt,
-  root: { style: `${frameDialogPt.root.style} box-shadow: 0 24px 64px rgba(0,0,0,0.6);` },
-  closeButton: { style: 'color: var(--color-text-dim); border-radius: 4px;' },
-}
-
 const inputTextPt = {
   root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: var(--text-md); padding: 0.6rem 0.8rem;' },
 }
@@ -108,7 +102,7 @@ const checkboxPt = {
     modal
     :draggable="false"
     :style="{ width: 'min(950px, 96vw)', height: '90vh' }"
-    :pt="dialogPt"
+    :pt="frameDialogPt"
   >
     <template #header>
       <div class="modal-header">
@@ -405,10 +399,6 @@ const checkboxPt = {
   display: grid;
   grid-template-rows: subgrid;
   grid-row: span 2;
-}
-
-.row--labels-meta :deep(.metadata-editor .field-header-row) {
-  margin-bottom: 0;
 }
 
 .field--grow {
