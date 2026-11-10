@@ -30,7 +30,9 @@ vi.mock('../../../shared/composables/useCurrentUser.js', () => ({
   useCurrentUser: vi.fn(),
 }))
 
+const mockForget = vi.hoisted(() => vi.fn())
 vi.mock('../../../shared/composables/useRecentViews.js', () => ({
+  useRecentViews: vi.fn(() => ({ forget: mockForget })),
   useTrackRecentView: vi.fn(),
 }))
 
@@ -171,6 +173,35 @@ describe('assetReview.vue', () => {
         benchmarkId: 'bench-1',
         label: 'Test Asset / bench-1',
       })
+    })
+
+    it('drops its recent view when the asset has no such checklist', async () => {
+      const checklistError = ref(null)
+      useChecklistData.mockReturnValue({ ...useChecklistData(), checklistError })
+      createWrapper()
+      await flushPromises()
+      const [describeView] = useTrackRecentView.mock.calls[0]
+
+      checklistError.value = { status: 404, message: 'Not found' }
+      await flushPromises()
+      expect(describeView()).toBeFalsy()
+      expect(mockForget).toHaveBeenCalledWith({
+        type: 'asset-review',
+        collectionId: 'coll-1',
+        assetId: 'asset-1',
+        benchmarkId: 'bench-1',
+      })
+    })
+
+    it('keeps its recent view when the checklist fails for another reason', async () => {
+      const checklistError = ref(null)
+      useChecklistData.mockReturnValue({ ...useChecklistData(), checklistError })
+      createWrapper()
+      await flushPromises()
+
+      checklistError.value = { status: 500, message: 'Server error' }
+      await flushPromises()
+      expect(mockForget).not.toHaveBeenCalled()
     })
   })
 

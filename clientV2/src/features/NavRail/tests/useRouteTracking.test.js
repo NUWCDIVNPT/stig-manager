@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { useRouteTracking } from '../composables/useRouteTracking.js'
 
-const { afterEachMock, unregisterMock, addViewMock, forgetMock, onUnmountedMock } = vi.hoisted(() => ({
+const { afterEachMock, unregisterMock, addViewMock, forgetMock, onUnmountedMock, hasAccessMock } = vi.hoisted(() => ({
+  hasAccessMock: vi.fn(),
   afterEachMock: vi.fn(),
   unregisterMock: vi.fn(),
   addViewMock: vi.fn(),
@@ -38,6 +39,10 @@ vi.mock('../../../shared/composables/useRecentViews.js', () => ({
   useRecentViews: () => ({ addView: addViewMock, forget: forgetMock }),
 }))
 
+vi.mock('../../../shared/composables/useCurrentUser.js', () => ({
+  useCurrentUser: () => ({ hasCollectionAccess: hasAccessMock }),
+}))
+
 vi.mock('vue', async (importOriginal) => {
   const actual = await importOriginal()
   return {
@@ -51,6 +56,7 @@ describe('useRouteTracking', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    hasAccessMock.mockReturnValue(true)
     useRouteTracking()
     hitRoute = afterEachMock.mock.calls[0][0]
   })
@@ -119,6 +125,12 @@ describe('useRouteTracking', () => {
     it('a Collection Review: that review only, not the asset reviews of the STIG', () => {
       hitRoute(notFound('/collection/5/benchmark/RHEL_9/revision/BOGUS'))
       expect(forgetMock).toHaveBeenCalledWith({ type: 'collection-review', collectionId: '5', benchmarkId: 'RHEL_9' })
+    })
+
+    it('nothing for a collection without a grant (the guard\'s 404), so its views return with the grant', () => {
+      hasAccessMock.mockReturnValue(false)
+      hitRoute(notFound('/collection/12/stigs'))
+      expect(forgetMock).not.toHaveBeenCalled()
     })
 
     it.each(['/no/such/page', '/stig-library/RHEL_9/V9R9'])('nothing for %s, which names no collection', (path) => {

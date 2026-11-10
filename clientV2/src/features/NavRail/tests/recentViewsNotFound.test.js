@@ -78,6 +78,14 @@ describe('recent views on the 404 page', () => {
     expect(labels()).toEqual(['c12', 'c123', 'c12 a7 X', 'c5 a12 X', 'c5 a12 Y', 'c5 a123 X'])
   })
 
+  it('a collection the user has no grant to keeps its shortcuts for when the grant returns', async () => {
+    const { setUser } = useGlobalAppStore()
+    setUser({ userId: 'u1', collectionGrants: ['5', '123'].map(collectionId => ({ collection: { collectionId }, roleId: 1 })) })
+    await openBadUrl('/collection/12/stigs')
+    setUser({ userId: 'u1', collectionGrants: ['5', '12', '123'].map(collectionId => ({ collection: { collectionId }, roleId: 1 })) })
+    expect(labels()).toHaveLength(SHORTCUTS.length)
+  })
+
   it('an unknown URL removes nothing', async () => {
     await router.push('/no/such/page')
     expect(router.currentRoute.value.name).toBe('not-found')

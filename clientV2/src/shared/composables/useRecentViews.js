@@ -62,16 +62,18 @@ export function useRecentViews() {
   load(user.value?.userId)
 
   // Views of collections the user lost (deleted, grant revoked) stay stored but hidden
-  const recentViews = computed(() =>
-    views.value.filter(v => !v.collectionId || hasCollectionAccess(v.collectionId)),
-  )
+  const isVisible = v => !v.collectionId || hasCollectionAccess(v.collectionId)
+  const recentViews = computed(() => views.value.filter(isVisible))
 
   function addView(view) {
     if (!view.label || !view.url) {
       return
     }
     const entry = normalize(view)
-    views.value = [entry, ...views.value.filter(v => !sameView(v, entry))].slice(0, MAX_ITEMS)
+    // The cap counts visible views only, so hidden ones don't push out views the user can open
+    let visible = 0
+    views.value = [entry, ...views.value.filter(v => !sameView(v, entry))]
+      .filter(v => !isVisible(v) || ++visible <= MAX_ITEMS)
     save()
   }
 

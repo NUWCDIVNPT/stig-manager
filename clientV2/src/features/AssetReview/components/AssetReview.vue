@@ -9,7 +9,7 @@ import { getHttpStatus } from '../../../shared/api/apiClient.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useQuerySelection } from '../../../shared/composables/useQuerySelection.js'
-import { useTrackRecentView } from '../../../shared/composables/useRecentViews.js'
+import { useRecentViews, useTrackRecentView } from '../../../shared/composables/useRecentViews.js'
 import { useStigRevisions } from '../../../shared/composables/useStigRevisions.js'
 import { useTours } from '../../../shared/composables/useTours.js'
 import { getRevisionInfo } from '../../../shared/lib/checklistUtils.js'
@@ -25,6 +25,7 @@ import AssetChecklistGrid from './AssetChecklistGrid.vue'
 const route = useRoute()
 const router = useRouter()
 const { getCollectionRoleId } = useCurrentUser()
+const { forget } = useRecentViews()
 const { offerTourWhen } = useTours()
 
 const collectionId = computed(() => route.params.collectionId)
@@ -39,9 +40,10 @@ function redirectToNotFound() {
   router.replace(notFoundLocation(route))
 }
 
+const isBadUrlError = err => [400, 403, 404].includes(getHttpStatus(err))
+
 function handleRouteError(err) {
-  const status = getHttpStatus(err)
-  if (status === 404 || status === 403 || status === 400) {
+  if (isBadUrlError(err)) {
     redirectToNotFound()
   }
 }
@@ -124,7 +126,14 @@ watch([assetId, benchmarkId, revisionStr], () => {
   }
 }, { immediate: true })
 
-useTrackRecentView(() => asset.value?.name && {
+// A checklist the asset lacks (e.g. STIG unassigned) shows inline, so its shortcut leaves Recent here
+watch(checklistError, (err) => {
+  if (err && isBadUrlError(err)) {
+    forget({ type: 'asset-review', collectionId: collectionId.value, assetId: assetId.value, benchmarkId: benchmarkId.value })
+  }
+})
+
+useTrackRecentView(() => asset.value?.name && !checklistError.value && {
   type: 'asset-review',
   collectionId: collectionId.value,
   assetId: assetId.value,

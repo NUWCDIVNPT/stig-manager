@@ -73,6 +73,20 @@ describe('addView', () => {
     expect(labels()[0]).toBe('s24')
   })
 
+  it('does not count hidden views toward the 20', () => {
+    const { addView } = useRecentViews()
+    for (let i = 0; i < 5; i++) {
+      addView({ type: 'collection', section: `s${i}`, collectionId: '12', label: `c12 s${i}`, url: `/c12/s${i}` })
+    }
+    signIn('u1', ['5'])
+    for (let i = 0; i < 25; i++) {
+      addView({ type: 'admin', section: `s${i}`, label: `s${i}`, url: `/s${i}` })
+    }
+    expect(labels()).toHaveLength(20)
+    signIn('u1', ['5', '12'])
+    expect(labels().filter(l => l.startsWith('c12'))).toHaveLength(5)
+  })
+
   it('ignores a view without a label or URL', () => {
     const { addView } = useRecentViews()
     addView({ type: 'admin', section: 'a', url: '/a' })

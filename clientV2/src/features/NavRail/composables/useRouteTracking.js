@@ -1,5 +1,6 @@
 import { onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useRecentViews } from '../../../shared/composables/useRecentViews.js'
 
 // The Recent views a bad URL pointed to. Pages send their bad URLs to the 404 page as is (notFoundLocation),
@@ -21,13 +22,15 @@ function viewsOfBadUrl({ name, params: { collectionId, assetId, benchmarkId } })
 export function useRouteTracking() {
   const router = useRouter()
   const { addView, forget } = useRecentViews()
+  const { hasCollectionAccess } = useCurrentUser()
 
   const unregister = router.afterEach((to) => {
     const { name, fullPath } = to
 
     if (name === 'not-found') {
       const match = viewsOfBadUrl(router.resolve(to.path))
-      if (match) {
+      // No grant is the guard's 404; those views stay hidden until the grant returns
+      if (match && hasCollectionAccess(match.collectionId)) {
         forget(match)
       }
       return
