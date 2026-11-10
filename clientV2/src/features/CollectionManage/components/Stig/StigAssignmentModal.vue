@@ -10,7 +10,7 @@ import HelpIcon from '../../../../components/common/HelpIcon.vue'
 import PickList from '../../../../components/common/PickList.vue'
 import { fetchCollectionLabels } from '../../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
-import { primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
+import { frameDialogPt, primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
 import { dashZero } from '../../../../shared/lib/numberFormat.js'
 import { pickListVirtualScrollerOptions } from '../../../../shared/lib/pickListPt.js'
 import { listTooltip, TOOLTIPS } from '../../../../shared/lib/tooltips.js'
@@ -281,14 +281,6 @@ function onPickerUpdate(newValue) {
 const assignedCount = computed(() => pickerValue.value[1].length)
 const availableCount = computed(() => pickerValue.value[0].length)
 
-const dialogPt = {
-  root: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 8px; color: var(--color-text-primary); display: flex; flex-direction: column; overflow: hidden;' },
-  header: { style: 'background: var(--color-background-dark); padding: 0; border-bottom: 1px solid var(--color-border-default); flex-shrink: 0;' },
-  content: { style: 'background: var(--color-background-dark); padding: 0; flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column;' },
-  footer: { style: 'flex-shrink: 0; padding: 0; border: none;' },
-  closeButton: { style: 'color: var(--color-text-dim);' },
-}
-
 const selectPt = {
   root: { style: 'background: var(--color-background-light); border-color: var(--color-border-default); color: var(--color-text-primary);' },
 }
@@ -300,7 +292,7 @@ const selectPt = {
     modal
     :draggable="false"
     :style="{ width: 'min(900px, 96vw)', height: '78vh', maxHeight: '780px', minHeight: '520px' }"
-    :pt="dialogPt"
+    :pt="frameDialogPt"
   >
     <template #header>
       <div class="modal-header">
@@ -319,35 +311,37 @@ const selectPt = {
     </template>
 
     <div class="modal-body">
-      <div class="selection-row">
-        <span class="selection-label">Benchmark ID</span>
-        <Select
-          v-model="selectedBenchmarkId"
-          :options="benchmarkOptions"
-          option-label="label"
-          option-value="value"
-          :placeholder="loadingStigs ? 'Loading STIGs...' : 'Assign a STIG...'"
-          :disabled="isModify || loadingStigs || loadingStigAssets"
-          :filter="!isModify"
-          filter-placeholder="Search benchmarks"
-          class="selection-select"
-          :class="{ 'selection-select--locked': isModify }"
-          :pt="selectPt"
-          @update:model-value="onBenchmarkChange"
-        />
-      </div>
+      <div class="selection-rows">
+        <div class="selection-row">
+          <span class="selection-label">Benchmark ID</span>
+          <Select
+            v-model="selectedBenchmarkId"
+            :options="benchmarkOptions"
+            option-label="label"
+            option-value="value"
+            :placeholder="loadingStigs ? 'Loading STIGs...' : 'Assign a STIG...'"
+            :disabled="isModify || loadingStigs || loadingStigAssets"
+            :filter="!isModify"
+            filter-placeholder="Search benchmarks"
+            class="selection-select"
+            :class="{ 'selection-select--locked': isModify }"
+            :pt="selectPt"
+            @update:model-value="onBenchmarkChange"
+          />
+        </div>
 
-      <div class="selection-row">
-        <span class="selection-label">Default Revision <HelpIcon :content="TOOLTIPS.defaultRevision" /></span>
-        <Select
-          v-model="selectedRevisionStr"
-          :options="revisionOptions"
-          option-label="label"
-          option-value="value"
-          :disabled="!selectedBenchmarkId || loadingStigs"
-          class="selection-select"
-          :pt="selectPt"
-        />
+        <div class="selection-row">
+          <span class="selection-label">Default Revision <HelpIcon :content="TOOLTIPS.defaultRevision" /></span>
+          <Select
+            v-model="selectedRevisionStr"
+            :options="revisionOptions"
+            option-label="label"
+            option-value="value"
+            :disabled="!selectedBenchmarkId || loadingStigs"
+            class="selection-select"
+            :pt="selectPt"
+          />
+        </div>
       </div>
 
       <div class="picker-pane" :class="{ 'picker-pane--blurred': !selectedBenchmarkId }">
@@ -452,23 +446,28 @@ const selectPt = {
   gap: 0.75rem;
 }
 
-.selection-row {
-  display: flex;
-  align-items: center;
+/* One grid for both rows so the label column takes the width of its longest
+   label (text plus help icon) and the two selects start at the same x. */
+.selection-rows {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
   gap: 0.75rem;
+  align-items: center;
+}
+
+.selection-row {
+  display: contents;
 }
 
 .selection-label {
+  display: flex;
+  align-items: center;
   font-size: var(--text-md);
   font-weight: 600;
   color: var(--color-text-primary);
-  width: 9rem;
-  flex-shrink: 0;
-  white-space: nowrap;
 }
 
 .selection-select {
-  flex: 1;
   min-width: 0;
 }
 

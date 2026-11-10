@@ -92,7 +92,7 @@ function onDeleteConfirmed() {
 
 .field-header-row {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   margin-bottom: 0.35rem;
 }
