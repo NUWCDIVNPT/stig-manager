@@ -52,8 +52,14 @@ function serialize(value, seen = new WeakSet(), depth = 0) {
   return out
 }
 
+// Env.js declares `const STIGMAN`, a global binding that is not a property of window/globalThis.
+function stigman() {
+  // eslint-disable-next-line no-undef
+  return typeof STIGMAN !== 'undefined' ? STIGMAN : undefined
+}
+
 function tokenClaims() {
-  const parsed = globalThis.STIGMAN?.oidcWorker?.tokenParsed
+  const parsed = stigman()?.oidcWorker?.tokenParsed
   if (!parsed) {
     return null
   }
@@ -70,7 +76,9 @@ function errorMessage(err) {
   if (typeof err === 'string') {
     return err
   }
-  return err?.message ?? 'An unknown error occurred'
+  const message = err?.message ?? 'An unknown error occurred'
+  const req = err?.request
+  return req?.url ? `${message} (${req.method} ${req.url})` : message
 }
 
 // Legacy parity: the error plus the app/session context needed to diagnose it.
@@ -85,7 +93,7 @@ export function buildErrorReport(err) {
     location: globalThis.location?.href,
     userAgent: globalThis.navigator?.userAgent,
     tokenParsed: tokenClaims(),
-    env: serialize(globalThis.STIGMAN?.Env ?? null),
+    env: serialize(stigman()?.Env ?? null),
   }
 }
 

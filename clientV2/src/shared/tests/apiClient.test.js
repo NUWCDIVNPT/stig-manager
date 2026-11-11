@@ -106,6 +106,39 @@ describe('apiClient', () => {
     }
   })
 
+  it('records the request (token redacted) and full response on ApiError', async () => {
+    configureAuth({ getToken: () => 'secret-token' })
+    fetchMock.mockResolvedValueOnce({
+      ok: false,
+      status: 422,
+      statusText: 'Unprocessable Entity',
+      url: 'http://localhost/api/assets',
+      headers: new Headers({ 'x-request-id': 'r1' }),
+      text: async () => JSON.stringify({ error: 'bad' }),
+    })
+
+    const e = await api.post('/assets', { name: 'a1' }).catch(err => err)
+    expect(e.request).toEqual({
+      method: 'POST',
+      url: 'http://localhost/api/assets',
+      headers: { 'accept': 'application/json', 'authorization': '<removed>', 'content-type': 'application/json' },
+      body: { name: 'a1' },
+    })
+    expect(e.response).toMatchObject({
+      status: 422,
+      statusText: 'Unprocessable Entity',
+      headers: { 'x-request-id': 'r1' },
+      body: { error: 'bad' },
+    })
+  })
+
+  it('attaches the request to network failures', async () => {
+    fetchMock.mockRejectedValueOnce(new TypeError('Failed to fetch'))
+    const e = await api.get('/down').catch(err => err)
+    expect(e).toBeInstanceOf(TypeError)
+    expect(e.request).toMatchObject({ method: 'GET', url: 'http://localhost/api/down' })
+  })
+
   it('should handle raw body (FormData)', async () => {
     fetchMock.mockResolvedValueOnce({
       ok: true,

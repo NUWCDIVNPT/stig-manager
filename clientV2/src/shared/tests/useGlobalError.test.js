@@ -8,17 +8,22 @@ describe('buildErrorReport', () => {
   })
 
   it('keeps ApiError request/response details and splits the stack', () => {
-    const err = new ApiError('HTTP 500', 500, '/api/assets', { error: 'boom' }, 'POST', new Headers({ 'x-request-id': 'abc' }))
+    const err = new ApiError('HTTP 500', {
+      request: { method: 'POST', url: '/api/assets', headers: { authorization: '<removed>' }, body: { name: 'a1' } },
+      response: { status: 500, statusText: 'Internal Server Error', headers: { 'x-request-id': 'abc' }, body: { error: 'boom' } },
+    })
+    expect(err.status).toBe(500)
+    expect(err.url).toBe('/api/assets')
+    expect(err.body).toEqual({ error: 'boom' })
+
     const report = buildErrorReport(err)
-    expect(report.message).toBe('HTTP 500')
+    expect(report.message).toBe('HTTP 500 (POST /api/assets)')
     expect(report.error).toMatchObject({
       name: 'ApiError',
-      status: 500,
-      method: 'POST',
-      url: '/api/assets',
-      body: { error: 'boom' },
-      responseHeaders: { 'x-request-id': 'abc' },
+      request: { method: 'POST', url: '/api/assets', body: { name: 'a1' } },
+      response: { status: 500, statusText: 'Internal Server Error', headers: { 'x-request-id': 'abc' }, body: { error: 'boom' } },
     })
+    expect(report.error).not.toHaveProperty('status')
     expect(Array.isArray(report.error.stack)).toBe(true)
   })
 
