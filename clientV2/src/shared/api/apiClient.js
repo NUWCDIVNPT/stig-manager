@@ -22,12 +22,14 @@ export function configureApiSpec(definition) {
 }
 
 export class ApiError extends Error {
-  constructor(message, status, url, body) {
+  constructor(message, status, url, body, method, responseHeaders) {
     super(message)
     this.name = 'ApiError'
     this.status = status
+    this.method = method
     this.url = url
     this.body = body
+    this.responseHeaders = responseHeaders
   }
 }
 
@@ -68,7 +70,7 @@ async function doFetch(url, opts) {
       errorBody = null
     }
     // dev note: if not using useAsyncState you are responsible for handling the error
-    throw new ApiError(`HTTP ${res.status}`, res.status, url, errorBody)
+    throw new ApiError(`HTTP ${res.status}`, res.status, url, errorBody, fetchOpts.method ?? 'GET', res.headers)
   }
 
   if (responseType === 'response') {

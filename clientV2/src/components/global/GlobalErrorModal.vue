@@ -1,7 +1,14 @@
 <script setup>
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
-import { computed } from 'vue'
+import Tree from 'primevue/tree'
+import { computed, ref, watch } from 'vue'
+import {
+  buildChildNodes,
+  buildJsonTreeNodes,
+  leafDisplay,
+  sizeBadge,
+} from '../../features/AppManagement/Appinfo/lib/adapters/jsonTreeNodes.js'
 import { useGlobalError } from '../../shared/composables/useGlobalError.js'
 
 const { error, clearError } = useGlobalError()
@@ -15,10 +22,39 @@ const visible = computed({
   },
 })
 
-function copyError() {
-  if (error.value) {
-    const errText = JSON.stringify(error.value, null, 2)
-    navigator.clipboard.writeText(errText)
+const nodes = ref([])
+const expandedKeys = ref({})
+const copied = ref(false)
+
+// Open `error` and its direct containers (stack, body, cause) like the legacy viewer.
+watch(error, (report) => {
+  copied.value = false
+  nodes.value = report ? buildJsonTreeNodes(report) : []
+  const keys = {}
+  const errorNode = nodes.value.find(n => n.key === 'error')
+  if (errorNode && !errorNode.leaf) {
+    keys.error = true
+    for (const child of buildChildNodes(errorNode)) {
+      if (!child.leaf) {
+        buildChildNodes(child)
+        keys[child.key] = true
+      }
+    }
+  }
+  expandedKeys.value = keys
+}, { immediate: true })
+
+function onNodeExpand(node) {
+  buildChildNodes(node)
+}
+
+async function copyError() {
+  try {
+    await navigator.clipboard.writeText(JSON.stringify(error.value, null, 2))
+    copied.value = true
+  }
+  catch (e) {
+    console.error('Copy to clipboard failed:', e)
   }
 }
 
@@ -40,9 +76,16 @@ const dialogPt = {
   },
 }
 
+const treePt = {
+  root: { style: 'background: transparent; border: none; padding: 0; color: var(--color-text-primary);' },
+  nodeContent: { style: 'padding: 0.1rem 0.25rem; background: transparent; color: var(--color-text-primary);' },
+  nodeLabel: { style: 'font-size: var(--text-md);' },
+  nodeToggleButton: { style: 'width: 1.5rem; height: 1.5rem; color: var(--color-text-dim);' },
+}
+
 const buttonPt = {
   root: {
-    style: 'color: var(--color-text-primary); border-color: var(--color-border-default); width: 100%',
+    style: 'color: var(--color-text-primary); border-color: var(--color-border-default);',
     class: 'action-btn',
   },
 }
@@ -53,7 +96,7 @@ const buttonPt = {
     v-model:visible="visible"
     modal
     header="Unhandled Error"
-    :style="{ width: '800px', maxWidth: '90vw' }"
+    :style="{ width: '900px', maxWidth: '90vw' }"
     :closable="true"
     :pt="dialogPt"
   >
@@ -61,20 +104,39 @@ const buttonPt = {
       <p class="description">
         An unhandled error has occurred. You can review the error details below and copy the details to your clipboard.
       </p>
+      <p class="message">
+        {{ error?.message }}
+      </p>
 
       <div class="code-box">
         <div class="box-title">
           Error Details
         </div>
         <div class="code-content custom-scrollbar">
-          <pre>{{ JSON.stringify(error, null, 2) }}</pre>
+          <Tree
+            v-model:expanded-keys="expandedKeys"
+            :value="nodes"
+            :pt="treePt"
+            @node-expand="onNodeExpand"
+          >
+            <template #default="{ node }">
+              <span class="json-line">
+                <span class="json-key">{{ node.label }}</span>
+                <span v-if="sizeBadge(node.data)" class="json-size">{{ sizeBadge(node.data) }}</span>
+                <template v-else>
+                  <span class="json-separator">:</span>
+                  <span class="json-value" :class="`json-${node.data.type}`">{{ leafDisplay(node.data) }}</span>
+                </template>
+              </span>
+            </template>
+          </Tree>
         </div>
       </div>
 
       <div class="actions">
         <Button
-          label="Copy to clipboard"
-          icon="pi pi-copy"
+          :label="copied ? 'Copied' : 'Copy to clipboard'"
+          :icon="copied ? 'pi pi-check' : 'pi pi-copy'"
           :pt="buttonPt"
           @click="copyError"
         />
@@ -87,7 +149,7 @@ const buttonPt = {
 .error-modal-content {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
   font-size: var(--text-md);
 }
 
@@ -96,10 +158,16 @@ const buttonPt = {
   color: var(--color-text-dim);
 }
 
+.message {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
 .code-box {
   border: 1px solid var(--color-border-default);
   border-radius: 6px;
-  padding: 1rem;
+  padding: 1rem 0.5rem 0.5rem;
   position: relative;
   margin-top: 0.5rem;
   background-color: var(--color-background-darkest);
@@ -108,6 +176,8 @@ const buttonPt = {
 .box-title {
   position: absolute;
   top: -12px;
+  left: 0.75rem;
+  padding: 0 0.25rem;
   background-color: var(--color-background-dark);
   color: var(--color-text-dim);
   font-size: var(--text-md);
@@ -115,23 +185,54 @@ const buttonPt = {
 }
 
 .code-content {
-  max-height: 400px;
+  max-height: 55vh;
   overflow: auto;
+  font-family: var(--font-mono);
 }
 
-pre {
-  margin: 0;
-  font-family: var(--font-mono);
-  font-size: var(--text-md);
-  color: var(--color-text-primary);
+.json-line {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-family: inherit;
+}
+
+.json-key {
+  color: var(--color-text-bright);
+}
+
+.json-size,
+.json-separator {
+  color: var(--color-text-dim);
+}
+
+.json-value {
+  overflow-wrap: anywhere;
   white-space: pre-wrap;
-  word-break: break-all;
+}
+
+.json-string {
+  color: var(--color-success);
+}
+
+.json-number {
+  color: var(--color-action-blue);
+}
+
+.json-boolean {
+  color: var(--color-warning-yellow);
+}
+
+.json-null,
+.json-undefined,
+.json-object,
+.json-array {
+  color: var(--color-text-dim);
 }
 
 .actions {
   display: flex;
   justify-content: flex-end;
-  margin-top: 0.5rem;
 }
 
 .action-btn:hover,
