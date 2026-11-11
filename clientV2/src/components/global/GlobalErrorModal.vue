@@ -1,7 +1,8 @@
 <script setup>
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
+import JsonTree from '../common/JsonTree.vue'
 import { useGlobalError } from '../../shared/composables/useGlobalError.js'
 
 const { error, clearError } = useGlobalError()
@@ -15,10 +16,22 @@ const visible = computed({
   },
 })
 
-function copyError() {
-  if (error.value) {
-    const errText = JSON.stringify(error.value, null, 2)
-    navigator.clipboard.writeText(errText)
+const copied = ref(false)
+
+// Open `error` and its direct containers (request, response, stack, cause) like the legacy viewer.
+const defaultExpanded = [['error', '*']]
+
+watch(error, () => {
+  copied.value = false
+})
+
+async function copyError() {
+  try {
+    await navigator.clipboard.writeText(JSON.stringify(error.value, null, 2))
+    copied.value = true
+  }
+  catch (e) {
+    console.error('Copy to clipboard failed:', e)
   }
 }
 
@@ -42,7 +55,7 @@ const dialogPt = {
 
 const buttonPt = {
   root: {
-    style: 'color: var(--color-text-primary); border-color: var(--color-border-default); width: 100%',
+    style: 'color: var(--color-text-primary); border-color: var(--color-border-default);',
     class: 'action-btn',
   },
 }
@@ -53,7 +66,7 @@ const buttonPt = {
     v-model:visible="visible"
     modal
     header="Unhandled Error"
-    :style="{ width: '800px', maxWidth: '90vw' }"
+    :style="{ width: '900px', maxWidth: '90vw' }"
     :closable="true"
     :pt="dialogPt"
   >
@@ -61,20 +74,23 @@ const buttonPt = {
       <p class="description">
         An unhandled error has occurred. You can review the error details below and copy the details to your clipboard.
       </p>
+      <p class="message">
+        {{ error?.message }}
+      </p>
 
       <div class="code-box">
         <div class="box-title">
           Error Details
         </div>
-        <div class="code-content custom-scrollbar">
-          <pre>{{ JSON.stringify(error, null, 2) }}</pre>
+        <div class="code-content sm-scrollbar-thin">
+          <JsonTree :value="error" :default-expanded="defaultExpanded" />
         </div>
       </div>
 
       <div class="actions">
         <Button
-          label="Copy to clipboard"
-          icon="pi pi-copy"
+          :label="copied ? 'Copied' : 'Copy to clipboard'"
+          :icon="copied ? 'pi pi-check' : 'pi pi-copy'"
           :pt="buttonPt"
           @click="copyError"
         />
@@ -87,7 +103,7 @@ const buttonPt = {
 .error-modal-content {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
   font-size: var(--text-md);
 }
 
@@ -96,10 +112,16 @@ const buttonPt = {
   color: var(--color-text-dim);
 }
 
+.message {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
 .code-box {
   border: 1px solid var(--color-border-default);
   border-radius: 6px;
-  padding: 1rem;
+  padding: 0.75rem 0.5rem 0.25rem;
   position: relative;
   margin-top: 0.5rem;
   background-color: var(--color-background-darkest);
@@ -108,6 +130,8 @@ const buttonPt = {
 .box-title {
   position: absolute;
   top: -12px;
+  left: 0.75rem;
+  padding: 0 0.25rem;
   background-color: var(--color-background-dark);
   color: var(--color-text-dim);
   font-size: var(--text-md);
@@ -115,42 +139,18 @@ const buttonPt = {
 }
 
 .code-content {
-  max-height: 400px;
+  max-height: 55vh;
   overflow: auto;
-}
-
-pre {
-  margin: 0;
-  font-family: var(--font-mono);
-  font-size: var(--text-md);
-  color: var(--color-text-primary);
-  white-space: pre-wrap;
-  word-break: break-all;
 }
 
 .actions {
   display: flex;
   justify-content: flex-end;
-  margin-top: 0.5rem;
 }
 
 .action-btn:hover,
 .action-btn:active,
 .action-btn:focus-visible {
   background-color: rgba(96, 165, 250, 0.1) !important;
-}
-.custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #09090b;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--color-border-default);
-  border-radius: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--color-border-light);
 }
 </style>

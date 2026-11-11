@@ -6,7 +6,7 @@ import { computed, inject, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import LabelFilterPills from '../../../components/common/LabelFilterPills.vue'
 import PinnedRevisionIcon from '../../../components/common/PinnedRevisionIcon.vue'
-import { formatDateTimeString } from '../../../shared/lib.js'
+import { tokenClaimsWithDates } from '../../../shared/lib/tokenClaims.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import { useEnv } from '../../../shared/stores/useEnv.js'
 import CollectionFilterPills from '../../MetaCollectionView/components/CollectionFilterPills.vue'
@@ -33,22 +33,13 @@ const {
   isRevisionPinned,
 } = useAppBreadcrumb()
 
-// Epoch-second claims also get a readable date, as in the legacy client.
-const TOKEN_DATE_CLAIMS = ['exp', 'iat', 'auth_time', 'nbf']
-
 const tokenPopover = ref(null)
 const tokenText = ref('')
 
 // Built on open, not cached, so a refreshed token shows its current claims.
 function tokenPayloadText() {
   try {
-    const payload = { ...oidcWorker.tokenParsed }
-    for (const claim of TOKEN_DATE_CLAIMS) {
-      if (typeof payload[claim] === 'number') {
-        payload[claim] = `${payload[claim]} (${formatDateTimeString(payload[claim] * 1000)})`
-      }
-    }
-    return JSON.stringify(payload, null, 2)
+    return JSON.stringify(tokenClaimsWithDates(oidcWorker.tokenParsed), null, 2)
   }
   catch {
     return ''

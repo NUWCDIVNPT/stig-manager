@@ -22,12 +22,24 @@ export function configureApiSpec(definition) {
 }
 
 export class ApiError extends Error {
-  constructor(message, status, url, body) {
+  constructor(message, { request, response } = {}) {
     super(message)
     this.name = 'ApiError'
-    this.status = status
-    this.url = url
-    this.body = body
+    this.request = request
+    this.response = response
+  }
+
+  // Derived from request/response, which hold the single copy of each value
+  get status() {
+    return this.response?.status
+  }
+
+  get url() {
+    return this.request?.url
+  }
+
+  get body() {
+    return this.response?.body
   }
 }
 
@@ -50,12 +62,53 @@ function safeJson(text) {
   }
 }
 
+// Readable copy of an outgoing body for error reports; file contents are summarized, not copied.
+function describeBody(body) {
+  if (body == null) {
+    return undefined
+  }
+  if (typeof body === 'string') {
+    return safeJson(body)
+  }
+  if (typeof File !== 'undefined' && body instanceof File) {
+    return `[File ${body.name}: ${body.size} bytes, ${body.type || 'unknown type'}]`
+  }
+  if (typeof Blob !== 'undefined' && body instanceof Blob) {
+    return `[Blob: ${body.size} bytes, ${body.type || 'unknown type'}]`
+  }
+  if (typeof FormData !== 'undefined' && body instanceof FormData) {
+    return Object.fromEntries([...body.entries()].map(([k, v]) => [k, describeBody(v)]))
+  }
+  if (typeof URLSearchParams !== 'undefined' && body instanceof URLSearchParams) {
+    return body.toString()
+  }
+  return `[${body.constructor?.name ?? typeof body}]`
+}
+
+function describeRequest(url, { method = 'GET', headers, body }) {
+  const h = Object.fromEntries(new Headers(headers))
+  if (h.authorization) {
+    h.authorization = '<removed>'
+  }
+  return { method, url, headers: h, body: describeBody(body) }
+}
+
 /**
  * THis eventually does the fetch request
  */
 async function doFetch(url, opts) {
   const { responseType = 'json', ...fetchOpts } = opts
-  const res = await fetch(url, fetchOpts)
+  let res
+  try {
+    res = await fetch(url, fetchOpts)
+  }
+  catch (err) {
+    // Network/CORS failures carry no URL; attach the request so reports show what failed
+    if (err && typeof err === 'object' && err.name !== 'AbortError') {
+      err.request = describeRequest(url, fetchOpts)
+    }
+    throw err
+  }
 
   if (!res.ok) {
     // For non-OK responses, try to parse body as JSON or text for error message
@@ -68,7 +121,17 @@ async function doFetch(url, opts) {
       errorBody = null
     }
     // dev note: if not using useAsyncState you are responsible for handling the error
-    throw new ApiError(`HTTP ${res.status}`, res.status, url, errorBody)
+    throw new ApiError(`HTTP ${res.status}`, {
+      request: describeRequest(url, fetchOpts),
+      response: {
+        status: res.status,
+        statusText: res.statusText,
+        url: res.url,
+        redirected: res.redirected,
+        headers: res.headers instanceof Headers ? Object.fromEntries(res.headers) : res.headers,
+        body: errorBody,
+      },
+    })
   }
 
   if (responseType === 'response') {

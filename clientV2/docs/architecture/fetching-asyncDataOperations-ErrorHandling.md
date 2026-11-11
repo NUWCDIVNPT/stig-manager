@@ -46,9 +46,13 @@ The API layer is responsible for data access, authentication injection, and erro
 
 #### Error Handling in Client
 It throws `ApiError` on non-2xx responses. This error object contains:
-- `status`: HTTP status code.
-- `url`: The URL that was requested.
-- `body`: The parsed error response body (if JSON) or text.
+- `request`: `{ method, url, headers, body }` describing what was sent. The `Authorization` header value is replaced with `<removed>`; a JSON body is parsed, a `FormData` body is listed by field, and `File`/`Blob` contents are summarized as name, size and type.
+- `response`: `{ status, statusText, url, redirected, headers, body }`. `body` is the parsed error response body (if JSON) or text.
+- `status`, `url`, `body`: shortcuts for `response.status`, `request.url` and `response.body`. They are getters on the class, so they are not copied by object spread or `JSON.stringify`; read them from the error itself.
+
+Network and CORS failures never reach a response, so `fetch`'s own error (usually a `TypeError`) is rethrown with the same `request` object attached and no `response`. Aborted requests (`AbortError`) are rethrown untouched.
+
+The global error modal builds its report from `request` and `response`.
 
 **Note:** The client never triggers UI logic (like alerts or modals) directly. It purely throws errors for the consumer (usually `useAsyncState`) to handle.
 

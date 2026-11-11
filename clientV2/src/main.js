@@ -32,6 +32,17 @@ try {
     console.error('Unhandled Global Error:', err, info)
     triggerError(err)
   }
+  // Errors outside Vue's reach (timers, listeners, un-awaited promises); legacy parity.
+  window.addEventListener('error', (e) => {
+    if (!/ResizeObserver loop/.test(e.message)) {
+      triggerError(e)
+    }
+  })
+  window.addEventListener('unhandledrejection', (e) => {
+    if (e.reason?.name !== 'AbortError') {
+      triggerError(e.reason)
+    }
+  })
 
   const globalAppState = useGlobalAppStore()
   globalAppState.setUser(STIGMAN.curUser)

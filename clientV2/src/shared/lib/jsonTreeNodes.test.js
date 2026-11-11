@@ -2,9 +2,10 @@ import { describe, expect, it } from 'vitest'
 import {
   buildChildNodes,
   buildJsonTreeNodes,
+  expandPaths,
   leafDisplay,
   sizeBadge,
-} from '../lib/adapters/jsonTreeNodes.js'
+} from './jsonTreeNodes.js'
 
 describe('buildJsonTreeNodes', () => {
   it('creates top-level nodes without materializing children', () => {
@@ -72,5 +73,38 @@ describe('leafDisplay and sizeBadge', () => {
 
     expect(sizeBadge(obj.data)).toBe('{3}')
     expect(sizeBadge(arr.data)).toBe('[5]')
+  })
+})
+
+describe('expandPaths', () => {
+  const report = () => buildJsonTreeNodes({
+    message: 'HTTP 500',
+    error: { name: 'ApiError', request: { url: '/x' }, response: { status: 500 }, empty: {} },
+    env: { version: '1' },
+  })
+
+  it('returns no keys without paths', () => {
+    expect(expandPaths(report())).toEqual({})
+  })
+
+  it('expands a named node and builds its children', () => {
+    const nodes = report()
+    expect(expandPaths(nodes, [['error']])).toEqual({ error: true })
+    expect(nodes[1].children).toHaveLength(4)
+    expect(nodes[2].children).toBeUndefined()
+  })
+
+  it('expands every container under a wildcard', () => {
+    const nodes = report()
+    expect(expandPaths(nodes, [['error', '*']])).toEqual({
+      'error': true,
+      'error.request': true,
+      'error.response': true,
+    })
+    expect(nodes[1].children[1].children).toHaveLength(1)
+  })
+
+  it('ignores leaves and missing labels', () => {
+    expect(expandPaths(report(), [['message'], ['missing', '*']])).toEqual({})
   })
 })
