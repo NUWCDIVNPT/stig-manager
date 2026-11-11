@@ -1,14 +1,8 @@
 <script setup>
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
-import Tree from 'primevue/tree'
 import { computed, ref, watch } from 'vue'
-import {
-  buildChildNodes,
-  buildJsonTreeNodes,
-  leafDisplay,
-  sizeBadge,
-} from '../../features/AppManagement/Appinfo/lib/adapters/jsonTreeNodes.js'
+import JsonTree from '../common/JsonTree.vue'
 import { useGlobalError } from '../../shared/composables/useGlobalError.js'
 
 const { error, clearError } = useGlobalError()
@@ -22,31 +16,14 @@ const visible = computed({
   },
 })
 
-const nodes = ref([])
-const expandedKeys = ref({})
 const copied = ref(false)
 
-// Open `error` and its direct containers (stack, body, cause) like the legacy viewer.
-watch(error, (report) => {
-  copied.value = false
-  nodes.value = report ? buildJsonTreeNodes(report) : []
-  const keys = {}
-  const errorNode = nodes.value.find(n => n.key === 'error')
-  if (errorNode && !errorNode.leaf) {
-    keys.error = true
-    for (const child of buildChildNodes(errorNode)) {
-      if (!child.leaf) {
-        buildChildNodes(child)
-        keys[child.key] = true
-      }
-    }
-  }
-  expandedKeys.value = keys
-}, { immediate: true })
+// Open `error` and its direct containers (request, response, stack, cause) like the legacy viewer.
+const defaultExpanded = [['error', '*']]
 
-function onNodeExpand(node) {
-  buildChildNodes(node)
-}
+watch(error, () => {
+  copied.value = false
+})
 
 async function copyError() {
   try {
@@ -74,13 +51,6 @@ const dialogPt = {
   title: {
     style: 'font-size: var(--text-xl); font-weight: 600;',
   },
-}
-
-const treePt = {
-  root: { style: 'background: transparent; border: none; padding: 0; color: var(--color-text-primary);' },
-  nodeContent: { style: 'padding: 0.1rem 0.25rem; background: transparent; color: var(--color-text-primary);' },
-  nodeLabel: { style: 'font-size: var(--text-md);' },
-  nodeToggleButton: { style: 'width: 1.5rem; height: 1.5rem; color: var(--color-text-dim);' },
 }
 
 const buttonPt = {
@@ -113,23 +83,7 @@ const buttonPt = {
           Error Details
         </div>
         <div class="code-content custom-scrollbar">
-          <Tree
-            v-model:expanded-keys="expandedKeys"
-            :value="nodes"
-            :pt="treePt"
-            @node-expand="onNodeExpand"
-          >
-            <template #default="{ node }">
-              <span class="json-line">
-                <span class="json-key">{{ node.label }}</span>
-                <span v-if="sizeBadge(node.data)" class="json-size">{{ sizeBadge(node.data) }}</span>
-                <template v-else>
-                  <span class="json-separator">:</span>
-                  <span class="json-value" :class="`json-${node.data.type}`">{{ leafDisplay(node.data) }}</span>
-                </template>
-              </span>
-            </template>
-          </Tree>
+          <JsonTree :value="error" :default-expanded="defaultExpanded" />
         </div>
       </div>
 
@@ -167,7 +121,7 @@ const buttonPt = {
 .code-box {
   border: 1px solid var(--color-border-default);
   border-radius: 6px;
-  padding: 1rem 0.5rem 0.5rem;
+  padding: 0.75rem 0.5rem 0.25rem;
   position: relative;
   margin-top: 0.5rem;
   background-color: var(--color-background-darkest);
@@ -187,47 +141,6 @@ const buttonPt = {
 .code-content {
   max-height: 55vh;
   overflow: auto;
-  font-family: var(--font-mono);
-}
-
-.json-line {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.4rem;
-  font-family: inherit;
-}
-
-.json-key {
-  color: var(--color-text-bright);
-}
-
-.json-size,
-.json-separator {
-  color: var(--color-text-dim);
-}
-
-.json-value {
-  overflow-wrap: anywhere;
-  white-space: pre-wrap;
-}
-
-.json-string {
-  color: var(--color-success);
-}
-
-.json-number {
-  color: var(--color-action-blue);
-}
-
-.json-boolean {
-  color: var(--color-warning-yellow);
-}
-
-.json-null,
-.json-undefined,
-.json-object,
-.json-array {
-  color: var(--color-text-dim);
 }
 
 .actions {

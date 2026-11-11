@@ -1,66 +1,17 @@
 <script setup>
-import Tree from 'primevue/tree'
-import { ref, watch } from 'vue'
-import {
-  buildChildNodes,
-  buildJsonTreeNodes,
-  leafDisplay,
-  sizeBadge,
-} from '../../Appinfo/lib/adapters/jsonTreeNodes.js'
+import { computed } from 'vue'
+import JsonTree from '../../../../components/common/JsonTree.vue'
 
-// East panel: the selected log record as an expandable JSON tree. Reuses the
-// AppInfo JSON-tree adapter/Tree; the only bespoke bit is the legacy auto-expand
-// (open `data`, and for a transaction its immediate children too).
+// East panel: the selected log record as an expandable JSON tree.
 const props = defineProps({
   record: { type: Object, default: null },
 })
 
-const nodes = ref([])
-const expandedKeys = ref({})
-
-watch(() => props.record, (record) => {
-  if (!record) {
-    nodes.value = []
-    expandedKeys.value = {}
-    return
-  }
-  nodes.value = buildJsonTreeNodes(record)
-  expandedKeys.value = computeExpanded(record, nodes.value)
-}, { immediate: true })
-
-function computeExpanded(record, topNodes) {
-  const keys = {}
-  const dataNode = topNodes.find(node => node.label === 'data')
-  if (dataNode && !dataNode.leaf) {
-    // Marking a key expanded is not enough: children are built lazily, and the
-    // Tree renders an expanded node's <ul> only when node.children is populated
-    // (a user toggle emits node-expand, a programmatic expandedKey does not).
-    keys[dataNode.key] = true
-    const children = buildChildNodes(dataNode)
-    // A transaction's data holds request/response/operationStats — the legacy
-    // panel opened all of them one level down.
-    if (record.type === 'transaction') {
-      for (const child of children) {
-        if (!child.leaf) {
-          keys[child.key] = true
-          buildChildNodes(child)
-        }
-      }
-    }
-  }
-  return keys
-}
-
-function onNodeExpand(node) {
-  buildChildNodes(node)
-}
-
-const treePt = {
-  root: { style: 'background: transparent; border: none; padding: 0.25rem 0; color: var(--color-text-primary); overflow: auto; flex: 1 1 auto; min-height: 0;' },
-  nodeContent: { style: 'padding: 0.1rem 0.25rem; background: transparent; color: var(--color-text-primary);' },
-  nodeLabel: { style: 'font-size: var(--text-md);' },
-  nodeToggleButton: { style: 'width: 1.5rem; height: 1.5rem; color: var(--color-text-dim);' },
-}
+// Legacy auto-expand: open `data`, and for a transaction its immediate
+// children too (request/response/operationStats).
+const defaultExpanded = computed(() =>
+  [props.record?.type === 'transaction' ? ['data', '*'] : ['data']],
+)
 </script>
 
 <template>
@@ -70,28 +21,11 @@ const treePt = {
       <span>JSON Tree</span>
     </div>
     <div class="log-record-body">
-      <div v-if="!nodes.length" class="log-record-empty">
+      <div v-if="!record || !Object.keys(record).length" class="log-record-empty">
         <i class="pi pi-info-circle" />
         Select a log record
       </div>
-      <Tree
-        v-else
-        v-model:expanded-keys="expandedKeys"
-        :value="nodes"
-        :pt="treePt"
-        @node-expand="onNodeExpand"
-      >
-        <template #default="{ node }">
-          <span class="json-line">
-            <span class="json-key">{{ node.label }}</span>
-            <span v-if="sizeBadge(node.data)" class="json-size">{{ sizeBadge(node.data) }}</span>
-            <template v-else>
-              <span class="json-separator">:</span>
-              <span class="json-value" :class="`json-${node.data.type}`">{{ leafDisplay(node.data) }}</span>
-            </template>
-          </span>
-        </template>
-      </Tree>
+      <JsonTree v-else :value="record" :default-expanded="defaultExpanded" />
     </div>
   </div>
 </template>
@@ -139,49 +73,5 @@ const treePt = {
   padding: 0.85rem 1rem;
   color: var(--color-text-dim);
   font-size: var(--text-md);
-}
-
-.json-line {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.4rem;
-  font-family: inherit;
-}
-
-.json-key {
-  color: var(--color-text-bright);
-}
-
-.json-size {
-  color: var(--color-text-dim);
-  font-size: var(--text-md);
-}
-
-.json-separator {
-  color: var(--color-text-dim);
-}
-
-.json-value {
-  overflow-wrap: anywhere;
-  white-space: pre-wrap;
-}
-
-.json-string {
-  color: var(--color-success);
-}
-
-.json-number {
-  color: var(--color-action-blue);
-}
-
-.json-boolean {
-  color: var(--color-warning-yellow);
-}
-
-.json-null,
-.json-undefined,
-.json-object,
-.json-array {
-  color: var(--color-text-dim);
 }
 </style>

@@ -1,6 +1,6 @@
 /**
- * PrimeVue Tree nodes for the JSON Tree tab. Children are built lazily on
- * expand because a full report can hold tens of thousands of values.
+ * PrimeVue Tree nodes for any JSON value (rendered by JsonTree.vue). Children
+ * are built lazily on expand because a report can hold tens of thousands of values.
  */
 
 function valueType(value) {
@@ -67,4 +67,27 @@ export function sizeBadge(data) {
     return ''
   }
   return data.type === 'array' ? `[${data.size}]` : `{${data.size}}`
+}
+
+/**
+ * Expanded-keys object for a list of paths to open by default. A path is a
+ * list of labels from the top level; '*' matches every expandable node at
+ * that level, so ['error', '*'] opens `error` and each container inside it.
+ * Children along each path are built, because the Tree renders an expanded
+ * node only once its children exist.
+ */
+export function expandPaths(nodes, paths = []) {
+  const keys = {}
+  for (const path of paths) {
+    let level = nodes
+    for (const segment of path) {
+      const matches = level.filter(node => !node.leaf && (segment === '*' || node.label === segment))
+      level = []
+      for (const node of matches) {
+        keys[node.key] = true
+        level.push(...buildChildNodes(node))
+      }
+    }
+  }
+  return keys
 }
