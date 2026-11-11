@@ -47,10 +47,8 @@ function serialize(value, seen = new WeakSet(), depth = 0) {
     }
   }
   for (const [key, v] of Object.entries(value)) {
-    // JSON drops undefined values; skip them so the tree matches the copied report
-    if (v !== undefined) {
-      out[key] = /^authorization$/i.test(key) ? '<removed>' : serialize(v, seen, depth + 1)
-    }
+    // undefined becomes null so the key survives JSON.stringify in the copied report
+    out[key] = /^authorization$/i.test(key) ? '<removed>' : serialize(v, seen, depth + 1) ?? null
   }
   return out
 }

@@ -46,4 +46,10 @@ describe('buildErrorReport', () => {
     expect(report.error.detail.self).toBe('[Circular]')
     expect(report.error.cause.message).toBe('inner')
   })
+
+  it('keeps keys whose value is undefined as null', () => {
+    const report = buildErrorReport({ message: 'x', request: { method: 'GET', url: '/api/x', body: undefined } })
+    expect(report.error.request.body).toBeNull()
+    expect(JSON.parse(JSON.stringify(report)).error.request).toHaveProperty('body', null)
+  })
 })
