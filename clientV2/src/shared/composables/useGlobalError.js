@@ -1,9 +1,9 @@
-import { readonly, ref } from 'vue'
-import { formatDateTimeString } from '../lib.js'
+import { readonly, shallowRef } from 'vue'
+import { tokenClaimsWithDates } from '../lib/tokenClaims.js'
 
-const error = ref(null)
+// Reports are replaced whole, never mutated
+const error = shallowRef(null)
 
-const TOKEN_DATE_CLAIMS = ['exp', 'iat', 'auth_time', 'nbf']
 const MAX_DEPTH = 10
 
 // JSON-safe copy of any value, keeping Error props (name/message/stack/cause) that JSON.stringify drops.
@@ -47,7 +47,10 @@ function serialize(value, seen = new WeakSet(), depth = 0) {
     }
   }
   for (const [key, v] of Object.entries(value)) {
-    out[key] = /^authorization$/i.test(key) ? '<removed>' : serialize(v, seen, depth + 1)
+    // JSON drops undefined values; skip them so the tree matches the copied report
+    if (v !== undefined) {
+      out[key] = /^authorization$/i.test(key) ? '<removed>' : serialize(v, seen, depth + 1)
+    }
   }
   return out
 }
@@ -60,16 +63,7 @@ function stigman() {
 
 function tokenClaims() {
   const parsed = stigman()?.oidcWorker?.tokenParsed
-  if (!parsed) {
-    return null
-  }
-  const claims = { ...parsed }
-  for (const claim of TOKEN_DATE_CLAIMS) {
-    if (typeof claims[claim] === 'number') {
-      claims[claim] = `${claims[claim]} (${formatDateTimeString(claims[claim] * 1000)})`
-    }
-  }
-  return claims
+  return parsed ? tokenClaimsWithDates(parsed) : null
 }
 
 function errorMessage(err) {

@@ -29,7 +29,7 @@ export class ApiError extends Error {
     this.response = response
   }
 
-  // Getters (not own props) so callers keep err.status/url/body without duplicating them in error reports
+  // Derived from request/response, which hold the single copy of each value
   get status() {
     return this.response?.status
   }

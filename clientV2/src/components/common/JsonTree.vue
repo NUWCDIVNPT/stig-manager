@@ -9,7 +9,7 @@ import {
   sizeBadge,
 } from '../../shared/lib/jsonTreeNodes.js'
 
-// Collapsible tree view of any JSON value. Renders nothing for an empty value,
+// Collapsible tree view of an object or array. Renders nothing for an empty value,
 // so the caller owns the empty state.
 const props = defineProps({
   value: { type: Object, default: null },
@@ -21,14 +21,11 @@ const nodes = ref([])
 const expandedKeys = ref({})
 
 watch(() => props.value, (value) => {
-  nodes.value = buildJsonTreeNodes(value)
-  expandedKeys.value = expandPaths(nodes.value, props.defaultExpanded)
+  // Expand before the nodes become reactive
+  const built = buildJsonTreeNodes(value)
+  expandedKeys.value = expandPaths(built, props.defaultExpanded)
+  nodes.value = built
 }, { immediate: true })
-
-// Children are materialized only when a node is first expanded
-function onNodeExpand(node) {
-  buildChildNodes(node)
-}
 
 const treePt = {
   root: { style: 'background: transparent; border: none; padding: 0.25rem 0; color: var(--color-text-primary); overflow: auto; flex: 1 1 auto; min-height: 0; font-family: var(--font-mono);' },
@@ -44,12 +41,12 @@ const treePt = {
     v-model:expanded-keys="expandedKeys"
     :value="nodes"
     :pt="treePt"
-    @node-expand="onNodeExpand"
+    @node-expand="buildChildNodes"
   >
     <template #default="{ node }">
       <span class="json-line">
         <span class="json-key">{{ node.label }}</span>
-        <span v-if="sizeBadge(node.data)" class="json-size">{{ sizeBadge(node.data) }}</span>
+        <span v-if="!node.leaf" class="json-size">{{ sizeBadge(node.data) }}</span>
         <template v-else>
           <span class="json-separator">:</span>
           <span class="json-value" :class="`json-${node.data.type}`">{{ leafDisplay(node.data) }}</span>

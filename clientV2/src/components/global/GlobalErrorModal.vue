@@ -82,7 +82,7 @@ const buttonPt = {
         <div class="box-title">
           Error Details
         </div>
-        <div class="code-content custom-scrollbar">
+        <div class="code-content sm-scrollbar-thin">
           <JsonTree :value="error" :default-expanded="defaultExpanded" />
         </div>
       </div>
@@ -152,19 +152,5 @@ const buttonPt = {
 .action-btn:active,
 .action-btn:focus-visible {
   background-color: rgba(96, 165, 250, 0.1) !important;
-}
-.custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #09090b;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--color-border-default);
-  border-radius: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--color-border-light);
 }
 </style>

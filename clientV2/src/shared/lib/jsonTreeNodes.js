@@ -1,3 +1,5 @@
+import { markRaw } from 'vue'
+
 /**
  * PrimeVue Tree nodes for any JSON value (rendered by JsonTree.vue). Children
  * are built lazily on expand because a report can hold tens of thousands of values.
@@ -21,12 +23,13 @@ function createNode(label, value, path) {
     key: path,
     label,
     leaf: !isContainer || size === 0,
-    data: { value, type, size },
+    // Raw: read-only payload, so the source object is never wrapped in reactive proxies
+    data: markRaw({ value, type, size }),
     ...(isContainer && size > 0 ? { children: undefined } : {}),
   }
 }
 
-/** Top-level nodes for a report object. */
+/** Top-level nodes for an object or array. */
 export function buildJsonTreeNodes(data) {
   if (data === null || typeof data !== 'object') {
     return []
@@ -82,11 +85,10 @@ export function expandPaths(nodes, paths = []) {
     let level = nodes
     for (const segment of path) {
       const matches = level.filter(node => !node.leaf && (segment === '*' || node.label === segment))
-      level = []
-      for (const node of matches) {
+      level = matches.flatMap((node) => {
         keys[node.key] = true
-        level.push(...buildChildNodes(node))
-      }
+        return buildChildNodes(node)
+      })
     }
   }
   return keys
