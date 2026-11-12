@@ -521,9 +521,27 @@ describe('user', () => {
             const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences`, 'PATCH', iteration.token, patch)
             expect(res.status).to.eql(400)
           })
+
+          it('should update lastWhatsNewV2 without changing lastWhatsNew', async () => {
+            const patch = {
+              lastWhatsNewV2: "2026-01-01"
+            }
+            const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences`, 'PATCH', iteration.token, patch)
+            expect(res.status).to.eql(200)
+            expect(res.body.lastWhatsNewV2).to.eql("2026-01-01")
+            expect(res.body.lastWhatsNew).to.eql("2025-01-01")
+          })
+
+          it('should reject request with invalid value type for lastWhatsNewV2', async () => {
+            const patch = {
+              lastWhatsNewV2: 1234567890
+            }
+            const res = await utils.executeRequest(`${config.baseUrl}/user/web-preferences`, 'PATCH', iteration.token, patch)
+            expect(res.status).to.eql(400)
+          })
         })
       })
-        
+
       describe('PUT - user', () => {
         describe(`PUT - replaceUser - /users{/userId}`, async () => {
 
