@@ -10194,6 +10194,10 @@ components:
         lastWhatsNew:
           type: string
           format: date
+        lastWhatsNewV2:
+          description: The date of the newest What's New entry the user has dismissed in the Vue client, which keeps its own list of entries
+          type: string
+          format: date
         tours:
           description: The version date of each client tour the user has seen, keyed by tour id
           type: object
@@ -10210,6 +10214,10 @@ components:
         darkMode:
           type: boolean
         lastWhatsNew:
+          type: string
+          format: date
+        lastWhatsNewV2:
+          description: The date of the newest What's New entry the user has dismissed in the Vue client, which keeps its own list of entries
           type: string
           format: date
         tours:
