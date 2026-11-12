@@ -27,7 +27,7 @@ vi.mock('../../../shared/composables/useGlobalError.js', () => ({
 const { mockUser } = vi.hoisted(() => ({
   mockUser: {
     webPreferences: {
-      lastWhatsNew: '1970-01-01',
+      lastWhatsNewV2: '1970-01-01',
     },
   },
 }))
@@ -45,7 +45,7 @@ describe('whatsNew Component', () => {
 
   it('shows the modal when user has not seen the latest features', async () => {
     // Set user preference to a very old date
-    mockUser.webPreferences.lastWhatsNew = '1970-01-01'
+    mockUser.webPreferences.lastWhatsNewV2 = '1970-01-01'
 
     renderWithProviders(WhatsNew)
 
@@ -60,7 +60,7 @@ describe('whatsNew Component', () => {
 
   it('does not show the modal when user has seen the latest features', async () => {
     // Set user preference to a future date
-    mockUser.webPreferences.lastWhatsNew = '2099-01-01'
+    mockUser.webPreferences.lastWhatsNewV2 = '2099-01-01'
 
     renderWithProviders(WhatsNew)
 
@@ -70,7 +70,7 @@ describe('whatsNew Component', () => {
 
   it('calls API and closes modal when "Don\'t show these features again" is clicked', async () => {
     // Ensure it shows first
-    mockUser.webPreferences.lastWhatsNew = '1970-01-01'
+    mockUser.webPreferences.lastWhatsNewV2 = '1970-01-01'
     api.patch.mockResolvedValue({})
 
     renderWithProviders(WhatsNew)
@@ -87,7 +87,7 @@ describe('whatsNew Component', () => {
     // We don't know the exact date in Sources without importing it or matching loosely
     // But we know it sends *some* date.
     expect(api.patch).toHaveBeenCalledWith('/user/web-preferences', expect.objectContaining({
-      lastWhatsNew: expect.any(String),
+      lastWhatsNewV2: expect.any(String),
     }))
 
     // Verify it closes (removed from DOM or not visible)
@@ -97,7 +97,7 @@ describe('whatsNew Component', () => {
   })
 
   it('handles API error when updating preferences', async () => {
-    mockUser.webPreferences.lastWhatsNew = '1970-01-01'
+    mockUser.webPreferences.lastWhatsNewV2 = '1970-01-01'
     const error = new Error('API Error')
     api.patch.mockRejectedValue(error)
 
@@ -122,7 +122,7 @@ describe('whatsNew Component', () => {
   })
 
   it('closes the modal when "Close" button is clicked', async () => {
-    mockUser.webPreferences.lastWhatsNew = '1970-01-01'
+    mockUser.webPreferences.lastWhatsNewV2 = '1970-01-01'
 
     renderWithProviders(WhatsNew)
 
@@ -141,7 +141,7 @@ describe('whatsNew Component', () => {
     expect(api.patch).not.toHaveBeenCalled()
   })
   it('starts the shell tour and closes the modal from the "Take the tour" link', async () => {
-    mockUser.webPreferences.lastWhatsNew = '1970-01-01'
+    mockUser.webPreferences.lastWhatsNewV2 = '1970-01-01'
 
     renderWithProviders(WhatsNew)
 

@@ -43,8 +43,12 @@ function normalizeDate(dateStr) {
   return dateStr
 }
 
+// This client keeps its own list of entries, so it tracks the last one seen
+// under its own preference rather than the legacy client's lastWhatsNew.
+const PREFERENCE_KEY = 'lastWhatsNewV2'
+
 function checkAndShow() {
-  const lastWhatsNew = normalizeDate(preferences.value.lastWhatsNew || '1970-01-01')
+  const lastWhatsNew = normalizeDate(preferences.value[PREFERENCE_KEY] || '1970-01-01')
 
   // Store needed for filtering
   lastShownDate.value = lastWhatsNew
@@ -58,7 +62,7 @@ function checkAndShow() {
 async function handleDontShowAgain() {
   const latestDate = Sources[0].date
   try {
-    await patchPreferences({ lastWhatsNew: latestDate })
+    await patchPreferences({ [PREFERENCE_KEY]: latestDate })
     visible.value = false
   }
   catch (error) {
