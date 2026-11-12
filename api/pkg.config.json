@@ -4,6 +4,7 @@
         "scripts": ["./source/controllers/**/*.js", "./source/service/**/*.js"],
         "assets": [
             "../client/dist/**/*",
+            "../clientV2/dist/**/*",
             "../docs/_build/html",
             "./source/service/**/*.sql",
             "./source/node_modules/csv-stringify/**/*",

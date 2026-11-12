@@ -1,0 +1,264 @@
+import { userEvent } from '@testing-library/user-event'
+import { fireEvent, screen } from '@testing-library/vue'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { useRoute } from 'vue-router'
+import * as stigsApi from '../../../shared/api/stigsApi.js'
+
+import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
+import * as checklistUtils from '../../../shared/lib/checklistUtils.js'
+import { renderWithProviders } from '../../../testUtils/utils.js'
+import CollectionChecklistGridHeader from '../components/CollectionChecklistGridHeader.vue'
+
+vi.mock('../../../shared/composables/useGridDensity.js', () => ({
+  useGridDensity: vi.fn(),
+}))
+
+vi.mock('../../../shared/api/stigsApi.js', () => ({
+  fetchStigRevisions: vi.fn(),
+}))
+
+vi.mock('../../../shared/lib/checklistUtils.js', () => ({
+  getRevisionInfo: vi.fn(),
+}))
+
+vi.mock('primevue/tieredmenu', () => ({
+  default: {
+    name: 'TieredMenu',
+    props: ['model'],
+    setup(props, { expose }) {
+      expose({ toggle: vi.fn() })
+      return {}
+    },
+    template: `
+      <div>
+        <div v-for="group in model" :key="group.label" :data-group="group.label" :data-disabled="String(!!group.disabled)">
+          <button v-for="item in group.items" :key="item.label" :data-icon="item.icon" :title="item.tooltip" @click="item.command && item.command()">
+            {{ item.label }}
+          </button>
+        </div>
+      </div>
+    `,
+  },
+}))
+
+vi.mock('vue-router', () => ({
+  useRoute: vi.fn(),
+}))
+
+describe('checklistGridHeader.vue', () => {
+  let mockDensityState
+
+  beforeEach(() => {
+    mockDensityState = {
+      canIncrease: true,
+      canDecrease: true,
+      increaseRowHeight: vi.fn(),
+      decreaseRowHeight: vi.fn(),
+    }
+    useGridDensity.mockReturnValue(mockDensityState)
+    useRoute.mockReturnValue({ params: {} })
+    checklistUtils.getRevisionInfo.mockReturnValue(null)
+    vi.clearAllMocks()
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  const defaultProps = {
+    searchFilter: '',
+    toggleableColumns: [{ field: 'col1', header: 'Col 1' }],
+    selectedColumns: [{ field: 'col1', header: 'Col 1' }],
+    activePreset: 'groupRule',
+  }
+
+  function createWrapper(props = {}) {
+    return renderWithProviders(CollectionChecklistGridHeader, {
+      props: {
+        ...defaultProps,
+        ...props,
+      },
+    })
+  }
+
+  describe('rendering & Titles', () => {
+    it('renders fallback title when neither benchmarkId nor revision display exist', () => {
+      createWrapper()
+      expect(screen.getByText('Collection Checklist')).toBeInTheDocument()
+    })
+
+    it('renders benchmarkId when revision display does not exist', () => {
+      useRoute.mockReturnValue({ params: { benchmarkId: 'RHEL_8' } })
+      createWrapper()
+      expect(screen.getByText('RHEL_8')).toBeInTheDocument()
+    })
+
+    it('renders benchmarkId + revision display when both exist', () => {
+      useRoute.mockReturnValue({ params: { benchmarkId: 'RHEL_8', revisionStr: 'V1R2' } })
+      checklistUtils.getRevisionInfo.mockReturnValue({ display: 'V1R2' })
+      createWrapper()
+      expect(screen.getByText('RHEL_8 - V1R2')).toBeInTheDocument()
+    })
+
+    it('builds the revision date from the stigRevisions prop, without fetching revisions itself', () => {
+      useRoute.mockReturnValue({ params: { collectionId: '21', benchmarkId: 'RHEL_8', revisionStr: 'V1R2' } })
+      const stigRevisions = [{ revisionStr: 'V1R2', benchmarkDate: '2024-01-01' }]
+      createWrapper({ stigRevisions })
+      expect(checklistUtils.getRevisionInfo).toHaveBeenCalledWith('V1R2', stigRevisions, '21')
+      expect(stigsApi.fetchStigRevisions).not.toHaveBeenCalled()
+    })
+
+    it('shows a pin beside the title when the revision is the Collection default', () => {
+      checklistUtils.getRevisionInfo.mockReturnValue({ display: 'V1R2', pinned: true })
+      createWrapper()
+      expect(screen.getByRole('img', { name: 'Pinned as the Collection default Revision' })).toBeInTheDocument()
+    })
+
+    it('shows no pin for an unpinned revision', () => {
+      checklistUtils.getRevisionInfo.mockReturnValue({ display: 'V1R2', pinned: false })
+      createWrapper()
+      expect(screen.queryByRole('img', { name: 'Pinned as the Collection default Revision' })).toBeNull()
+    })
+
+    it('updates the title when the page passes another STIG\'s revisions', async () => {
+      useRoute.mockReturnValue({ params: { benchmarkId: 'RHEL_8', revisionStr: 'V1R2' } })
+      checklistUtils.getRevisionInfo.mockImplementation((_, revisions) => (revisions.length ? { display: revisions[0].display } : null))
+      const { rerender } = createWrapper({ stigRevisions: [{ display: 'V1R2 (Jan 2024)' }] })
+      expect(screen.getByText('RHEL_8 - V1R2 (Jan 2024)')).toBeInTheDocument()
+
+      await rerender({ stigRevisions: [{ display: 'V1R2 (Apr 2025)' }] })
+      expect(screen.getByText('RHEL_8 - V1R2 (Apr 2025)')).toBeInTheDocument()
+    })
+  })
+
+  describe('search Functionality (Debounce & Clear)', () => {
+    it('updates search but does not emit immediately', async () => {
+      const { emitted } = createWrapper()
+      const input = screen.getByPlaceholderText('Search...')
+
+      await fireEvent.update(input, 'test')
+
+      expect(input).toHaveValue('test')
+      expect(emitted()['update:searchFilter']).toBeFalsy()
+    })
+
+    it('emits update:searchFilter after 250ms debounce', async () => {
+      const { emitted } = createWrapper()
+      const input = screen.getByPlaceholderText('Search...')
+
+      await fireEvent.update(input, 'test')
+
+      vi.advanceTimersByTime(250)
+
+      expect(emitted()['update:searchFilter']).toBeTruthy()
+      const emits = emitted()['update:searchFilter']
+      expect(emits[emits.length - 1]).toEqual(['test'])
+    })
+
+    it('shows clear button conditionally and clears input when clicked', async () => {
+      const { emitted } = createWrapper()
+      const input = screen.getByPlaceholderText('Search...')
+
+      expect(screen.queryByLabelText('Clear search')).not.toBeInTheDocument()
+
+      await fireEvent.update(input, 'test')
+      await vi.advanceTimersByTimeAsync(250)
+
+      const clearBtn = screen.getByLabelText('Clear search')
+      expect(clearBtn).toBeInTheDocument()
+
+      await fireEvent.click(clearBtn)
+
+      expect(input).toHaveValue('')
+      expect(screen.queryByLabelText('Clear search')).not.toBeInTheDocument()
+      const emits = emitted()['update:searchFilter']
+      expect(emits[emits.length - 1]).toEqual([''])
+    })
+  })
+
+  describe('checklist Menu (Display presets)', () => {
+    it('emits apply-preset when menu items are clicked', async () => {
+      const { emitted } = createWrapper()
+
+      const menuBtn = screen.getByRole('button', { name: /Checklist/i })
+      await fireEvent.click(menuBtn)
+
+      vi.advanceTimersByTime(500)
+
+      await fireEvent.click(screen.getByText('Group ID and Group Title'))
+      expect(emitted()['apply-preset'][0]).toEqual(['groupGroup'])
+
+      await fireEvent.click(screen.getByText('Rule ID and Rule Title'))
+      expect(emitted()['apply-preset'][1]).toEqual(['ruleRule'])
+    })
+
+    it('emits export-archive per format and shows the legacy tooltips', async () => {
+      const { emitted } = createWrapper()
+
+      await fireEvent.click(screen.getByText('CKL (STIG Viewer v2)'))
+      await fireEvent.click(screen.getByText('CKLB (STIG Viewer v3)'))
+      await fireEvent.click(screen.getByText('XCCDF'))
+
+      expect(emitted()['export-archive']).toEqual([
+        [{ format: 'ckl', mode: 'mono' }],
+        [{ format: 'cklb', mode: 'mono' }],
+        [{ format: 'xccdf', mode: null }],
+      ])
+      expect(screen.getByText('XCCDF').closest('button').title)
+        .toBe('Download an archive with results in XCCDF format for each asset in the collection')
+    })
+
+    it('disables Export Result Archive when the parent says it cannot export', () => {
+      const { container } = createWrapper({ canExportArchive: false })
+      expect(container.querySelector('[data-group="Export Result Archive"]').dataset.disabled).toBe('true')
+    })
+
+    it('fills the circle only for the active preset', () => {
+      createWrapper({ activePreset: 'ruleRule' })
+      expect(screen.getByText('Rule ID and Rule Title').dataset.icon).toBe('pi pi-circle-fill')
+      expect(screen.getByText('Group ID and Rule Title').dataset.icon).toBe('pi pi-circle')
+    })
+
+    it('fills no circle when the columns match no preset', () => {
+      createWrapper({ activePreset: null })
+      for (const label of ['Group ID and Rule Title', 'Group ID and Group Title', 'Rule ID and Rule Title']) {
+        expect(screen.getByText(label).dataset.icon).toBe('pi pi-circle')
+      }
+    })
+  })
+
+  describe('density Controls', () => {
+    it('calls decreaseRowHeight when decrease button is clicked', async () => {
+      createWrapper()
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+      const decreaseBtn = screen.getByTitle('Decrease row height')
+      await user.click(decreaseBtn)
+      expect(mockDensityState.decreaseRowHeight).toHaveBeenCalledOnce()
+    })
+
+    it('calls increaseRowHeight when increase button is clicked', async () => {
+      createWrapper()
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+      const increaseBtn = screen.getByTitle('Increase row height')
+      await user.click(increaseBtn)
+      expect(mockDensityState.increaseRowHeight).toHaveBeenCalledOnce()
+    })
+
+    it('disables decrease button at the grid minimum', () => {
+      mockDensityState.canDecrease = false
+      useGridDensity.mockReturnValue(mockDensityState)
+      createWrapper()
+      const decreaseBtn = screen.getByTitle('Decrease row height')
+      expect(decreaseBtn).toBeDisabled()
+    })
+
+    it('disables increase button at the maximum', () => {
+      mockDensityState.canIncrease = false
+      useGridDensity.mockReturnValue(mockDensityState)
+      createWrapper()
+      const increaseBtn = screen.getByTitle('Increase row height')
+      expect(increaseBtn).toBeDisabled()
+    })
+  })
+})

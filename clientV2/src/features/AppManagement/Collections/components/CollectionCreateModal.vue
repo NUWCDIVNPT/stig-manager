@@ -1,0 +1,281 @@
+<script setup>
+import Button from 'primevue/button'
+import Dialog from 'primevue/dialog'
+import InputText from 'primevue/inputtext'
+import Textarea from 'primevue/textarea'
+import { computed, ref, watch } from 'vue'
+import GrantsPickList from '../../../../components/common/grants/GrantsPickList.vue'
+import { isDuplicateEntryError } from '../../../../shared/api/apiErrors.js'
+import { fetchUserGroups, fetchUsers } from '../../../../shared/api/userApi.js'
+import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
+import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
+import { frameDialogPt, primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
+import { inputTextPt, textareaPt } from '../../../../shared/lib/formPt.js'
+import {
+  COLLECTION_DESCRIPTION_MAX_LENGTH,
+  COLLECTION_NAME_MAX_LENGTH,
+  validateCollectionName,
+} from '../../../CollectionManage/components/Configuration/collectionValidation.js'
+import { granteeToGrantPayload, normalizeAvailableGrantees } from '../../../CollectionManage/lib/grantsUsers.js'
+import { createCollection } from '../api/collectionsAdminApi.js'
+
+const props = defineProps({
+  visible: { type: Boolean, required: true },
+})
+
+const emit = defineEmits(['update:visible', 'created'])
+
+const { triggerError } = useGlobalError()
+
+const localVisible = computed({
+  get: () => props.visible,
+  set: v => emit('update:visible', v),
+})
+
+const form = ref({ name: '', description: '' })
+const saving = ref(false)
+const touched = ref(false)
+const duplicateName = ref(null)
+
+const pendingGrantees = ref([])
+
+async function fetchSystemGrantees() {
+  const [users, groups] = await Promise.all([
+    fetchUsers({ status: 'available' }),
+    fetchUserGroups(),
+  ])
+  return normalizeAvailableGrantees(users, groups)
+}
+
+const { state: availableGrantees, isLoading: granteesLoading, execute: loadGrantees } = useAsyncState(
+  fetchSystemGrantees,
+  { initialState: [], immediate: false },
+)
+
+watch(() => props.visible, (open) => {
+  if (open) {
+    form.value = { name: '', description: '' }
+    pendingGrantees.value = []
+    touched.value = false
+    duplicateName.value = null
+    loadGrantees()
+  }
+})
+
+const nameError = computed(() => {
+  const name = form.value.name.trim()
+  // Case-insensitive to match the collation of the unique index on name
+  if (name.toLowerCase() === duplicateName.value) {
+    return 'A Collection with this name already exists'
+  }
+  // Do not flag the empty field until the user has interacted with it
+  if (!touched.value && !name) {
+    return null
+  }
+  return validateCollectionName(name)
+})
+
+const isValid = computed(() => !!form.value.name.trim() && !nameError.value)
+
+function close() {
+  emit('update:visible', false)
+}
+
+async function onSave() {
+  touched.value = true
+  if (!isValid.value || saving.value) {
+    return
+  }
+  saving.value = true
+  const name = form.value.name.trim()
+  try {
+    // `grants` is required by the CollectionCreateOrReplace schema. Elevated
+    // requests may not set settings, labels, or metadata, so we omit them.
+    const body = {
+      name,
+      description: form.value.description.trim() || undefined,
+      grants: pendingGrantees.value.map(granteeToGrantPayload),
+    }
+    const created = await createCollection(body)
+    emit('created', created)
+    close()
+  }
+  catch (err) {
+    if (isDuplicateEntryError(err)) {
+      duplicateName.value = name.toLowerCase()
+    }
+    else {
+      triggerError(err)
+    }
+  }
+  finally {
+    saving.value = false
+  }
+}
+</script>
+
+<template>
+  <Dialog
+    v-model:visible="localVisible"
+    modal
+    :draggable="false"
+    :style="{ width: '950px', maxWidth: '95vw', height: '850px', maxHeight: '95vh' }"
+    :pt="frameDialogPt"
+  >
+    <template #header>
+      <div class="modal-header">
+        <span class="icon-collection-new icon-collection-new--lg" />
+        <div class="modal-header-title">
+          Create Collection
+        </div>
+      </div>
+    </template>
+
+    <div class="form-body">
+      <div class="labeled-field">
+        <div class="field-header-row">
+          <label class="flabel" for="col-name">Name <span class="req-star">*</span></label>
+        </div>
+        <InputText
+          id="col-name"
+          v-model="form.name"
+          :invalid="!!nameError"
+          :pt="inputTextPt"
+          :maxlength="COLLECTION_NAME_MAX_LENGTH"
+          placeholder="Collection name"
+          autocomplete="off"
+          @blur="touched = true"
+          @keyup.enter="onSave"
+        />
+        <div class="field-error" :class="{ 'field-error--hidden': !nameError }">
+          {{ nameError }}
+        </div>
+      </div>
+
+      <div class="labeled-field">
+        <div class="field-header-row">
+          <label class="flabel" for="col-description">Description</label>
+        </div>
+        <Textarea
+          id="col-description"
+          v-model="form.description"
+          :pt="textareaPt"
+          rows="3"
+          :maxlength="COLLECTION_DESCRIPTION_MAX_LENGTH"
+          auto-resize
+          placeholder="Optional description"
+        />
+      </div>
+
+      <div class="labeled-field" style="flex: 1; min-height: 0;">
+        <div class="field-header-row">
+          <span class="flabel">Grants</span>
+        </div>
+        <div v-if="!granteesLoading" style="height: 100%; display: flex; flex-direction: column;">
+          <GrantsPickList
+            :source="availableGrantees"
+            :target="pendingGrantees"
+            :can-modify-owners="true"
+            :show-footer="false"
+            @update:target="pendingGrantees = $event"
+            @update:source="availableGrantees = $event"
+          />
+        </div>
+        <div v-else class="grants-loading">
+          <i class="pi pi-spin pi-spinner" /> Loading grantees...
+        </div>
+      </div>
+    </div>
+
+    <template #footer>
+      <div class="modal-footer">
+        <Button label="Cancel" :pt="secondaryBtnPt" :disabled="saving" @click="close" />
+        <Button
+          label="Create"
+          :pt="primaryBtnPt"
+          :loading="saving"
+          :disabled="!isValid"
+          @click="onSave"
+        />
+      </div>
+    </template>
+  </Dialog>
+</template>
+
+<style scoped>
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem;
+}
+
+.modal-header-title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-text-bright);
+}
+
+.form-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  padding: 1.25rem 1.25rem 0.5rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.labeled-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.field-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flabel {
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.req-star {
+  color: var(--color-text-error);
+}
+
+.field-error {
+  font-size: var(--text-md);
+  line-height: 1.2;
+  min-height: 1.2em;
+  color: var(--color-text-error);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.field-error--hidden {
+  visibility: hidden;
+}
+
+.grants-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex: 1;
+  font-size: var(--text-lg);
+  color: var(--color-text-dim);
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.9rem 1.1rem;
+  justify-content: flex-end;
+}
+</style>

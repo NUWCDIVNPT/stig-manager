@@ -1,0 +1,30 @@
+name: clientV2 tests
+on:
+  pull_request:
+    branches:
+      - main
+      - new-client
+  push:
+    branches:
+      - main
+      - new-client
+  workflow_dispatch:
+  workflow_call:
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - name: Install dependencies
+        working-directory: ./clientV2
+        run: npm ci
+      - name: Run tests
+        working-directory: ./clientV2
+        run: npm test

@@ -1,0 +1,75 @@
+/* Shared styles for Collection Metrics components */
+.metric-card {
+  background-color: var(--color-background-dark);
+  color: var(--color-text-primary);
+  border-radius: 10px;
+  padding: 12px;
+  width: 100%;
+  border: 1px solid var(--color-border-light);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.metric-card.large {
+  min-width: 0;
+}
+
+.metric-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.metric-title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  margin: 0;
+  flex: 1;
+}
+
+.metric-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.metric-action-link {
+  font-size: var(--text-md);
+  color: var(--color-text-dim);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.metric-action-link:hover {
+  color: var(--color-bg-hover-light);
+}
+
+.metric-badge-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.metric-badge {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px;
+  border-radius: 8px;
+  min-width: 0;
+}
+
+.metric-badge-label {
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--color-text-dark);
+}
+
+.metric-badge-value {
+  font-size: var(--text-xl);
+  color: var(--color-text-dark);
+  line-height: 1.1;
+  font-weight: 700;
+}

@@ -1,0 +1,49 @@
+<script setup>
+import PickList from '../../../../components/common/PickList.vue'
+import { pickListVirtualScrollerOptions } from '../../../../shared/lib/pickListPt.js'
+
+const VIRTUAL_SCROLLER_OPTIONS = pickListVirtualScrollerOptions()
+
+// User Groups dual-list ([available, assigned] tuple) shared by the User
+// Properties panel and the pre-register modal, so the two render identically.
+const model = defineModel({ type: Array, required: true })
+</script>
+
+<template>
+  <PickList
+    v-model="model"
+    data-key="userGroupId"
+    filter-by="name"
+    show-source-filter
+    show-target-filter
+    source-filter-placeholder="Search groups..."
+    target-filter-placeholder="Search groups..."
+    :virtual-scroller-options="VIRTUAL_SCROLLER_OPTIONS"
+  >
+    <template #sourceheader>
+      Available Groups
+    </template>
+    <template #targetheader>
+      Assigned Groups
+    </template>
+    <template #item="{ item }">
+      <div class="group-item">
+        <i class="pi pi-users" />
+        <span>{{ item.name }}</span>
+      </div>
+    </template>
+  </PickList>
+</template>
+
+<style scoped>
+.group-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--text-md);
+}
+
+.group-item i {
+  font-size: var(--text-lg);
+}
+</style>

@@ -1,0 +1,222 @@
+<script setup>
+import Splitter from 'primevue/splitter'
+import SplitterPanel from 'primevue/splitterpanel'
+import Tab from 'primevue/tab'
+import TabList from 'primevue/tablist'
+import TabPanel from 'primevue/tabpanel'
+import TabPanels from 'primevue/tabpanels'
+import Tabs from 'primevue/tabs'
+import { onUnmounted, ref } from 'vue'
+import { viewTabListPt, viewTabPt, viewTabsPt } from '../../../shared/lib/tabPt.js'
+import MetaCollectionMetrics from '../../CollectionMetrics/components/MetaCollectionMetrics.vue'
+import MetaExportMetrics from '../../CollectionMetrics/components/MetaExportMetrics.vue'
+import { useMetaCollectionFilter } from '../composables/useMetaCollectionFilter.js'
+import MetaCollectionsTab from './MetaCollectionsTab.vue'
+import MetaStigsTab from './MetaStigsTab.vue'
+
+const activeTab = ref('collections')
+const DASHBOARD_STORAGE_KEY = 'stigman:metaDashboardCollapsed'
+const dashboardCollapsed = ref(localStorage.getItem(DASHBOARD_STORAGE_KEY) === 'true')
+// Set from the collection filter after the breadcrumb (MenuBar); each visit starts unfiltered
+const { selectedCollectionIds, reset: resetCollectionFilter } = useMetaCollectionFilter()
+onUnmounted(resetCollectionFilter)
+const isAnimating = ref(false)
+
+function toggleDashboardSidebar() {
+  isAnimating.value = true
+  dashboardCollapsed.value = !dashboardCollapsed.value
+
+  setTimeout(() => {
+    isAnimating.value = false
+  }, 300)
+
+  try {
+    localStorage.setItem(DASHBOARD_STORAGE_KEY, String(dashboardCollapsed.value))
+  }
+  catch {
+    // localStorage unavailable
+  }
+}
+
+const tabPanelsPt = {
+  root: {
+    style: {
+      flex: '1',
+      padding: '0',
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+    },
+  },
+}
+
+const tabPanelPt = {
+  root: {
+    style: {
+      flex: '1',
+      overflowY: 'auto',
+      height: '100%',
+    },
+  },
+}
+</script>
+
+<template>
+  <div class="meta-collection-view" data-tour="meta-dashboard">
+    <Splitter
+      :pt="{
+        gutter: { style: 'background: var(--color-border-dark)' },
+        root: { style: 'border: none; border-radius: 0; background: transparent; height: 100%; overflow: hidden;' },
+      }"
+    >
+      <!-- Dashboard Sidebar -->
+      <SplitterPanel
+        :size="18"
+        :min-size="4"
+        :pt="{ root: { class: { 'sidebar-panel--collapsed': dashboardCollapsed, 'sidebar-panel--animating': isAnimating }, style: 'min-width: 320px; max-width: 460px;' } }"
+      >
+        <aside class="dashboard-sidebar">
+          <button
+            class="sidebar-toggle"
+            :aria-label="dashboardCollapsed ? 'Expand Dashboard' : 'Collapse Dashboard'"
+            @click="toggleDashboardSidebar"
+          >
+            <i :class="dashboardCollapsed ? 'pi pi-angle-right' : 'pi pi-angle-left'" />
+          </button>
+          <div v-if="dashboardCollapsed" class="sidebar-dots">
+            <span class="dot dot--unassessed" title="Unassessed" />
+            <span class="dot dot--assessed" title="Assessed" />
+            <span class="dot dot--submitted" title="Submitted" />
+            <span class="dot dot--accepted" title="Accepted" />
+            <span class="dot dot--rejected" title="Rejected" />
+          </div>
+          <div v-show="!dashboardCollapsed" class="sidebar-content">
+            <MetaCollectionMetrics
+              :selected-collection-ids="selectedCollectionIds"
+              vertical
+            />
+            <div class="sidebar-export">
+              <MetaExportMetrics :selected-collection-ids="selectedCollectionIds" />
+            </div>
+          </div>
+        </aside>
+      </SplitterPanel>
+
+      <!-- Right Panel: Tabs + Content -->
+      <SplitterPanel :size="82">
+        <div class="right-panel">
+          <Tabs v-model:value="activeTab" :pt="viewTabsPt">
+            <TabList :pt="viewTabListPt">
+              <Tab value="collections" :pt="viewTabPt">
+                Collections
+              </Tab>
+              <Tab value="stigs" :pt="viewTabPt">
+                STIGs
+              </Tab>
+            </TabList>
+
+            <TabPanels :pt="tabPanelsPt">
+              <TabPanel value="collections" :pt="tabPanelPt">
+                <MetaCollectionsTab :selected-collection-ids="selectedCollectionIds" />
+              </TabPanel>
+              <TabPanel value="stigs" :pt="tabPanelPt">
+                <MetaStigsTab :selected-collection-ids="selectedCollectionIds" />
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
+        </div>
+      </SplitterPanel>
+    </Splitter>
+  </div>
+</template>
+
+<style scoped>
+.meta-collection-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+:deep(.sidebar-panel--animating) {
+  transition: flex-basis 0.3s ease, width 0.3s ease, min-width 0.3s ease, max-width 0.3s ease !important;
+}
+
+:deep(.sidebar-panel--collapsed) {
+  flex: none !important;
+  flex-basis: 3.25rem !important;
+  width: 3.25rem !important;
+  min-width: 3.25rem !important;
+  max-width: 3.25rem !important;
+  overflow: hidden;
+}
+
+/* Dashboard Sidebar */
+.dashboard-sidebar {
+  height: 100%;
+  background-color: var(--color-background-dark);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: var(--panel-header-height);
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--color-border-default);
+  border-radius: 0;
+  color: var(--color-text-dim);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.sidebar-toggle:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-button-hover-bg);
+}
+
+.sidebar-icons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem 0;
+}
+
+.dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot--unassessed { background-color: hsl(220, 18%, 42%); }
+.dot--assessed { background-color: hsl(204, 91%, 45%); }
+.dot--submitted { background-color: hsl(195, 80%, 52%); }
+.dot--accepted { background-color: hsl(210, 75%, 62%); }
+.dot--rejected { background-color: hsl(232, 58%, 52%); }
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.sidebar-export {
+  padding: 0 12px 12px;
+}
+
+/* Right Panel */
+.right-panel {
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+</style>

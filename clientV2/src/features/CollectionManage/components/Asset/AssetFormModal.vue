@@ -1,0 +1,644 @@
+<script setup>
+import Button from 'primevue/button'
+import Checkbox from 'primevue/checkbox'
+import Dialog from 'primevue/dialog'
+import InputText from 'primevue/inputtext'
+import { computed, toRef } from 'vue'
+
+import shieldIcon from '../../../../assets/shield-green-check.svg'
+
+import LabelChip from '../../../../components/common/Label.vue'
+import MetadataEditor from '../../../../components/common/MetadataEditor.vue'
+import CommonPickList from '../../../../components/common/PickList.vue'
+
+import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
+import { frameDialogPt, primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
+import { pickListVirtualScrollerOptions } from '../../../../shared/lib/pickListPt.js'
+import { useAssetForm } from '../../composables/useAssetForm.js'
+
+const props = defineProps({
+  visible: { type: Boolean, required: true },
+  collectionId: { type: String, required: true },
+  assetId: { type: String, default: null },
+})
+
+const emit = defineEmits(['update:visible', 'asset-created', 'asset-changed'])
+
+const VIRTUAL_SCROLLER_OPTIONS = pickListVirtualScrollerOptions()
+
+const localVisible = computed({
+  get: () => props.visible,
+  set: val => emit('update:visible', val),
+})
+
+const { triggerError } = useGlobalError()
+
+const {
+  isEditMode,
+  isLoading,
+  isSubmitting,
+  canSave,
+  loadError,
+  nameError,
+  form,
+  metadataRows,
+  assignedStigs,
+  pickListValue,
+  collectionLabels,
+  labels,
+  save: saveAsset,
+} = useAssetForm({
+  collectionId: toRef(props, 'collectionId'),
+  assetId: toRef(props, 'assetId'),
+  visible: toRef(props, 'visible'),
+})
+
+// NOTE: i think this is an anti pattern seems sloppy.
+const {
+  labelFilter,
+  filteredLabels,
+  allFilteredSelected,
+  isLabelSelected,
+  toggleLabel,
+  toggleAllFiltered,
+} = labels
+
+function close() {
+  emit('update:visible', false)
+}
+
+async function save() {
+  let row
+  try {
+    row = await saveAsset()
+  }
+  catch (err) {
+    close()
+    triggerError(err)
+    return
+  }
+  if (row) {
+    emit(isEditMode.value ? 'asset-changed' : 'asset-created', row)
+    close()
+  }
+}
+
+// ── Passthrough objects ───────────────────────────────────────────────────────
+
+const inputTextPt = {
+  root: { style: 'background: var(--color-background-light); color: var(--color-text-primary); border-color: var(--color-border-default); font-size: var(--text-md); padding: 0.6rem 0.8rem;' },
+}
+
+const checkboxPt = {
+  box: ({ context }) => ({
+    style: `background-color: transparent; border-color: var(--color-border-hover); ${context.checked ? 'background-color: var(--color-primary-highlight); border-color: var(--color-primary-highlight);' : ''}`,
+  }),
+}
+</script>
+
+<template>
+  <Dialog
+    v-model:visible="localVisible"
+    modal
+    :draggable="false"
+    :style="{ width: 'min(950px, 96vw)', height: '90vh' }"
+    :pt="frameDialogPt"
+  >
+    <template #header>
+      <div class="modal-header">
+        <div class="modal-header-icon">
+          <i class="pi pi-server" />
+        </div>
+        <div class="modal-header-text">
+          <div class="modal-header-title">
+            {{ isEditMode ? 'Edit Asset' : 'Create new Asset' }}
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <!-- Loading -->
+    <div v-if="isLoading" class="loading-state">
+      <i class="pi pi-spin pi-spinner" style="font-size: var(--text-display); color: var(--color-text-dim)" />
+    </div>
+
+    <div v-else-if="loadError && isEditMode" class="load-error">
+      <i class="pi pi-exclamation-triangle" />
+      <span>Could not load this asset, so it can't be changed. Cancel and try again.</span>
+    </div>
+
+    <div v-else class="form-body">
+      <div v-if="loadError" class="load-error">
+        <i class="pi pi-exclamation-triangle" />
+        <span>Could not load Labels and STIGs. You can still create the Asset and assign them later.</span>
+      </div>
+
+      <!-- ── Asset details ────────────────────────────────────────────────────── -->
+      <div class="form-section">
+        <!-- Name + description -->
+        <div class="row row--name">
+          <div class="labeled-field field--grow">
+            <label class="flabel" for="am-name">Name <span class="req-star">*</span></label>
+            <InputText
+              id="am-name"
+              v-model="form.name"
+              :invalid="!!nameError"
+              :pt="inputTextPt"
+              style="width: 100%"
+            />
+          </div>
+          <div class="labeled-field field--grow">
+            <label class="flabel" for="am-description">Description</label>
+            <InputText
+              id="am-description"
+              v-model="form.description"
+              placeholder="Enter description"
+              maxlength="255"
+              :pt="inputTextPt"
+              style="width: 100%"
+            />
+          </div>
+        </div>
+        <div v-if="nameError" class="name-error">
+          {{ nameError }}
+        </div>
+
+        <!-- FQDN / IP / MAC + noncomputing -->
+        <div class="row row--3col">
+          <div class="labeled-field">
+            <span class="flabel">FQDN</span>
+            <InputText v-model="form.fqdn" placeholder="Enter FQDN" :pt="inputTextPt" class="fi" />
+          </div>
+          <div class="labeled-field">
+            <span class="flabel">IP address</span>
+            <InputText v-model="form.ip" placeholder="Enter IP address" :pt="inputTextPt" class="fi" />
+          </div>
+          <div class="labeled-field">
+            <span class="flabel">MAC address</span>
+            <InputText v-model="form.mac" placeholder="Enter MAC address" :pt="inputTextPt" class="fi" />
+          </div>
+          <label class="noncomputing-label">
+            <Checkbox v-model="form.noncomputing" :binary="true" :pt="checkboxPt" />
+            <span>Non-computing</span>
+          </label>
+        </div>
+
+        <!-- Labels + Metadata side by side -->
+        <div class="row--labels-meta">
+          <!-- Labels -->
+          <div class="labeled-field">
+            <div class="field-header-row">
+              <span class="flabel">Labels</span>
+              <span class="field-hint">{{ form.labelIds.length }} of {{ collectionLabels.length }} selected</span>
+            </div>
+
+            <div class="label-picker">
+              <div class="label-picker-toolbar">
+                <span class="label-search">
+                  <i class="pi pi-search" />
+                  <input
+                    v-model="labelFilter"
+                    type="text"
+                    placeholder="Filter labels..."
+                    class="label-search-input"
+                  >
+                  <button v-if="labelFilter" class="label-search-clear" @click="labelFilter = ''">&#xd7;</button>
+                </span>
+                <label class="label-selectall">
+                  <Checkbox
+                    :model-value="allFilteredSelected"
+                    :binary="true"
+                    @update:model-value="toggleAllFiltered"
+                  />
+                  <span>Select all</span>
+                </label>
+              </div>
+
+              <div class="label-list">
+                <div
+                  v-for="label in filteredLabels"
+                  :key="label.labelId"
+                  class="label-row"
+                  :class="{ 'label-row--selected': isLabelSelected(label.labelId) }"
+                  @click="toggleLabel(label.labelId)"
+                >
+                  <Checkbox
+                    :model-value="isLabelSelected(label.labelId)"
+                    :binary="true"
+                    :pt="checkboxPt"
+                    @click.stop
+                    @update:model-value="toggleLabel(label.labelId)"
+                  />
+                  <LabelChip :value="label.name" :color="label.color" />
+                </div>
+                <div v-if="labelFilter && filteredLabels.length === 0" class="label-empty">
+                  No labels match "{{ labelFilter }}"
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Metadata -->
+          <MetadataEditor v-model="metadataRows" />
+        </div>
+      </div>
+
+      <!-- ── STIG Assignments ─────────────────────────────────────────────────── -->
+      <div class="stig-section">
+        <div class="stig-section-header">
+          <span class="stig-section-title">STIG Assignments</span>
+          <span class="field-hint">{{ assignedStigs.length }} assigned</span>
+        </div>
+        <CommonPickList
+          v-model="pickListValue"
+          data-key="benchmarkId"
+          :show-source-filter="true"
+          :show-target-filter="true"
+          filter-by="benchmarkId"
+          source-filter-placeholder="Search STIGs..."
+          target-filter-placeholder="Search assigned..."
+          :virtual-scroller-options="VIRTUAL_SCROLLER_OPTIONS"
+        >
+          <template #sourceheader>
+            Available
+          </template>
+          <template #targetheader>
+            Assigned
+          </template>
+          <template #item="{ item }">
+            <div class="stig-item-row" :title="item.benchmarkId">
+              <img :src="shieldIcon" class="stig-item-icon" alt="">
+              <span class="stig-item-label">{{ item.benchmarkId }}</span>
+            </div>
+          </template>
+        </CommonPickList>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <template #footer>
+      <div class="modal-footer">
+        <Button label="Cancel" :pt="secondaryBtnPt" @click="close" />
+        <Button
+          :label="isEditMode ? 'Save asset' : 'Create asset'"
+          :pt="primaryBtnPt"
+          :loading="isSubmitting"
+          :disabled="!canSave"
+          @click="save"
+        />
+      </div>
+    </template>
+  </Dialog>
+</template>
+
+<style scoped>
+.load-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem;
+  padding: 0.6rem 1rem;
+  color: var(--color-text-dim);
+  border: 1px dashed var(--color-border-default);
+  border-radius: 6px;
+}
+
+/* ── Modal header ──────────────────────────────────────────────────────────── */
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 1rem 0.75rem;
+}
+
+.modal-header-icon {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-action-blue-dark) 20%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-action-blue-dark) 40%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--color-action-blue-dark);
+  font-size: var(--text-lg);
+}
+
+.modal-header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.modal-header-title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-text-bright);
+  line-height: 1.3;
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+.form-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 2rem 2rem;
+  border-bottom: 1px solid var(--color-border-default);
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.row {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.row--name {
+  align-items: flex-end;
+}
+
+.row--3col {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr) auto;
+  gap: 0.75rem;
+  align-items: end;
+}
+
+/* Labels and Metadata side by side. Each column is a 2-row subgrid (header,
+   box) sharing the parent's row tracks, so the Metadata header's Add button
+   sets one header height for both columns and the two boxes start level. */
+.row--labels-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto minmax(0, 1fr);
+  column-gap: 1.25rem;
+  row-gap: 0.35rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.row--labels-meta > .labeled-field,
+.row--labels-meta > :deep(.metadata-editor) {
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-row: span 2;
+}
+
+.field--grow {
+  flex: 1;
+}
+
+.noncomputing-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  font-size: var(--text-md);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  flex-shrink: 0;
+  padding-bottom: 0.45rem;
+  user-select: none;
+}
+
+.req-star {
+  color: var(--color-action-red);
+  font-size: var(--text-md);
+}
+
+.name-error {
+  font-size: var(--text-md);
+  color: var(--color-text-error);
+  margin-top: -0.5rem;
+}
+
+.labeled-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-height: 0;
+}
+
+.field-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flabel {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.field-hint {
+  font-size: var(--text-md);
+  color: var(--color-text-dim);
+  opacity: 0.85;
+}
+
+.fi {
+  width: 100%;
+  font-size: var(--text-md);
+}
+
+/* Labels */
+.label-picker {
+  border: 1px solid var(--color-border-default);
+  border-radius: 4px;
+  background: var(--color-background-light);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.label-picker-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+.label-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  gap: 0.4rem;
+}
+
+.label-search .pi-search {
+  font-size: var(--icon-xs);
+  color: var(--color-text-dim);
+  flex-shrink: 0;
+}
+
+.label-search-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--color-text-primary);
+  font-size: var(--text-md);
+  padding: 0.15rem 0;
+}
+
+.label-search-input::placeholder {
+  color: var(--color-text-dim);
+  opacity: 0.7;
+}
+
+.label-search-clear {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-dim);
+  font-size: var(--text-md);
+  line-height: 1;
+  padding: 0 0.2rem;
+  flex-shrink: 0;
+}
+
+.label-search-clear:hover {
+  color: var(--color-text-primary);
+}
+
+.label-selectall {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: var(--text-md);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.label-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.label-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: 3px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.12s;
+}
+
+.label-row:hover {
+  background: var(--color-background-dark);
+}
+
+.label-row--selected {
+  background: color-mix(in srgb, var(--color-action-blue-dark) 14%, transparent);
+}
+
+.label-row--selected:hover {
+  background: color-mix(in srgb, var(--color-action-blue-dark) 22%, transparent);
+}
+
+.label-empty {
+  padding: 0.6rem 0.5rem;
+  font-size: var(--text-md);
+  color: var(--color-text-dim);
+  text-align: center;
+}
+
+/* ── STIG section ──────────────────────────────────────────────────────────── */
+
+.stig-section {
+  flex: 0 0 45%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
+}
+
+.stig-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.stig-section-title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* ── STIG picklist items ───────────────────────────────────────────────────── */
+
+.stig-item-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.stig-item-icon {
+  width: 1.35rem;
+  height: 1.35rem;
+  flex-shrink: 0;
+  display: block;
+}
+
+.stig-item-label {
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* ── Footer ────────────────────────────────────────────────────────────────── */
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  padding: 0.75rem 1.25rem;
+}
+</style>

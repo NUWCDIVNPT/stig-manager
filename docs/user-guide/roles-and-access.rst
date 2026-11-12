@@ -32,7 +32,7 @@ Roles
 
 There are four Roles available in STIG Manager, defined below. The Roles differ based on:
 
-    - **Collection Management Capabilities:** Actions the user can perform on the Collection itself.
+    - **Collection Management Capabilities:** Actions the User can perform on the Collection itself.
     - **Default Access:** The base level of access allowed to Reviews. This access can be further refined by an ACL.
 
 Each Role is also given a **Priority**, to handle scenarios where a User is a member of multiple Groups having Grants with different Roles.
@@ -49,11 +49,11 @@ The following Collection Roles are available:
       - Default Access
       - Priority
     * - Owner
-      - Add/Remove/Modify Assets, STIG assignments, Labels, and Grants. Can delete the Collection. Can "Accept" and "Reject" reviews from evaluators.
+      - Add/Remove/Modify Assets, STIG assignments, Labels, and Grants. Can delete the Collection. Can "Accept" and "Reject" Reviews from evaluators.
       - Read/Write access to Reviews for all Assets/STIGs
       - 4
     * - Manage
-      - Add/Remove/Modify Assets, STIG assignments, Labels, and Grants with the exception of "Owner" grants. Optionally can "Accept" and "Reject" reviews from evaluators.
+      - Add/Remove/Modify Assets, STIG assignments, Labels, and Grants with the exception of "Owner" Grants. Optionally can "Accept" and "Reject" Reviews from evaluators.
       - Read/Write access to Reviews for all Assets/STIGs
       - 3
     * - Full
@@ -88,7 +88,7 @@ When a User interacts with a Collection, STIG Manager selects the User's Effecti
 Access Control List (ACL)
 --------------------------------------------------------
 
-A Grant's ACL includes one or more Access Rules, which allow fine-grained management of which Reviews users can view and modify in a Collection. They are particularly important for users with the Restricted role, as these users have no default access.
+A Grant's ACL includes one or more Access Rules, which allow fine-grained management of which Reviews Users can view and modify in a Collection. They are particularly important for Users with the Restricted Role, as these Users have no default access.
 
 .. note::
   For Grants having the Owner, Manage or Full Role, an ACL is optional and used only to disallow Write Access to Resources. By default, these Roles have Read/Write access to all Reviews in the Collection.
@@ -108,7 +108,7 @@ A **Resource** is defined from the following elements:
 
 The **Access** level is set as one of three values:
 
-  - **Read**: Can view reviews, but cannot create or modify them
+  - **Read**: Can view Reviews, but cannot create or modify them
   - **Read/Write**: Can view, create and modify reviews
   - **None**: No access (available only in ACLs for the Restricted role)
 
@@ -117,7 +117,7 @@ The **Access** level is set as one of three values:
   The order of Rules in an ACL is not significant.
 
 
-Rules can be defined for individual Assets, STIGs, or Labels, or can be combined to create complex access rules. For example, a user could be allowed Read access to the "Database" label, and Read/Write access to the "PostgreSQL_9-x_STIG" STIG. This will have the effect of letting the user **view** reviews for all STIGs assigned to Assets tagged with the "Database" label, but also **create and modify** reviews for the PostgreSQL STIG on those Assets.
+Rules can be defined for individual Assets, STIGs, or Labels, or can be combined to create complex access rules. For example, a User could be allowed Read access to the "Database" Label, and Read/Write access to the "PostgreSQL_9-x_STIG" STIG. This will have the effect of letting the User **view** Reviews for all STIGs assigned to Assets tagged with the "Database" Label, but also **create and modify** Reviews for the PostgreSQL STIG on those Assets.
 
 
 .. _EffectiveACL:
@@ -172,16 +172,16 @@ For example, Asset-123 has the label "Current Priorities" and is assigned the Wi
 
 In this case, since Asset-123 has Label "Current Priorities" and is also assigned Windows_10_STIG, both rules could apply since they have the same specificity. However, Read access is more restrictive so STIG Manager would allow only Read access to the Windows_10_STIG on Asset-123. 
 
-To display the Effective ACL for a User, navigate to the Users tab in the Manage Collection interface. Hover over the row for a User and click the target icon to open the display.
+To display the Effective ACL for a User, navigate to the Users section of the Users & Grants page in the Collection Management workspace. Click the target icon at the end of the User's row to open the display.
 
 Examples of ACL Management
 --------------------------------------------------------
 
 All examples below apply to Grants to both Users or User Groups. 
-These actions can be performed by a Collection Owner or Manager in the Manage Collection interface.
-To edit the ACL for a Grant, click the "Edit ACL" button displayed when hovering over the Grant.
+These actions can be performed by a Collection Owner or Manager on the Users & Grants page of the Collection Management workspace.
+To edit the ACL for a Grant, click the "target" (Edit ACL) icon on the Grant's row.
 
-.. thumbnail:: /assets/images/collection-manage-grants-w-edit-acl-highlighted-trimmed.png
+.. thumbnail:: /assets/images/new/collection-manage-grants-edit-acl.png
       :width: 25% 
       :show_caption: True
       :title: Click the Edit ACL button to manage the ACL for a Grant.
@@ -193,19 +193,19 @@ To edit the ACL for a Grant, click the "Edit ACL" button displayed when hovering
   
 **Allow a User to change Reviews for all Assets and STIGs in a Collection, except for those with the "For Reference" label**
   - Grant the User a Full, Manage, or Owner Role
-  - Click the "Edit ACL" button displayed when hovering over the Grant.
-  - Select "For Reference" from the "Labels" node of the Collection Resources tree, and "Add -> with Read Only" access. Save.
+  - Click the "target" (Edit ACL) icon on the Grant's row.
+  - Choose the "Label" scope under "Add a Resource Rule", select the "For Reference" Label, and click "Add -> with Read Only access". Save.
   - By default, these roles have Read/Write access to all Assets and STIGs in the Collection. Adding this rule restricts access to Assets with the "For Reference" label to "Read Only".
 
 
 **Make the entire Collection Read-only for a specific User or Group**
   - Grant the User any Role
-  - Click the "Edit ACL" button displayed when hovering over the Grant.
-  - Select the "Collection" node in the Collection Resources Tree.
+  - Click the "target" (Edit ACL) icon on the Grant's row.
+  - Choose the "Whole Collection" scope under "Add a Resource Rule".
   - Click the "Add" button and select "with Read Only access." Save.
   
 
-.. thumbnail:: /assets/images/collection-manage-acl-popup-collection-selected.png
+.. thumbnail:: /assets/images/new/collection-manage-acl-popup-collection-selected.png
       :width: 25% 
       :show_caption: True
       :title: Select the Collection, and "Add with Read Only access."

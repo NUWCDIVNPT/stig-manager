@@ -1,0 +1,200 @@
+import { computed, reactive, ref, unref, watch } from 'vue'
+import { fetchCollectionAssetSummary, fetchCollectionLabels } from '../../../shared/api/collectionsApi.js'
+import { fetchStigs } from '../../../shared/api/stigsApi.js'
+import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { createAsset, fetchAssetWithStigs, replaceAsset } from '../api/assetManageApi.js'
+import { useLabelSelection } from './useLabelSelection.js'
+
+/**
+ * State + actions for the asset create/edit form. The host component owns
+ * dialog visibility and PrimeVue passthrough objects; everything else lives
+ * here. Label multi-select is delegated to useLabelSelection (returned as
+ * `labels`); STIG assignment is exposed via `pickListValue`.
+ *
+ * save() returns the freshly-fetched summary row on success, `null` on a name
+ * conflict (caller stays open and shows nameError), and throws on any other
+ * error (caller should close and forward to triggerError).
+ */
+export function useAssetForm({ collectionId, assetId, visible } = {}) {
+  const isEditMode = computed(() => !!unref(assetId))
+  const isSubmitting = ref(false)
+  const nameError = ref(null)
+
+  const form = reactive({
+    name: '',
+    description: '',
+    noncomputing: false,
+    fqdn: '',
+    ip: '',
+    mac: '',
+    labelIds: [],
+  })
+
+  const metadataRows = ref([])
+  const allStigs = ref([])
+  const availableStigs = ref([])
+  const assignedStigs = ref([])
+  const collectionLabels = ref([])
+
+  const isValid = computed(() => form.name.trim().length > 0)
+
+  const pickListValue = computed({
+    get: () => [availableStigs.value, assignedStigs.value],
+    set: ([avail, assigned]) => {
+      availableStigs.value = avail
+      assignedStigs.value = assigned
+    },
+  })
+
+  // Label multi-select operates on form.labelIds as its source of truth.
+  const labels = useLabelSelection(collectionLabels, computed({
+    get: () => form.labelIds,
+    set: (v) => { form.labelIds = v },
+  }))
+
+  let loadGeneration = 0
+
+  const { isLoading, error: loadError, execute: loadFormData } = useAsyncState(
+    async () => {
+      // The fetches outlive a reopen, and these writes are side effects the
+      // generation guard in useAsyncState can't discard.
+      const generation = ++loadGeneration
+      const requestedId = unref(assetId)
+      const isStale = () => generation !== loadGeneration
+
+      const [labelList, stigs] = await Promise.all([
+        fetchCollectionLabels(unref(collectionId)),
+        fetchStigs(),
+      ])
+      if (isStale()) {
+        return
+      }
+      collectionLabels.value = labelList ?? []
+      allStigs.value = stigs ?? []
+
+      if (requestedId) {
+        const asset = await fetchAssetWithStigs(requestedId)
+        if (isStale()) {
+          return
+        }
+        form.name = asset.name ?? ''
+        form.description = asset.description ?? ''
+        form.noncomputing = asset.noncomputing ?? false
+        form.fqdn = asset.fqdn ?? ''
+        form.ip = asset.ip ?? ''
+        form.mac = asset.mac ?? ''
+        form.labelIds = (asset.labels ?? []).map(l => l.labelId)
+        metadataRows.value = Object.entries(asset.metadata ?? {}).map(([key, value]) => ({ key, value }))
+        const assignedIds = new Set((asset.stigs ?? []).map(s => s.benchmarkId))
+        assignedStigs.value = allStigs.value.filter(s => assignedIds.has(s.benchmarkId))
+        availableStigs.value = allStigs.value.filter(s => !assignedIds.has(s.benchmarkId))
+      }
+      else {
+        availableStigs.value = [...allStigs.value]
+      }
+    },
+    // The host shows loadError inline.
+    { immediate: false, onError: null },
+  )
+
+  // Save replaces the whole asset, so an edit form that never loaded must not
+  // save. A new asset has nothing to replace, so it can still be created
+  // without the label and STIG lists.
+  const canSave = computed(() =>
+    isValid.value && !isLoading.value && !(isEditMode.value && loadError.value),
+  )
+
+  async function initialize() {
+    nameError.value = null
+    form.name = ''
+    form.description = ''
+    form.noncomputing = false
+    form.fqdn = ''
+    form.ip = ''
+    form.mac = ''
+    form.labelIds = []
+    labels.labelFilter.value = ''
+    metadataRows.value = []
+    availableStigs.value = []
+    assignedStigs.value = []
+    await loadFormData()
+  }
+
+  if (visible) {
+    watch(() => unref(visible), (open) => {
+      if (open) {
+        initialize()
+      }
+    })
+  }
+
+  function buildPayload() {
+    const labelNames = form.labelIds.map(id => labels.getLabelById(id)?.name).filter(Boolean)
+    const metadata = Object.fromEntries(
+      metadataRows.value.filter(r => r.key.trim()).map(r => [r.key.trim(), r.value]),
+    )
+    return {
+      name: form.name.trim(),
+      description: form.description || null,
+      noncomputing: form.noncomputing,
+      fqdn: form.fqdn || null,
+      ip: form.ip || null,
+      mac: form.mac || null,
+      collectionId: unref(collectionId),
+      metadata,
+      stigs: assignedStigs.value.map(s => s.benchmarkId),
+      labelNames,
+    }
+  }
+
+  async function save() {
+    if (!isValid.value) {
+      return null
+    }
+    nameError.value = null
+    isSubmitting.value = true
+    try {
+      const payload = buildPayload()
+      const result = isEditMode.value
+        ? await replaceAsset(unref(assetId), payload)
+        : await createAsset(payload)
+
+      const metrics = await fetchCollectionAssetSummary(unref(collectionId), { assetId: result.assetId })
+      return { ...(metrics?.[0] ?? {}), collection: result.collection }
+    }
+    catch (err) {
+      const isDuplicateName = err?.status === 409
+        || (err?.status === 422 && err?.body?.detail?.some(d => d.failure === 'name exists'))
+
+      if (isDuplicateName) {
+        nameError.value = 'An asset with this name already exists in this collection.'
+        return null
+      }
+      throw err
+    }
+    finally {
+      isSubmitting.value = false
+    }
+  }
+
+  return {
+    isEditMode,
+    isLoading,
+    isSubmitting,
+    isValid,
+    canSave,
+    loadError,
+    nameError,
+
+    form,
+    metadataRows,
+    assignedStigs,
+    pickListValue,
+    collectionLabels,
+    labels,
+
+    initialize,
+    buildPayload,
+    save,
+  }
+}

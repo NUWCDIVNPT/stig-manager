@@ -1,0 +1,132 @@
+<script setup>
+import Column from 'primevue/column'
+import DataTable from 'primevue/datatable'
+import { computed, ref } from 'vue'
+import CatBadge from '../../../components/common/CatBadge.vue'
+import HighlightText from '../../../components/common/HighlightText.vue'
+import StatusFooter from '../../../components/common/StatusFooter.vue'
+import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
+import { severityMap } from '../../../shared/lib/checklistUtils.js'
+import { paneColumnPt, paneTablePt } from '../tablePt.js'
+
+const props = defineProps({
+  rules: {
+    type: Array,
+    default: () => [],
+  },
+  selectedRuleId: {
+    type: String,
+    default: null,
+  },
+  // CSV export basename; the parent passes the benchmarkId (legacy convention).
+  exportFilename: {
+    type: String,
+    default: 'Rules',
+  },
+  // Unfiltered count and search state from RulePane, for the footer and highlighting
+  totalCount: {
+    type: Number,
+    default: null,
+  },
+  filtered: {
+    type: Boolean,
+    default: false,
+  },
+  highlightTerm: {
+    type: Function,
+    default: () => '',
+  },
+})
+
+const emit = defineEmits(['select-rule'])
+
+const dataTableRef = ref(null)
+const { itemSize, gridStyle } = useGridDensity('stig-library-rules')
+
+const exportCcis = ({ data }) => (data ?? []).map(c => c.cci).join('\n')
+
+const selectedRow = computed(() =>
+  props.selectedRuleId ? props.rules.find(r => r.ruleId === props.selectedRuleId) ?? null : null,
+)
+
+const dataTablePt = paneTablePt
+
+function onRowClick(event) {
+  emit('select-rule', event.data)
+}
+</script>
+
+<template>
+  <DataTable
+    ref="dataTableRef"
+    :value="rules"
+    :selection="selectedRow"
+    selection-mode="single"
+    data-key="ruleId"
+    :export-filename="exportFilename"
+    scrollable
+    scroll-height="flex"
+    :virtual-scroller-options="{ itemSize, showLoader: true }"
+    striped-rows
+    resizable-columns
+    class="view-rule-table"
+    :style="gridStyle"
+    :pt="dataTablePt"
+    @row-click="onRowClick"
+  >
+    <Column header="CAT" field="severity" :style="{ width: '6.5rem', minWidth: '6.5rem' }" :pt="paneColumnPt.center">
+      <template #body="{ data }">
+        <CatBadge :category="severityMap[data.severity] ?? 3" variant="label" centered />
+      </template>
+    </Column>
+    <Column header="STIG ID" export-header="STIG Id" field="version" sortable :style="{ width: '12rem', minWidth: '10rem' }" :pt="paneColumnPt.left">
+      <template #body="{ data }">
+        <span class="stiglib-cell-text"><HighlightText :text="data.version" :term="highlightTerm('version')" /></span>
+      </template>
+    </Column>
+    <Column header="Group" export-header="Group Id" field="groupId" sortable :style="{ width: '6rem', minWidth: '6rem' }" :pt="paneColumnPt.left">
+      <template #body="{ data }">
+        <span class="stiglib-cell-text"><HighlightText :text="data.groupId" :term="highlightTerm('groupId')" /></span>
+      </template>
+    </Column>
+    <!-- Hidden columns are export-only, for parity with the legacy STIG export -->
+    <Column header="Group Title" field="groupTitle" hidden />
+    <Column header="Rule Id" field="ruleId" sortable :style="{ width: '15rem', minWidth: '14rem' }" :pt="paneColumnPt.left">
+      <template #body="{ data }">
+        <span class="stiglib-cell-text"><HighlightText :text="data.ruleId" :term="highlightTerm('ruleId')" /></span>
+      </template>
+    </Column>
+    <Column header="Rule Title" field="title" sortable :style="{ minWidth: '16rem' }" :pt="paneColumnPt.left">
+      <template #body="{ data }">
+        <span class="stiglib-cell-text stiglib-cell-text--clamped" :title="data.title"><HighlightText :text="data.title" :term="highlightTerm('title')" /></span>
+      </template>
+    </Column>
+    <Column header="Check" field="check.content" hidden />
+    <Column header="Fix" field="fix.text" hidden />
+    <Column header="Discussion" field="detail.vulnDiscussion" hidden />
+    <Column header="CCIs" field="ccis" :export-value="exportCcis" hidden />
+    <template #empty>
+      <div class="stiglib-empty">
+        {{ filtered ? 'No rules match the search.' : 'No rules in this revision.' }}
+      </div>
+    </template>
+    <template #footer>
+      <StatusFooter
+        :total-count="totalCount ?? rules.length"
+        :filtered-count="filtered ? rules.length : null"
+        :dt="dataTableRef"
+        total-label="rules"
+        :show-refresh="false"
+        :show-export="true"
+      />
+    </template>
+  </DataTable>
+</template>
+
+<style scoped>
+.view-rule-table {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+}
+</style>

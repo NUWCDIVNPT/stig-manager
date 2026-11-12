@@ -1,0 +1,262 @@
+import { userEvent } from '@testing-library/user-event'
+import { fireEvent, screen } from '@testing-library/vue'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
+import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
+import { renderWithProviders } from '../../../testUtils/utils.js'
+import AssetChecklistGridHeader from '../components/AssetChecklistGridHeader.vue'
+
+vi.mock('../../../shared/composables/useGridDensity.js', () => ({
+  useGridDensity: vi.fn(),
+}))
+
+vi.mock('primevue/tieredmenu', () => ({
+  default: {
+    name: 'TieredMenu',
+    props: ['model'],
+    setup(props, { expose }) {
+      expose({ toggle: vi.fn() })
+      return {}
+    },
+    template: `
+      <div>
+        <div v-for="group in model" :key="group.label">
+          <button v-for="item in group.items" :key="item.label" :data-icon="item.icon" @click="item.command && item.command()">
+            {{ item.label }}
+          </button>
+        </div>
+      </div>
+    `,
+  },
+}))
+
+describe('checklistGridHeader.vue', () => {
+  let mockDensityState
+
+  beforeEach(() => {
+    mockDensityState = {
+      canIncrease: true,
+      canDecrease: true,
+      increaseRowHeight: vi.fn(),
+      decreaseRowHeight: vi.fn(),
+    }
+    useGridDensity.mockReturnValue(mockDensityState)
+    vi.clearAllMocks()
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  const defaultProps = {
+    searchFilter: '',
+    toggleableColumns: [{ field: 'col1', header: 'Col 1' }],
+    selectedColumns: [{ field: 'col1', header: 'Col 1' }],
+    activePreset: 'groupRule',
+  }
+
+  function createWrapper(props = {}) {
+    return renderWithProviders(AssetChecklistGridHeader, {
+      props: {
+        ...defaultProps,
+        ...props,
+      },
+    })
+  }
+
+  describe('rendering & Titles', () => {
+    it('renders fallback title when revisionInfo display does not exist', () => {
+      createWrapper()
+      const titleElements = screen.getAllByText('Checklist')
+      expect(titleElements[0]).toBeInTheDocument()
+    })
+
+    it('renders revision display when it exists', () => {
+      createWrapper({ revisionInfo: { display: 'V1R2' } })
+      expect(screen.getByText('V1R2')).toBeInTheDocument()
+    })
+
+    it('renders the asset name in the title row', () => {
+      createWrapper({ asset: { name: 'Test Asset', assetId: 'A123' } })
+      expect(screen.getByText('Test Asset')).toBeInTheDocument()
+    })
+
+    it('shows asset properties in the details popover', async () => {
+      createWrapper({
+        asset: {
+          name: 'Test Asset',
+          assetId: 'A123',
+          ip: '10.0.0.1',
+          fqdn: 'host.example.com',
+          mac: 'AB-12-AB-12-AB-12',
+          noncomputing: true,
+          description: 'Lab box',
+        },
+      })
+      expect(screen.queryByText('host.example.com')).not.toBeInTheDocument()
+      await fireEvent.click(screen.getByRole('button', { name: /Test Asset/ }))
+      for (const [label, value] of [['ID', 'A123'], ['IP', '10.0.0.1'], ['FQDN', 'host.example.com'], ['MAC', 'AB-12-AB-12-AB-12'], ['Non-computing', 'Yes'], ['Description', 'Lab box']]) {
+        expect(screen.getByText(label)).toBeInTheDocument()
+        expect(screen.getByText(value)).toBeInTheDocument()
+      }
+    })
+
+    it('leaves metadata out of the details popover', async () => {
+      createWrapper({ asset: { name: 'Test Asset', assetId: 'A123', metadata: { owner: 'ops' } } })
+      await fireEvent.click(screen.getByRole('button', { name: /Test Asset/ }))
+      expect(screen.queryByText('owner')).not.toBeInTheDocument()
+    })
+
+    it('skips empty asset properties in the details popover', async () => {
+      createWrapper({ asset: { name: 'Test Asset', assetId: 'A123', ip: '', fqdn: null, mac: '' } })
+      await fireEvent.click(screen.getByRole('button', { name: /Test Asset/ }))
+      expect(screen.getByText('A123')).toBeInTheDocument()
+      for (const label of ['IP', 'FQDN', 'MAC', 'Non-computing', 'Description']) {
+        expect(screen.queryByText(label)).not.toBeInTheDocument()
+      }
+    })
+
+    it('renders Writable access mode', () => {
+      createWrapper({ accessMode: 'rw' })
+      expect(screen.getByText('Writable')).toBeInTheDocument()
+    })
+
+    it('renders Read only access mode', () => {
+      createWrapper({ accessMode: 'r' })
+      expect(screen.getByText('Read only')).toBeInTheDocument()
+    })
+  })
+
+  describe('search Functionality', () => {
+    it('emits update:searchFilter after the debounce', async () => {
+      const { emitted } = createWrapper()
+      const input = screen.getByPlaceholderText('Search reviews...')
+
+      await fireEvent.update(input, 'test')
+
+      expect(input).toHaveValue('test')
+      expect(emitted()['update:searchFilter']).toBeFalsy()
+
+      vi.advanceTimersByTime(250)
+
+      const emits = emitted()['update:searchFilter']
+      expect(emits[emits.length - 1]).toEqual(['test'])
+    })
+
+    it('shows clear button conditionally and clears input when clicked', async () => {
+      const { emitted } = createWrapper()
+      const input = screen.getByPlaceholderText('Search reviews...')
+
+      expect(screen.queryByLabelText('Clear search')).not.toBeInTheDocument()
+
+      await fireEvent.update(input, 'test')
+      await vi.advanceTimersByTimeAsync(250)
+
+      const clearBtn = screen.getByLabelText('Clear search')
+      expect(clearBtn).toBeInTheDocument()
+
+      await fireEvent.click(clearBtn)
+
+      expect(input).toHaveValue('')
+      expect(screen.queryByLabelText('Clear search')).not.toBeInTheDocument()
+      const emits = emitted()['update:searchFilter']
+      expect(emits[emits.length - 1]).toEqual([''])
+    })
+  })
+
+  describe('checklist Menu (Display presets)', () => {
+    it('emits apply-preset when menu items are clicked', async () => {
+      const { emitted } = createWrapper()
+
+      const menuBtn = screen.getByRole('button', { name: /Checklist/i })
+      await fireEvent.click(menuBtn)
+
+      await fireEvent.click(screen.getByText('Group ID and Group Title'))
+      expect(emitted()['apply-preset'][0]).toEqual(['groupGroup'])
+
+      await fireEvent.click(screen.getByText('Rule ID and Rule Title'))
+      expect(emitted()['apply-preset'][1]).toEqual(['ruleRule'])
+    })
+
+    it('fills the circle only for the active preset', () => {
+      createWrapper({ activePreset: 'ruleRule' })
+      expect(screen.getByText('Rule ID and Rule Title').dataset.icon).toBe('pi pi-circle-fill')
+      expect(screen.getByText('Group ID and Rule Title').dataset.icon).toBe('pi pi-circle')
+    })
+
+    it('fills no circle when the columns match no preset', () => {
+      createWrapper({ activePreset: null })
+      for (const label of ['Group ID and Rule Title', 'Group ID and Group Title', 'Rule ID and Rule Title']) {
+        expect(screen.getByText(label).dataset.icon).toBe('pi pi-circle')
+      }
+    })
+  })
+
+  describe('density Controls', () => {
+    it('calls decreaseRowHeight when decrease button is clicked', async () => {
+      createWrapper()
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+      const decreaseBtn = screen.getByTitle('Decrease row height')
+      await user.click(decreaseBtn)
+      expect(mockDensityState.decreaseRowHeight).toHaveBeenCalledOnce()
+    })
+
+    it('calls increaseRowHeight when increase button is clicked', async () => {
+      createWrapper()
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+      const increaseBtn = screen.getByTitle('Increase row height')
+      await user.click(increaseBtn)
+      expect(mockDensityState.increaseRowHeight).toHaveBeenCalledOnce()
+    })
+
+    it('disables decrease button at the grid minimum', () => {
+      mockDensityState.canDecrease = false
+      useGridDensity.mockReturnValue(mockDensityState)
+      createWrapper()
+      const decreaseBtn = screen.getByTitle('Decrease row height')
+      expect(decreaseBtn).toBeDisabled()
+    })
+
+    it('disables increase button at the maximum', () => {
+      mockDensityState.canIncrease = false
+      useGridDensity.mockReturnValue(mockDensityState)
+      createWrapper()
+      const increaseBtn = screen.getByTitle('Increase row height')
+      expect(increaseBtn).toBeDisabled()
+    })
+  })
+
+  describe('bulk actions', () => {
+    it('shows Submit All when writable and emits bulk-action', async () => {
+      const { emitted } = createWrapper({ accessMode: 'rw', submitCount: 4 })
+      const btn = screen.getByRole('button', { name: /Submit All/i })
+      expect(btn).toBeEnabled()
+      await fireEvent.click(btn)
+      expect(emitted()['bulk-action']).toBeTruthy()
+      expect(emitted()['bulk-action'][0]).toEqual(['submit'])
+    })
+
+    it('disables Submit All when nothing is eligible', () => {
+      createWrapper({ accessMode: 'rw', submitCount: 0 })
+      expect(screen.getByRole('button', { name: /Submit All/i })).toBeDisabled()
+    })
+
+    it('hides bulk buttons when read only', () => {
+      createWrapper({ accessMode: 'r', submitCount: 4, canAccept: true, acceptCount: 2 })
+      expect(screen.queryByRole('button', { name: /Submit All/i })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /Accept All/i })).not.toBeInTheDocument()
+    })
+
+    it('shows Accept All only when canAccept', () => {
+      createWrapper({ accessMode: 'rw', canAccept: false, acceptCount: 2 })
+      expect(screen.queryByRole('button', { name: /Accept All/i })).not.toBeInTheDocument()
+    })
+
+    it('emits accept bulk-action', async () => {
+      const { emitted } = createWrapper({ accessMode: 'rw', canAccept: true, acceptCount: 2 })
+      await fireEvent.click(screen.getByRole('button', { name: /Accept All/i }))
+      expect(emitted()['bulk-action'][0]).toEqual(['accept'])
+    })
+  })
+})

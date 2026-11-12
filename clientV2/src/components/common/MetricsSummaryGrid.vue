@@ -1,0 +1,601 @@
+<script setup>
+import DataTable from 'primevue/datatable'
+import { computed, ref, watch } from 'vue'
+import { useColumnVisibility } from '../../shared/composables/useColumnVisibility.js'
+import { useGridSearch } from '../../shared/composables/useGridSearch.js'
+import { calculateCora } from '../../shared/lib.js'
+import { rowHeightPx } from '../../shared/lib/rowHeights.js'
+import AssetColumn from '../columns/AssetColumn.vue'
+import BenchmarkColumn from '../columns/BenchmarkColumn.vue'
+import CatColumn from '../columns/CatColumn.vue'
+import CollectionColumn from '../columns/CollectionColumn.vue'
+import CoraColumn from '../columns/CoraColumn.vue'
+import CountColumn from '../columns/CountColumn.vue'
+import DurationColumn from '../columns/DurationColumn.vue'
+import LabelsColumn from '../columns/LabelsColumn.vue'
+import PercentageColumn from '../columns/PercentageColumn.vue'
+import RevisionColumn from '../columns/RevisionColumn.vue'
+import TextColumn from '../columns/TextColumn.vue'
+import ColumnToggle from '../common/ColumnToggle.vue'
+import GridFilterButton from '../common/GridFilterButton.vue'
+import GridSearch from '../common/GridSearch.vue'
+import StatusFooter from '../common/StatusFooter.vue'
+
+const props = defineProps({
+  apiMetricsSummary: {
+    type: Array,
+    default: () => [],
+  },
+  isLoading: {
+    type: Boolean,
+    default: false,
+  },
+  // STIG grids: add a Collections count column (multi-collection summaries)
+  collectionCount: {
+    type: Boolean,
+    default: false,
+  },
+  emptyMessage: {
+    type: String,
+    default: 'No data here yet. Try refresh.',
+  },
+  parentAggType: {
+    type: String,
+    default: '',
+  },
+  aggType: {
+    type: String,
+    default: '',
+    validator: value => ['', 'collection', 'asset', 'stig', 'label', 'unagg'].includes(value),
+  },
+  // Header bar text: a title on the left, followed by a mono badge naming
+  // what the rows belong to ("Checklists for <badge>")
+  title: {
+    type: String,
+    default: '',
+  },
+  badge: {
+    type: [String, Number],
+    default: '',
+  },
+  selectable: {
+    type: Boolean,
+    default: false,
+  },
+  dataKey: {
+    type: String,
+    default: null,
+  },
+  // (row) => route location for the row's shield / collection icon link, or null for no link
+  shieldTo: {
+    type: Function,
+    default: null,
+  },
+  collectionIconTo: {
+    type: Function,
+    default: null,
+  },
+  selectedKey: {
+    type: [String, Number],
+    default: null,
+  },
+  // Footer configuration
+  showFooter: {
+    type: Boolean,
+    default: true,
+  },
+})
+
+const emit = defineEmits(['row-select', 'refresh'])
+
+const hasBadge = computed(() => props.badge !== '' && props.badge !== null)
+
+const ROW_HEIGHT = rowHeightPx('dense')
+
+// Column widths in rem, honoured as given by the fixed table layout; spare
+// width is shared out proportionally. A narrow column's floor is its header
+// text plus the sort icon at the md header size, not the digits below it.
+const WIDTH = {
+  name: 14,
+  benchmark: 20,
+  title: 20,
+  labels: 18,
+  label: 12,
+  count: 6,
+  wideCount: 7.5,
+  severity: 8.75,
+  revision: 6.5,
+  checklists: 7,
+  duration: 6.75,
+  bar: 7.5,
+  badge: 5.5,
+  ip: 9,
+  mac: 10,
+}
+
+function cellStyle(widthRem) {
+  return `width: ${widthRem}rem; min-width: ${widthRem}rem;`
+}
+
+const CENTER = 'text-align: center;'
+const LEFT_HEADER = { columnHeaderContent: { style: 'justify-content: flex-start;' } }
+
+const dataTableRef = ref(null)
+const selectedRow = ref(null)
+
+function onRowSelect(event) {
+  emit('row-select', event.data)
+}
+
+const aggregationType = computed(() => {
+  if (props.aggType) {
+    return props.aggType
+  }
+
+  const m = props.apiMetricsSummary
+  if (!Array.isArray(m) || m.length === 0 || !m[0]) {
+    return null
+  }
+  if ('assetId' in m[0] && 'benchmarkId' in m[0]) {
+    return 'unagg'
+  }
+  if ('collectionId' in m[0]) {
+    return 'collection'
+  }
+  if ('assetId' in m[0]) {
+    return 'asset'
+  }
+  if ('labelId' in m[0]) {
+    return 'label'
+  }
+  if ('benchmarkId' in m[0]) {
+    return 'stig'
+  }
+  return null
+})
+
+const columns = computed(() => {
+  // Column groups name the sections of the column toggle. `defaultHidden`
+  // columns are offered there but start off; the plain count, result and
+  // per-severity breakdowns are for users who want the numbers behind the
+  // bars and badges.
+  const AGE = 'Age'
+  const PROGRESS = 'Progress'
+  const COUNTS = 'Counts'
+  const RESULTS = 'Results'
+  const FINDINGS = 'Findings'
+  const SEVERITY = 'By severity'
+  const commonColumns = [
+    { field: 'checks', header: 'Checks', group: COUNTS, component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
+    { field: 'assessedCnt', header: 'Assessed #', group: COUNTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.wideCount), bodyStyle: CENTER },
+    { field: 'notReviewed', header: 'Not Reviewed', group: COUNTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.severity), bodyStyle: CENTER },
+    { field: 'oldest', header: 'Oldest', group: AGE, component: DurationColumn, style: cellStyle(WIDTH.duration), bodyStyle: CENTER },
+    { field: 'newest', header: 'Newest', group: AGE, component: DurationColumn, style: cellStyle(WIDTH.duration), bodyStyle: CENTER },
+    { field: 'updated', header: 'Updated', group: AGE, component: DurationColumn, style: cellStyle(WIDTH.duration), bodyStyle: CENTER },
+    { field: 'assessedPct', header: 'Assessed', group: PROGRESS, component: PercentageColumn, style: cellStyle(WIDTH.bar), pt: LEFT_HEADER },
+    { field: 'submittedPct', header: 'Submitted', group: PROGRESS, component: PercentageColumn, style: cellStyle(WIDTH.bar), pt: LEFT_HEADER },
+    { field: 'acceptedPct', header: 'Accepted', group: PROGRESS, component: PercentageColumn, style: cellStyle(WIDTH.bar), pt: LEFT_HEADER },
+    { field: 'rejectedPct', header: 'Rejected', group: PROGRESS, component: PercentageColumn, style: cellStyle(WIDTH.bar), pt: LEFT_HEADER },
+    { field: 'saved', header: 'Saved', group: COUNTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
+    { field: 'submitted', header: 'Submitted #', group: COUNTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.wideCount), bodyStyle: CENTER },
+    { field: 'accepted', header: 'Accepted #', group: COUNTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.wideCount), bodyStyle: CENTER },
+    { field: 'rejected', header: 'Rejected #', group: COUNTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.wideCount), bodyStyle: CENTER },
+    { field: 'pass', header: 'Pass', group: RESULTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
+    { field: 'fail', header: 'Fail', group: RESULTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
+    { field: 'notapplicable', header: 'N/A', group: RESULTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
+    { field: 'other', header: 'Other', group: RESULTS, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
+    { field: 'cora', header: 'CORA', exportHeader: 'CORA %', group: FINDINGS, component: CoraColumn, style: cellStyle(WIDTH.badge) },
+    { field: 'cat3', header: 'CAT 3', group: FINDINGS, component: CatColumn, category: 3, style: cellStyle(WIDTH.badge) },
+    { field: 'cat2', header: 'CAT 2', group: FINDINGS, component: CatColumn, category: 2, style: cellStyle(WIDTH.badge) },
+    { field: 'cat1', header: 'CAT 1', group: FINDINGS, component: CatColumn, category: 1, style: cellStyle(WIDTH.badge) },
+    { field: 'checksCat3', header: 'CAT 3 Checks', group: SEVERITY, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.severity), bodyStyle: CENTER },
+    { field: 'checksCat2', header: 'CAT 2 Checks', group: SEVERITY, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.severity), bodyStyle: CENTER },
+    { field: 'checksCat1', header: 'CAT 1 Checks', group: SEVERITY, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.severity), bodyStyle: CENTER },
+    { field: 'assessedCat3', header: 'CAT 3 Assessed', group: SEVERITY, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.severity), bodyStyle: CENTER },
+    { field: 'assessedCat2', header: 'CAT 2 Assessed', group: SEVERITY, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.severity), bodyStyle: CENTER },
+    { field: 'assessedCat1', header: 'CAT 1 Assessed', group: SEVERITY, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.severity), bodyStyle: CENTER },
+  ]
+  const benchmarkColumn = { field: 'benchmarkId', header: 'Benchmark', group: 'STIG', component: BenchmarkColumn, locked: true, searchable: true, shieldTo: props.shieldTo, style: cellStyle(WIDTH.benchmark), pt: LEFT_HEADER }
+  const titleColumn = { field: 'title', header: 'Title', group: 'STIG', defaultHidden: true, component: TextColumn, searchable: true, style: cellStyle(WIDTH.title), pt: LEFT_HEADER }
+  const revisionColumn = { field: 'revisionStr', header: 'Revision', group: 'STIG', component: RevisionColumn, searchable: true, style: cellStyle(WIDTH.revision), pt: LEFT_HEADER }
+  const assetColumn = { field: 'assetName', header: 'Asset', group: 'Asset', component: AssetColumn, locked: true, searchable: true, shieldTo: props.shieldTo, style: cellStyle(WIDTH.name), pt: LEFT_HEADER }
+  const stigNames = r => r.stigs
+  const labelsColumn = { field: 'labels', header: 'Labels', group: 'Asset', component: LabelsColumn, searchable: true, filterValues: r => r.labels, multiple: true, style: cellStyle(WIDTH.labels), pt: LEFT_HEADER }
+  switch (aggregationType.value) {
+    case 'collection':
+      return [
+        { field: 'collectionName', header: 'Collection', group: 'Collection', component: CollectionColumn, locked: true, searchable: true, shieldTo: props.shieldTo, collectionIconTo: props.collectionIconTo, style: cellStyle(WIDTH.benchmark), pt: LEFT_HEADER },
+        { field: 'assetCnt', header: 'Assets', group: 'Collection', component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
+        { field: 'stigCnt', header: 'STIGs', group: 'Collection', component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
+        { field: 'checklistCnt', header: 'Checklists', group: 'Collection', component: CountColumn, style: cellStyle(WIDTH.checklists), bodyStyle: CENTER },
+        ...commonColumns,
+      ]
+    case 'asset':
+      return [
+        assetColumn,
+        labelsColumn,
+        { field: 'stigCnt', header: 'STIGs', group: 'Asset', component: CountColumn, tooltipValues: stigNames, searchable: true, filterValues: stigNames, multiple: true, quickSearch: false, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
+        { field: 'fqdn', header: 'FQDN', group: 'Asset', defaultHidden: true, component: TextColumn, searchable: true, style: cellStyle(WIDTH.name), pt: LEFT_HEADER },
+        { field: 'ip', header: 'IP', group: 'Asset', defaultHidden: true, component: TextColumn, searchable: true, style: cellStyle(WIDTH.ip), pt: LEFT_HEADER },
+        { field: 'mac', header: 'MAC', group: 'Asset', defaultHidden: true, component: TextColumn, searchable: true, style: cellStyle(WIDTH.mac), pt: LEFT_HEADER },
+        ...commonColumns,
+      ]
+    case 'stig':
+      return [
+        benchmarkColumn,
+        titleColumn,
+        revisionColumn,
+        { field: 'ruleCount', header: 'Rules', group: 'STIG', defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
+        // Multi-collection (meta) summaries only
+        ...(props.collectionCount ? [{ field: 'collectionCnt', header: 'Collections', group: 'STIG', component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER }] : []),
+        { field: 'assetCnt', header: 'Assets', group: 'STIG', component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
+        ...commonColumns,
+      ]
+    case 'label':
+      return [
+        { field: 'label', header: 'Label', group: 'Label', component: LabelsColumn, locked: true, searchable: true, filterValues: r => r.label, style: cellStyle(WIDTH.label), pt: LEFT_HEADER },
+        { field: 'assetCnt', header: 'Assets', group: 'Label', component: CountColumn, style: cellStyle(WIDTH.count), bodyStyle: CENTER },
+        ...commonColumns,
+      ]
+    case 'unagg':
+      if (props.parentAggType === 'asset') {
+        return [
+          benchmarkColumn,
+          titleColumn,
+          revisionColumn,
+          ...commonColumns,
+        ]
+      }
+      if (props.parentAggType === 'stig') {
+        return [
+          assetColumn,
+          labelsColumn,
+          ...commonColumns,
+        ]
+      }
+      return [
+        assetColumn,
+        benchmarkColumn,
+        labelsColumn,
+        ...commonColumns,
+      ]
+    default:
+      return []
+  }
+})
+
+// Column visibility; overrides persist per column set, so the STIG grid keeps its own choices
+// apart from the checklist grid beneath it, and the same column set on another tab shares them.
+const columnSetKey = computed(() => {
+  if (!aggregationType.value) {
+    return null
+  }
+  const variant = aggregationType.value === 'unagg' && props.parentAggType ? `.${props.parentAggType}` : ''
+  return `metricsGrid.columns.${aggregationType.value}${variant}`
+})
+
+const { toggleableColumns, selectedColumns, visibleColumns, visibleFields } = useColumnVisibility(columns, columnSetKey)
+
+const data = computed(() => {
+  if (!Array.isArray(props.apiMetricsSummary)) {
+    return []
+  }
+  return props.apiMetricsSummary.map((r) => {
+    const m = r.metrics
+    const cora = calculateCora(m)
+    const commonData = {
+      checks: m.assessments,
+      assessed: m.assessed,
+      assessedCnt: m.assessed,
+      notReviewed: m.assessments - m.assessed,
+      oldest: m.minTs,
+      newest: m.maxTs,
+      updated: m.maxTouchTs,
+      assessedPct: m.assessments ? m.assessed / m.assessments * 100 : 0,
+      submittedPct: m.assessments ? ((m.statuses.submitted + m.statuses.accepted + m.statuses.rejected) / m.assessments) * 100 : 0,
+      acceptedPct: m.assessments ? (m.statuses.accepted / m.assessments) * 100 : 0,
+      rejectedPct: m.assessments ? (m.statuses.rejected / m.assessments) * 100 : 0,
+      saved: m.statuses.saved,
+      submitted: m.statuses.submitted,
+      accepted: m.statuses.accepted,
+      rejected: m.statuses.rejected,
+      pass: m.results.pass,
+      fail: m.results.fail,
+      notapplicable: m.results.notapplicable,
+      other: m.results.other,
+      cora: cora.weightedAvg.toFixed(1),
+      coraFull: cora,
+      cat3: m.findings.low,
+      cat2: m.findings.medium,
+      cat1: m.findings.high,
+      checksCat3: m.assessmentsBySeverity.low,
+      checksCat2: m.assessmentsBySeverity.medium,
+      checksCat1: m.assessmentsBySeverity.high,
+      assessedCat3: m.assessedBySeverity.low,
+      assessedCat2: m.assessedBySeverity.medium,
+      assessedCat1: m.assessedBySeverity.high,
+    }
+    switch (aggregationType.value) {
+      case 'collection':
+        return {
+          collectionId: r.collectionId,
+          collectionName: r.name,
+          assetCnt: r.assets,
+          stigCnt: r.stigs,
+          checklistCnt: r.checklists,
+          ...commonData,
+        }
+      case 'asset':
+        return {
+          assetId: r.assetId,
+          assetName: r.name,
+          labels: r.labels,
+          stigs: r.benchmarkIds,
+          stigCnt: Array.isArray(r.benchmarkIds) ? r.benchmarkIds.length : 0,
+          fqdn: r.fqdn,
+          ip: r.ip,
+          mac: r.mac,
+          ...commonData,
+        }
+      case 'stig':
+        return {
+          benchmarkId: r.benchmarkId,
+          // Unique row key where one STIG appears at several revisions (meta-dash)
+          revisionKey: `${r.benchmarkId}-${r.revisionStr}`,
+          title: r.title,
+          revisionStr: r.revisionStr,
+          revisionPinned: r.revisionPinned,
+          collectionCnt: r.collections,
+          assetCnt: r.assets,
+          ruleCount: r.ruleCount,
+          ...commonData,
+        }
+      case 'label':
+        return {
+          labelId: r.labelId,
+          label: [{
+            labelId: r.labelId,
+            name: r.name,
+            color: r.color,
+            description: r.description,
+          }],
+          assetCnt: r.assets,
+          ...commonData,
+        }
+      case 'unagg':
+        return {
+          assetId: r.assetId,
+          assetName: r.name,
+          labels: r.labels,
+          benchmarkId: r.benchmarkId,
+          marking: r.marking,
+          revisionStr: r.revisionStr,
+          revisionPinned: r.revisionPinned,
+          title: r.title,
+          ...commonData,
+        }
+      default:
+        return commonData
+    }
+  })
+})
+
+// Quick search over the visible searchable columns, ANDed with the Filter button's rules
+const {
+  term: searchTerm,
+  filters: gridFilters,
+  filteredRows: filteredData,
+  isFiltered: isSearching,
+  filterColumns,
+  valueOptions,
+  highlightTerm,
+} = useGridSearch(data, () => columns.value.filter(c => c.searchable), { visibleFields })
+
+// CSV export basename per aggregation entity — same names the legacy client used.
+const EXPORT_BASENAME_BY_KEY = {
+  assetId: 'Assets',
+  benchmarkId: 'STIGs',
+  revisionKey: 'STIGs',
+  labelId: 'Labels',
+  collectionId: 'Collections',
+}
+const exportFilename = computed(() => EXPORT_BASENAME_BY_KEY[props.dataKey] ?? 'Metrics')
+
+// Sync selectedRow when selectedKey or data changes (for programmatic selection)
+watch([() => props.selectedKey, data], ([newKey, newData]) => {
+  if (newKey !== null && props.dataKey && newData.length > 0) {
+    const row = newData.find(r => r[props.dataKey] === newKey)
+    selectedRow.value = row || null
+  }
+  else if (newKey === null) {
+    selectedRow.value = null
+  }
+}, { immediate: true })
+</script>
+
+<template>
+  <div class="agg-grid">
+    <div class="agg-grid-header">
+      <div class="agg-grid-header-start">
+        <h3 v-if="title" class="agg-grid-title">
+          {{ title }}
+        </h3>
+        <template v-if="hasBadge">
+          <span v-if="title" class="agg-grid-badge-for">for</span>
+          <span class="agg-grid-badge">{{ badge }}</span>
+        </template>
+      </div>
+      <div class="agg-grid-header-controls">
+        <GridSearch v-model="searchTerm" class="agg-grid-search" label="Search rows" />
+        <GridFilterButton
+          v-model="gridFilters"
+          :columns="filterColumns"
+          :value-options="valueOptions"
+        />
+        <ColumnToggle
+          v-model="selectedColumns"
+          class="agg-grid-column-toggle"
+          :columns="toggleableColumns"
+        />
+      </div>
+    </div>
+    <DataTable
+      ref="dataTableRef"
+      v-model:selection="selectedRow"
+      class="agg-grid-table"
+      :value="filteredData"
+      :data-key="dataKey"
+      :export-filename="exportFilename"
+      :selection-mode="selectable ? 'single' : null"
+      :loading="isLoading"
+      :pt="{
+        emptyMessageCell: { class: 'agg-grid-empty-cell' },
+      }"
+      scrollable
+      scroll-height="flex"
+      resizable-columns
+      column-resize-mode="expand"
+      table-style="table-layout: fixed"
+      sort-field="benchmarkId"
+      :sort-order="1"
+      :virtual-scroller-options="{ itemSize: ROW_HEIGHT, delay: 0 }"
+      :style="{ '--item-size': `${ROW_HEIGHT}px` }"
+      @row-select="onRowSelect"
+    >
+      <template v-for="col in visibleColumns" :key="col.field">
+        <component :is="col.component" v-bind="col" :search-term="highlightTerm(col.field)" sortable />
+      </template>
+      <template #empty>
+        <div class="agg-grid-empty-state">
+          {{ isSearching && data.length > 0 ? 'No rows match the current search and filters.' : emptyMessage }}
+        </div>
+      </template>
+      <template v-if="showFooter" #footer>
+        <StatusFooter
+          :refresh-loading="isLoading"
+          :selected-items="selectedRow"
+          :dt="dataTableRef"
+          :total-count="data.length"
+          :filtered-count="isSearching ? filteredData.length : null"
+          :show-selected="selectable && selectedRow?.length > 0"
+          @refresh="emit('refresh')"
+        />
+      </template>
+    </DataTable>
+  </div>
+</template>
+
+<style scoped>
+.agg-grid {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.agg-grid-header {
+  --checklist-control-height: 1.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  background-color: var(--color-background-light);
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+.agg-grid-header-start {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.agg-grid-title {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--text-md);
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.agg-grid-badge-for {
+  margin-left: -0.25rem;
+  color: var(--color-text-dim);
+  font-size: var(--text-md);
+  flex-shrink: 0;
+}
+
+.agg-grid-search {
+  width: 18rem;
+  min-width: 8rem;
+  flex-shrink: 1;
+}
+
+.agg-grid-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.agg-grid-badge {
+  font-size: var(--text-sm);
+  background-color: var(--color-background-dark);
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
+  color: var(--color-text-dim);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.agg-grid-table {
+  flex: 1;
+  min-height: 0;
+}
+
+:deep(.p-datatable-thead > tr > th),
+:deep(.p-datatable-tbody > tr > td) {
+  height: var(--item-size);
+  padding: 0 0.5rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+:deep(.p-datatable-footer) {
+  padding: 0;
+  border: none;
+}
+
+:deep(.p-datatable-column-header-content) {
+  justify-content: center;
+}
+
+:deep(.p-datatable-thead > tr > th) {
+  border-right: 1px solid var(--color-border-light);
+}
+
+:deep(.p-datatable-thead > tr > th:last-child) {
+  border-right: none;
+}
+
+.agg-grid-empty-state {
+  padding: 0.75rem 0;
+  text-align: center;
+  color: var(--color-text-dim);
+}
+
+:deep(.agg-grid-empty-cell) {
+  border-bottom: none;
+}
+
+:deep(.agg-grid-column-toggle) {
+  min-width: auto;
+}
+</style>

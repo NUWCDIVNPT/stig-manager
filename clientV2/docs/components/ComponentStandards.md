@@ -1,0 +1,98 @@
+# Component Development Standards
+
+We strive for modern, type-safe, and styling-consistent Vue components.
+
+## 1. Syntax: `<script setup>`
+Use the `<script setup>` syntax for concise and performant components.
+
+```vue
+<script setup>
+import { computed, ref } from 'vue'
+
+const props = defineProps({
+  title: String
+})
+</script>
+```
+
+### ❌ What NOT To Do:
+*   **Options API:** Avoid `export default { data() { ... } }` unless strictly necessary for legacy reasons.
+*   **Mixing:** Do not mix `<script setup>` and normal `<script>` blocks unless defining Component entry options (like `name` or `inheritAttrs`).
+
+## 2. Props & Emits
+Always define consistent types for props and explicit names for emits.
+
+```javascript
+const props = defineProps({
+  collectionId: {
+    type: String,
+    required: true
+  },
+  visible: {
+    type: Boolean,
+    default: false
+  }
+})
+
+const emit = defineEmits(['update:visible', 'submit'])
+```
+
+### ❌ What NOT To Do:
+*   **Untyped Props:** `defineProps(['id', 'name'])` is sloppy. Always define the type object.
+*   **Mutating Props:** Never mutate a prop directly. If you need a local mutable version, use `ref` or `computed`.
+    *   *Bad:* `props.visible = false`
+    *   *Good:* `emit('update:visible', false)`
+
+## 3. Styling: PrimeVue Passthrough (PT) & Scoped CSS
+We use PrimeVue `pt` props to style the internals of complex components (like Dialogs, Tables, Panels) to match our dark theme, and standard scoped CSS for layout.
+
+Dialogs take their PT object from `src/shared/lib/dialogPt.js` rather than declaring one per component:
+
+*   `frameDialogPt`: the modal renders its own `#header` slot (icon, title, subtitle); the body clips and manages its own scrolling.
+*   `frameDialogScrollPt`: same frame, but the body scrolls.
+*   `importDialogPt`: the stock PrimeVue title bar with padded header and content.
+
+The same module exports `primaryBtnPt`, `secondaryBtnPt` and `dangerBtnPt` for the footer buttons.
+
+```vue
+<script setup>
+import { frameDialogPt, primaryBtnPt, secondaryBtnPt } from '../../shared/lib/dialogPt.js'
+</script>
+
+<template>
+  <Dialog :pt="frameDialogPt" ... />
+</template>
+```
+
+A component-local PT object is for widgets without a shared one (a Select, an InputText) and for layout the shared object cannot express; a one-off visual tweak belongs in the shared object or nowhere.
+
+Sizes come from the type scale and the rem row-height tokens; see [Typography and Sizing](TypographyAndSizing.md). In short: `font-size: var(--text-md)` (never a literal), `var(--font-mono)` for identifiers and code, `rowHeightPx(kind)` or `useGridDensity(gridKey)` for virtual scroller rows, and rem for column widths.
+
+### ❌ What NOT To Do:
+*   **Deep Selectors:** Prefer the exposed `pt` API for styling PrimeVue internals. Use `:deep()` only for layout rules `pt` cannot reach (e.g. the row-pinning selectors in [Typography and Sizing](TypographyAndSizing.md)); never `::v-deep` or `>>>`.
+*   **Global Styles:** Never write styles without `scoped` in a component file.
+*   **Literal Sizes:** No `font-size: 0.9rem`, no px row heights, no named font stacks. The convention tests reject them.
+*   **Literal Colors:** Every color is a theme token from `style.css` (`var(--color-warning-yellow)`, `var(--color-border-default)`, ...), in scoped CSS, PT objects and `color-mix()` alike. No hex, rgb or named colors, and no fallback value in `var()`: a fallback is a second, unthemed color that hides a missing token instead of failing visibly. If no token fits, add one to `style.css` (with its dark-theme value) rather than writing the color inline.
+
+## 4. Dialogs & v-model
+For modal components, use a computed property with a getter/setter to handle the `v-model` cleanly.
+
+```javascript
+// Inside MyModal.vue
+const props = defineProps({ visible: Boolean })
+const emit = defineEmits(['update:visible'])
+
+const isVisible = computed({
+  get: () => props.visible,
+  set: val => emit('update:visible', val)
+})
+```
+
+```vue
+<template>
+  <Dialog v-model:visible="isVisible" ... />
+</template>
+```
+
+### ❌ What NOT To Do:
+*   **Manual Watchers:** Avoid manually watching the prop to update a local ref, and then watching the local ref to emit the event. The computed pattern is cleaner.

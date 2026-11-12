@@ -1,0 +1,56 @@
+<script setup>
+import { computed } from 'vue'
+
+const props = defineProps({
+  riskRating: {
+    type: String,
+    required: true,
+    validator: value => ['Very High', 'High', 'Moderate', 'Low', 'Very Low'].includes(value),
+  },
+  // percent scale (0-100), as returned by calculateCora
+  weightedAvg: {
+    type: Number,
+    required: true,
+  },
+})
+
+const riskClass = computed(() => {
+  switch (props.riskRating) {
+    case 'Very High': return 'sm-cora-risk-very-high'
+    case 'High': return 'sm-cora-risk-high'
+    case 'Moderate': return 'sm-cora-risk-moderate'
+    case 'Low': return 'sm-cora-risk-low'
+    case 'Very Low': return 'sm-cora-risk-very-low'
+    default: return ''
+  }
+})
+
+const formattedScore = computed(() => props.weightedAvg.toFixed(1))
+</script>
+
+<template>
+  <div
+    class="cora-pct-badge"
+    :class="[riskClass]"
+    :title="riskRating"
+  >
+    {{ formattedScore }}
+  </div>
+</template>
+
+<style scoped>
+.cora-pct-badge {
+  border-radius: 5px;
+  width: fit-content;
+  min-width: 3.2rem;
+  font-size: var(--text-lg);
+  font-weight: 700;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.8rem;
+  white-space: nowrap;
+  padding: 0 0.3rem;
+}
+</style>

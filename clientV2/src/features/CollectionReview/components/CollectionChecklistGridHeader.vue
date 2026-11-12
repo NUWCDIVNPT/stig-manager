@@ -1,0 +1,243 @@
+<script setup>
+import TieredMenu from 'primevue/tieredmenu'
+import { computed, ref } from 'vue'
+import { useRoute } from 'vue-router'
+
+import shieldGreenCheck from '../../../assets/shield-green-check.svg'
+import ColumnToggle from '../../../components/common/ColumnToggle.vue'
+import DensityControls from '../../../components/common/DensityControls.vue'
+import GridFilterButton from '../../../components/common/GridFilterButton.vue'
+import GridSearch from '../../../components/common/GridSearch.vue'
+import PinnedRevisionIcon from '../../../components/common/PinnedRevisionIcon.vue'
+import { getRevisionInfo } from '../../../shared/lib/checklistUtils.js'
+import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
+
+const props = defineProps({
+  toggleableColumns: {
+    type: Array,
+    required: true,
+  },
+  activePreset: {
+    type: String,
+    default: null,
+  },
+  filterColumns: {
+    type: Array,
+    default: () => [],
+  },
+  filterValueOptions: {
+    type: Object,
+    default: () => ({}),
+  },
+  // False while the Asset list is loading, failed or empty
+  canExportArchive: {
+    type: Boolean,
+    default: true,
+  },
+  // The route STIG's revisions, from the page (useStigRevisions), for the revision date in the title
+  stigRevisions: {
+    type: Array,
+    default: () => [],
+  },
+})
+
+const emit = defineEmits(['apply-preset', 'export-archive'])
+
+const searchFilter = defineModel('searchFilter', { type: String, default: '' })
+const selectedColumns = defineModel('selectedColumns', { type: Array, required: true })
+const filters = defineModel('filters', { type: Array, default: () => [] })
+
+const route = useRoute()
+const benchmarkId = computed(() => route.params.benchmarkId)
+const revisionStr = computed(() => route.params.revisionStr)
+
+const revisionInfo = computed(() => getRevisionInfo(revisionStr.value, props.stigRevisions, route.params.collectionId))
+
+const headerTitle = computed(() => {
+  if (benchmarkId.value && revisionInfo.value?.display) {
+    return `${benchmarkId.value} - ${revisionInfo.value.display}`
+  }
+  return benchmarkId.value || 'Collection Checklist'
+})
+
+const checklistMenu = ref()
+const checklistMenuItems = computed(() => [
+  {
+    label: 'Group/Rule Display',
+    icon: 'pi pi-list',
+    items: [
+      {
+        label: 'Group ID and Rule Title',
+        icon: props.activePreset === 'groupRule' ? 'pi pi-circle-fill' : 'pi pi-circle',
+        command: () => emit('apply-preset', 'groupRule'),
+      },
+      {
+        label: 'Group ID and Group Title',
+        icon: props.activePreset === 'groupGroup' ? 'pi pi-circle-fill' : 'pi pi-circle',
+        command: () => emit('apply-preset', 'groupGroup'),
+      },
+      {
+        label: 'Rule ID and Rule Title',
+        icon: props.activePreset === 'ruleRule' ? 'pi pi-circle-fill' : 'pi pi-circle',
+        command: () => emit('apply-preset', 'ruleRule'),
+      },
+    ],
+  },
+  {
+    label: 'Export Result Archive',
+    icon: 'pi pi-download',
+    disabled: !props.canExportArchive,
+    items: [
+      { label: 'CKL (STIG Viewer v2)', icon: 'pi pi-download', tooltip: TOOLTIPS.collectionReview.archiveCkl, command: () => emit('export-archive', { format: 'ckl', mode: 'mono' }) },
+      { label: 'CKLB (STIG Viewer v3)', icon: 'pi pi-download', tooltip: TOOLTIPS.collectionReview.archiveCklb, command: () => emit('export-archive', { format: 'cklb', mode: 'mono' }) },
+      { label: 'XCCDF', icon: 'pi pi-download', tooltip: TOOLTIPS.collectionReview.archiveXccdf, command: () => emit('export-archive', { format: 'xccdf', mode: null }) },
+    ],
+  },
+])
+
+const checklistMenuPT = {
+  root: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 4px; box-shadow: 0 6px 24px rgba(0,0,0,0.6); padding: 0.25rem 0; min-width: 12rem;' },
+  rootList: { style: 'background: transparent; outline: none;' },
+  item: ({ context }) => ({ title: context.item.tooltip, style: 'margin: 0;' }),
+  itemContent: { style: 'color: var(--color-text-primary); border-radius: 0; transition: background-color 0.1s;' },
+  itemIcon: { style: 'color: var(--color-text-dim); font-size: var(--text-md);' },
+  itemLabel: { style: 'font-size: var(--text-md);' },
+  separator: { style: 'border-top: 1px solid var(--color-border-light); margin: 0.25rem 0;' },
+  submenuIcon: { style: 'color: var(--color-text-dim); font-size: var(--icon-xs); margin-left: auto;' },
+}
+
+function toggleChecklistMenu(event) {
+  checklistMenu.value.toggle(event)
+}
+</script>
+
+<template>
+  <div class="checklist-grid__header">
+    <div class="checklist-grid__header-top">
+      <div class="checklist-grid__title-row">
+        <span class="checklist-grid__title">{{ headerTitle }}</span>
+        <PinnedRevisionIcon v-if="revisionInfo?.pinned" />
+      </div>
+    </div>
+
+    <div class="checklist-grid__header-bottom">
+      <TieredMenu ref="checklistMenu" :model="checklistMenuItems" :popup="true" :pt="checklistMenuPT" />
+      <div class="checklist-grid__header-search">
+        <GridSearch v-model="searchFilter" class="checklist-grid__header-search-input" label="Search rules" />
+        <GridFilterButton v-model="filters" :columns="filterColumns" :value-options="filterValueOptions" />
+      </div>
+
+      <div class="checklist-grid__header-controls">
+        <button
+          type="button" class="checklist-grid__menu-btn checklist-grid__menu-btn--checklist"
+          aria-haspopup="true" aria-controls="checklist_menu" @click="toggleChecklistMenu"
+        >
+          <img :src="shieldGreenCheck" alt="" class="checklist-grid__menu-shield">
+          <span>Checklist</span>
+          <i class="pi pi-chevron-down checklist-grid__menu-caret" />
+        </button>
+
+        <ColumnToggle v-model="selectedColumns" :columns="toggleableColumns" />
+
+        <DensityControls grid-key="collection-checklist" />
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.checklist-grid__header {
+  --checklist-header-height: 7.3rem;
+  --checklist-control-height: 2.42rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0.75rem 1rem;
+  background: var(--color-background-dark);
+  border-bottom: 1px solid var(--color-border-default);
+  flex-shrink: 0;
+  gap: 0.85rem;
+  min-height: var(--checklist-header-height);
+}
+
+.checklist-grid__header-top,
+.checklist-grid__header-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 0.75rem;
+}
+
+.checklist-grid__header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.checklist-grid__header-search {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 1 1 24rem;
+  max-width: 48rem;
+  min-width: 0;
+}
+
+.checklist-grid__header-search-input {
+  flex: 1;
+}
+
+.checklist-grid__title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.checklist-grid__menu-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 1.15rem;
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--color-text-bright);
+  flex-shrink: 0;
+  border: 1px solid var(--color-border-default);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--color-background-light) 45%, transparent);
+  height: var(--checklist-control-height);
+}
+
+.checklist-grid__menu-btn:hover {
+  background: color-mix(in srgb, var(--color-background-light) 85%, transparent);
+}
+
+.checklist-grid__menu-btn--checklist {
+  min-width: 9rem;
+}
+
+.checklist-grid__menu-shield {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+.checklist-grid__menu-caret {
+  font-size: var(--icon-xs);
+  margin-left: 0.1rem;
+}
+
+.checklist-grid__title {
+  font-weight: 600;
+  font-size: var(--text-lg);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+</style>

@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>STIG Manager Authenticate</title>
+    <link rel="stylesheet" type="text/css" href="init.css" />
+  </head>
+
+  <body>
+    <div id="loading-mask">
+      <div id="loading">
+        <div id="indicator" class="loading-indicator">
+          <img
+            src="shield-green-check.svg"
+            alt="Green shield with check"
+            width="48px"
+            height="48px"
+            style="position: relative; bottom: -7px; left: 0px"
+          />
+          <div id="loading-text"></div>
+        </div>
+      </div>
+    </div>
+    <script type="module">
+      await new Promise((resolve) => {
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+          resolve()
+        } else {
+          window.addEventListener('DOMContentLoaded', resolve)
+        }
+      })
+      const statusEl = document.getElementById('loading-text')
+      const OW = new SharedWorker(new URL('../js/workers/oidc-worker.js', window.location.href).href, { name: 'stigman-oidc-worker', type: 'module' })
+      OW.port.start()
+      let init
+      try {
+        init = await sendWorkerRequest({ request: 'getStatus' })
+        await run()
+      } catch (error) {
+        appendError(error.message)
+      }
+
+      // Helper functions
+      function sendWorkerRequest(request) {
+        const requestId = crypto.randomUUID()
+        OW.port.postMessage({ ...request, requestId })
+        return new Promise((resolve, reject) => {
+          function handler(event) {
+            if (event.data.requestId === requestId) {
+              OW.port.removeEventListener('message', handler)
+              if (event.data.error) {
+                reject(new Error(event.data.error))
+              } else {
+                resolve(event.data.response)
+              }
+            }
+          }
+          OW.port.addEventListener('message', handler)
+        })
+      }
+
+      async function run() {
+        appendStatus('Processing OIDC redirect...')
+        const url = new URL(window.location.href)
+        const redirectUri = `${url.origin}${url.pathname}`
+        const paramStr = extractParamString(url)
+        if (!paramStr) {
+          appendError('No parameters found in the URL.')
+          return
+        }
+        const response = await handleRedirectAndParameters(redirectUri, paramStr, init.env.clientId)
+        if (response.success) {
+          window.close()
+        } else {
+          appendError('Error exchanging code for token: ' + response.error)
+        }
+
+        function extractParamString(url) {
+          if (url.search) return url.search.substring(1) // Remove the leading '?'
+          return ''
+        }
+      }
+
+      async function handleRedirectAndParameters(redirectUri, paramStr, clientId) {
+        const params = processRedirectParams(paramStr)
+        if (!params.code) {
+          let errorMessage = 'No authorization code provided in the URL parameters.'
+          if (params.error) {
+            errorMessage += ` Error: ${params.error}`
+            if (params.error_description) {
+              errorMessage += ` - ${params.error_description}`
+            }
+          }
+          return { success: false, error: errorMessage }
+        }
+        if (!params.state || params.state !== localStorage.getItem('reauth-oidcState')) {
+          return { success: false, error: 'State mismatch. The state parameter does not match the expected value.' }
+        }
+        const response = await sendWorkerRequest({
+          request: 'exchangeCodeForToken',
+          code: params.code,
+          codeVerifier: localStorage.getItem('reauth-codeVerifier'),
+          clientId,
+          redirectUri,
+        })
+        localStorage.removeItem('reauth-oidcState')
+        localStorage.removeItem('reauth-codeVerifier')
+        return response
+
+        function processRedirectParams(paramStr) {
+          const params = {}
+          const usp = new URLSearchParams(paramStr)
+          for (const [key, value] of usp) {
+            params[key] = value
+          }
+          return params
+        }
+      }
+
+      function appendStatus(html) {
+        statusEl.innerHTML += `${statusEl.innerHTML ? '<br/><br/>' : ''}${html}`
+      }
+
+      function escHtml(s) {
+        return String(s ?? '')
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+      }
+
+      function appendError(message) {
+        const cleanHref = window.location.origin + window.location.pathname
+        statusEl.innerHTML += `<br/><br/><span style="color:#ff5757">Error: ${escHtml(message)}</span><br><br><a href="${cleanHref}">Retry authorization.</a>`
+        hideSpinner()
+      }
+      function hideSpinner() {
+        const loadingEl = document.getElementById('indicator')
+        if (loadingEl) {
+          loadingEl.style.background = 'none'
+        }
+      }
+    </script>
+  </body>
+</html>

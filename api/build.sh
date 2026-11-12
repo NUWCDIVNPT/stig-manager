@@ -3,6 +3,7 @@
 # This file is used to build API binaries on the team workstations. It is not tested elsewhere, yet.
 # Requires:
 # - Node.js and module "@yao-pkg/pkg" (npm install -g @yao-pkg/pkg@6.10)
+# - Node.js version supported by clientV2 (vite); see clientV2/package.json
 # - zip
 # - tar
 
@@ -35,6 +36,9 @@ npm ci
 npm install -g @yao-pkg/pkg@6.10
 cd ..
 ../client/build.sh
+check_exit_status "Building legacy client" 5
+(cd ../clientV2 && npm ci && npm run build)
+check_exit_status "Building clientV2" 5
 ../docs/build.sh
 
 DESCRIBE=$(git describe --tags | sed 's/\(.*\)-.*/\1/')

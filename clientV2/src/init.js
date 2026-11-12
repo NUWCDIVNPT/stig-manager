@@ -1,0 +1,402 @@
+import activityHandler from './auth/ActivityHandler.js'
+import { appRootUrl, classifyCallback, restoreTarget } from './auth/oidcRedirect.js'
+import { sendWorkerRequest } from './auth/workerRequest.js'
+import { resolveDocsUrl } from './shared/lib/docsUrl.js'
+
+// Same global console gate as the legacy client (client/src/js/init.js):
+// production deployments are silent unless STIGMAN_CLIENT_CONSOLE_MODE=development
+const consoleEnabled = import.meta.env.DEV || STIGMAN.Env.consoleMode === 'development'
+if (!consoleEnabled) {
+  console.log = function () { }
+  console.warn = function () { }
+  console.error = function () { }
+  console.debug = function () { }
+}
+
+console.log('import.meta.env:', import.meta.env)
+if (import.meta.env.DEV) {
+  // vite proxies /api to VITE_API_ORIGIN, keeping API calls same-origin
+  STIGMAN.Env.apiBase = `${window.location.origin}/api`
+}
+else if (STIGMAN.Env.historyBase) {
+  STIGMAN.Env.apiBase = `${window.location.origin}${STIGMAN.Env.historyBase}api`
+}
+else {
+  STIGMAN.Env.apiBase = new URL(`../api`, window.location.href).toString() // change when nextgen client is served from root instead of /client-v2
+}
+STIGMAN.Env.apiUrl = STIGMAN.Env.apiBase
+STIGMAN.Env.docsUrl = resolveDocsUrl(STIGMAN.Env.apiUrl, STIGMAN.Env.docsDisabled)
+
+// The one redirect URI the OP returns to, whatever page the user opened
+const appRoot = appRootUrl({
+  origin: window.location.origin,
+  pathname: window.location.pathname,
+  historyBase: STIGMAN.Env.historyBase,
+  dev: import.meta.env.DEV,
+})
+
+const statusEl = document.getElementById('loading-text')
+let OW // aka STIGMAN.oidcWorker, created in setupOidcWorker()
+if (!window.isSecureContext) {
+  appendStatus(`SECURE CONTEXT REQUIRED<br><br>
+  The App is not executing in a <a href=https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts target="_blank">secure context</a> and cannot continue.
+  <br><br>To be considered secure, resources that are not local must be served over https:// URLs and the security 
+  properties of the network channel used to deliver the resource must not be considered deprecated.`)
+}
+else {
+  try {
+    console.log('[init] STIGMAN.Env:', STIGMAN.Env)
+    console.log('[init] STIGMAN.Env.stateEvents:', STIGMAN.Env.stateEvents)
+    await setupStateWorker()
+    await setupOidcWorker()
+    const authorized = await authorize()
+    if (authorized) {
+      await setupServiceWorker()
+      appendStatus('Fetching user profile')
+      const userObj = await getUserObject()
+      if (userObj) {
+        STIGMAN.curUser = userObj
+        const isAdmin = userObj.privileges.admin
+        activityHandler.reportActivity = (STIGMAN.Env.oauth.idleTimeoutUser && !isAdmin) || (STIGMAN.Env.oauth.idleTimeoutAdmin && isAdmin)
+        activityHandler.add()
+        loadApp()
+      }
+    }
+  }
+  catch (error) {
+    console.error(`[init] Error during initialization:`, error)
+    appendError(error.message || 'Unknown error during initialization', !error.message?.includes('Timeout waiting for API state event stream'))
+  }
+}
+
+async function authorize() {
+  const { pathname, search, hash } = window.location
+
+  appendStatus(`Authorizing`)
+
+  const callback = classifyCallback(search, sessionStorage.getItem('oidcState'))
+  if (callback.type === 'callback') {
+    return handleRedirectAndParameters(callback.params)
+  }
+  if (callback.type === 'stale') {
+    console.log(`[init] State mismatch. Redirecting to ${appRoot}.`)
+    window.location.href = appRoot
+    return false
+  }
+  return handleNoParameters(`${pathname}${search}${hash}`)
+}
+
+async function getOidcMetadata() {
+  const url = `${STIGMAN.Env.oauth.authority}/.well-known/openid-configuration`
+  const response = await fetch(url)
+  if (!response.ok) {
+    throw new Error(`failed to get: ${url}`)
+  }
+  try {
+    return await response.json()
+  }
+  catch (error) {
+    console.error(`[init] Error fetching OIDC metadata:`, error)
+    throw new Error(`failed to parse: ${url}`)
+  }
+}
+
+async function initializeOidcWorker() {
+  const response = await OW.sendWorkerRequest({ request: 'getStatus' })
+  if (response.error) {
+    throw new Error(`OIDC Worker getStatus error: ${response.error}`)
+  }
+  const initRequest = {
+    request: 'initialize',
+    redirectUri: appRoot,
+    env: STIGMAN.Env.oauth,
+    clientV2ReauthUri: `${appRoot}reauth.html`,
+  }
+
+  if (!response.initialized) {
+    const oidcConfiguration = await getOidcMetadata()
+    initRequest.oidcConfiguration = oidcConfiguration
+  }
+
+  return OW.sendWorkerRequest(initRequest)
+}
+
+async function handleNoParameters(deepLink) {
+  const response = await OW.sendWorkerRequest({ request: 'getAccessToken', redirectUri: appRoot })
+  if (response.accessToken) {
+    OW.token = response.accessToken
+    OW.tokenParsed = response.accessTokenPayload
+    return true
+  }
+  else if (response.redirectOidc) {
+    sessionStorage.setItem('codeVerifier', response.codeVerifier)
+    sessionStorage.setItem('oidcState', response.state)
+    sessionStorage.setItem('deepLink', deepLink)
+    window.location.href = response.redirectOidc
+    return false
+  }
+}
+
+async function handleRedirectAndParameters(params) {
+  if (!params.code) {
+    let errorMessage = 'No authorization code provided in the URL parameters.'
+    if (params.error) {
+      errorMessage += ` Error: ${params.error}`
+      if (params.error_description) {
+        errorMessage += ` - ${params.error_description}`
+      }
+    }
+    appendError(errorMessage)
+    return false
+  }
+  const response = await OW.sendWorkerRequest({
+    request: 'exchangeCodeForToken',
+    code: params.code,
+    codeVerifier: sessionStorage.getItem('codeVerifier'),
+    clientId: STIGMAN.Env.oauth.clientId,
+    redirectUri: appRoot,
+  })
+  if (response.success) {
+    OW.token = response.accessToken
+    OW.tokenParsed = response.accessTokenPayload
+    window.history.replaceState(window.history.state, '', restoreTarget(sessionStorage.getItem('deepLink'), window.location.origin, appRoot))
+    sessionStorage.removeItem('codeVerifier')
+    sessionStorage.removeItem('oidcState')
+    sessionStorage.removeItem('deepLink')
+    return true
+  }
+  else {
+    appendError(response.error || 'Failed to exchange code for token')
+    return false
+  }
+}
+
+function appendStatus(html) {
+  statusEl.innerHTML += `${statusEl.innerHTML ? '<br/><br/>' : ''}${html}`
+}
+
+function setStatus(html) {
+  statusEl.innerHTML = html
+}
+
+function escHtml(s) {
+  return String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+function appendError(message, showReauth = true) {
+  if (showReauth) {
+    const reauthHref = window.location.origin + window.location.pathname
+    statusEl.innerHTML += `<br/><br/><span style="color:#ff5757">Error: ${escHtml(message)}</span><br><br><a href="${reauthHref}">Retry authorization.</a>`
+  }
+  else {
+    statusEl.innerHTML += `<br/><br/><span style="color:#ff5757">Error: ${escHtml(message)}</span>`
+  }
+  hideSpinner()
+}
+
+async function loadApp() {
+  const loadingMask = document.getElementById('loading-mask')
+  if (loadingMask) {
+    loadingMask.remove()
+  }
+  import('./main.js').catch((error) => {
+    console.error('Failed to load main.js:', error)
+    appendError(`Failed to load application: ${error.message || 'Unknown error'}`, false)
+  })
+}
+
+async function setupOidcWorker() {
+  // The OIDC worker is deliberately loaded from the legacy client's path, outside
+  // this client's own tree. A SharedWorker instance is keyed by script URL *and*
+  // name, so both clients must request the identical URL to share one worker and,
+  // with it, one authenticated session. Localizing this path to clientV2 would
+  // silently spawn a second worker: no error, but sessions stop being shared and
+  // users see unexplained reauth prompts.
+  //
+  // The worker itself is co-serving aware. It tracks clientReauthUri and
+  // clientV2ReauthUri separately and broadcasts both authorizations, so each
+  // client picks its own. When the legacy client is sunset, move
+  // client/src/js/workers/oidc-worker.js into this client and drop the
+  // clientReauthUri branch.
+  const oidcworkerUrl = STIGMAN.Env.historyBase ? '../js/workers/oidc-worker.js' : new URL('../js/workers/oidc-worker.js', window.location.href).href
+  STIGMAN.oidcWorker = {
+    async logout() {
+      // Set first: the worker's noToken broadcast arrives before its reply.
+      this.isLoggingOut = true
+      const response = await this.sendWorkerRequest({ request: 'logout' }).catch(err => ({ success: false, error: err.message }))
+      if (response.success) {
+        this.token = null
+        this.tokenParsed = null
+        window.location.href = response.redirect
+      }
+      else {
+        this.isLoggingOut = false
+        console.error('[init] Logout failed:', response.error)
+      }
+    },
+    sendWorkerRequest(request) {
+      return sendWorkerRequest(this.worker.port, request)
+    },
+    postContextActiveMessage() {
+      this.worker.port.postMessage({ requestId: 'contextActive' })
+    },
+    channelName: null,
+    logoutAvailable: true,
+    isLoggingOut: false,
+    token: null,
+    tokenParsed: null,
+    worker: new SharedWorker(oidcworkerUrl, { name: 'stigman-oidc-worker', type: 'module' }),
+  }
+
+  OW = STIGMAN.oidcWorker
+  OW.worker.port.start()
+
+  // Back from the OP's logged-out page can restore this signed-out document
+  // from the back/forward cache, data still on screen.
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted && OW.isLoggingOut) {
+      window.location.reload()
+    }
+  })
+
+  const response = await initializeOidcWorker()
+  if (!response.success) {
+    throw new Error(response.error)
+  }
+  OW.channelName = response.channelName
+  OW.logoutAvailable = response.logoutAvailable ?? true
+  const bc = new BroadcastChannel(STIGMAN.oidcWorker.channelName)
+  bc.onmessage = (event) => {
+    if (event.data.type === 'accessToken') {
+      console.log('{init] Received from worker:', event.type, event.data)
+      OW.token = event.data.accessToken
+      OW.tokenParsed = event.data.accessTokenPayload
+    }
+    else if (event.data.type === 'noToken') {
+      console.log('{init] Received from worker:', event.type, event.data)
+      OW.token = null
+      OW.tokenParsed = null
+    }
+  }
+}
+
+async function setupStateWorker() {
+  if (!STIGMAN.Env.stateEvents) {
+    console.log('[init] STIGMAN_CLIENT_STATE_EVENTS is false; skipping state worker setup')
+    return
+  }
+
+  STIGMAN.stateWorker = {
+    worker: new SharedWorker(`${import.meta.env.BASE_URL}workers/state-worker.js`, { name: 'stigman-state-worker', type: 'module' }),
+    sendWorkerRequest(request) {
+      return sendWorkerRequest(this.worker.port, request)
+    },
+    workerChannel: null,
+    state: null,
+  }
+  const SW = STIGMAN.stateWorker
+  SW.worker.port.start()
+
+  // const apiBase = import.meta.env.DEV || STIGMAN.Env.historyBase? STIGMAN.Env.apiBase : `../${STIGMAN.Env.apiBase}` // ensure correct relative path in development vs production
+  const response = await SW.sendWorkerRequest({ request: 'initialize', apiBase: STIGMAN.Env.apiBase })
+  if (response.error) {
+    console.error(`[init] Error initializing state worker:`, response.error)
+    throw new Error(response.error)
+  }
+  SW.state = JSON.parse(response.state)
+
+  // Set up the workerChannel before waiting for available state
+  SW.workerChannel = new BroadcastChannel(response.channelName)
+  SW.workerChannel.onmessage = (event) => {
+    console.log(`[init] [${SW.workerChannel.name}] Received message:`, event.data)
+    try {
+      SW.state = JSON.parse(event.data.data)
+    }
+    catch (error) {
+      console.error(`[init] [${SW.workerChannel.name}] Error parsing state:`, error)
+      SW.state = null
+    }
+  }
+
+  // Wait for currentState == 'available'
+  function needsWait(state) {
+    if (!state) { return true }
+    const online = '<span style="color:green">ONLINE</span>'
+    const offline = '<span style="color:#ff5757">OFFLINE</span>'
+    if (state.currentState !== 'available') {
+      setStatus(`The API is currently ${state.currentState}.<br><br>
+          Database status: ${state.dependencies.db ? online : offline}<br>
+          OIDC status: ${state.dependencies.oidc ? online : offline}<br><br>
+          Last update: ${new Date().toISOString()}`)
+      return true
+    }
+    return false
+  }
+
+  if (needsWait(SW.state)) {
+    await new Promise((resolve) => {
+      function checkReady(event) {
+        let stateObj
+        try {
+          stateObj = JSON.parse(event.data.data)
+        }
+        catch {
+          return
+        }
+        if (!needsWait(stateObj)) {
+          SW.workerChannel.removeEventListener('message', checkReady)
+          SW.state = stateObj
+          resolve()
+        }
+      }
+      SW.workerChannel.addEventListener('message', checkReady)
+    })
+  }
+
+  return true
+}
+
+async function setupServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    try {
+      await navigator.serviceWorker.register(`${import.meta.env.BASE_URL}service-worker.js`)
+      appendStatus('Service Worker registered successfully')
+    }
+    catch (err) {
+      appendError(`Service Worker registration failed: ${err}`)
+    }
+  }
+}
+
+async function getUserObject() {
+  const response = await fetch(`${STIGMAN.Env.apiBase}/user?projection=webPreferences`, {
+    headers: {
+      Authorization: `Bearer ${STIGMAN.oidcWorker.token}`,
+    },
+  })
+  const user = await response.json()
+  user.collectionGrants.sort((a, b) => {
+    const nameA = a.collection.name
+    const nameB = b.collection.name
+    if (nameA < nameB) {
+      return -1
+    }
+    if (nameA > nameB) {
+      return 1
+    }
+    return 0
+  })
+
+  return user
+}
+
+function hideSpinner() {
+  const loadingEl = document.getElementById('indicator')
+  if (loadingEl) {
+    loadingEl.style.background = 'none'
+  }
+}

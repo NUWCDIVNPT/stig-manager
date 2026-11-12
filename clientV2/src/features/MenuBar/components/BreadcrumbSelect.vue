@@ -1,0 +1,200 @@
+<script setup>
+import Select from 'primevue/select'
+import { computed } from 'vue'
+
+const props = defineProps({
+  modelValue: {
+    type: [String, Number, Object],
+    default: null,
+  },
+  options: {
+    type: Array,
+    default: () => [],
+  },
+  optionLabel: {
+    type: String,
+    default: 'label',
+  },
+  optionValue: {
+    type: String,
+    default: 'value',
+  },
+  placeholder: {
+    type: String,
+    default: '',
+  },
+  pickerOnly: {
+    type: Boolean,
+    default: false,
+  },
+  isLink: {
+    type: Boolean,
+    default: false,
+  },
+  // Hover text for the warning icon shown when modelValue isn't among the options
+  invalidTooltip: {
+    type: String,
+    default: '',
+  },
+  // Options are loading or failed to load, so modelValue can't be judged
+  // against them; suppresses the invalid-selection warning meanwhile
+  optionsUnavailable: {
+    type: Boolean,
+    default: false,
+  },
+})
+
+defineEmits(['update:modelValue'])
+
+const selectedOption = computed(() =>
+  props.options?.find(opt => String(opt[props.optionValue]) === String(props.modelValue)),
+)
+
+const isValidSelection = computed(() => props.modelValue == null || props.optionsUnavailable || !!selectedOption.value)
+
+const displayLabel = computed(() => {
+  if (props.modelValue == null) {
+    return props.placeholder
+  }
+  // No match while options are unavailable, or a value missing from them: show
+  // the raw value; isValidSelection colors the latter as a mismatch.
+  return selectedOption.value ? selectedOption.value[props.optionLabel] : props.modelValue
+})
+
+// Pass-through styles to override global PT inline styles
+const selectPt = computed(() => {
+  const textColor = !isValidSelection.value
+    ? 'var(--color-text-error)'
+    : props.isLink
+      ? 'var(--color-primary-highlight)'
+      : 'var(--color-text-primary)'
+
+  return {
+    root: {
+      style: {
+        backgroundColor: 'transparent',
+        borderColor: 'transparent',
+        border: 'none',
+        width: 'auto',
+        boxShadow: 'none',
+      },
+    },
+    label: {
+      style: {
+        padding: '0',
+        fontSize: 'var(--text-xl)',
+        color: textColor,
+        background: 'transparent',
+        ...(props.pickerOnly ? { display: 'none' } : {}),
+      },
+    },
+  }
+})
+</script>
+
+<template>
+  <Select
+    :model-value="modelValue"
+    :options="options"
+    :option-label="optionLabel"
+    :option-value="optionValue"
+    :placeholder="placeholder"
+    :pt="selectPt"
+    :pt-options="{ mergeProps: false }"
+    class="breadcrumb-select" :class="[{ 'breadcrumb-select--picker-only': pickerOnly }]"
+    panel-class="breadcrumb-select-panel"
+    filter
+    @update:model-value="$emit('update:modelValue', $event)"
+  >
+    <template #value>
+      <div v-if="modelValue != null" class="breadcrumb-select-value" :class="{ 'is-invalid': !isValidSelection }">
+        <i
+          v-if="!isValidSelection"
+          v-tooltip.bottom="invalidTooltip"
+          class="pi pi-exclamation-triangle"
+          role="img"
+          :aria-label="invalidTooltip"
+        />
+        <span>{{ displayLabel }}</span>
+        <slot v-if="selectedOption" name="after-label" :option="selectedOption" />
+      </div>
+      <span v-else>
+        {{ placeholder }}
+      </span>
+    </template>
+    <!-- Decorated options only when a caller supplies the slot; others keep PrimeVue's default option rendering -->
+    <template v-if="$slots['after-label']" #option="{ option }">
+      <span class="breadcrumb-select-option">
+        <span>{{ option[optionLabel] }}</span>
+        <slot name="after-label" :option="option" />
+      </span>
+    </template>
+  </Select>
+</template>
+
+<style scoped>
+.breadcrumb-select {
+  display: inline-flex;
+  align-items: center;
+}
+
+:deep(.p-select-label) {
+  font-size: var(--text-xl);
+}
+
+:deep(.p-select-label:hover) {
+  text-decoration: underline;
+}
+
+:deep(.p-select-dropdown) {
+  color: var(--color-text-dim);
+  width: auto;
+  padding-left: 0.25rem;
+}
+
+:deep(.p-select-dropdown .p-icon) {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+/* Picker-only mode: chevron rendered as a small interactive pill */
+.breadcrumb-select--picker-only {
+  margin-left: 0.15rem;
+}
+
+.breadcrumb-select--picker-only :deep(.p-select-dropdown) {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-hover);
+  border: 1px solid var(--color-border-default);
+  border-radius: 0.25rem;
+  padding: 0.15rem 0.3rem;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.breadcrumb-select--picker-only:hover :deep(.p-select-dropdown) {
+  background-color: var(--color-bg-hover-strong);
+  border-color: var(--color-text-dim);
+}
+
+.breadcrumb-select--picker-only :deep(.p-select-dropdown .p-icon) {
+  width: 0.65rem;
+  height: 0.65rem;
+}
+
+.breadcrumb-select-value {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.is-invalid {
+  color: var(--color-text-error);
+  font-weight: 600;
+}
+
+.breadcrumb-select-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+</style>

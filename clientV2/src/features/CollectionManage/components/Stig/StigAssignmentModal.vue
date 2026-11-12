@@ -1,0 +1,572 @@
+<script setup>
+import Button from 'primevue/button'
+import Dialog from 'primevue/dialog'
+import Select from 'primevue/select'
+import { computed, ref, watch } from 'vue'
+
+import shieldIcon from '../../../../assets/shield-green-check.svg'
+import LabelsRow from '../../../../components/columns/LabelsRow.vue'
+import HelpIcon from '../../../../components/common/HelpIcon.vue'
+import PickList from '../../../../components/common/PickList.vue'
+import { fetchCollectionLabels } from '../../../../shared/api/collectionsApi.js'
+import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
+import { frameDialogPt, primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
+import { dashZero } from '../../../../shared/lib/numberFormat.js'
+import { pickListVirtualScrollerOptions } from '../../../../shared/lib/pickListPt.js'
+import { listTooltip, TOOLTIPS } from '../../../../shared/lib/tooltips.js'
+import {
+  fetchAssetsByCollectionStig,
+  fetchCollectionAssetsWithStigs,
+  fetchInstalledStigsWithRevisions,
+  writeStigProps,
+} from '../../api/stigManageApi.js'
+import { assetTextFilter, buildAssetRow, buildLabelMap } from '../../lib/assetRows.js'
+
+const props = defineProps({
+  visible: { type: Boolean, required: true },
+  mode: {
+    type: String,
+    required: true,
+    validator: v => v === 'assign' || v === 'modify',
+  },
+  collectionId: { type: String, required: true },
+  selectedStig: { type: Object, default: null },
+})
+const emit = defineEmits(['update:visible', 'stigs-changed'])
+
+const localVisible = computed({
+  get: () => props.visible,
+  set: v => emit('update:visible', v),
+})
+
+const isModify = computed(() => props.mode === 'modify')
+
+const headerTitle = computed(() =>
+  isModify.value ? 'Modify STIG assignment' : 'Assign STIG',
+)
+
+const headerSubtitle = computed(() =>
+  isModify.value && props.selectedStig?.benchmarkId
+    ? props.selectedStig.benchmarkId
+    : 'Select STIGs and Assets',
+)
+
+const stigs = ref([])
+const assets = ref([])
+const stigAssets = ref([])
+const labelMap = ref(new Map())
+
+const LATEST_REVISION = 'latest'
+const VIRTUAL_SCROLLER_OPTIONS = pickListVirtualScrollerOptions()
+
+const selectedBenchmarkId = ref(null)
+const selectedRevisionStr = ref(LATEST_REVISION)
+const pickerValue = ref([[], []])
+
+const benchmarkOptions = computed(() =>
+  (stigs.value ?? []).map(s => ({
+    value: s.benchmarkId,
+    label: s.benchmarkId,
+  })),
+)
+
+const selectedBenchmark = computed(() =>
+  (stigs.value ?? []).find(s => s.benchmarkId === selectedBenchmarkId.value) ?? null,
+)
+
+const revisionOptions = computed(() => {
+  const base = [{ value: LATEST_REVISION, label: 'Most recent revision' }]
+  const revisions = selectedBenchmark.value?.revisions ?? []
+  return [
+    ...base,
+    ...revisions.map(rev => ({
+      value: rev.revisionStr,
+      label: `${rev.revisionStr} (${rev.benchmarkDate})`,
+    })),
+  ]
+})
+
+const { isLoading: loadingStigs, execute: loadStigs } = useAsyncState(
+  () => fetchInstalledStigsWithRevisions(),
+  { immediate: false },
+)
+
+const { isLoading: loadingAssets, error: assetsError, execute: loadAssets } = useAsyncState(
+  () => fetchCollectionAssetsWithStigs(props.collectionId),
+  { immediate: false },
+)
+
+const {
+  isLoading: loadingStigAssets,
+  error: stigAssetsError,
+  execute: fetchStigAssetsAsync,
+} = useAsyncState(
+  benchmarkId => fetchAssetsByCollectionStig(props.collectionId, benchmarkId),
+  { immediate: false },
+)
+
+// Labels are decorative; suppress the global error toast on failure so a
+// missing label fetch doesn't block the user from assigning STIGs.
+const { execute: fetchLabelsAsync } = useAsyncState(
+  () => fetchCollectionLabels(props.collectionId),
+  { immediate: false, onError: null },
+)
+
+const {
+  isLoading: saving,
+  error: saveError,
+  execute: executeSave,
+} = useAsyncState(
+  (benchmarkId, body) => writeStigProps(props.collectionId, benchmarkId, body),
+  { immediate: false },
+)
+
+const isLoading = computed(
+  () => loadingStigs.value || loadingAssets.value || loadingStigAssets.value,
+)
+
+// Save replaces the whole assignment, so both lists the picker is built from
+// must have loaded.
+const canSave = computed(
+  () => !isLoading.value
+    && !saving.value
+    && !!selectedBenchmarkId.value
+    && !assetsError.value
+    && !stigAssetsError.value,
+)
+
+async function onSave() {
+  if (!canSave.value) {
+    return
+  }
+  await executeSave(selectedBenchmarkId.value, {
+    defaultRevisionStr: selectedRevisionStr.value,
+    assetIds: pickerValue.value[1].map(r => String(r.assetId)),
+  })
+  if (saveError.value) {
+    // useAsyncState already surfaced via global error toast.
+    return
+  }
+  emit('stigs-changed')
+  localVisible.value = false
+}
+
+function onCancel() {
+  if (saving.value) {
+    return
+  }
+  localVisible.value = false
+}
+
+async function loadAssetsForBenchmark(benchmarkId) {
+  if (!benchmarkId) {
+    stigAssets.value = []
+    return
+  }
+  stigAssets.value = []
+  // null when superseded by a newer load, which owns stigAssets, or on error
+  // (already surfaced, and canSave stays false)
+  const result = await fetchStigAssetsAsync(benchmarkId)
+  if (result) {
+    stigAssets.value = result
+  }
+}
+
+function resetSelections() {
+  if (isModify.value && props.selectedStig?.benchmarkId) {
+    selectedBenchmarkId.value = props.selectedStig.benchmarkId
+    selectedRevisionStr.value = props.selectedStig.revisionPinned
+      ? props.selectedStig.revisionStr ?? LATEST_REVISION
+      : LATEST_REVISION
+  }
+  else {
+    selectedBenchmarkId.value = null
+    selectedRevisionStr.value = LATEST_REVISION
+  }
+}
+
+async function loadLabels() {
+  const result = await fetchLabelsAsync()
+  if (result) {
+    labelMap.value = buildLabelMap(result)
+  }
+}
+
+let openGeneration = 0
+
+async function onOpen() {
+  const generation = ++openGeneration
+  resetSelections()
+  stigs.value = []
+  assets.value = []
+  stigAssets.value = []
+  labelMap.value = new Map()
+  pickerValue.value = [[], []]
+
+  const benchId = selectedBenchmarkId.value
+  const tasks = [
+    loadStigs().then(r => r && (stigs.value = r)),
+    loadAssets().then(r => r && (assets.value = r)),
+    loadLabels(),
+  ]
+  if (benchId) {
+    tasks.push(loadAssetsForBenchmark(benchId))
+  }
+  await Promise.all(tasks)
+  // A newer open owns the picker, and the user may already be editing it.
+  if (generation === openGeneration) {
+    rebuildPicker()
+  }
+}
+
+async function onBenchmarkChange(value) {
+  selectedRevisionStr.value = LATEST_REVISION
+  await loadAssetsForBenchmark(value)
+  rebuildPicker()
+}
+
+// immediate: a parent may mount the modal already visible.
+watch(() => props.visible, (open) => {
+  if (open) {
+    onOpen()
+  }
+}, { immediate: true })
+
+function rebuildPicker() {
+  const benchId = selectedBenchmarkId.value
+  if (!benchId) {
+    pickerValue.value = [[], []]
+    return
+  }
+  const assignedIds = new Set(
+    (stigAssets.value ?? []).map(a => String(a.assetId)),
+  )
+  const available = []
+  const assigned = []
+  for (const asset of (assets.value ?? [])) {
+    const row = buildAssetRow(asset, labelMap.value)
+    if (assignedIds.has(String(row.assetId))) {
+      assigned.push(row)
+    }
+    else {
+      available.push(row)
+    }
+  }
+  pickerValue.value = [available, assigned]
+}
+
+function onPickerUpdate(newValue) {
+  const benchId = selectedBenchmarkId.value
+  if (!benchId) {
+    pickerValue.value = newValue
+    return
+  }
+  const [newAvailable, newAssigned] = newValue
+  const prevAssignedIds = new Set(pickerValue.value[1].map(r => r.assetId))
+  const nextAssignedIds = new Set(newAssigned.map(r => r.assetId))
+
+  for (const row of newAssigned) {
+    if (!prevAssignedIds.has(row.assetId) && !row.benchmarkIds.includes(benchId)) {
+      row.benchmarkIds = [...row.benchmarkIds, benchId]
+    }
+  }
+  for (const row of newAvailable) {
+    if (prevAssignedIds.has(row.assetId) && !nextAssignedIds.has(row.assetId)) {
+      row.benchmarkIds = row.benchmarkIds.filter(id => id !== benchId)
+    }
+  }
+  pickerValue.value = newValue
+}
+
+const assignedCount = computed(() => pickerValue.value[1].length)
+const availableCount = computed(() => pickerValue.value[0].length)
+
+const selectPt = {
+  root: { style: 'background: var(--color-background-light); border-color: var(--color-border-default); color: var(--color-text-primary);' },
+}
+</script>
+
+<template>
+  <Dialog
+    v-model:visible="localVisible"
+    modal
+    :draggable="false"
+    :style="{ width: 'min(900px, 96vw)', height: '78vh', maxHeight: '780px', minHeight: '520px' }"
+    :pt="frameDialogPt"
+  >
+    <template #header>
+      <div class="modal-header">
+        <div class="modal-header-icon">
+          <i :class="isModify ? 'pi pi-pencil' : 'pi pi-plus-circle'" />
+        </div>
+        <div>
+          <div class="modal-header-title">
+            {{ headerTitle }}
+          </div>
+          <div class="modal-header-sub">
+            {{ headerSubtitle }}
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <div class="modal-body">
+      <div class="selection-rows">
+        <div class="selection-row">
+          <span class="selection-label">Benchmark ID</span>
+          <Select
+            v-model="selectedBenchmarkId"
+            :options="benchmarkOptions"
+            option-label="label"
+            option-value="value"
+            :placeholder="loadingStigs ? 'Loading STIGs...' : 'Assign a STIG...'"
+            :disabled="isModify || loadingStigs || loadingStigAssets"
+            :filter="!isModify"
+            filter-placeholder="Search benchmarks"
+            class="selection-select"
+            :class="{ 'selection-select--locked': isModify }"
+            :pt="selectPt"
+            @update:model-value="onBenchmarkChange"
+          />
+        </div>
+
+        <div class="selection-row">
+          <span class="selection-label">Default Revision <HelpIcon :content="TOOLTIPS.defaultRevision" /></span>
+          <Select
+            v-model="selectedRevisionStr"
+            :options="revisionOptions"
+            option-label="label"
+            option-value="value"
+            :disabled="!selectedBenchmarkId || loadingStigs"
+            class="selection-select"
+            :pt="selectPt"
+          />
+        </div>
+      </div>
+
+      <div class="picker-pane" :class="{ 'picker-pane--blurred': !selectedBenchmarkId }">
+        <PickList
+          :model-value="pickerValue"
+          data-key="assetId"
+          :show-source-filter="true"
+          :show-target-filter="true"
+          filter-by="name"
+          source-filter-placeholder="Search available assets, labels, and STIGs..."
+          target-filter-placeholder="Search assigned assets, labels, and STIGs..."
+          :virtual-scroller-options="VIRTUAL_SCROLLER_OPTIONS"
+          :text-filter-fn="assetTextFilter"
+          @update:model-value="onPickerUpdate"
+        >
+          <template #sourceheader>
+            <span class="header-row">
+              <span>Available <span class="header-count">({{ availableCount }})</span></span>
+              <i v-if="isLoading" class="pi pi-spin pi-spinner header-spinner" />
+            </span>
+          </template>
+          <template #targetheader>
+            <span class="header-row">
+              <span>Assigned <span class="header-count">({{ assignedCount }})</span></span>
+              <i v-if="isLoading" class="pi pi-spin pi-spinner header-spinner" />
+            </span>
+          </template>
+          <template #item="{ item }">
+            <div class="asset-row">
+              <span class="asset-name">{{ item.name }}</span>
+              <LabelsRow class="asset-labels" :labels="item.labels" compact />
+              <span v-tooltip.top="listTooltip(item.benchmarkIds)" class="asset-stig-count">
+                <img :src="shieldIcon" class="asset-stig-icon" alt="">
+                {{ dashZero(item.benchmarkIds.length) }}
+              </span>
+            </div>
+          </template>
+        </PickList>
+      </div>
+    </div>
+
+    <template #footer>
+      <div class="modal-footer">
+        <Button
+          label="Cancel"
+          :pt="secondaryBtnPt"
+          :disabled="saving"
+          @click="onCancel"
+        />
+        <Button
+          :label="isModify ? 'Save' : 'Assign'"
+          :pt="primaryBtnPt"
+          :disabled="!canSave"
+          :loading="saving"
+          @click="onSave"
+        />
+      </div>
+    </template>
+  </Dialog>
+</template>
+
+<style scoped>
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem;
+}
+
+.modal-header-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-action-blue-dark) 20%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-action-blue-dark) 40%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-action-blue-dark);
+  flex-shrink: 0;
+}
+
+.modal-header-title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-text-bright);
+  line-height: 1.25;
+}
+
+.modal-header-sub {
+  font-size: var(--text-md);
+  color: var(--color-text-dim);
+  margin-top: 2px;
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: 1rem 1.1rem;
+  gap: 0.75rem;
+}
+
+/* One grid for both rows so the label column takes the width of its longest
+   label (text plus help icon) and the two selects start at the same x. */
+.selection-rows {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.selection-row {
+  display: contents;
+}
+
+.selection-label {
+  display: flex;
+  align-items: center;
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.selection-select {
+  min-width: 0;
+}
+
+.selection-select--locked :deep(.p-select) {
+  background: var(--color-background-subtle);
+  border-color: var(--color-border-default);
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+.selection-select--locked :deep(.p-select-label) {
+  color: var(--color-text-dim);
+  font-style: italic;
+}
+
+.selection-select--locked :deep(.p-select-dropdown) {
+  display: none;
+}
+
+.picker-pane {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--color-border-default);
+  padding-top: 0.75rem;
+}
+
+.picker-pane--blurred > :deep(.common-picklist-root) {
+  filter: blur(3px);
+  opacity: 0.5;
+  pointer-events: none;
+  user-select: none;
+}
+
+.header-count {
+  font-weight: 500;
+  color: var(--color-text-dim);
+  font-size: var(--text-sm);
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.header-spinner {
+  color: var(--color-text-dim);
+  font-size: var(--text-md);
+}
+
+.asset-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.asset-name {
+  min-width: 0;
+  max-width: 45%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.asset-labels {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.asset-stig-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  flex-shrink: 0;
+}
+
+.asset-stig-icon {
+  width: 1.35rem;
+  height: 1.35rem;
+  display: block;
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.65rem 1rem;
+  justify-content: flex-end;
+}
+</style>

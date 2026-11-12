@@ -1,0 +1,678 @@
+:root {
+  font-family: 'Open Sans';
+  font-size: 12px;
+  color-scheme: dark !important;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #000000;
+
+  --role-restricted: #64748bcb;
+  --role-full: #e2ca43d5;
+  --role-manage: #4b7bc9da;
+  --role-owner: #087c21da;
+  
+  /* Classification Marking Colors */
+  --color-marking-unclassified: #007a33;
+  --color-marking-cui: #502b85;
+  --color-marking-confidential: #0033a0;
+  --color-marking-fouo: #502b85;
+  --color-marking-secret: #c8102e;
+  --color-marking-topsecret: #ff671f;
+  --color-marking-sci: #f7ea48;
+  
+  /* Brand Colors */
+  --color-primary: #6366f1; /* Indigo-500 */
+  --color-primary-hover: #4f46e5; /* Indigo-600 */
+  --color-primary-highlight: #60a5fa; /* Blue-400 */
+  --color-primary-highlight-light: #93c5fd;
+  --color-action-blue: #3b82f6; /* Blue-500 */
+  --color-action-blue-dark: #2563eb; /* Blue-700 */
+  --color-action-red: #ef4444;
+  --color-action-green: #4ade80;
+  --color-success: #22c55e; /* Green-500 */
+  --color-warning-yellow: #eab308; /* Yellow-500 */
+  --color-warning-orange: #fb923c; /* Orange-400 */
+  --color-shield-green: #44ab5e; /* Green-500 */
+  --color-shield-green-dark: #4f7769; /* Green-700 */
+  --color-oss-blue: #273f6f; /* Green-700 */
+  
+  /* HOVER */
+  --color-button-hover-bg: rgba(255, 255, 255, 0.1);
+  --color-bg-hover: rgba(255, 255, 255, 0.05);
+  --color-bg-hover-strong: #3f3f46;
+  --color-bg-hover-light: #76767c;
+
+  /* Metrics Status Chart Colors */
+  --metrics-status-chart-assessed: hsl(204, 91%, 29%);
+  --metrics-status-chart-submitted: hsl(41, 66%, 46%);
+  --metrics-status-chart-accepted: hsl(146, 93%, 27%);
+  --metrics-status-chart-unassessed: hsl(0 0% 18% / 1);
+  --metrics-status-chart-unsaved: hsl(0deg 0% 18%);
+  --metrics-status-chart-rejected: hsl(5, 89%, 32%);
+  
+  /* Typography */
+  /* Use for IDs (benchmark/rule/group/CCI), timestamps, and other tabular data where
+     character alignment helps scanning. Use sparingly — primary content stays in Open Sans.
+     Ubuntu Mono is bundled (matches the legacy client); system stack as fallback. */
+  --font-mono: 'Ubuntu Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+
+  /* Type scale; see docs/components/TypographyAndSizing.md for what each
+     step is for. shared/lib/textScale.js mirrors the values and
+     shared/tests/typographyConventions.test.js enforces both. */
+  --text-sm: 0.85rem;
+  --text-md: 1rem;
+  --text-lg: 1.1rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-display: 2rem;
+  --text-display-lg: 3rem;
+  --text-display-xl: 5rem;
+  --icon-xs: 0.75rem;
+
+  /* Nav rail header, dashboard sidebar header and view tab strip share this
+     height so their top edges line up. */
+  --panel-header-height: 3.25rem;
+
+  /* Classification banner strip: 20px at the 12px root, as in the legacy client. */
+  --classification-banner-height: 1.667rem;
+
+  /* CAT Rating Colors */
+  --color-cat1: #c68c8c;
+  --color-cat2: #d4b056;
+  --color-cat3: #a3acd6;
+
+  /* CORA Risk Colors (flat fills, read with --color-text-dark) */
+  --color-risk-very-high: var(--color-cat1);
+  --color-risk-high: var(--color-cat2);
+  --color-risk-moderate: rgb(230, 210, 0);
+  --color-risk-low: var(--color-cat3);
+  --color-risk-very-low: rgb(100, 167, 90);
+  
+  /* Collection Stats Colors */
+  --color-inventory: #c4a484;
+  --color-review-age: #d4d4d8;
+
+  /* Breadcrumb sizing */
+
+  /* Text Colors */
+  --color-text-primary: rgba(255, 255, 255, 0.87);
+  --color-text-dim: #a1a1aa; 
+  --color-text-bright: rgba(255, 255, 255, 0.95);
+  --color-text-dark: #18181b;
+  /* Underlined inline links in prose; matches the legacy dark-mode home
+     widget link color. */
+  --color-link: hsl(36deg 23% 55%);
+  --color-link-hover: hsl(36deg 30% 68%);
+
+  /* Surface Colors */
+  --color-background-darkest: #000000;
+  --color-background-dark: #18181b; 
+  --color-background-light: #27272a;  
+  --color-background-subtle: rgba(255, 255, 255, 0.05);
+  --color-background-scrim: rgba(0, 0, 0, 0.62); /* dims the page behind a spotlight or modal */
+  --shadow-popup: 0 0.6rem 2rem rgba(0, 0, 0, 0.5);
+
+  /* Border Colors */
+  --color-border-default: #3f3f46;
+  --color-border-light: #2a2a2d;
+  --color-border-hover: #52525b;
+
+  /* Error Colors */
+  --color-text-error: #f16969;
+
+  /* Status Indicator Colors (success/warning/error) — banners, badges, etc. */
+  --color-status-success-bg: color-mix(in srgb, #166534 18%, var(--color-background-dark));
+  --color-status-success-border: #4ade80;
+  --color-status-success-text: #86efac;
+  --color-status-warning-bg: color-mix(in srgb, #92400e 18%, var(--color-background-dark));
+  --color-status-warning-border: #fbbf24;
+  --color-status-warning-text: #fcd34d;
+  --color-status-error-bg: color-mix(in srgb, #7f1d1d 18%, var(--color-background-dark));
+  --color-status-error-border: #f87171;
+  --color-status-error-text: #fca5a5;
+
+  /* Log Stream viewer: per-component line colors + HTTP status badges (badge
+     names/values ported from the legacy client's http-status sprites) */
+  --color-log-socket: #a56cff;
+  --color-log-jwks: #d18b3a;
+  --color-log-rest: #2ec27e;
+  --color-http-status-200: #006017;
+  --color-http-status-300: #003761;
+  --color-http-status-400: #984a00;
+  --color-http-status-500: #980000;
+
+  /* Result Status Colors */
+  --result-pass: hsl(120 84% 42% / 1);
+  --result-fail: hsl(19 100% 40% / 1);
+  --result-na: #767676;
+  --result-nr: #c0bab2;
+
+  /* Access Mode Badge Colors */
+  --color-access-rw-bg: hsl(120deg 40% 25%);
+  --color-access-rw-text: hsl(120deg 60% 75%);
+  --color-access-r-bg: hsl(0deg 40% 25%);
+  --color-access-r-text: hsl(0deg 60% 75%);
+
+  /* Engine/Override Attribution Badge Colors */
+  --color-engine-text: hsl(210, 80%, 80%);
+  --color-engine-bg: hsl(210, 50%, 25%);
+  --color-engine-border: hsl(210, 40%, 35%);
+  --color-override-text: hsl(30, 90%, 75%);
+  --color-override-bg: hsl(30, 50%, 22%);
+  --color-override-border: hsl(30, 40%, 35%);
+
+  /* Rule-diff changed-property chips (one muted hue per property kind) */
+  --color-chip-ruleid-bg: rgba(168, 85, 247, 0.16);
+  --color-chip-ruleid-border: rgba(168, 85, 247, 0.4);
+  --color-chip-ruleid-text: hsl(270, 75%, 85%);
+  --color-chip-check-bg: rgba(239, 68, 68, 0.14);
+  --color-chip-check-border: rgba(239, 68, 68, 0.4);
+  --color-chip-check-text: hsl(5, 80%, 80%);
+  --color-chip-fix-bg: rgba(59, 130, 246, 0.18);
+  --color-chip-fix-border: rgba(59, 130, 246, 0.45);
+  --color-chip-fix-text: hsl(215, 80%, 82%);
+  --color-chip-vulndiscussion-bg: rgba(249, 115, 22, 0.16);
+  --color-chip-vulndiscussion-border: rgba(249, 115, 22, 0.5);
+  --color-chip-vulndiscussion-text: hsl(25, 85%, 78%);
+  --color-chip-severity-bg: rgba(234, 179, 8, 0.18);
+  --color-chip-severity-border: rgba(234, 179, 8, 0.5);
+  --color-chip-severity-text: hsl(41, 80%, 80%);
+  --color-chip-default-bg: var(--color-background-darkest);
+  --color-chip-default-border: var(--color-border-default);
+  --color-chip-default-text: var(--color-text-primary);
+  /* Label chip for a label without a colour (light, so it takes --color-text-dark) */
+  --color-label-default-bg: #cccccc;
+
+  /* Inline rule-ID character-level diff highlight (red for old, green for new) */
+  --color-diff-inline-del-bg: rgba(239, 68, 68, 0.3);
+  --color-diff-inline-del-text: hsl(5, 80%, 85%);
+  --color-diff-inline-add-bg: rgba(34, 197, 94, 0.3);
+  --color-diff-inline-add-text: hsl(146, 80%, 85%);
+}
+
+.text-green-500 {
+  color: var(--color-success) !important;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* CORA Risk fills. Shared by the metrics risk card, the CORA % column badge
+   and the risk-rating labels in the CORA help tooltip. */
+.sm-cora-risk-very-high,
+.sm-cora-risk-high,
+.sm-cora-risk-moderate,
+.sm-cora-risk-low,
+.sm-cora-risk-very-low {
+  color: var(--color-text-dark);
+}
+.sm-cora-risk-very-high {
+  background-color: var(--color-risk-very-high);
+}
+.sm-cora-risk-high {
+  background-color: var(--color-risk-high);
+}
+.sm-cora-risk-moderate {
+  background-color: var(--color-risk-moderate);
+}
+.sm-cora-risk-low {
+  background-color: var(--color-risk-low);
+}
+.sm-cora-risk-very-low {
+  background-color: var(--color-risk-very-low);
+}
+
+/* Rich help-tooltip content rendered via the v-tooltip directive (escape:false).
+   Tooltip content lives outside the triggering component, so its styles must be
+   global. Namespaced by the tipClass passed to HelpIcon. */
+
+/* Grant role tooltip (HelpIcon tip-class="sm-role-tip") */
+.role-text-restricted { color: var(--role-restricted); }
+.role-text-full { color: var(--role-full); }
+.role-text-manage { color: var(--role-manage); }
+.role-text-owner { color: var(--role-owner); }
+
+/* CORA explanation tooltip (HelpIcon tip-class="sm-cora-tip") */
+.sm-cora-tip ul.risk-list {
+  padding-left: 16px;
+  margin: 6px 0 0 0;
+  list-style-type: disc;
+}
+.sm-cora-tip code {
+  background-color: var(--color-background-subtle);
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+}
+.sm-cora-tip .formula {
+  display: inline-block;
+  margin: 2px 0;
+}
+.sm-cora-tip .tooltip-label {
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-right: 4px;
+  font-size: var(--text-md);
+  display: inline-block;
+  line-height: normal;
+}
+
+
+
+body {
+  margin: 0;
+  height: 100vh;
+  overflow: hidden;
+  font-family: 'Open Sans';
+  font-size: var(--text-md);
+  font-weight: 400;
+}
+
+/* Form controls don't inherit font-family: every UA stylesheet sets an explicit
+   `font: ... Arial` on them, and an explicit UA declaration beats inheritance.
+   Without this, any button/input/select/textarea silently renders in Arial
+   instead of Open Sans. font-family only (not the `font` shorthand) so
+   component-level font-size/font-weight keep working. */
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+#app {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+
+/* Global form field focus color (light blue) */
+.p-inputtext:focus,
+.p-textarea:focus,
+input[type="text"]:focus,
+input[type="search"]:focus,
+input[type="number"]:focus,
+input[type="password"]:focus,
+textarea:focus {
+  outline: none !important;
+  border-color: var(--color-primary-highlight-light) !important;
+}
+.p-inputtext:enabled:focus{
+  outline: none !important;
+  border-color: var(--color-primary-highlight-light) !important;
+}
+
+/* "New Collection" glyph: a rounded tile with the plus knocked out, echoing
+   the gaps in collection-color.svg. Sized in em so it tracks the text it sits
+   beside (ActionButton, list rows) */
+.icon-collection-new {
+  display: inline-block;
+  width: 1.15em;
+  height: 1.15em;
+  vertical-align: -0.2em;
+  background: url('/src/assets/collection-new.svg') center / contain no-repeat;
+}
+
+/* Pinned-revision glyph, masked so it follows the theme
+   or skin via currentColor; dim by default, a consumer may set `color` for a
+   stronger glyph. Sized in em so it tracks the text it sits beside */
+.icon-pin {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+  flex-shrink: 0;
+  color: var(--color-text-dim);
+  background-color: currentColor;
+  mask: url('/src/assets/pin.svg') center / contain no-repeat;
+}
+
+/* Nav rail popovers (Collections, Recent Views) share a subtle outline so the
+   flyout reads as a distinct surface against the page behind it */
+.p-popover.nav-popover {
+  border: 2px solid var(--color-border-default);
+  /* Triggers sit at the window edge; nudge the flyout right so it is not flush
+     against the edge of the viewport */
+  margin-left: 0.75rem;
+  /* The theme reserves a ~10px gap below the trigger to house the connector
+     arrow; with the arrow hidden, close most of that gap so the flyout stays
+     visually anchored to its button */
+  margin-top: 0.25rem;
+}
+
+/* The Popover arrow pseudo-elements paint a background-colored notch under the
+   trigger, which reads as a gap in the custom border - hide them */
+.p-popover.nav-popover::before,
+.p-popover.nav-popover::after {
+  display: none;
+}
+
+/* Collection tab panel styles (shared across Assets, STIGs, Labels tabs) */
+.collection-tab-panel {
+  height: 100%;
+  padding: 0.5rem;
+  overflow: hidden;
+}
+
+.collection-tab-panel .panel-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--color-background-subtle);
+  border: 1px solid var(--color-border-default);
+  border-radius: 4px;
+}
+
+.collection-tab-panel .panel-header {
+  padding: 0.5rem 1rem;
+  background-color: var(--color-background-light);
+  border-bottom: 1px solid var(--color-border-default);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 30px;
+}
+
+.collection-tab-panel .panel-header h3 {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--text-md);
+  font-weight: 600;
+}
+
+.collection-tab-panel .grid-container {
+  flex: 1;
+  overflow: hidden;
+  background-color: var(--color-background-dark);
+  position: relative;
+}
+
+.collection-tab-panel .badge {
+  font-size: var(--text-sm);
+  background-color: var(--color-background-dark);
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
+  color: var(--color-text-dim);
+  font-family: var(--font-mono);
+}
+
+.collection-tab-panel .empty-state,
+.collection-tab-panel .loading-state,
+.collection-tab-panel .error-state {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: var(--color-text-dim);
+  font-style: italic;
+  width: 100%;
+}
+
+.collection-tab-panel .error-state {
+  color: var(--color-text-error);
+}
+
+/* Thin scrollbar utility */
+.sm-scrollbar-thin {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-default) rgba(255,255,255,0.04);
+}
+
+.sm-scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sm-scrollbar-thin::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.04);
+}
+
+.sm-scrollbar-thin::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.sm-scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: var(--color-border-default);
+  border-radius: 999px;
+  border: none;
+  min-height: 28px;
+}
+
+.sm-scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-border-hover);
+}
+
+.p-datatable-mask {
+  background: var(--color-background-subtle) !important;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.p-datatable-tbody > tr:hover > .agg-grid-empty-cell {
+  background: var(--color-background-dark) !important;
+}
+
+/* Grid cell with trailing action buttons: text ellipsizes, buttons keep size. */
+.sm-grid-cell-with-toolbar {
+  display: flex;
+  align-items: center;
+}
+
+.sm-info {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Icon link that navigates (shield, collection icon); always visible, dim
+   until hovered. */
+.shield-action {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+  text-decoration: none;
+  opacity: 0.5;
+  transition: opacity 0.15s, transform 0.15s, background-color 0.15s;
+}
+
+.shield-action:hover {
+  opacity: 1;
+  transform: scale(1.2);
+  background-color: var(--color-button-hover-bg);
+}
+
+.shield-action img {
+  pointer-events: none;
+}
+
+/* Pencil button that opens the row's edit modal. Hidden until the row is
+   hovered or the button is focused. margin-left keeps it at the cell end when
+   the content is not flex: 1 (a label chip). */
+.row-edit-btn {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  color: var(--color-text-dim);
+  font-size: var(--icon-xs);
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+tr:hover .row-edit-btn,
+.row-edit-btn:focus-visible {
+  opacity: 1;
+}
+
+.row-edit-btn:hover {
+  color: var(--color-text-bright);
+}
+
+/* Grid search: a cell whose text matched the term, and the matched text. */
+.cell--match {
+  background-color: color-mix(in srgb, var(--color-warning-yellow) 8%, transparent);
+  border-radius: 2px;
+}
+
+mark.search-highlight {
+  background-color: color-mix(in srgb, var(--color-warning-yellow) 40%, transparent);
+  color: inherit;
+  border-radius: 1px;
+  padding: 0 1px;
+}
+
+/* Label chip rendered by common/Label.vue (and the +N badge in LabelsRow).
+   LabelsRow derives its px width budget from this padding and font, so change
+   them together. */
+.label-tag {
+  display: inline-block;
+  font-size: var(--text-md);
+  font-weight: 600;
+  padding: 0.1rem 0.45rem;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+/* Label chips already carry a color, so mark the match with the chip's own
+   text color instead of the yellow wash. No padding: LabelsRow budgets each
+   chip from its text width, so the mark must not widen it. */
+.label-tag mark.search-highlight {
+  padding: 0;
+  background-color: color-mix(in srgb, currentColor 28%, transparent);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+
+/* PrimeVue Checkbox: the Material preset draws the check mark as a CSS box but
+   leaves the indeterminate dash as an SVG, which blurs off-center whenever the
+   checkbox lands on a fractional pixel. Draw the dash as a whole-pixel box too. */
+.p-checkbox[data-p-indeterminate="true"] .p-checkbox-icon {
+  display: none;
+}
+.p-checkbox[data-p-indeterminate="true"] .p-checkbox-box::before {
+  content: "";
+  width: 10px;
+  height: 2px;
+  background: var(--p-checkbox-icon-color);
+}
+
+/* PrimeVue DataTable: show the sort indicator only on the sorted column. */
+th.p-datatable-sortable-column:not(.p-datatable-column-sorted) [data-pc-section="sort"] {
+  display: none;
+}
+
+/* PrimeVue Splitter global hover style */
+.p-splitter .p-splitter-gutter {
+  transition: background-color 0.2s ease !important;
+  border-radius: 4px !important;
+}
+.p-splitter .p-splitter-gutter:hover {
+  background-color: var(--color-bg-hover-light) !important;
+}
+
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 300;
+  src: url('/fonts/open-sans-v15-latin-300.woff2') format('woff2')
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: italic;
+  font-weight: 300;
+  src: url('/fonts/open-sans-v15-latin-300italic.woff2') format('woff2')
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/fonts/open-sans-v15-latin-regular.woff2') format('woff2')
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: italic;
+  font-weight: 400;
+  src: url('/fonts/open-sans-v15-latin-italic.woff2') format('woff2')
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 600;
+  src: url('/fonts/open-sans-v15-latin-600.woff2') format('woff2')
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: italic;
+  font-weight: 600;
+  src: url('/fonts/open-sans-v15-latin-600italic.woff2') format('woff2')
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 700;
+  src: url('/fonts/open-sans-v15-latin-700.woff2') format('woff2')
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: italic;
+  font-weight: 700;
+  src: url('/fonts/open-sans-v15-latin-700italic.woff2') format('woff2')
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 800;
+  src: url('/fonts/open-sans-v15-latin-800.woff2') format('woff2')
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: italic;
+  font-weight: 800;
+  src: url('/fonts/open-sans-v15-latin-800italic.woff2') format('woff2')
+}
+
+/* Ubuntu Mono — regular weight only.
+   font-synthesis-weight: none prevents the browser from faking a bold by smearing
+   the 400 strokes thicker (which looks awful on monospace). Any element that asks
+   for font-weight > 400 with this family will fall back to the system mono stack,
+   which has real bold variants. Don't pair font-weight with var(--font-mono) — use
+   color or background for emphasis on mono elements instead. */
+@font-face {
+  font-family: 'Ubuntu Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-synthesis-weight: none;
+  src: url('/fonts/ubuntu-mono-v15-latin-regular.woff2') format('woff2');
+}

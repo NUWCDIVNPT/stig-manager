@@ -1,0 +1,469 @@
+<script setup>
+import { computed, ref, toRefs, watch } from 'vue'
+import { useRoute } from 'vue-router'
+
+import ReviewEditPopover from '../../../components/common/ReviewEditPopover.vue'
+import { fetchReview, patchReview, putReview } from '../../../shared/api/reviewsApi.js'
+import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { useColumnVisibility } from '../../../shared/composables/useColumnVisibility.js'
+import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
+import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
+import { getEngineDisplay, getResultDisplay } from '../../../shared/lib/checklistUtils.js'
+import { capitalize, catLabel, statusText } from '../../../shared/lib/exportCells.js'
+import { statusPayloadForAction } from '../../../shared/lib/reviewFormUtils.js'
+import { useBulkReviewStatus } from '../composables/useBulkReviewStatus.js'
+import AssetChecklistGridHeader from './AssetChecklistGridHeader.vue'
+import AssetChecklistGridTable from './AssetChecklistGridTable.vue'
+import BulkStatusConfirmModal from './BulkStatusConfirmModal.vue'
+
+const props = defineProps({
+  gridData: {
+    type: Array,
+    default: () => [],
+  },
+  isChecklistLoading: {
+    type: Boolean,
+    default: false,
+  },
+  selectedRuleId: {
+    type: String,
+    default: null,
+  },
+  asset: {
+    type: Object,
+    default: null,
+  },
+  revisionInfo: {
+    type: Object,
+    default: null,
+  },
+  accessMode: {
+    type: String,
+    default: 'r',
+  },
+  selectRule: {
+    type: Function,
+    required: true,
+  },
+  ruleLookupMap: {
+    type: Object,
+    default: () => new Map(),
+  },
+  fieldSettings: {
+    type: Object,
+    default: null,
+  },
+  canAccept: {
+    type: Boolean,
+    default: false,
+  },
+  collectionId: {
+    type: String,
+    default: null,
+  },
+  assetId: {
+    type: [String, Number],
+    default: null,
+  },
+})
+
+const emit = defineEmits(['review-saved', 'review-loaded', 'refresh'])
+
+const { selectRule } = props
+
+const {
+  gridData,
+  isChecklistLoading: isLoading,
+  selectedRuleId,
+  asset,
+  revisionInfo,
+  accessMode,
+  ruleLookupMap,
+  fieldSettings,
+  canAccept,
+  collectionId,
+  assetId,
+} = toRefs(props)
+
+const {
+  visibleRows,
+  submitPlan,
+  acceptPlan,
+  isApplying,
+  applySubmit,
+  applyAccept,
+} = useBulkReviewStatus({
+  collectionId,
+  assetId,
+  fieldSettings,
+  onApplied: () => emit('refresh'),
+})
+
+// Quick search covers the text columns whether shown or not, as before
+const { term: searchFilter, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(() => props.gridData, [
+  { field: 'groupId', header: 'Group' },
+  { field: 'ruleId', header: 'Rule Id' },
+  { field: 'ruleTitle', header: 'Rule Title' },
+  { field: 'groupTitle', header: 'Group Title' },
+  { field: 'detail', header: 'Detail' },
+  { field: 'comment', header: 'Comment' },
+  { field: 'username', header: 'User', searchText: r => [r.username, r.status?.user?.username].filter(Boolean).join(' ') },
+  { field: 'engineInfo', header: 'Engine product', searchText: r => [r.resultEngine?.product, r.resultEngine?.type, r.resultEngine?.version].filter(Boolean).join(' ') },
+  { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false },
+  { field: 'result', header: 'Result', filterValues: r => getResultDisplay(r.result), quickSearch: false },
+  { field: 'resultEngine', header: 'Engine', filterValues: r => capitalize(getEngineDisplay(r)), quickSearch: false },
+  { field: 'status', header: 'Status', filterValues: r => statusText(r.status), quickSearch: false },
+])
+
+// Bulk submit/accept act on the rows left after search and filters
+watch(filteredRows, (rows) => {
+  visibleRows.value = rows
+}, { immediate: true })
+
+const pendingAction = ref(null)
+
+const confirmVisible = computed({
+  get: () => pendingAction.value !== null,
+  set: (open) => {
+    if (!open) {
+      pendingAction.value = null
+    }
+  },
+})
+
+const activePlan = computed(() => {
+  if (pendingAction.value === 'submit') {
+    return submitPlan.value
+  }
+  if (pendingAction.value === 'accept') {
+    return acceptPlan.value
+  }
+  return null
+})
+
+const activeSkipLines = computed(() => activePlan.value?.skipLines ?? [])
+
+// The batch ends in a checklist reload, as Refresh does (see onRefresh).
+function onBulkAction(action) {
+  if (blockIfUnsaved()) {
+    return
+  }
+  pendingAction.value = action
+}
+
+async function onConfirmBulk() {
+  const action = pendingAction.value
+  if (action === 'submit') {
+    await applySubmit()
+  }
+  else if (action === 'accept') {
+    await applyAccept()
+  }
+  pendingAction.value = null
+}
+
+const selectedRow = computed(() => {
+  if (!selectedRuleId.value || !gridData.value) {
+    return null
+  }
+  return ruleLookupMap.value.get(selectedRuleId.value) ?? null
+})
+const reviewEditPopover = ref()
+const editingRow = ref(null)
+
+const currentReview = computed(() => gridData.value.find(r => r.ruleId === editingRow.value?.ruleId) ?? null)
+
+const { isLoading: isSavingReview, error: saveError, execute: executeSaveReview } = useAsyncState(
+  async ({ ruleId, result, detail, comment, status }) => {
+    const row = gridData.value.find(r => r.ruleId === ruleId)
+    const resultChanged = row ? result !== row.result : true
+    const body = {
+      result,
+      detail: detail ?? '',
+      comment: comment ?? '',
+      resultEngine: resultChanged ? null : (row?.resultEngine ?? null),
+      status: status || 'saved',
+    }
+    const saved = await putReview(collectionId.value, assetId.value, ruleId, body)
+    emit('review-saved', { ...saved, ruleId })
+    return saved
+  },
+  // The popover stays open and shows a failed save inline.
+  { immediate: false, onError: null },
+)
+
+const { isLoading: isSavingStatus, execute: executeSaveStatus } = useAsyncState(
+  async ({ ruleId, actionType }) => {
+    const status = statusPayloadForAction(actionType)
+    if (status === null) { return null }
+    const savedAssetId = assetId.value
+    const saved = await patchReview(collectionId.value, savedAssetId, ruleId, { status })
+    // Submit and Accept don't hold the reviewer here, so the grid may show
+    // another asset by now; rows merge by ruleId and would take this review.
+    if (String(assetId.value) === String(savedAssetId)) {
+      emit('review-saved', { ...saved, ruleId })
+    }
+    return saved
+  },
+  { immediate: false },
+)
+
+const isSaving = computed(() => isSavingReview.value || isSavingStatus.value)
+
+function onPopoverSave(payload) {
+  if (!editingRow.value) { return }
+  executeSaveReview({
+    ruleId: payload.ruleId,
+    result: payload.result,
+    detail: payload.detail,
+    comment: payload.comment,
+    status: payload.status,
+  })
+}
+
+function onPopoverStatusAction(payload) {
+  if (!editingRow.value) { return }
+  executeSaveStatus({ ruleId: payload.ruleId, actionType: payload.actionType })
+}
+
+const route = useRoute()
+
+// CSV export basename, matching the legacy client's `${assetName}-${benchmarkId}`.
+const exportFilename = computed(() =>
+  `${props.asset?.name ?? 'asset'}-${route.params.benchmarkId ?? 'stig'}`,
+)
+
+const TOGGLEABLE_COLUMNS = [
+  { field: 'groupId', header: 'Group' },
+  { field: 'ruleId', header: 'Rule Id', defaultHidden: true },
+  { field: 'ruleTitle', header: 'Rule Title' },
+  { field: 'groupTitle', header: 'Group Title', defaultHidden: true },
+  { field: 'detail', header: 'Detail' },
+  { field: 'comment', header: 'Comment' },
+  { field: 'touchTs', icon: 'pi pi-clock' },
+]
+
+// Group/Rule Display menu presets; each sets only these four columns
+const DISPLAY_PRESETS = {
+  groupRule: { groupId: true, ruleId: false, ruleTitle: true, groupTitle: false },
+  groupGroup: { groupId: true, ruleId: false, ruleTitle: false, groupTitle: true },
+  ruleRule: { groupId: false, ruleId: true, ruleTitle: true, groupTitle: false },
+}
+
+const { selectedColumns, visibleFields: shownFields, setShown } = useColumnVisibility(TOGGLEABLE_COLUMNS, 'assetChecklistGrid.columns')
+
+const activePreset = computed(() => Object.keys(DISPLAY_PRESETS).find(key =>
+  Object.entries(DISPLAY_PRESETS[key]).every(([field, shown]) => shownFields.value.has(field) === shown),
+) ?? null)
+
+const visibleFields = computed(() => new Set(['severity', 'result', 'resultEngine', 'status', ...shownFields.value]))
+
+const { itemSize, gridStyle } = useGridDensity('asset-review-checklist')
+
+watch([
+  () => route.params.collectionId,
+  () => route.params.assetId,
+  () => route.params.benchmarkId,
+  () => route.params.revisionStr,
+], () => {
+  searchFilter.value = ''
+  // The router reuses this component across assets, so an open row editor
+  // (and any unsaved edits in it) would otherwise carry over to the new asset.
+  if (editingRow.value) {
+    reviewEditPopover.value?.hide()
+    editingRow.value = null
+  }
+})
+
+// The checklist endpoint carries no reviewer or status user, so the first time
+// a reviewed row is opened, fetch the full review and merge it into the row.
+async function hydrateReview(rowData) {
+  if (!rowData.result || rowData.username) {
+    return
+  }
+  try {
+    const review = await fetchReview(collectionId.value, assetId.value, rowData.ruleId)
+    emit('review-loaded', { ...review, ruleId: rowData.ruleId })
+  }
+  catch {
+    // Attribution is informational; the popover still works from checklist data.
+  }
+}
+
+function openRowEditor(event, rowData) {
+  const isSameRow = editingRow.value?.ruleId === rowData.ruleId
+  editingRow.value = rowData
+  if (!isSameRow) {
+    hydrateReview(rowData)
+  }
+  reviewEditPopover.value.openForRow(event, isSameRow)
+}
+
+const scrollLocked = computed(() => !!editingRow.value && (!!reviewEditPopover.value?.isDirty || isSaving.value))
+
+// True when the open review must not be left yet: a save is in flight, or the
+// form has unsaved edits, which also raises the popover's warning. Submit and
+// Accept close the popover first, so moving on doesn't wait for them.
+function blockIfUnsaved() {
+  if (editingRow.value && isSaving.value) {
+    return true
+  }
+  if (reviewEditPopover.value?.isDirty) {
+    reviewEditPopover.value.triggerUnsavedWarning()
+    return true
+  }
+  return false
+}
+
+defineExpose({ blockIfUnsaved })
+
+function onGridWheel(event) {
+  if (scrollLocked.value) {
+    event.preventDefault()
+  }
+}
+
+// A failed reload replaces the grid with an error, taking the open editor with it.
+function onRefresh() {
+  if (!blockIfUnsaved()) {
+    emit('refresh')
+  }
+}
+
+function onGridScroll() {
+  if (!editingRow.value || blockIfUnsaved()) {
+    return
+  }
+  reviewEditPopover.value?.hide()
+}
+
+watch([() => gridData.value, () => isLoading.value], ([data, loading]) => {
+  if (!data?.length) {
+    // An empty grid while a checklist loads (e.g. switching asset) keeps the selection, so ?ruleId survives
+    if (!loading) {
+      selectRule(null)
+    }
+    return
+  }
+
+  const isValid = selectedRuleId.value && data.some(r => r.ruleId === selectedRuleId.value)
+
+  if (!isValid) {
+    const firstVisible = data[0]
+    if (firstVisible) {
+      selectRule(firstVisible.ruleId)
+    }
+  }
+
+  if (editingRow.value) {
+    const updated = ruleLookupMap.value.get(editingRow.value.ruleId)
+    if (updated) {
+      editingRow.value = updated
+    }
+  }
+})
+
+function guardUnsaved(targetRuleId) {
+  const isSameRow = editingRow.value?.ruleId === targetRuleId
+  return isSameRow || !blockIfUnsaved()
+}
+
+function onSelectionChange(newRow) {
+  if (!newRow) {
+    return
+  }
+  if (!guardUnsaved(newRow.ruleId)) {
+    return
+  }
+  selectRule(newRow.ruleId)
+}
+
+function onRowClick(event) {
+  event.originalEvent?.stopPropagation()
+  if (!guardUnsaved(event.data.ruleId)) {
+    return
+  }
+  selectRule(event.data.ruleId)
+  openRowEditor(event.originalEvent || event, event.data)
+}
+</script>
+
+<template>
+  <div
+    class="checklist-grid" :style="gridStyle"
+    @scroll.capture="onGridScroll" @wheel.capture="onGridWheel"
+  >
+    <AssetChecklistGridHeader
+      v-model:search-filter="searchFilter"
+      v-model:filters="gridFilters"
+      v-model:selected-columns="selectedColumns"
+      :active-preset="activePreset"
+      :toggleable-columns="TOGGLEABLE_COLUMNS"
+      :filter-columns="filterColumns"
+      :filter-value-options="valueOptions"
+      :asset="asset" :revision-info="revisionInfo" :is-loading="isLoading"
+      :access-mode="accessMode"
+      :can-accept="canAccept"
+      :submit-count="submitPlan.eligible.length"
+      :accept-count="acceptPlan.eligible.length"
+      @refresh="onRefresh"
+      @bulk-action="onBulkAction"
+      @apply-preset="key => setShown(DISPLAY_PRESETS[key])"
+    />
+
+    <AssetChecklistGridTable
+      :selected-row="selectedRow" :grid-data="filteredRows" :is-loading="isLoading"
+      :total-count="gridData.length"
+      :is-filtered="isFiltered"
+      :highlight-term="highlightTerm"
+      :visible-fields="visibleFields"
+      :item-size="itemSize"
+      :export-filename="exportFilename"
+      @update:selected-row="onSelectionChange" @row-click="onRowClick"
+      @refresh="onRefresh"
+    />
+
+    <ReviewEditPopover
+      ref="reviewEditPopover"
+      :current-review="currentReview"
+      :selected-rule-id="selectedRuleId"
+      :collection-id="collectionId"
+      :asset-id="assetId"
+      :field-settings="fieldSettings"
+      :access-mode="accessMode"
+      :can-accept="canAccept"
+      :is-saving="isSaving"
+      :save-error="saveError"
+      @save="onPopoverSave"
+      @status-action="onPopoverStatusAction"
+      @close="editingRow = null"
+    />
+
+    <BulkStatusConfirmModal
+      v-model:visible="confirmVisible"
+      :action="pendingAction"
+      :eligible-count="activePlan?.eligible.length ?? 0"
+      :skip-lines="activeSkipLines"
+      :is-busy="isApplying"
+      @confirm="onConfirmBulk"
+    />
+  </div>
+</template>
+
+<style scoped>
+.checklist-grid {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-background-subtle);
+  border: 1px solid var(--color-border-light);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.footer-divider {
+  color: var(--color-border-default);
+  margin: 0 0.25rem;
+  font-weight: 300;
+}
+</style>

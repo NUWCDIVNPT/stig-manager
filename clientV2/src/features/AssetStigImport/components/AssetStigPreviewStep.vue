@@ -1,0 +1,360 @@
+<script setup>
+import Checkbox from 'primevue/checkbox'
+import Column from 'primevue/column'
+import DataTable from 'primevue/datatable'
+import { computed, ref } from 'vue'
+import ActionToolbar from '../../../components/common/ActionToolbar.vue'
+import CatBadge from '../../../components/common/CatBadge.vue'
+import DensityControls from '../../../components/common/DensityControls.vue'
+import GridFilterButton from '../../../components/common/GridFilterButton.vue'
+import GridSearch from '../../../components/common/GridSearch.vue'
+import HighlightText from '../../../components/common/HighlightText.vue'
+import ResultBadge from '../../../components/common/ResultBadge.vue'
+import StatusBadge from '../../../components/common/StatusBadge.vue'
+import StatusFooter from '../../../components/common/StatusFooter.vue'
+import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
+import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
+import { severityMap } from '../../../shared/lib/checklistUtils.js'
+import { catLabel, statusText } from '../../../shared/lib/exportCells.js'
+import { resultSortValue, severitySortValue, statusSortValue } from '../../../shared/lib/gridSorts.js'
+
+const props = defineProps({
+  matched: { type: Array, required: true },
+  filteredMatched: { type: Array, required: true },
+  notReviewed: { type: Array, required: true },
+  unmatched: { type: Array, required: true },
+  updatedOnly: { type: Boolean, required: true },
+})
+
+const emit = defineEmits(['update:updatedOnly'])
+
+// Density grows rows so long titles, details and comments can show in full
+const { itemSize, gridStyle } = useGridDensity('asset-stig-import-preview')
+
+const RESULT_TO_STATUS = {
+  fail: 'O',
+  pass: 'NF',
+  notapplicable: 'NA',
+  notchecked: 'NR',
+  informational: 'I',
+}
+
+const previewRows = computed(() =>
+  props.filteredMatched.map(row => ({
+    ruleId: row.new.ruleId,
+    title: row.current.ruleTitle ?? row.current.title ?? '',
+    groupId: row.current.groupId ?? '',
+    severity: row.current.severity ?? '',
+    currentResult: row.current.result ?? null,
+    newResult: row.new.result ?? null,
+    newDetail: row.new.detail ?? '',
+    newComment: row.new.comment ?? '',
+    newStatus: row.new.status ?? '',
+  })),
+)
+
+const dtRef = ref()
+
+function badgeFor(result) {
+  return result ? RESULT_TO_STATUS[result] ?? 'NR' : null
+}
+
+const {
+  term: searchTerm,
+  filters: gridFilters,
+  filteredRows,
+  isFiltered,
+  filterColumns,
+  valueOptions,
+  highlightTerm,
+} = useGridSearch(previewRows, [
+  { field: 'ruleId', header: 'Rule' },
+  { field: 'title', header: 'Title' },
+  { field: 'groupId', header: 'Group' },
+  { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false },
+  { field: 'currentResult', header: 'Current', filterValues: r => badgeFor(r.currentResult) ?? '', quickSearch: false },
+  { field: 'newResult', header: 'New', filterValues: r => badgeFor(r.newResult) ?? '', quickSearch: false },
+  { field: 'newDetail', header: 'New Detail' },
+  { field: 'newComment', header: 'New Comment' },
+  { field: 'newStatus', header: 'New Status', filterValues: r => statusText(r.newStatus), quickSearch: false },
+])
+const exportResult = ({ data }) => badgeFor(data) ?? ''
+const exportStatus = ({ data }) => statusText(data)
+
+const centerHeaderPt = { columnHeaderContent: { style: 'justify-content: center;' } }
+</script>
+
+<template>
+  <div class="preview-root">
+    <div class="preview-header">
+      <p class="preview-subtitle">
+        Review the items that will be imported into the current checklist. Items that are not matched, or that are
+        marked Not Reviewed in the file, are listed below the import preview and will not be imported.
+      </p>
+    </div>
+
+    <ActionToolbar class="preview-toolbar">
+      <div class="preview-filter">
+        <Checkbox
+          input-id="updatedOnly"
+          :model-value="updatedOnly"
+          binary
+          @update:model-value="emit('update:updatedOnly', $event)"
+        />
+        <label for="updatedOnly">Only changed results</label>
+      </div>
+      <div class="toolbar-spacer" />
+      <GridSearch v-model="searchTerm" class="preview-search" label="Search preview" placeholder="Search rules..." />
+      <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
+      <div class="toolbar-divider" />
+      <DensityControls grid-key="asset-stig-import-preview" />
+    </ActionToolbar>
+
+    <div class="preview-table-wrapper" :style="gridStyle">
+      <DataTable
+        ref="dtRef"
+        :value="filteredRows"
+        export-filename="asset-stig-import-preview"
+        scrollable
+        scroll-height="flex"
+        resizable-columns
+        striped-rows
+        :virtual-scroller-options="{ itemSize }"
+        :pt="{ table: { style: 'table-layout: fixed; width: 100%' } }"
+      >
+        <Column field="ruleId" header="Rule" style="min-width: 11.75rem" sortable>
+          <template #body="{ data }">
+            <HighlightText :text="data.ruleId" :term="highlightTerm('ruleId')" />
+          </template>
+        </Column>
+        <Column field="title" header="Title" style="min-width: 20rem" sortable>
+          <template #body="{ data }">
+            <span class="cell-text--clamped" :title="data.title"><HighlightText :text="data.title" :term="highlightTerm('title')" /></span>
+          </template>
+        </Column>
+        <Column field="groupId" header="Group" style="width: 10rem" sortable>
+          <template #body="{ data }">
+            <HighlightText :text="data.groupId" :term="highlightTerm('groupId')" />
+          </template>
+        </Column>
+        <Column field="severity" :sort-field="severitySortValue" header="CAT" style="width: 6.5rem; text-align: center" :pt="centerHeaderPt" sortable>
+          <template #body="{ data }">
+            <CatBadge v-if="severityMap[data.severity]" :category="severityMap[data.severity]" variant="label" centered />
+            <span v-else class="status-empty">—</span>
+          </template>
+        </Column>
+        <Column header="Current" field="currentResult" :export-value="exportResult" style="width: 7.25rem; text-align: center" :pt="centerHeaderPt" :sort-field="r => resultSortValue(r.currentResult)" sortable>
+          <template #body="{ data }">
+            <ResultBadge v-if="badgeFor(data.currentResult)" :status="badgeFor(data.currentResult)" />
+            <span v-else>—</span>
+          </template>
+        </Column>
+        <Column header="New" field="newResult" :export-value="exportResult" style="width: 7.25rem; text-align: center" :pt="centerHeaderPt" :sort-field="r => resultSortValue(r.newResult)" sortable>
+          <template #body="{ data }">
+            <ResultBadge v-if="badgeFor(data.newResult)" :status="badgeFor(data.newResult)" />
+            <span v-else>—</span>
+          </template>
+        </Column>
+        <Column field="newDetail" header="New Detail" style="min-width: 18.25rem">
+          <template #body="{ data }">
+            <span class="cell-text--clamped" :title="data.newDetail"><HighlightText :text="data.newDetail" :term="highlightTerm('newDetail')" /></span>
+          </template>
+        </Column>
+        <Column field="newComment" header="New Comment" style="min-width: 18.25rem">
+          <template #body="{ data }">
+            <span class="cell-text--clamped" :title="data.newComment"><HighlightText :text="data.newComment" :term="highlightTerm('newComment')" /></span>
+          </template>
+        </Column>
+        <Column field="newStatus" header="New Status" :export-value="exportStatus" style="width: 9rem; text-align: center" :pt="centerHeaderPt" :sort-field="r => statusSortValue({ status: r.newStatus })" sortable>
+          <template #body="{ data }">
+            <StatusBadge v-if="data.newStatus" :status="data.newStatus" />
+            <span v-else class="status-empty">—</span>
+          </template>
+        </Column>
+        <template #empty>
+          <div class="preview-empty">
+            <i class="pi pi-info-circle" />
+            <span>{{ isFiltered && previewRows.length ? 'No rules match the search.' : 'No matched, reviewed rules to import.' }}</span>
+          </div>
+        </template>
+      </DataTable>
+      <StatusFooter
+        :total-count="previewRows.length"
+        :filtered-count="isFiltered ? filteredRows.length : null"
+        :show-refresh="false"
+        :show-export="true"
+        :dt="dtRef"
+        total-label="rules"
+        total-icon="pi pi-list"
+      />
+    </div>
+
+    <div v-if="notReviewed.length > 0 || unmatched.length > 0" class="excluded-grid">
+      <div v-if="notReviewed.length > 0" class="excluded-card">
+        <div class="excluded-header">
+          <span class="pi pi-eye-slash" />
+          <span>Parsed but Not Reviewed ({{ notReviewed.length }})</span>
+        </div>
+        <p class="excluded-desc">
+          These rules are present in the file with result <code>notchecked</code> and will not be imported.
+        </p>
+        <div class="excluded-list">
+          <span v-for="ruleId in notReviewed" :key="ruleId" class="excluded-chip">{{ ruleId }}</span>
+        </div>
+      </div>
+
+      <div v-if="unmatched.length > 0" class="excluded-card">
+        <div class="excluded-header">
+          <span class="pi pi-times-circle" />
+          <span>Unmatched in current STIG ({{ unmatched.length }})</span>
+        </div>
+        <p class="excluded-desc">
+          These rule IDs are in the file but not in the current revision of this STIG, and will not be imported.
+        </p>
+        <div class="excluded-list">
+          <span v-for="ruleId in unmatched" :key="ruleId" class="excluded-chip">{{ ruleId }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.preview-root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.preview-subtitle {
+  margin: 0;
+  color: var(--color-text-dim);
+  flex: 1;
+  line-height: 1.4;
+}
+
+.preview-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--color-text-primary);
+  font-size: var(--text-md);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.preview-toolbar {
+  --checklist-control-height: 2rem;
+  flex-shrink: 0;
+}
+
+.preview-search {
+  flex: 0 1 20rem;
+  min-width: 10rem;
+}
+
+.preview-table-wrapper {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-border-default);
+  border-radius: 4px;
+  overflow: hidden;
+  flex: 1;
+  min-height: 0;
+}
+
+.preview-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: var(--color-text-dim);
+  padding: 0.75rem 1rem;
+}
+
+/* Font and line height come from useGridDensity, so N clamped lines fill the row exactly. */
+.cell-text--clamped {
+  display: -webkit-box;
+  line-clamp: var(--line-clamp, 1);
+  -webkit-line-clamp: var(--line-clamp, 1);
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: var(--cell-font-size);
+  line-height: var(--cell-line-height, 1.3);
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.excluded-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.excluded-grid > .excluded-card:only-child {
+  grid-column: 1 / -1;
+}
+
+.excluded-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--color-border-default);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--color-background-light) 35%, transparent);
+}
+
+.excluded-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 600;
+  color: var(--color-text-bright);
+}
+
+.excluded-header .pi {
+  color: var(--color-text-dim);
+}
+
+.excluded-desc {
+  margin: 0;
+  color: var(--color-text-dim);
+  font-size: var(--text-md);
+  line-height: 1.4;
+}
+
+.excluded-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  max-height: 7rem;
+  overflow-y: auto;
+}
+
+.excluded-chip {
+  font-size: var(--text-sm);
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: var(--color-background-darkest);
+  color: var(--color-text-dim);
+  border: 1px solid var(--color-border-default);
+  font-family: var(--font-mono);
+}
+
+.status-empty {
+  color: var(--color-text-dim);
+}
+</style>

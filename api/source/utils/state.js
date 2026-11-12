@@ -48,8 +48,8 @@ class State extends EventEmitter {
     initialState = 'starting', 
     endpoints = { 
       ui: { 
-        current: '/', 
-        next: '' 
+        current: './', 
+        next: './client-v2/' 
       } 
     } 
   } = {}) {

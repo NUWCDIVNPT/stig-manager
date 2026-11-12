@@ -1,0 +1,101 @@
+<script setup>
+import { computed } from 'vue'
+
+const props = defineProps({
+  category: {
+    type: [String, Number],
+    required: true,
+    validator: value => ['1', '2', '3', 1, 2, 3].includes(value),
+  },
+  count: {
+    type: [Number, String],
+    default: null,
+  },
+  variant: {
+    type: String,
+    default: 'count',
+    validator: value => ['count', 'label'].includes(value),
+  },
+  // Center the badge in a block container (e.g. a centered table cell)
+  centered: Boolean,
+})
+
+const badgeClass = computed(() => {
+  const cat = String(props.category)
+  return {
+    [`cat-${cat}`]: true,
+    'cat-badge--label': props.variant === 'label',
+    'cat-badge--centered': props.centered,
+  }
+})
+
+const formattedCount = computed(() => {
+  return (props.count !== null && props.count !== undefined && props.count !== '') ? props.count : ''
+})
+
+const title = computed(() => `CAT ${props.category}`)
+</script>
+
+<template>
+  <div
+    class="cat-badge"
+    :class="badgeClass"
+    :title="title"
+  >
+    {{ variant === 'label' ? `CAT ${category}` : formattedCount }}
+  </div>
+</template>
+
+<style scoped>
+.cat-badge {
+  border-radius: 5px;
+  color: var(--color-text-dark);
+  width: fit-content;
+  min-width: 4.1rem;
+  font-size: var(--text-lg);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.8rem;
+  white-space: nowrap;
+}
+
+.cat-1 {
+  background-color: var(--color-cat1);
+}
+
+.cat-2 {
+  background-color: var(--color-cat2);
+}
+
+.cat-3 {
+  background-color: var(--color-cat3);
+}
+
+.cat-badge--centered {
+  margin-inline: auto;
+}
+
+.cat-badge--label {
+  background-color: transparent;
+  padding: 0 0.4rem;
+  font-size: var(--text-md);
+  font-weight: 700;
+}
+
+.cat-badge--label.cat-1 {
+  color: var(--color-cat1);
+  border: 1px solid var(--color-cat1);
+}
+
+.cat-badge--label.cat-2 {
+  color: var(--color-cat2);
+  border: 1px solid var(--color-cat2);
+}
+
+.cat-badge--label.cat-3 {
+  color: var(--color-cat3);
+  border: 1px solid var(--color-cat3);
+}
+</style>

@@ -10194,6 +10194,16 @@ components:
         lastWhatsNew:
           type: string
           format: date
+        lastWhatsNewV2:
+          description: The date of the newest What's New entry the user has dismissed in the Vue client, which keeps its own list of entries
+          type: string
+          format: date
+        tours:
+          description: The version date of each client tour the user has seen, keyed by tour id
+          type: object
+          additionalProperties:
+            type: string
+            format: date
       additionalProperties: false
       required:
         - darkMode
@@ -10206,6 +10216,17 @@ components:
         lastWhatsNew:
           type: string
           format: date
+        lastWhatsNewV2:
+          description: The date of the newest What's New entry the user has dismissed in the Vue client, which keeps its own list of entries
+          type: string
+          format: date
+        tours:
+          description: The version date of each client tour the user has seen, keyed by tour id. A null date forgets that tour, so the client offers it again.
+          type: object
+          additionalProperties:
+            type: string
+            format: date
+            nullable: true
       additionalProperties: false
       minProperties: 1
     Version:

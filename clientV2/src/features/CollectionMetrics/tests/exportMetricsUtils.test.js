@@ -1,0 +1,344 @@
+import { saveAs } from 'file-saver-es'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { apiCall } from '../../../shared/api/apiClient.js'
+import { getDownloadUrl } from '../../../shared/serviceWorker.js'
+import { useGlobalAppStore } from '../../../shared/stores/globalAppStore.js'
+import { generateCsv, handleInventoryExport, handleMetricDownload } from '../exportMetricsUtils'
+
+// Mock dependencies
+vi.mock('../../../shared/api/apiClient.js', () => ({
+  apiCall: vi.fn(),
+}))
+
+// Mock dependencies
+vi.mock('file-saver-es', () => ({
+  saveAs: vi.fn(),
+}))
+
+const { triggerErrorMock } = vi.hoisted(() => {
+  return { triggerErrorMock: vi.fn() }
+})
+
+vi.mock('../../../shared/serviceWorker.js', () => ({
+  getDownloadUrl: vi.fn().mockResolvedValue(null),
+}))
+
+vi.mock('../../../shared/composables/useGlobalError.js', () => ({
+  useGlobalError: () => ({
+    triggerError: triggerErrorMock,
+  }),
+}))
+
+// Mock Blob globally
+globalThis.Blob = class MockBlob {
+  constructor(content) {
+    this.content = content
+  }
+
+  text() {
+    return Promise.resolve(this.content.join(''))
+  }
+}
+
+describe('exportMetricsUtils', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    globalThis.fetch = vi.fn()
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  describe('generateCsv', () => {
+    it('should format simple fields correctly', () => {
+      const data = [{ name: 'Asset1', ip: '1.2.3.4' }]
+      const fields = [
+        { apiProperty: 'name', header: 'Name' },
+        { apiProperty: 'ip', header: 'IP' },
+      ]
+      const csv = generateCsv(data, fields)
+      expect(csv).toBe('Name,IP\nAsset1,1.2.3.4')
+    })
+
+    it('should escape fields with commas', () => {
+      const data = [{ name: 'Asset,1', ip: '1.2.3.4' }]
+      const fields = [
+        { apiProperty: 'name', header: 'Name' },
+        { apiProperty: 'ip', header: 'IP' },
+      ]
+      const csv = generateCsv(data, fields)
+      expect(csv).toBe('Name,IP\n"Asset,1",1.2.3.4')
+    })
+
+    it('should format list fields with provided delimiter', () => {
+      const data = [{
+        name: 'Asset1',
+        stigs: ['STIG1', 'STIG2'],
+      }]
+      const fields = [
+        { apiProperty: 'name', header: 'Name' },
+        { apiProperty: 'stigs', header: 'STIGs' },
+      ]
+      const csv = generateCsv(data, fields, { listDelimiter: '\n' })
+      expect(csv).toContain('"STIG1\nSTIG2"')
+    })
+
+    it('should handle missing properties (strict header enforcement)', () => {
+      const data = [{ name: 'Asset1' }]
+      const fields = [
+        { apiProperty: 'name', header: 'Name' },
+        { apiProperty: 'missing', header: 'Skipped' },
+      ]
+      const csv = generateCsv(data, fields)
+      expect(csv).toBe('Name,Skipped\nAsset1,')
+    })
+  })
+
+  describe('handleInventoryExport', () => {
+    const appStore = useGlobalAppStore()
+    beforeEach(() => appStore.setClassification('U'))
+    afterEach(() => appStore.setClassification(null))
+
+    it('should handle asset export with newly active fields and formats', async () => {
+      const mockAssets = [{
+        assetId: '1',
+        name: 'Asset1',
+        noncomputing: true,
+        metadata: { key: 'value' },
+        labelIds: ['l1'],
+        stigs: [{ benchmarkId: 'STIG1' }],
+      }]
+
+      const mockLabels = [{ labelId: 'l1', name: 'Label1' }]
+
+      apiCall
+        .mockResolvedValueOnce(mockAssets) // getAssets
+        .mockResolvedValueOnce(mockLabels) // getCollectionLabels
+
+      await handleInventoryExport({
+        groupBy: 'asset',
+        format: 'csv',
+        csvFields: [
+          { apiProperty: 'name', header: 'Name' },
+          { apiProperty: 'noncomputing', header: 'Non-Computing' },
+          { apiProperty: 'labels', header: 'Labels' },
+          { apiProperty: 'metadata', header: 'Metadata' },
+          { apiProperty: 'stigs', header: 'STIGs' },
+        ],
+        collectionId: 'col1',
+        collectionName: 'TestCollection',
+        apiUrl: 'http://api',
+        authToken: 'token',
+        delimiter: 'comma',
+      })
+
+      expect(apiCall).toHaveBeenCalledTimes(2)
+      // First call for assets
+      expect(apiCall).toHaveBeenNthCalledWith(1, 'getAssets', { collectionId: 'col1', projection: 'stigs' })
+      // Second call for labels
+      expect(apiCall).toHaveBeenNthCalledWith(2, 'getCollectionLabels', { collectionId: 'col1' })
+
+      expect(saveAs).toHaveBeenCalled()
+      const blob = saveAs.mock.calls[0][0]
+      const text = await blob.text()
+
+      // Unmarked so it stays importable by AssetCsvParser
+      expect(text.split('\n')[0]).toBe('Name,Description,IP,FQDN,MAC,Non-Computing,STIGs,Labels,Metadata')
+      expect(text.split('\n')[1]).toMatch(/^Asset1,/)
+
+      expect(text).toContain('True')
+      expect(text).toContain('Label1')
+      expect(text).toContain('"{""key"":""value""}"')
+      expect(text).toContain('STIG1')
+    })
+
+    it('should produce empty columns for deselected fields (strict mode)', async () => {
+      const mockAssets = [{ name: 'Asset1' }]
+      const mockLabels = []
+
+      apiCall
+        .mockResolvedValueOnce(mockAssets)
+        .mockResolvedValueOnce(mockLabels)
+
+      await handleInventoryExport({
+        groupBy: 'asset',
+        format: 'csv',
+        csvFields: [
+          { apiProperty: 'name', header: 'Name' },
+        ],
+        collectionId: 'col1',
+        collectionName: 'TestCollection',
+        apiUrl: 'http://api',
+        authToken: 'token',
+      })
+
+      const blob = saveAs.mock.calls[0][0]
+      const text = await blob.text()
+
+      expect(text).toBe('Name,Description,IP,FQDN,MAC,Non-Computing,STIGs,Labels,Metadata\nAsset1,,,,,,,,')
+    })
+
+    it('should mark the group-by-STIG CSV', async () => {
+      apiCall.mockResolvedValueOnce([
+        { benchmarkId: 'STIG1', title: 'First' },
+        { benchmarkId: 'STIG2', title: 'Second' },
+      ])
+
+      await handleInventoryExport({
+        groupBy: 'stig',
+        format: 'csv',
+        csvFields: [
+          { apiProperty: 'benchmarkId', header: 'Benchmark' },
+          { apiProperty: 'title', header: 'Title' },
+        ],
+        collectionId: 'col1',
+        collectionName: 'TestCollection',
+        delimiter: 'comma',
+      })
+
+      const text = await saveAs.mock.calls[0][0].text()
+      expect(text).toBe('Marking,Benchmark,Title\n(U),STIG1,First\n(U),STIG2,Second')
+    })
+
+    it('should leave JSON output unmarked', async () => {
+      const stigs = [{ benchmarkId: 'STIG1' }]
+      apiCall.mockResolvedValueOnce(stigs)
+
+      await handleInventoryExport({
+        groupBy: 'stig',
+        format: 'json',
+        include: false,
+        prettyPrint: false,
+        collectionId: 'col1',
+        collectionName: 'TestCollection',
+      })
+
+      const text = await saveAs.mock.calls[0][0].text()
+      expect(text).toBe(JSON.stringify(stigs))
+    })
+
+    it('should catch errors from fetchApiData and call triggerError', async () => {
+      apiCall.mockRejectedValueOnce(new Error('Fetch API Data Failed'))
+
+      await handleInventoryExport({
+        groupBy: 'asset',
+        format: 'csv',
+        csvFields: [],
+        collectionId: 'col1',
+        collectionName: 'TestCollection',
+        apiUrl: 'http://api',
+        authToken: 'token',
+      })
+
+      expect(triggerErrorMock).toHaveBeenCalledWith(expect.any(Error))
+      expect(triggerErrorMock.mock.calls[0][0].message).toBe('Fetch API Data Failed')
+    })
+
+    it('should catch errors from fetchLabels and call triggerError', async () => {
+      // First call (fetchApiData/getAssets) succeeds
+      apiCall.mockResolvedValueOnce([{ name: 'Asset1' }])
+      // Second call (fetchLabels/getCollectionLabels) fails
+      apiCall.mockRejectedValueOnce(new Error('Fetch Labels Failed'))
+
+      await handleInventoryExport({
+        groupBy: 'asset',
+        format: 'csv',
+        csvFields: [],
+        collectionId: 'col1',
+        collectionName: 'TestCollection',
+        apiUrl: 'http://api',
+        authToken: 'token',
+      })
+
+      expect(triggerErrorMock).toHaveBeenCalledWith(expect.any(Error))
+      expect(triggerErrorMock.mock.calls[0][0].message).toBe('Fetch Labels Failed')
+    })
+  })
+
+  describe('handleMetricDownload', () => {
+    const params = {
+      format: 'csv',
+      style: 'summary',
+      aggregation: 'collection',
+      collectionId: 'col1',
+      collectionName: 'TestCollection',
+      apiUrl: 'http://api',
+      authToken: 'token',
+    }
+
+    it('should use service worker download if available', async () => {
+      getDownloadUrl.mockResolvedValue('http://download-url')
+
+      // Mock window.location
+      const originalLocation = window.location
+
+      // Note: In JSDOM, window.location is protected. We use Object.defineProperty to mockp it.
+      Object.defineProperty(window, 'location', {
+        writable: true,
+        value: 'http://initial',
+      })
+
+      await handleMetricDownload(params)
+
+      expect(getDownloadUrl).toHaveBeenCalled()
+      expect(window.location).toBe('http://download-url')
+      expect(globalThis.fetch).not.toHaveBeenCalled()
+
+      // Restore
+      Object.defineProperty(window, 'location', {
+        writable: true,
+        value: originalLocation,
+      })
+    })
+
+    it('should fallback to fetch if service worker returns null', async () => {
+      getDownloadUrl.mockResolvedValue(null)
+      globalThis.fetch.mockResolvedValue({
+        ok: true,
+        blob: () => Promise.resolve(new Blob(['content'])),
+      })
+
+      await handleMetricDownload(params)
+
+      expect(getDownloadUrl).toHaveBeenCalled()
+      expect(globalThis.fetch).toHaveBeenCalled()
+      expect(saveAs).toHaveBeenCalled()
+    })
+
+    it('should handle fetch errors', async () => {
+      getDownloadUrl.mockResolvedValue(null)
+      globalThis.fetch.mockRejectedValue(new Error('Fetch failed'))
+
+      await handleMetricDownload(params)
+
+      expect(triggerErrorMock).toHaveBeenCalledWith(expect.any(Error))
+      expect(triggerErrorMock.mock.calls[0][0].message).toBe('Fetch failed')
+    })
+
+    it('should generate correct meta URL when isMeta is true', async () => {
+      getDownloadUrl.mockResolvedValue(null)
+      globalThis.fetch.mockResolvedValue({
+        ok: true,
+        blob: () => Promise.resolve(new Blob(['content'])),
+      })
+
+      const metaParams = {
+        format: 'csv',
+        style: 'detail',
+        aggregation: 'unagg',
+        baseParams: { collectionId: ['col1', 'col2'] },
+        isMeta: true,
+        apiUrl: 'http://api',
+        authToken: 'token',
+      }
+
+      await handleMetricDownload(metaParams)
+
+      expect(getDownloadUrl).toHaveBeenCalled()
+      const urlCallArgs = getDownloadUrl.mock.calls[0][0]
+      expect(urlCallArgs.url).toContain('http://api/collections/meta/metrics/detail?collectionId=col1&collectionId=col2&format=csv')
+      expect(globalThis.fetch).toHaveBeenCalled()
+    })
+  })
+})

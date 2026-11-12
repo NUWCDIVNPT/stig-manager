@@ -1,0 +1,452 @@
+<script setup>
+import Splitter from 'primevue/splitter'
+import SplitterPanel from 'primevue/splitterpanel'
+import Tab from 'primevue/tab'
+import TabList from 'primevue/tablist'
+import TabPanel from 'primevue/tabpanel'
+import TabPanels from 'primevue/tabpanels'
+import Tabs from 'primevue/tabs'
+import { computed, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { notFoundLocation } from '../../../router/notFound.js'
+import { getHttpStatus } from '../../../shared/api/apiClient.js'
+import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
+import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
+import { useLabelFilterQuery } from '../../../shared/composables/useLabelFilterQuery.js'
+import { useTrackRecentView } from '../../../shared/composables/useRecentViews.js'
+import { useTours } from '../../../shared/composables/useTours.js'
+import { viewTabListPt, viewTabPt, viewTabsPt } from '../../../shared/lib/tabPt.js'
+import CollectionManage from '../../CollectionManage/components/CollectionManage.vue'
+import CollectionExportMetrics from '../../CollectionMetrics/components/CollectionExportMetrics.vue'
+import CollectionImportResults from '../../CollectionMetrics/components/CollectionImportResults.vue'
+import CollectionMetrics from '../../CollectionMetrics/components/CollectionMetrics.vue'
+import Findings from '../../Findings/components/Findings.vue'
+import { fetchCollection } from '../api/collectionApi.js'
+import CollectionAssetsTab from './CollectionAssetsTab.vue'
+import CollectionLabelsTab from './CollectionLabelsTab.vue'
+import CollectionStigsTab from './CollectionStigsTab.vue'
+
+const props = defineProps({
+  collectionId: {
+    type: [String],
+    required: true,
+  },
+})
+
+const route = useRoute()
+const router = useRouter()
+const { offerTourWhen } = useTours()
+const { triggerError } = useGlobalError()
+const { getCollectionRoleId } = useCurrentUser()
+
+const canManage = computed(() => {
+  const roleId = getCollectionRoleId(props.collectionId)
+  return roleId >= 3
+})
+
+// Fetch collection details for name
+const { state: collection, execute: loadCollection } = useAsyncState(
+  () => fetchCollection(props.collectionId),
+  {
+    immediate: false,
+    onError: (err) => {
+      // 403 = no grant (API PrivilegeError), 404 = gone, 400 = malformed id; same as the review pages
+      if ([400, 403, 404].includes(getHttpStatus(err))) {
+        router.replace(notFoundLocation(route))
+      }
+      else {
+        triggerError(err)
+      }
+    },
+  },
+)
+
+const collectionName = computed(() => collection.value?.name || 'Collection')
+
+// Label filter (set from the breadcrumb) shared by the dashboard metrics and every tab.
+const { selectedLabelNames, labelFilterParams } = useLabelFilterQuery()
+
+// Findings and Manage get their own Recent entries; the other tabs share one
+const RECENT_SECTIONS = {
+  'collection-findings': { section: 'findings', suffix: ' / Findings' },
+  'collection-management': { section: 'manage', suffix: ' / Manage' },
+}
+useTrackRecentView(() => {
+  const name = collection.value?.name
+  if (!name || !route.name?.startsWith('collection')) {
+    return null
+  }
+  const { section, suffix = '' } = RECENT_SECTIONS[route.name] ?? {}
+  return { type: 'collection', section, collectionId: props.collectionId, label: name + suffix }
+})
+
+// Initial Data Load
+watch([() => props.collectionId], () => {
+  collection.value = null
+  loadCollection()
+}, { immediate: true })
+
+// Children stay mounted (no layout flash) but hold their fetches until the
+// collection itself has loaded, so a deleted or revoked collection only fails
+// through the fetchCollection error path above.
+const collectionReady = computed(() => Boolean(collection.value))
+
+// The tour points at the dashboard and the label filter, which the Management
+// route hides, so it waits for a view that shows them.
+offerTourWhen('collection', () => collectionReady.value && Boolean(route.meta.labelFilter))
+
+// Map route name to tab value
+const routeToTab = {
+  'collection-stigs': 'stigs',
+  'collection-assets': 'assets',
+  'collection-labels': 'labels',
+  'collection-findings': 'findings',
+  'collection-management': 'management',
+}
+
+const tabToRoute = {
+  stigs: 'collection-stigs',
+  assets: 'collection-assets',
+  labels: 'collection-labels',
+  findings: 'collection-findings',
+  management: 'collection-management',
+}
+
+// Each tab's own query (e.g. Findings ?agg/stig/sel), saved on leave and restored on
+// return so the URL matches the hidden tab's retained state. Label keys stay current.
+const tabQueries = new Map()
+
+// Active tab based on route
+const activeTab = computed({
+  get: () => routeToTab[route.name] || 'stigs',
+  set: (newTab) => {
+    const routeName = tabToRoute[newTab]
+    if (routeName) {
+      const { labelName, labelMatch, ...ownQuery } = route.query
+      tabQueries.set(activeTab.value, ownQuery)
+      const target = { name: routeName, params: { collectionId: props.collectionId } }
+      // A tab that hides the label filter (meta.labelFilter false, i.e. Management)
+      // does not carry it either, so the filter is never applied invisibly
+      const carriesLabelFilter = router.resolve(target).meta.labelFilter !== false
+      const savedQuery = tabQueries.get(newTab) ?? {}
+      router.push({ ...target, query: carriesLabelFilter ? { ...savedQuery, ...labelFilterParams.value } : savedQuery })
+    }
+  },
+})
+
+const isManagement = computed(() => route.name === 'collection-management')
+
+const sidebarTransitioning = ref(false)
+watch(isManagement, () => {
+  sidebarTransitioning.value = true
+  setTimeout(() => {
+    sidebarTransitioning.value = false
+  }, 300)
+})
+
+// Lazy-mount tab panels: only render a tab's content after it has been visited.
+// Reset on collection switch so tabs visited in a prior collection don't mount
+// (and fetch) unvisited in the new one.
+const visitedTabs = ref(new Set([activeTab.value]))
+watch(activeTab, tab => visitedTabs.value.add(tab))
+
+// Hidden tabs keep the label filter they last saw, so a filter change refetches only
+// the visible tab; the others pick it up (and refetch) when next activated.
+const tabLabelNames = ref({})
+watch([activeTab, selectedLabelNames], ([tab, names]) => {
+  // selectedLabelNames is a fresh array per filter change, so compare contents:
+  // a filter that changed and reverted while this tab was hidden is not a change
+  if (JSON.stringify(tabLabelNames.value[tab]) !== JSON.stringify(names)) {
+    tabLabelNames.value[tab] = names
+  }
+}, { immediate: true })
+watch(() => props.collectionId, () => {
+  visitedTabs.value = new Set([activeTab.value])
+  tabQueries.clear()
+})
+
+const tabPanelsPt = {
+  root: {
+    style: {
+      flex: '1',
+      padding: '0',
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+    },
+  },
+}
+
+const tabPanelPt = {
+  root: {
+    style: {
+      flex: '1',
+      overflowY: 'auto',
+      height: '100%',
+    },
+  },
+}
+
+// Dashboard sidebar state (collapsed/expanded)
+const DASHBOARD_STORAGE_KEY = 'stigman:collectionDashboardCollapsed'
+const dashboardCollapsed = ref(localStorage.getItem(DASHBOARD_STORAGE_KEY) === 'true')
+const isAnimating = ref(false)
+const refreshKey = ref(0)
+
+function handleImported() {
+  refreshKey.value++
+}
+
+function toggleDashboardSidebar() {
+  isAnimating.value = true
+  dashboardCollapsed.value = !dashboardCollapsed.value
+
+  setTimeout(() => {
+    isAnimating.value = false
+  }, 300)
+
+  try {
+    localStorage.setItem(DASHBOARD_STORAGE_KEY, String(dashboardCollapsed.value))
+  }
+  catch {
+    // localStorage unavailable
+  }
+}
+</script>
+
+<template>
+  <div class="collection-view">
+    <Splitter
+      :pt="{
+        gutter: { style: isManagement ? 'display: none' : 'background: var(--color-border-dark)' },
+        root: { style: 'border: none; border-radius: 0; background: transparent; height: 100%; overflow: hidden;' },
+      }"
+    >
+      <!-- Dashboard Sidebar -->
+      <SplitterPanel
+        :size="18"
+        :min-size="4"
+        :pt="{ root: { class: { 'sidebar-panel--collapsed': dashboardCollapsed, 'sidebar-panel--animating': isAnimating || sidebarTransitioning, 'sidebar-panel--hidden': isManagement }, style: isManagement ? '' : 'min-width: 320px; max-width: 460px;' } }"
+      >
+        <aside class="dashboard-sidebar" data-tour="collection-dashboard">
+          <button
+            class="sidebar-toggle"
+            :aria-label="dashboardCollapsed ? 'Expand Dashboard' : 'Collapse Dashboard'"
+            @click="toggleDashboardSidebar"
+          >
+            <i :class="dashboardCollapsed ? 'pi pi-angle-right' : 'pi pi-angle-left'" />
+          </button>
+          <div v-if="dashboardCollapsed" class="sidebar-dots">
+            <span class="dot dot--unassessed" title="Unassessed" />
+            <span class="dot dot--assessed" title="Assessed" />
+            <span class="dot dot--submitted" title="Submitted" />
+            <span class="dot dot--accepted" title="Accepted" />
+            <span class="dot dot--rejected" title="Rejected" />
+          </div>
+          <div v-show="!dashboardCollapsed" class="sidebar-content">
+            <CollectionMetrics
+              :selected-label-names="selectedLabelNames"
+              :collection-id="collectionId"
+              :collection-name="collectionName"
+              :refresh-key="refreshKey"
+              :ready="collectionReady"
+              vertical
+            />
+            <div class="sidebar-export">
+              <CollectionImportResults
+                :collection-id="collectionId"
+                @imported="handleImported"
+              />
+              <CollectionExportMetrics
+                :collection-id="collectionId"
+                :collection-name="collectionName"
+              />
+            </div>
+          </div>
+        </aside>
+      </SplitterPanel>
+
+      <!-- Right Panel: Tabs + Content -->
+      <SplitterPanel :size="82">
+        <div class="right-panel">
+          <Tabs v-model:value="activeTab" :pt="viewTabsPt">
+            <TabList :pt="viewTabListPt" data-tour="collection-tabs">
+              <Tab value="stigs" :pt="viewTabPt">
+                STIGs
+              </Tab>
+              <Tab value="assets" :pt="viewTabPt">
+                Assets
+              </Tab>
+              <Tab value="labels" :pt="viewTabPt">
+                Labels
+              </Tab>
+              <Tab value="findings" :pt="viewTabPt">
+                Findings
+              </Tab>
+              <template v-if="canManage">
+                <div class="tab-separator" />
+                <Tab value="management" :pt="viewTabPt" data-tour="collection-tab-management">
+                  <i class="pi pi-cog tab-icon" />
+                  Management
+                </Tab>
+              </template>
+            </TabList>
+
+            <TabPanels :pt="tabPanelsPt">
+              <TabPanel value="stigs" :pt="tabPanelPt">
+                <CollectionStigsTab v-if="visitedTabs.has('stigs')" :collection-id="collectionId" :selected-label-names="tabLabelNames.stigs" :refresh-key="refreshKey" :ready="collectionReady" />
+              </TabPanel>
+              <TabPanel value="assets" :pt="tabPanelPt">
+                <CollectionAssetsTab v-if="visitedTabs.has('assets')" :collection-id="collectionId" :selected-label-names="tabLabelNames.assets" :refresh-key="refreshKey" :ready="collectionReady" />
+              </TabPanel>
+              <TabPanel value="labels" :pt="tabPanelPt">
+                <CollectionLabelsTab v-if="visitedTabs.has('labels')" :collection-id="collectionId" :selected-label-names="tabLabelNames.labels" :ready="collectionReady" />
+              </TabPanel>
+              <TabPanel value="findings" :pt="tabPanelPt">
+                <Findings v-if="visitedTabs.has('findings')" :collection-id="collectionId" :selected-label-names="tabLabelNames.findings" :ready="collectionReady" />
+              </TabPanel>
+              <TabPanel v-if="canManage" value="management" :pt="tabPanelPt">
+                <Transition name="management-fade">
+                  <CollectionManage v-if="isManagement && collectionReady" :collection-id="collectionId" @imported="handleImported" />
+                </Transition>
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
+        </div>
+      </SplitterPanel>
+    </Splitter>
+  </div>
+</template>
+
+<style scoped>
+.collection-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+:deep(.sidebar-panel--animating) {
+  transition: flex-basis 0.3s ease, width 0.3s ease, min-width 0.3s ease, max-width 0.3s ease !important;
+}
+
+:deep(.sidebar-panel--collapsed) {
+  flex: none !important;
+  flex-basis: 3.25rem !important;
+  width: 3.25rem !important;
+  min-width: 3.25rem !important;
+  max-width: 3.25rem !important;
+  overflow: hidden;
+}
+
+:deep(.sidebar-panel--hidden) {
+  flex: none !important;
+  flex-basis: 0 !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  overflow: hidden;
+}
+
+/* Dashboard Sidebar */
+.dashboard-sidebar {
+  height: 100%;
+  background-color: var(--color-background-dark);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: var(--panel-header-height);
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--color-border-default);
+  border-radius: 0;
+  color: var(--color-text-dim);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.sidebar-toggle:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-button-hover-bg);
+}
+
+.sidebar-dots {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem 0;
+}
+
+.dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot--unassessed { background-color: hsl(220, 18%, 42%); }
+.dot--assessed { background-color: hsl(204, 91%, 45%); }
+.dot--submitted { background-color: hsl(195, 80%, 52%); }
+.dot--accepted { background-color: hsl(210, 75%, 62%); }
+.dot--rejected { background-color: hsl(232, 58%, 52%); }
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.sidebar-export {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 12px 12px;
+}
+
+/* Right Panel */
+.right-panel {
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.placeholder-panel {
+  padding: 2rem;
+  text-align: center;
+  color: var(--color-text-dim);
+}
+
+.tab-separator {
+  width: 1px;
+  height: 1.5rem;
+  background: var(--color-border-default);
+  margin: 0 0.4rem;
+  align-self: center;
+}
+
+.tab-icon {
+  font-size: var(--text-md);
+  opacity: 0.6;
+  margin-right: 0.25rem;
+}
+
+.management-fade-enter-active {
+  transition: opacity 0.2s ease 0.15s, transform 0.2s ease 0.15s;
+}
+
+.management-fade-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+</style>

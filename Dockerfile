@@ -35,6 +35,10 @@ RUN mkdir client
 # Requires the client build files. Alternatively, copy ./client/src 
 COPY --chown=node:node ./client/dist ./client
 
+RUN mkdir clientV2
+# Requires the client build files. Alternatively, copy ./clientV2/dist 
+COPY --chown=node:node ./clientV2/dist ./clientV2
+
 RUN mkdir docs
 COPY --chown=node:node ./docs/_build/html ./docs
 
@@ -49,6 +53,7 @@ COMMIT_BRANCH=${COMMIT_BRANCH} \
 COMMIT_TAG=${COMMIT_TAG} \
 COMMIT_DESCRIBE=${COMMIT_DESCRIBE} \
 STIGMAN_CLIENT_DIRECTORY=./client \
+STIGMAN_CLIENT_NEXT_DIRECTORY=./clientV2 \
 STIGMAN_DOCS_DIRECTORY=./docs
 
 EXPOSE 54000

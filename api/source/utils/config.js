@@ -22,6 +22,9 @@ const config = {
     },
     client: {
         clientId: process.env.STIGMAN_CLIENT_ID || "stig-manager",
+        historyBase: process.env.STIGMAN_CLIENT_HISTORY_BASE
+            ? process.env.STIGMAN_CLIENT_HISTORY_BASE.replace(/\/+$/, "") + "/"
+            : "",
         consoleMode: process.env.STIGMAN_CLIENT_CONSOLE_MODE || "production",
         displayAppManagers: process.env.STIGMAN_CLIENT_DISPLAY_APPMANAGERS || "true",
         idleTimeoutUser: (() => {
@@ -38,6 +41,7 @@ const config = {
         apiBase: process.env.STIGMAN_CLIENT_API_BASE || "api",
         disabled: process.env.STIGMAN_CLIENT_DISABLED === "true",
         directory: process.env.STIGMAN_CLIENT_DIRECTORY || '../../client/dist',
+        next_directory: process.env.STIGMAN_CLIENT_NEXT_DIRECTORY || '../../clientV2/dist',
         extraScopes: process.env.STIGMAN_CLIENT_EXTRA_SCOPES,
         scopePrefix: process.env.STIGMAN_CLIENT_SCOPE_PREFIX,
         responseMode: process.env.STIGMAN_CLIENT_RESPONSE_MODE || "query",

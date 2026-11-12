@@ -1,0 +1,308 @@
+<script setup>
+import Button from 'primevue/button'
+import Column from 'primevue/column'
+import Dialog from 'primevue/dialog'
+import { computed, ref, watch } from 'vue'
+
+import shieldIcon from '../../../../assets/shield-green-check.svg'
+import LabelsRow from '../../../../components/columns/LabelsRow.vue'
+import LabelChip from '../../../../components/common/Label.vue'
+import PickListTable from '../../../../components/common/PickListTable.vue'
+import { fetchCollectionLabels } from '../../../../shared/api/collectionsApi.js'
+import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
+
+import { frameDialogPt, primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
+import { dashZero } from '../../../../shared/lib/numberFormat.js'
+import { rowHeightPx } from '../../../../shared/lib/rowHeights.js'
+import { listTooltip } from '../../../../shared/lib/tooltips.js'
+import {
+  fetchAssetsByLabel,
+  fetchCollectionAssetsBasic,
+  replaceLabelAssets,
+} from '../../api/labelManageApi.js'
+import { assetTextFilter, buildLabelMap, partitionAssets } from '../../lib/assetRows.js'
+
+const props = defineProps({
+  visible: { type: Boolean, required: true },
+  collectionId: { type: String, required: true },
+  label: { type: Object, default: null },
+})
+
+const emit = defineEmits(['update:visible', 'tagging-changed'])
+
+const localVisible = computed({
+  get: () => props.visible,
+  set: v => emit('update:visible', v),
+})
+
+const VIRTUAL_SCROLLER_OPTIONS = { itemSize: rowHeightPx('compact') }
+
+const pickerValue = ref([[], []])
+
+const availableCount = computed(() => pickerValue.value[0].length)
+const taggedCount = computed(() => pickerValue.value[1].length)
+
+const { isLoading, error: loadError, execute: executeLoad } = useAsyncState(
+  async () => {
+    const [allAssets, taggedAssets, labels] = await Promise.all([
+      fetchCollectionAssetsBasic(props.collectionId),
+      fetchAssetsByLabel(props.collectionId, props.label.labelId),
+      fetchCollectionLabels(props.collectionId),
+    ])
+    return partitionAssets(allAssets, taggedAssets, buildLabelMap(labels))
+  },
+  // loadError is shown inline.
+  { immediate: false, onError: null },
+)
+
+const {
+  isLoading: saving,
+  error: saveError,
+  execute: executeSave,
+} = useAsyncState(
+  assetIds => replaceLabelAssets(props.collectionId, props.label.labelId, assetIds),
+  { immediate: false },
+)
+
+async function loadData() {
+  pickerValue.value = [[], []]
+  if (!props.label) {
+    return
+  }
+  // null when superseded by a newer load or on error (shown inline)
+  const result = await executeLoad()
+  if (result) {
+    pickerValue.value = result
+  }
+}
+
+watch(() => props.visible, (open) => {
+  if (open) {
+    loadData()
+  }
+})
+
+function close() {
+  if (saving.value) {
+    return
+  }
+  localVisible.value = false
+}
+
+async function onSave() {
+  if (!props.label || saving.value || loadError.value) {
+    return
+  }
+  await executeSave(pickerValue.value[1].map(a => String(a.assetId)))
+  if (saveError.value) {
+    // useAsyncState already surfaced via the global error modal.
+    return
+  }
+  emit('tagging-changed')
+  localVisible.value = false
+}
+
+// Rows are pinned to the scroller's itemSize so its n × itemSize placement holds.
+const tablePt = {
+  bodyRow: { style: `font-size: var(--text-md); height: ${VIRTUAL_SCROLLER_OPTIONS.itemSize}px;` },
+  column: {
+    bodyCell: { style: 'padding: 0.15rem 0.5rem;' },
+    headerCell: { style: 'padding: 0.3rem 0.5rem; font-size: var(--text-md);' },
+  },
+}
+</script>
+
+<template>
+  <Dialog
+    v-model:visible="localVisible"
+    modal
+    :draggable="false"
+    :style="{ width: 'min(1040px, 96vw)', height: '74vh', maxHeight: '720px', minHeight: '480px' }"
+    :pt="frameDialogPt"
+  >
+    <template #header>
+      <div class="modal-header">
+        <div class="modal-header-icon">
+          <i class="pi pi-tags" />
+        </div>
+        <div>
+          <div class="modal-header-title">
+            Tag Assets
+          </div>
+          <div class="modal-header-sub">
+            <LabelChip v-if="label" :value="label.name" :color="label.color" />
+            <span v-else>Select assets for this label</span>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <div class="modal-body">
+      <div v-if="loadError" class="load-error">
+        <i class="pi pi-exclamation-triangle" />
+        <span>Could not load assets, so tagging can't be changed. Cancel and try again.</span>
+      </div>
+
+      <PickListTable
+        :model-value="pickerValue"
+        data-key="assetId"
+        :show-source-filter="true"
+        :show-target-filter="true"
+        filter-by="name"
+        source-filter-placeholder="Search available assets, labels, and STIGs..."
+        target-filter-placeholder="Search tagged assets, labels, and STIGs..."
+        :virtual-scroller-options="VIRTUAL_SCROLLER_OPTIONS"
+        :text-filter-fn="assetTextFilter"
+        :table-pt="tablePt"
+        @update:model-value="pickerValue = $event"
+      >
+        <template #sourceheader>
+          <span class="header-row">
+            <span>Available <span class="header-count">({{ availableCount }})</span></span>
+            <i v-if="isLoading" class="pi pi-spin pi-spinner header-spinner" />
+          </span>
+        </template>
+        <template #targetheader>
+          <span class="header-row">
+            <span>Tagged <span class="header-count">({{ taggedCount }})</span></span>
+            <i v-if="isLoading" class="pi pi-spin pi-spinner header-spinner" />
+          </span>
+        </template>
+        <template #columns>
+          <Column field="name" header="Asset" style="min-width: 11rem; width: 35%;" :body-style="{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }">
+            <template #body="{ data }">
+              <span class="asset-name" :title="data.name">{{ data.name }}</span>
+            </template>
+          </Column>
+          <Column header="Labels" style="min-width: 12.75rem;">
+            <template #body="{ data }">
+              <LabelsRow :labels="data.labels" compact />
+            </template>
+          </Column>
+          <Column header="STIGs" style="width: 6.25rem;" :header-style="{ textAlign: 'center', justifyContent: 'center' }">
+            <template #body="{ data }">
+              <span v-tooltip.top="listTooltip(data.benchmarkIds)" class="asset-stig-count" style="justify-content: center;">
+                <img :src="shieldIcon" class="asset-stig-icon" alt="">
+                {{ dashZero(data.stigCount) }}
+              </span>
+            </template>
+          </Column>
+        </template>
+      </PickListTable>
+    </div>
+
+    <template #footer>
+      <div class="modal-footer">
+        <Button label="Cancel" :pt="secondaryBtnPt" :disabled="saving" @click="close" />
+        <Button label="Save" :pt="primaryBtnPt" :loading="saving" :disabled="isLoading || !!loadError" @click="onSave" />
+      </div>
+    </template>
+  </Dialog>
+</template>
+
+<style scoped>
+.load-error {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding: 0.6rem 1rem;
+  color: var(--color-text-dim);
+  border: 1px dashed var(--color-border-default);
+  border-radius: 6px;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem;
+}
+
+.modal-header-icon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-action-blue-dark) 20%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-action-blue-dark) 40%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-action-blue-dark);
+  flex-shrink: 0;
+}
+
+.modal-header-title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-text-bright);
+  line-height: 1.25;
+}
+
+.modal-header-sub {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  color: var(--color-text-dim);
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: 1rem 1.1rem;
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.header-count {
+  font-weight: 500;
+  color: var(--color-text-dim);
+  font-size: var(--text-sm);
+}
+
+.header-spinner {
+  color: var(--color-text-dim);
+  font-size: var(--text-md);
+}
+
+.asset-name {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-md);
+}
+
+.asset-stig-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.asset-stig-icon {
+  width: 1.4rem;
+  height: 1.4rem;
+  display: block;
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.65rem 1rem;
+  justify-content: flex-end;
+}
+</style>

@@ -87,16 +87,16 @@ This is a glossary with definitions for terms like :term:`Asset`:
             * Result - Not a Finding, Not Applicable, Open, Informational, or Not Reviewed
             * Detail - Details describing the selected Result. Available according to Collection Settings.
             * Comment - Additional information included in the Review. Available according to Collection Settings. 
-            * Result Sprites - Colored flags indicating whether the result originated from an automated scan or manual source. Hover over these sprites for more info. 
+            * Result Origin - Colored indicators showing whether the result originated from an automated scan or manual source. Hover over these indicators for more info. 
 			
         * Status - The current state of the Review in the system. Configured via Collection Settings.
             * Status Label - Saved, Submitted, Accepted, or Rejected (Depends on Collection Settings.)
             * Status Text - Contextual text describing status change. Most often used when a Review is "Rejected" and requires further work by the original Evaluator.
 		
-          * In order to be Submitted, the Evaluation must have a Result of "Not A Finding," "Not Applicable," or "Open," and must meet any additional requirements set for that Collection. Hover over the ``(?)`` symbol for submission requirements. 
+          * In order to be Submitted, the Evaluation must have a Result of "Not A Finding," "Not Applicable," or "Open," and must meet any additional requirements set for that Collection. The Review interface indicates these requirements. 
           * In order to be Rejected, the Owner must specify a Rejection Comment, providing direction to the Evaluator.
 
-    	Each Review maintains a History, which is available to the User in the Review Resources panel. Contextual data such as the User who evaluated the Requirement, the user who set the Status of a Review, and timestamps for those actions are also collected.
+    	Each Review maintains a History, which is available to the User in the Review Resources. Contextual data such as the User who evaluated the Requirement, the user who set the Status of a Review, and timestamps for those actions are also collected.
 
         The use of Review Status fields is **optional**, but many users find it handy to "Save" Reviews in progress, and then mark them "Submitted" when they consider it complete.  Collection Owners (or, optionally, Managers) then have the option to set an "Accepted" Status for Reviews they might submit as part of an RMF package, or "Reject" Reviews that are unsatisfactory in their current state, or needs clarification.  This Status will be visible to the User that evaluated the Review, and they can re-Submit the review once they have made changes.   
 
@@ -109,25 +109,25 @@ This is a glossary with definitions for terms like :term:`Asset`:
 
 
     STIG
-        Secure Technical Implementation Guidelines published by the Defense Information Security Agency. STIGs are published in XCCDF format that can be imported into STIG Manager. Automated results in XCCDF format, such as those produced by the DISA SCC Tool, can also be imported. Manually evaluated STIG Results are often recorded in a .ckl file, a different format, which is produced by the DISA tool STIG Viewer, and can also be imported into STIG Manager. 
+        Security Technical Implementation Guides published by the Defense Information Systems Agency. STIGs are published in XCCDF format that can be imported into STIG Manager. Automated results in XCCDF format, such as those produced by the DISA SCC Tool, can also be imported. Manually evaluated STIG Results are often recorded in a .ckl file, a different format, which is produced by the DISA tool STIG Viewer, and can also be imported into STIG Manager. 
 		
     User
-        Any User in STIG Manager can be assigned a grant that provides access to a Collection by the Collection Owner or Manager.
+        Any User in STIG Manager can be assigned a Grant that provides access to a Collection by the Collection Owner or Manager.
 
-        * When you grant Users access to your Collection, or when you are granted access to another Collection by someone else, that Collection will appear in the Nav Tree on the left upon refresh of the app. 
+        * When you grant Users access to your Collection, or when you are granted access to another Collection by someone else, that Collection will appear in their list of Collections upon refresh of the app. 
 
         For each Collection they are granted access to, Users can have one of 4 :term:`Roles <Role>` , providing different capabilities and default access to your Collection.  See :ref:`roles-and-access` for more information. 
 
         Users can also be given one of 2 **Privileges** on the STIG Manager system. These privileges can be administered in your Authentication Provider (such as Keycloak):
             * Collection Creator: Gives the User the ability to create their own Collections in STIG Manager.
-            * Administrator (Application Manager): Gives the user the ability to invoke elevated access via the "Application Management" node of the Nav Tree. The Administrator Privilege allows the User to:
+            * Administrator (Application Manager): Gives the user the ability to invoke elevated access through the application's administrative functions. The Administrator Privilege allows the User to:
 
                 * Import new STIGs into STIG Manager, as well as Delete them.
                 * Enumerate, Create, and Delete Collections, and view a Collection's name and description.
                 * Create and modify Grants (without ACLs) on any Collection.
                 * Create and Alter Users and User Groups.
                 * Import and Export Application Data.
-                * The Administrator privilege does not grant access to collection content. An admin cannot read or write Reviews, access Asset or STIG checklist data, or modify a Collection's settings, labels, metadata, or Grant ACLs without holding a Collection Grant. These operations require a normal (non-elevated) request governed by a Grant.
+                * The Administrator privilege does not grant access to Collection content. An admin cannot read or write Reviews, access Asset or STIG checklist data, or modify a Collection's settings, Labels, metadata, or Grant ACLs without holding a Collection Grant. These operations require a normal (non-elevated) request governed by a Grant.
 
     User Group
         A named collection of Users that can be granted access to a Collection as a single entity. User Groups can be created and modified in the User Groups interface available to Application Managers. User Groups are  available to all Collection Owners and Managers for use in the Grants panel.  See :ref:`roles-and-access` for more information.

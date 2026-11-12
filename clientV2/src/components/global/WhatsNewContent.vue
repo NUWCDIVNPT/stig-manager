@@ -1,0 +1,151 @@
+<script setup>
+import { useTours } from '../../shared/composables/useTours.js'
+
+defineProps({
+  features: {
+    type: Array,
+    required: true,
+  },
+  // false lets an outer container own the scrollbar (the page view)
+  scrollable: {
+    type: Boolean,
+    default: true,
+  },
+})
+
+// Fired after a feature body's "take the tour" link starts a tour, so a
+// containing dialog can get out of the way.
+const emit = defineEmits(['tour-started'])
+
+const { startTour } = useTours()
+
+// Feature bodies are HTML strings, so a link in one starts a tour through
+// delegation: <a href="#" data-tour-start="<tour id>">.
+function onBodyClick(event) {
+  const link = event.target.closest?.('[data-tour-start]')
+  if (!link) {
+    return
+  }
+  event.preventDefault()
+  startTour(link.dataset.tourStart)
+  emit('tour-started')
+}
+</script>
+
+<template>
+  <div class="whats-new-layout">
+    <div class="feedback-panel-container">
+      <div class="feedback-box-title">
+        Have a Feature Request?
+      </div>
+      <div style="font-size: var(--text-lg);">
+        New features in STIG Manager are primarily driven by user requests.
+        Have an idea or feature request? We'd love to hear from you!
+        Please submit your suggestions by opening an issue on our
+        <a href="https://github.com/NUWCDIVNPT/stig-manager/issues" target="_blank">GitHub Issues page</a>.
+      </div>
+    </div>
+
+    <div class="features-scroll" :class="{ scrollable }">
+      <div class="whats-new-title">
+        New Features in the STIG Manager App
+      </div>
+      <hr class="whats-new-divider">
+
+      <template v-for="(feature, index) in features" :key="index">
+        <div class="feature-text feature-container">
+          <div class="feature-subtitle">
+            {{ feature.header }}
+            <span class="feature-date">({{ feature.date }})</span>
+          </div>
+          <div class="feature-body" @click="onBodyClick" v-html="feature.body" />
+        </div>
+        <hr v-if="index < features.length - 1" class="whats-new-divider">
+      </template>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.whats-new-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.features-scroll {
+  flex: 1;
+  min-height: 0;
+}
+
+.features-scroll.scrollable {
+  overflow-y: auto;
+}
+
+.feature-text {
+  padding: 10px;
+  font-size: var(--text-lg);
+  word-wrap: break-word;
+}
+
+.whats-new-title {
+  font-size: var(--text-display);
+  font-weight: bold;
+  color: var(--color-primary-highlight);
+}
+
+.feature-subtitle {
+  padding-top: 3px;
+  padding-bottom: 3px;
+  font-size: var(--text-2xl);
+  font-weight: bold;
+  color: var(--color-primary-highlight);
+}
+
+.feature-body :deep(img) {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--color-border-default);
+  border-radius: 4px;
+  margin-top: 0.5rem;
+}
+
+.feature-body :deep(a) {
+  color: var(--color-primary-highlight);
+  text-decoration: none;
+}
+.feature-body :deep(a:hover) {
+  text-decoration: underline;
+}
+
+.feedback-panel-container {
+  background-color: var(--color-background-subtle);
+  border: 1px solid var(--color-border-light);
+  border-radius: 4px;
+  padding: 8px 16px;
+  margin-bottom: 1.5rem;
+  flex-shrink: 0;
+}
+
+.feedback-box-title {
+  font-weight: bold;
+  color: var(--color-primary-highlight);
+  margin-bottom: 5px;
+}
+
+.whats-new-divider {
+  margin: 10px 16px;
+  border: 0;
+  border-top: 1px solid var(--color-border-light);
+}
+
+.feature-container {
+  margin-bottom: 10px;
+}
+
+.feature-date {
+  font-size: var(--text-sm);
+  font-style: italic;
+  font-weight: normal;
+}
+</style>

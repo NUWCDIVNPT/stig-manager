@@ -1,0 +1,309 @@
+import { computed, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { fetchAsset, fetchAssetStigs } from '../../../shared/api/assetsApi.js'
+import { fetchCollectionStig, fetchCollectionStigs } from '../../../shared/api/collectionsApi.js'
+import { fetchStigRevisions } from '../../../shared/api/stigsApi.js'
+import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
+import { useLabelFilterQuery } from '../../../shared/composables/useLabelFilterQuery.js'
+import { isRevisionPinnedBy } from '../../../shared/lib/checklistUtils.js'
+import { pickLabelFilterQuery } from '../../../shared/lib/labelFilters.js'
+import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
+
+/**
+ * Global breadcrumb composable. Watches the active route and builds
+ * a breadcrumb model array suitable for rendering in the MenuBar.
+ *
+ * This system is metadata-driven: breadcrumbs are defined directly on
+ * Vue Router definitions in the `meta.breadcrumbs` array.
+ *
+ * Route Definition Usage (in router/index.js):
+ * meta: {
+ *   breadcrumbs: [
+ *     { label: 'Collections', route: { name: 'collections' } },
+ *     // Dynamic labels can be functions that receive (route, getCollectionName, asset)
+ *     {
+ *       label: (route, getCollectionName) => getCollectionName(route.params.collectionId),
+ *       route: (route) => ({ name: 'collection', params: { collectionId: route.params.collectionId } }),
+ *       pickerType: 'collection' // Renders an adjacent dropdown chevron for switching siblings
+ *     },
+ *     // isDropdown renders a BreadcrumbSelect component
+ *     { label: (route) => route.params.benchmarkId || 'STIG', isDropdown: true, dropdownType: 'stig' }
+ *   ]
+ * }
+ *
+ * Each resolved item object structure:
+ * { label: string, route?: object|string, isDropdown?: boolean, dropdownType?: string, pickerType?: string }
+ */
+export function useAppBreadcrumb() {
+  const route = useRoute()
+  const router = useRouter()
+  // useCurrentUser's computed stays reactive when setUser replaces the user
+  // (e.g. after a collection create/clone/rename/delete refreshes grants).
+  const { user } = useCurrentUser()
+
+  // Collections list for the collection dropdown (from user grants)
+  const collectionOptions = computed(() => {
+    if (!user.value?.collectionGrants) {
+      return []
+    }
+    return user.value.collectionGrants.map(g => ({
+      collectionId: String(g.collection.collectionId),
+      name: g.collection.name,
+    }))
+  })
+
+  // --- Asset Review: STIG and Revision data for breadcrumb pickers ---
+  const collectionId = computed(() => route.params.collectionId)
+  const assetId = computed(() => route.params.assetId)
+  const benchmarkId = computed(() => route.params.benchmarkId)
+  const { selectedLabelNames, labelFilterParams } = useLabelFilterQuery()
+
+  // The STIG picker only renders on the review routes. Gate the STIG-list fetch
+  // on this so plain collection tab routes don't pull /stigs for a hidden dropdown.
+  const showsStigPicker = computed(() =>
+    route.name === 'collection-benchmark-review' || route.name === 'collection-asset-review',
+  )
+
+  const { state: assetStigOptions, isLoading: isStigOptionsLoading, error: stigOptionsError, execute: loadAssetStigs } = useAsyncState(
+    () => {
+      if (assetId.value) {
+        return fetchAssetStigs(assetId.value)
+      }
+      if (collectionId.value) {
+        // Label-scoped so Collection Review only offers STIGs that filtered assets have
+        return fetchCollectionStigs(collectionId.value, labelFilterParams.value)
+      }
+      return []
+    },
+    { initialState: [], immediate: false },
+  )
+
+  const { state: asset, execute: loadAsset } = useAsyncState(
+    () => fetchAsset(assetId.value),
+    { initialState: null, immediate: false },
+  )
+
+  const { state: stigRevisionOptions, isLoading: isRevisionOptionsLoading, error: revisionOptionsError, execute: loadStigRevisions } = useAsyncState(
+    () => fetchStigRevisions(benchmarkId.value),
+    { initialState: [], immediate: false },
+  )
+
+  // While a picker's options are loading, or failed to load, the current value
+  // can't be judged against them, so the pickers suppress their warning.
+  const isStigOptionsUnavailable = computed(() => isStigOptionsLoading.value || !!stigOptionsError.value)
+  const isRevisionOptionsUnavailable = computed(() => isRevisionOptionsLoading.value || !!revisionOptionsError.value)
+
+  const isStigInOptions = computed(() =>
+    assetStigOptions.value.some(s => s.benchmarkId === benchmarkId.value),
+  )
+
+  // Whether the Collection has the current STIG at all, probed only when the
+  // label-scoped list lacks it, to tell "excluded by the filter" from "not in
+  // the Collection". null until known; cached per Collection and STIG.
+  const { state: stigInCollection, execute: probeStigInCollection } = useAsyncState(
+    async () => (await fetchCollectionStig(collectionId.value, benchmarkId.value)) !== null,
+    { initialState: null, immediate: false, onError: null },
+  )
+
+  const needsStigInCollection = computed(() =>
+    showsStigPicker.value
+    && !assetId.value
+    && selectedLabelNames.value.length > 0
+    && !isStigOptionsUnavailable.value
+    && !isStigInOptions.value,
+  )
+
+  // Hover text for the warning on a current STIG missing from the STIG picker
+  const stigInvalidTooltip = computed(() => {
+    if (assetId.value) {
+      return TOOLTIPS.breadcrumb.stigNotOnAsset
+    }
+    if (!selectedLabelNames.value.length) {
+      return TOOLTIPS.breadcrumb.stigNotInCollection
+    }
+    // Until the probe settles, assume the filter is the cause
+    return stigInCollection.value === false
+      ? TOOLTIPS.breadcrumb.stigNotInCollection
+      : TOOLTIPS.collectionReview.stigNotInLabelFilter
+  })
+
+  // Load STIGs only when a route that shows the STIG picker becomes active.
+  // Watching showsStigPicker (not benchmarkId) means switching STIGs within a
+  // review route doesn't refetch the list, and entering a review from the same
+  // collection still triggers the fetch even though collectionId is unchanged.
+  // selectedLabelNames only changes identity when the filter changes.
+  watch([assetId, collectionId, showsStigPicker, selectedLabelNames], () => {
+    if (showsStigPicker.value) {
+      // Clear first so the dropdown doesn't list a prior collection's/asset's
+      // STIGs while the fetch is in flight (the `loading` state, not the empty
+      // list, is what keeps the picker from flagging the current STIG meanwhile).
+      assetStigOptions.value = []
+      loadAssetStigs()
+    }
+  }, { immediate: true })
+
+  watch([collectionId, benchmarkId], () => {
+    stigInCollection.value = null
+  })
+
+  // Declared after the STIG-list watch so its immediate run sees that fetch
+  // already in flight rather than an empty, not-yet-loading list. A probe
+  // superseded by a STIG change is discarded by useAsyncState.
+  watch([needsStigInCollection, collectionId, benchmarkId], () => {
+    if (needsStigInCollection.value && stigInCollection.value === null) {
+      probeStigInCollection()
+    }
+  }, { immediate: true })
+
+  // Load the asset (for breadcrumb labels) when the asset changes
+  watch(assetId, (id) => {
+    if (id) {
+      loadAsset()
+    }
+  }, { immediate: true })
+
+  // Load revisions when benchmark changes
+  watch(benchmarkId, (id) => {
+    if (id) {
+      // Clear first so a failed fetch can't leave the previous STIG's revisions
+      stigRevisionOptions.value = []
+      loadStigRevisions()
+    }
+  }, { immediate: true })
+
+  // Helper function to resolve dynamic collection names from grants
+  const getCollectionName = (id) => {
+    const grant = user.value?.collectionGrants?.find(g => String(g.collection.collectionId) === String(id))
+    return grant?.collection.name || `Collection ${id}`
+  }
+
+  // Build the breadcrumb items from the active route's meta definition
+  const breadcrumbItems = computed(() => {
+    // Collect all breadcrumbs from the matched routes (handles nested child routes)
+    const matchedBreadcrumbs = route.matched.flatMap(m => m.meta?.breadcrumbs || [])
+
+    if (matchedBreadcrumbs.length === 0) {
+      return []
+    }
+
+    return matchedBreadcrumbs.map((step) => {
+      const label = typeof step.label === 'function' ? step.label(route, getCollectionName, asset) : step.label
+      const routeLocation = typeof step.route === 'function' ? step.route(route) : step.route
+
+      return {
+        ...step,
+        label,
+        route: routeLocation,
+      }
+    })
+  })
+
+  // Navigation helper for collection dropdown. Unlike the STIG and revision helpers
+  // this does not carry the label filter: label names are collection-scoped, so the
+  // new collection starts unfiltered rather than querying with the old collection's
+  // names until LabelFilterPicker prunes them.
+  function navigateToCollection(collectionId) {
+    // If we're on a CollectionView child route (flagged in router meta), preserve the tab
+    const isCollectionViewChild = route.matched.some(r => r.meta.collectionView)
+    if (isCollectionViewChild) {
+      router.push({
+        name: route.name,
+        params: { collectionId },
+      })
+    }
+    else {
+      // Asset-review and other routes: reset to the base collection view
+      router.push({
+        name: 'collection',
+        params: { collectionId },
+      })
+    }
+  }
+
+  // Navigation helper for STIG dropdown (review)
+  function navigateToStig(newBenchmarkId) {
+    if (!newBenchmarkId) {
+      return
+    }
+
+    const currentRouteName = route.name
+    const isCollectionReview = currentRouteName === 'collection-benchmark-review'
+    const stigData = assetStigOptions.value.find(s => s.benchmarkId === newBenchmarkId)
+
+    if (isCollectionReview) {
+      router.push({
+        name: 'collection-benchmark-review',
+        params: {
+          collectionId: route.params.collectionId,
+          benchmarkId: newBenchmarkId,
+          revisionStr: stigData?.revisionStr || route.params.revisionStr,
+        },
+        query: pickLabelFilterQuery(route.query),
+      })
+    }
+    else {
+      router.push({
+        name: 'collection-asset-review',
+        params: {
+          collectionId: route.params.collectionId,
+          assetId: route.params.assetId,
+          benchmarkId: newBenchmarkId,
+          revisionStr: stigData?.revisionStr || undefined,
+        },
+        query: pickLabelFilterQuery(route.query),
+      })
+    }
+  }
+
+  // Whether a revision option is the route Collection's pinned default
+  const isRevisionPinned = option => isRevisionPinnedBy(option, collectionId.value)
+
+  // Navigation helper for revision dropdown (review)
+  function navigateToRevision(newRevisionStr) {
+    if (!newRevisionStr) {
+      return
+    }
+
+    const currentRouteName = route.name
+    const isCollectionReview = currentRouteName === 'collection-benchmark-review'
+
+    if (isCollectionReview) {
+      router.push({
+        name: 'collection-benchmark-review',
+        params: {
+          collectionId: route.params.collectionId,
+          benchmarkId: route.params.benchmarkId,
+          revisionStr: newRevisionStr,
+        },
+        query: pickLabelFilterQuery(route.query),
+      })
+    }
+    else {
+      router.push({
+        name: 'collection-asset-review',
+        params: {
+          collectionId: route.params.collectionId,
+          assetId: route.params.assetId,
+          benchmarkId: route.params.benchmarkId,
+          revisionStr: newRevisionStr,
+        },
+        query: pickLabelFilterQuery(route.query),
+      })
+    }
+  }
+
+  return {
+    breadcrumbItems,
+    collectionOptions,
+    navigateToCollection,
+    assetStigOptions,
+    isStigOptionsUnavailable,
+    stigInvalidTooltip,
+    stigRevisionOptions,
+    isRevisionOptionsUnavailable,
+    navigateToStig,
+    navigateToRevision,
+    isRevisionPinned,
+  }
+}

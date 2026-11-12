@@ -1,0 +1,373 @@
+<script setup>
+import Column from 'primevue/column'
+import DataTable from 'primevue/datatable'
+import { computed, ref } from 'vue'
+import assessmentIcon from '../../../assets/assessment.svg'
+import shieldGreenCheck from '../../../assets/shield-green-check.svg'
+import targetIcon from '../../../assets/target.svg'
+import CatBadge from '../../../components/common/CatBadge.vue'
+import HighlightText from '../../../components/common/HighlightText.vue'
+import ResultBadge from '../../../components/common/ResultBadge.vue'
+import StatusBadge from '../../../components/common/StatusBadge.vue'
+import StatusFooter from '../../../components/common/StatusFooter.vue'
+import { durationToNow } from '../../../shared/lib.js'
+import { severityMap } from '../../../shared/lib/checklistUtils.js'
+import { gridColumnPt } from '../../../shared/lib/dataTablePt.js'
+import { severitySortValue } from '../../../shared/lib/gridSorts.js'
+import { dashZero } from '../../../shared/lib/numberFormat.js'
+
+const props = defineProps({
+  // Rows after search and filters
+  gridData: {
+    type: Array,
+    default: () => [],
+  },
+  totalCount: {
+    type: Number,
+    default: 0,
+  },
+  isFiltered: {
+    type: Boolean,
+    default: false,
+  },
+  highlightTerm: {
+    type: Function,
+    default: () => '',
+  },
+  isLoading: {
+    type: Boolean,
+    default: false,
+  },
+  selectedRow: {
+    type: Object,
+    default: null,
+  },
+  assetCount: {
+    type: Number,
+    default: 0,
+  },
+  // Shown when the unfiltered checklist is empty; the parent knows why
+  // (label filter, load failure), the grid only knows that it is empty.
+  emptyMessage: {
+    type: String,
+    default: 'No checklist items found.',
+  },
+  visibleFields: {
+    type: Set,
+    required: true,
+  },
+  itemSize: {
+    type: Number,
+    required: true,
+  },
+  // CSV export basename; the parent passes the benchmarkId (legacy convention).
+  exportFilename: {
+    type: String,
+    default: 'Checklist',
+  },
+})
+
+const emit = defineEmits(['update:selectedRow', 'refresh'])
+
+const dataTableRef = ref(null)
+
+function sumCounts(data) {
+  const results = { fail: 0, pass: 0, notapplicable: 0, other: 0 }
+  const statuses = { submitted: 0, rejected: 0, accepted: 0, saved: 0 }
+
+  for (const row of data) {
+    const r = row.counts?.results
+    const s = row.counts?.statuses
+    if (r) {
+      results.fail += r.fail ?? 0
+      results.pass += r.pass ?? 0
+      results.notapplicable += r.notapplicable ?? 0
+      results.other += r.other ?? 0
+    }
+    if (s) {
+      statuses.submitted += s.submitted ?? 0
+      statuses.rejected += s.rejected ?? 0
+      statuses.accepted += s.accepted ?? 0
+      statuses.saved += s.saved ?? 0
+    }
+  }
+
+  return { results, statuses }
+}
+
+const footerStats = computed(() => sumCounts(props.gridData))
+
+const requiredAssessments = computed(() => props.gridData.length * props.assetCount)
+
+const footerMetrics = computed(() => [
+  { key: 'assets', value: props.assetCount, label: 'assets', iconSrc: targetIcon },
+  { key: 'assessments', value: requiredAssessments.value, label: 'assessments', iconSrc: assessmentIcon },
+])
+
+const columnPt = {
+  center: gridColumnPt('center'),
+  left: gridColumnPt('left'),
+  // Badge-only headers whose one action is sorting
+}
+
+// Fixed layout: every column declares a width except Rule Title, which as
+// the only auto column takes all spare table width.
+const dataTablePt = {
+  tableContainer: { style: { height: '100%' } },
+  table: { style: { tableLayout: 'fixed', minWidth: '100%' } },
+  bodyRow: { style: { cursor: 'pointer', height: 'var(--item-size)', overflow: 'hidden' } },
+  footer: { style: { padding: '0', border: 'none' } },
+  emptyMessageCell: { class: 'agg-grid-empty-cell' },
+}
+</script>
+
+<template>
+  <DataTable
+    ref="dataTableRef"
+    :value="gridData"
+    :loading="isLoading"
+    :selection="selectedRow"
+    selection-mode="single"
+    :export-filename="exportFilename"
+    data-key="ruleId"
+    scrollable
+    scroll-height="flex"
+    :virtual-scroller-options="{ itemSize }"
+    resizable-columns
+    striped-rows
+    class="checklist-grid__table"
+    :pt="dataTablePt"
+    @update:selection="(val) => emit('update:selectedRow', val)"
+  >
+    <Column field="severity" header="CAT" :sort-field="severitySortValue" sortable :style="{ width: '5.5rem', minWidth: '5.5rem' }" :pt="columnPt.center">
+      <template #body="{ data }">
+        <div class="cell-center">
+          <CatBadge :category="severityMap[data.severity]" variant="label" />
+        </div>
+      </template>
+    </Column>
+    <Column v-if="visibleFields.has('groupId')" field="groupId" header="Group" sortable :style="{ width: '6.5rem', minWidth: '6.5rem' }" :pt="columnPt.left">
+      <template #body="{ data }">
+        <span class="cell-text"><HighlightText :text="data.groupId" :term="highlightTerm('groupId')" /></span>
+      </template>
+    </Column>
+    <Column v-if="visibleFields.has('groupTitle')" field="groupTitle" header="Group Title" sortable :style="{ width: '14rem', minWidth: '14rem' }" :pt="columnPt.left">
+      <template #body="{ data }">
+        <div class="cell-text-field">
+          <span class="cell-text cell-text--clamped" :title="data.groupTitle">
+            <HighlightText :text="data.groupTitle" :term="highlightTerm('groupTitle')" />
+          </span>
+        </div>
+      </template>
+    </Column>
+    <Column v-if="visibleFields.has('version')" field="version" header="STIG Id" sortable :style="{ width: '6rem', minWidth: '6rem' }" :pt="columnPt.left">
+      <template #body="{ data }">
+        <span class="cell-text"><HighlightText :text="data.version" :term="highlightTerm('version')" /></span>
+      </template>
+    </Column>
+    <Column v-if="visibleFields.has('ruleId')" field="ruleId" header="Rule Id" sortable :style="{ width: '13rem', minWidth: '10rem' }" :pt="columnPt.left">
+      <template #body="{ data }">
+        <span class="cell-text"><HighlightText :text="data.ruleId" :term="highlightTerm('ruleId')" /></span>
+      </template>
+    </Column>
+    <Column v-if="visibleFields.has('ruleTitle')" field="ruleTitle" header="Rule Title" sortable :style="{ minWidth: '18rem' }" :pt="columnPt.left">
+      <template #body="{ data }">
+        <div class="cell-text-field">
+          <span class="cell-text cell-text--clamped cell-text--clickable" :title="data.ruleTitle">
+            <HighlightText :text="data.ruleTitle" :term="highlightTerm('ruleTitle')" />
+          </span>
+        </div>
+      </template>
+    </Column>
+
+    <!-- Count Columns -->
+    <Column v-if="visibleFields.has('fail')" field="counts.results.fail" export-header="O" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.center">
+      <template #header>
+        <ResultBadge status="O" />
+      </template>
+      <template #body="{ data }">
+        <span class="cell-text">{{ dashZero(data.counts?.results?.fail) }}</span>
+      </template>
+    </Column>
+    <Column v-if="visibleFields.has('pass')" field="counts.results.pass" export-header="NF" sortable :style="{ width: '4.5rem', minWidth: '4.5rem' }" :pt="columnPt.center">
+      <template #header>
+        <ResultBadge status="NF" />
+      </template>
+      <template #body="{ data }">
+        <span class="cell-text">{{ dashZero(data.counts?.results?.pass) }}</span>
+      </template>
+    </Column>
+    <Column v-if="visibleFields.has('notapplicable')" field="counts.results.notapplicable" export-header="NA" sortable :style="{ width: '4.5rem', minWidth: '4.5rem' }" :pt="columnPt.center">
+      <template #header>
+        <ResultBadge status="NA" />
+      </template>
+      <template #body="{ data }">
+        <span class="cell-text">{{ dashZero(data.counts?.results?.notapplicable) }}</span>
+      </template>
+    </Column>
+    <Column v-if="visibleFields.has('other')" field="counts.results.other" export-header="NR+" sortable :style="{ width: '5rem', minWidth: '5rem' }" :pt="columnPt.center">
+      <template #header>
+        <ResultBadge status="NR+" />
+      </template>
+      <template #body="{ data }">
+        <span class="cell-text">{{ dashZero(data.counts?.results?.other) }}</span>
+      </template>
+    </Column>
+
+    <!-- Status Icons -->
+    <Column v-if="visibleFields.has('submitted')" field="counts.statuses.submitted" export-header="Submitted" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.center">
+      <template #header>
+        <StatusBadge status="submitted" />
+      </template>
+      <template #body="{ data }">
+        <span class="cell-text">{{ dashZero(data.counts?.statuses?.submitted) }}</span>
+      </template>
+    </Column>
+    <Column v-if="visibleFields.has('rejected')" field="counts.statuses.rejected" export-header="Rejected" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.center">
+      <template #header>
+        <StatusBadge status="rejected" />
+      </template>
+      <template #body="{ data }">
+        <span class="cell-text">{{ dashZero(data.counts?.statuses?.rejected) }}</span>
+      </template>
+    </Column>
+    <Column v-if="visibleFields.has('accepted')" field="counts.statuses.accepted" export-header="Approved" sortable :style="{ width: '4rem', minWidth: '4rem' }" :pt="columnPt.center">
+      <template #header>
+        <StatusBadge status="accepted" />
+      </template>
+      <template #body="{ data }">
+        <span class="cell-text">{{ dashZero(data.counts?.statuses?.accepted) }}</span>
+      </template>
+    </Column>
+
+    <!-- Timestamp Columns -->
+    <Column v-if="visibleFields.has('oldest')" field="timestamps.ts.min" header="Oldest" sortable :style="{ width: '5.5rem', minWidth: '5.5rem' }" :pt="columnPt.center">
+      <template #body="{ data }">
+        <span v-if="data.timestamps?.ts?.min" class="cell-text" :title="data.timestamps.ts.min">{{ durationToNow(data.timestamps.ts.min) }}</span>
+      </template>
+    </Column>
+    <Column v-if="visibleFields.has('newest')" field="timestamps.ts.max" header="Newest" sortable :style="{ width: '5.5rem', minWidth: '5.5rem' }" :pt="columnPt.center">
+      <template #body="{ data }">
+        <span v-if="data.timestamps?.ts?.max" class="cell-text" :title="data.timestamps.ts.max">{{ durationToNow(data.timestamps.ts.max) }}</span>
+      </template>
+    </Column>
+
+    <template #empty>
+      <div class="agg-grid-empty-state">
+        {{ isFiltered && totalCount ? 'No rules match the current search and filters.' : emptyMessage }}
+      </div>
+    </template>
+
+    <template #footer>
+      <StatusFooter
+        class="collection-review-footer"
+        :metrics="footerMetrics"
+        :total-count="totalCount"
+        :filtered-count="isFiltered ? gridData.length : null"
+        total-label="rules"
+        :total-icon-src="shieldGreenCheck"
+        :dt="dataTableRef"
+        :show-refresh="true"
+        :show-export="true"
+        @refresh="emit('refresh')"
+      >
+        <template #right-extra>
+          <ResultBadge status="O" :count="footerStats.results.fail" />
+          <ResultBadge status="NF" :count="footerStats.results.pass" />
+          <ResultBadge status="NA" :count="footerStats.results.notapplicable" />
+          <ResultBadge status="NR+" :count="footerStats.results.other" />
+          <span class="footer-divider">|</span>
+          <StatusBadge status="submitted" :count="footerStats.statuses.submitted" />
+          <StatusBadge status="rejected" :count="footerStats.statuses.rejected" />
+          <StatusBadge status="accepted" :count="footerStats.statuses.accepted" />
+        </template>
+      </StatusFooter>
+    </template>
+  </DataTable>
+</template>
+
+<style scoped>
+.checklist-grid__table {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Size and line height come from the grid geometry (useGridDensity textSize),
+   so N clamped lines fill exactly N rows. */
+.cell-text {
+  font-size: var(--cell-font-size);
+  line-height: var(--cell-line-height, 1.3);
+  color: var(--color-text-primary);
+}
+
+.cell-text--clamped {
+  display: -webkit-box;
+  line-clamp: var(--line-clamp, 1);
+  -webkit-line-clamp: var(--line-clamp, 1);
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  width: 100%;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.cell-center {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.cell-text-field {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.cell-text-field .cell-text--clamped {
+  flex: 1;
+  min-width: 0;
+}
+
+:deep(.p-datatable-thead > tr > th:last-child) {
+  border-right: none;
+}
+
+:deep(td.column-body-center) {
+  text-align: center;
+}
+
+:deep(td.column-body-left) {
+  text-align: left;
+}
+
+:deep(.p-datatable-thead > tr > th) {
+  background: var(--color-background-dark);
+  color: var(--color-text-dim);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-transform: none;
+  border-bottom: 1px solid var(--color-border-default);
+}
+:deep(.p-datatable-thead > tr > th:hover) {
+  background: color-mix(in srgb, var(--color-background-light) 10%, var(--color-background-dark));
+}
+
+:deep(.p-datatable-tbody > tr:hover) {
+  background: var(--color-background-light) !important;
+}
+
+.agg-grid-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4rem;
+  color: var(--color-text-dim);
+}
+
+.footer-divider {
+  color: var(--color-border-default);
+  padding: 0 0.25rem;
+}
+</style>

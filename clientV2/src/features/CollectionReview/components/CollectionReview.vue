@@ -1,0 +1,486 @@
+<script setup>
+import Splitter from 'primevue/splitter'
+import SplitterPanel from 'primevue/splitterpanel'
+import { computed, ref, watch } from 'vue'
+import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
+import ArchiveProgressDialog from '../../../components/common/ArchiveProgressDialog.vue'
+import RuleInfo from '../../../components/common/RuleInfo.vue'
+import { notFoundLocation } from '../../../router/notFound.js'
+import { getHttpStatus } from '../../../shared/api/apiClient.js'
+import { stigRevisionSelections } from '../../../shared/api/archiveApi.js'
+import { fetchCollection } from '../../../shared/api/collectionsApi.js'
+import { useArchiveProgress } from '../../../shared/composables/useArchiveProgress.js'
+import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
+import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
+import { useLabelFilterQuery } from '../../../shared/composables/useLabelFilterQuery.js'
+import { useQuerySelection } from '../../../shared/composables/useQuerySelection.js'
+import { useTrackRecentView } from '../../../shared/composables/useRecentViews.js'
+import { useStigRevisions } from '../../../shared/composables/useStigRevisions.js'
+import { useTours } from '../../../shared/composables/useTours.js'
+import { isRevisionStr } from '../../../shared/lib/checklistUtils.js'
+import { defaultFieldSettings, statusPayloadForAction } from '../../../shared/lib/reviewFormUtils.js'
+import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
+import { fetchAssetsByCollectionStig, fetchCollectionChecklist, fetchReviewsByRule, fetchRule, postReviewBatch } from '../api/collectionReviewApi.js'
+import { useReviewActionAvailability } from '../composables/useReviewActionAvailability.js'
+import BatchEditModal from './BatchEditModal.vue'
+import CollectionChecklistGrid from './CollectionChecklistGrid.vue'
+import RejectReasonModal from './RejectReasonModal.vue'
+import RuleTable from './RuleTable.vue'
+
+const route = useRoute()
+const router = useRouter()
+const { offerTourWhen } = useTours()
+const { getCollectionRoleId } = useCurrentUser()
+const { triggerError } = useGlobalError()
+
+const collectionId = computed(() => route.params.collectionId)
+const benchmarkId = computed(() => route.params.benchmarkId)
+const revisionStr = computed(() => route.params.revisionStr)
+
+// Label filter from the route query (set from the breadcrumb); the API takes the names as is.
+const { selectedLabelNames, labelFilterParams } = useLabelFilterQuery()
+
+function redirectToNotFound() {
+  router.replace(notFoundLocation(route))
+}
+
+function handleRouteError(err) {
+  const status = getHttpStatus(err)
+  if (status === 404 || status === 403 || status === 400) {
+    redirectToNotFound()
+  }
+}
+
+// A malformed revision in the URL is a bad URL (the API answers 400); any other checklist error is reported
+function handleChecklistError(err) {
+  if (getHttpStatus(err) === 400 && !isRevisionStr(revisionStr.value)) {
+    redirectToNotFound()
+  }
+  else {
+    triggerError(err)
+  }
+}
+
+// A STIG or revision that doesn't exist anywhere is a bad URL; one not assigned here keeps the breadcrumb warning
+const { revisions: stigRevisions } = useStigRevisions({ benchmarkId, revisionStr, onUnknown: redirectToNotFound })
+const { state: collection, execute: loadCollection } = useAsyncState(
+  () => fetchCollection(collectionId.value),
+  { immediate: false, initialState: null, onError: handleRouteError },
+)
+
+const fieldSettings = computed(() => collection.value?.settings?.fields ?? defaultFieldSettings)
+const statusSettings = computed(() => collection.value?.settings?.status)
+
+const roleId = computed(() => getCollectionRoleId(collectionId.value))
+const canAccept = computed(() =>
+  statusSettings.value?.canAccept
+  && statusSettings.value?.minAcceptGrant !== undefined
+  && roleId.value >= statusSettings.value.minAcceptGrant,
+)
+
+const { state: gridData, isLoading: isChecklistLoading, error: checklistError, execute: loadChecklist } = useAsyncState(
+  () => fetchCollectionChecklist(collectionId.value, benchmarkId.value, revisionStr.value, labelFilterParams.value),
+  { immediate: false, initialState: [], onError: handleChecklistError },
+)
+
+const { state: assets, isLoading: isAssetsLoading, error: assetsError, execute: loadAssets } = useAsyncState(
+  () => fetchAssetsByCollectionStig(collectionId.value, benchmarkId.value, labelFilterParams.value),
+  { immediate: false, initialState: [] },
+)
+
+const assetCount = computed(() => assets.value?.length ?? 0)
+
+// While reloading, or after a failed reload, `assets` still holds the previous STIG's list.
+const canExportArchive = computed(() => !isAssetsLoading.value && !assetsError.value && assetCount.value > 0)
+
+// Explains an empty checklist by the label filter; undefined leaves the grid's
+// default. A failed fetch is already reported by the global error modal.
+const checklistEmptyMessage = computed(() =>
+  !checklistError.value && !isChecklistLoading.value && selectedLabelNames.value.length
+    ? TOOLTIPS.collectionReview.stigNotInLabelFilter
+    : undefined,
+)
+
+// Kept in ?ruleId like Asset Review, so Back, reload and links return to the same rule
+const selectedRuleId = useQuerySelection('ruleId')
+
+const {
+  state: loadedRule,
+  isLoading: isRuleLoading,
+  error: ruleContentError,
+  execute: loadRuleContent,
+} = useAsyncState(
+  ruleId => fetchRule(benchmarkId.value, revisionStr.value, ruleId),
+  { immediate: false, initialState: null, onError: null },
+)
+
+// A rule fetch can resolve after the selection was emptied (a label filter that
+// matches no Assets clears the grid), so the panel shows content only for a selected rule.
+const ruleContent = computed(() => selectedRuleId.value ? loadedRule.value : null)
+
+const {
+  state: reviewsData,
+  isLoading: isReviewsLoading,
+  error: reviewsError,
+  execute: loadReviews,
+} = useAsyncState(
+  ruleId => fetchReviewsByRule(collectionId.value, ruleId, labelFilterParams.value),
+  { immediate: false, initialState: [], onError: null },
+)
+
+const mergedReviewsData = computed(() => {
+  // Without the reviews every row would look unreviewed, and saving one replaces
+  // the real review.
+  if (reviewsError.value) {
+    return []
+  }
+  const allAssets = assets.value || []
+  const reviews = reviewsData.value || []
+  const ruleId = selectedRuleId.value
+  const reviewLookup = new Map(reviews.map(r => [r.assetId, r]))
+  return allAssets.map((asset) => {
+    const base = {
+      assetId: asset.assetId,
+      assetName: asset.name,
+      assetLabels: asset.assetLabels ?? [],
+      access: asset.access,
+      ruleId,
+    }
+    const review = reviewLookup.get(asset.assetId)
+    return review ? { ...base, ...review } : base
+  })
+})
+
+watch(collectionId, () => {
+  if (collectionId.value) {
+    // Clear first so the Recent view is not labeled with the previous collection while this one loads
+    collection.value = null
+    loadCollection()
+  }
+}, { immediate: true })
+
+const stigKey = computed(() => `${collectionId.value}/${benchmarkId.value}/${revisionStr.value}`)
+
+// Reviews are per collection and rule, fetched label-scoped (rule clicks stay
+// small), so a label-only change reloads the selected rule's reviews too. A STIG
+// or revision change leaves that to the gridData watcher below, which replaces
+// the selection (and would make a reviews request for the old rule wasted).
+watch([stigKey, selectedLabelNames], ([key], [prevKey] = []) => {
+  if (!(collectionId.value && benchmarkId.value && revisionStr.value)) {
+    return
+  }
+  loadChecklist()
+  loadAssets()
+  if (key === prevKey && selectedRuleId.value) {
+    loadReviews(selectedRuleId.value)
+  }
+}, { immediate: true })
+
+useTrackRecentView(() => collection.value?.name && {
+  type: 'collection-review',
+  collectionId: collectionId.value,
+  benchmarkId: benchmarkId.value,
+  label: `${collection.value.name} / ${benchmarkId.value}`,
+})
+
+// The tour points at the grids, so it waits for the checklist.
+offerTourWhen('collectionReview', () => Boolean(gridData.value?.length))
+
+// Which page and rule the panel was last loaded for
+let ruleLoadedFor = null
+
+// makes sure selectged is always valid or we pick first item
+watch(gridData, (data) => {
+  if (!data?.length) {
+    selectedRuleId.value = null
+    return
+  }
+  const stillValid = selectedRuleId.value && data.some(r => r.ruleId === selectedRuleId.value)
+  if (!stillValid) {
+    selectedRuleId.value = data[0].ruleId
+  }
+  else if (ruleLoadedFor !== `${stigKey.value}|${selectedRuleId.value}`) {
+    // The rule didn't "change" (restored from the URL, or the same ruleId on another collection/STIG/revision),
+    // so the watcher below won't load it for this page
+    loadSelectedRule(selectedRuleId.value)
+  }
+})
+
+function loadSelectedRule(ruleId) {
+  ruleLoadedFor = `${stigKey.value}|${ruleId}`
+  if (benchmarkId.value && revisionStr.value) {
+    loadRuleContent(ruleId)
+  }
+  if (collectionId.value) {
+    loadReviews(ruleId)
+  }
+}
+
+// load data when we have a selected rule and collection/benchmarkid/revisionstr
+watch(selectedRuleId, (ruleId) => {
+  // mergedReviewsData stamps the selected rule on these rows, so the previous
+  // rule's reviews must not survive into the new one, loaded or not.
+  reviewsData.value = []
+  if (!ruleId) {
+    loadedRule.value = null
+    return
+  }
+  loadSelectedRule(ruleId)
+})
+
+const ruleTable = ref(null)
+
+function onSelectRule(ruleId) {
+  if (ruleTable.value?.blockIfUnsaved()) {
+    return
+  }
+  selectedRuleId.value = ruleId
+}
+
+onBeforeRouteLeave(() => !ruleTable.value?.blockIfUnsaved())
+
+// The router reuses this view across routes. The label filter is a query-only
+// update, and it can drop the row being edited, so it is guarded too.
+onBeforeRouteUpdate(() => !ruleTable.value?.blockIfUnsaved())
+
+// Checklist menu > Export Result Archive: every Asset in the current (label-filtered)
+// list, for this STIG at the route's revision, as in the legacy client.
+const archive = useArchiveProgress()
+
+function onExportArchive({ format, mode }) {
+  if (!canExportArchive.value) {
+    return
+  }
+  archive.download({
+    collectionId: collectionId.value,
+    collectionName: collection.value?.name,
+    format,
+    mode,
+    selections: stigRevisionSelections(assets.value, benchmarkId.value, revisionStr.value),
+  })
+}
+
+const showRuleLoading = computed(() => isRuleLoading.value && !ruleContent.value)
+const showReviewsLoading = computed(() => isReviewsLoading.value)
+
+const selectedAssetIds = ref(new Set())
+
+const selectedRows = computed({
+  get: () => {
+    const ids = selectedAssetIds.value
+    if (!ids.size) {
+      return []
+    }
+    return mergedReviewsData.value.filter(r => ids.has(r.assetId))
+  },
+  set: (rows) => {
+    selectedAssetIds.value = new Set((rows || []).map(r => r.assetId))
+  },
+})
+
+const { actionStates } = useReviewActionAvailability(selectedRows, fieldSettings)
+
+// clearing selected rows when we change ruleid
+watch(selectedRuleId, () => {
+  selectedAssetIds.value = new Set()
+})
+
+function upsertReview(assetId, updated) {
+  if (!reviewsData.value) {
+    return
+  }
+  const idx = reviewsData.value.findIndex(r => r.assetId === assetId)
+  if (idx === -1) {
+    reviewsData.value = [...reviewsData.value, { ...updated, assetId }]
+  }
+  else {
+    const merged = { ...reviewsData.value[idx], ...updated, assetId }
+    reviewsData.value = [
+      ...reviewsData.value.slice(0, idx),
+      merged,
+      ...reviewsData.value.slice(idx + 1),
+    ]
+  }
+}
+
+function onReviewSaved(review) {
+  upsertReview(review.assetId, review)
+}
+
+const isBulkSaving = ref(false)
+
+const rejectModalVisible = ref(false)
+const batchEditModalVisible = ref(false)
+const pendingRejectRows = ref([])
+
+async function runBulkAction(actionType, rows, rejectText) {
+  if (!rows?.length) { return }
+  const status = statusPayloadForAction(actionType, rejectText)
+  if (status === null) { return }
+  isBulkSaving.value = true
+  try {
+    await postReviewBatch(collectionId.value, {
+      source: { review: { status } },
+      assets: { assetIds: rows.map(r => r.assetId) },
+      rules: { ruleIds: [selectedRuleId.value] },
+    })
+    if (selectedRuleId.value) { await loadReviews(selectedRuleId.value) }
+  }
+  finally {
+    isBulkSaving.value = false
+  }
+}
+
+// Each of these ends in a reviews reload, and a failed one empties the grid
+// under the open editor.
+function onBulkAction(actionType) {
+  if (ruleTable.value?.blockIfUnsaved()) {
+    return
+  }
+  const rows = selectedRows.value
+  if (!rows?.length) { return }
+  if (actionType === 'batchEdit') {
+    batchEditModalVisible.value = true
+    return
+  }
+  if (actionType === 'reject') {
+    pendingRejectRows.value = [...rows]
+    rejectModalVisible.value = true
+    return
+  }
+  runBulkAction(actionType, rows)
+}
+
+function onRejectConfirm(text) {
+  const rows = pendingRejectRows.value
+  pendingRejectRows.value = []
+  if (!rows.length) { return }
+  runBulkAction('reject', rows, text)
+}
+
+function onRejectCancel() {
+  pendingRejectRows.value = []
+}
+
+async function onBatchEditConfirm(payload) {
+  const rows = selectedRows.value
+  if (!rows?.length) { return }
+  isBulkSaving.value = true
+  try {
+    await postReviewBatch(collectionId.value, {
+      source: { review: payload },
+      assets: { assetIds: rows.map(r => r.assetId) },
+      rules: { ruleIds: [selectedRuleId.value] },
+    })
+    if (selectedRuleId.value) { await loadReviews(selectedRuleId.value) }
+  }
+  finally {
+    isBulkSaving.value = false
+  }
+}
+</script>
+
+<template>
+  <div class="collection-review">
+    <div class="collection-review__content">
+      <Splitter
+        :pt="{
+          gutter: { style: 'background: var(--color-border-dark)' },
+          root: { style: 'border: none; background: transparent' },
+        }"
+        style="height: 100%"
+      >
+        <SplitterPanel :size="75" :min-size="40">
+          <Splitter
+            layout="vertical"
+            :pt="{
+              gutter: { style: 'background: var(--color-border-dark)' },
+              root: { style: 'border: none; background: transparent' },
+            }"
+            style="height: 100%"
+          >
+            <SplitterPanel :size="50" :min-size="20">
+              <CollectionChecklistGrid
+                data-tour="collection-review-checklist"
+                :grid-data="gridData ?? []"
+                :is-loading="isChecklistLoading"
+                :selected-rule-id="selectedRuleId"
+                :asset-count="assetCount"
+                :can-export-archive="canExportArchive"
+                :empty-message="checklistEmptyMessage"
+                :export-filename="benchmarkId"
+                :stig-revisions="stigRevisions"
+                @select-rule="onSelectRule"
+                @refresh="loadChecklist"
+                @export-archive="onExportArchive"
+              />
+            </SplitterPanel>
+            <SplitterPanel :size="50" :min-size="20">
+              <RuleTable
+                ref="ruleTable"
+                v-model:selection="selectedRows"
+                data-tour="collection-review-reviews"
+                :grid-data="mergedReviewsData"
+                :is-loading="showReviewsLoading"
+                :load-failed="!!reviewsError"
+                :selected-rule-id="selectedRuleId"
+                :collection-id="collectionId"
+                :field-settings="fieldSettings"
+                :can-accept="canAccept"
+                :is-saving="isBulkSaving"
+                :action-states="actionStates"
+                :export-filename="`${benchmarkId}-Rule`"
+                @review-saved="onReviewSaved"
+                @bulk-action="onBulkAction"
+              />
+            </SplitterPanel>
+          </Splitter>
+        </SplitterPanel>
+
+        <SplitterPanel :size="25" :min-size="20">
+          <RuleInfo
+            data-tour="collection-review-rule"
+            :rule-content="ruleContent"
+            :is-loading="showRuleLoading"
+            :rule-content-error="ruleContentError"
+          />
+        </SplitterPanel>
+      </Splitter>
+    </div>
+
+    <RejectReasonModal
+      v-model:visible="rejectModalVisible"
+      :count="pendingRejectRows.length"
+      @confirm="onRejectConfirm"
+      @cancel="onRejectCancel"
+    />
+
+    <BatchEditModal
+      v-model:visible="batchEditModalVisible"
+      :rows="selectedRows"
+      :field-settings="fieldSettings"
+      @confirm="onBatchEditConfirm"
+    />
+
+    <ArchiveProgressDialog :archive="archive" />
+  </div>
+</template>
+
+<style scoped>
+.collection-review {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--color-background-darkest);
+  color: var(--color-text-primary);
+}
+
+.collection-review__content {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+</style>

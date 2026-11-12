@@ -1,0 +1,156 @@
+<script setup>
+import Button from 'primevue/button'
+import Dialog from 'primevue/dialog'
+import { computed, ref, watch } from 'vue'
+import JsonTree from '../common/JsonTree.vue'
+import { useGlobalError } from '../../shared/composables/useGlobalError.js'
+
+const { error, clearError } = useGlobalError()
+
+const visible = computed({
+  get: () => !!error.value,
+  set: (val) => {
+    if (!val) {
+      clearError()
+    }
+  },
+})
+
+const copied = ref(false)
+
+// Open `error` and its direct containers (request, response, stack, cause) like the legacy viewer.
+const defaultExpanded = [['error', '*']]
+
+watch(error, () => {
+  copied.value = false
+})
+
+async function copyError() {
+  try {
+    await navigator.clipboard.writeText(JSON.stringify(error.value, null, 2))
+    copied.value = true
+  }
+  catch (e) {
+    console.error('Copy to clipboard failed:', e)
+  }
+}
+
+const dialogPt = {
+  root: {
+    style: 'background-color: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 6px; color: var(--color-text-primary); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);',
+  },
+  header: {
+    style: 'background-color: var(--color-background-dark); color: var(--color-text-primary); border-top-left-radius: 6px; border-top-right-radius: 6px; padding: 1rem; border-bottom: 1px solid var(--color-background-light);',
+  },
+  content: {
+    style: 'background-color: var(--color-background-dark); color: var(--color-text-primary); border-bottom-left-radius: 6px; border-bottom-right-radius: 6px; padding: 1.5rem;',
+  },
+  closeButton: {
+    style: 'color: var(--color-text-dim);',
+  },
+  title: {
+    style: 'font-size: var(--text-xl); font-weight: 600;',
+  },
+}
+
+const buttonPt = {
+  root: {
+    style: 'color: var(--color-text-primary); border-color: var(--color-border-default);',
+    class: 'action-btn',
+  },
+}
+</script>
+
+<template>
+  <Dialog
+    v-model:visible="visible"
+    modal
+    header="Unhandled Error"
+    :style="{ width: '900px', maxWidth: '90vw' }"
+    :closable="true"
+    :pt="dialogPt"
+  >
+    <div class="error-modal-content">
+      <p class="description">
+        An unhandled error has occurred. You can review the error details below and copy the details to your clipboard.
+      </p>
+      <p class="message">
+        {{ error?.message }}
+      </p>
+
+      <div class="code-box">
+        <div class="box-title">
+          Error Details
+        </div>
+        <div class="code-content sm-scrollbar-thin">
+          <JsonTree :value="error" :default-expanded="defaultExpanded" />
+        </div>
+      </div>
+
+      <div class="actions">
+        <Button
+          :label="copied ? 'Copied' : 'Copy to clipboard'"
+          :icon="copied ? 'pi pi-check' : 'pi pi-copy'"
+          :pt="buttonPt"
+          @click="copyError"
+        />
+      </div>
+    </div>
+  </Dialog>
+</template>
+
+<style scoped>
+.error-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  font-size: var(--text-md);
+}
+
+.description {
+  margin: 0;
+  color: var(--color-text-dim);
+}
+
+.message {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.code-box {
+  border: 1px solid var(--color-border-default);
+  border-radius: 6px;
+  padding: 0.75rem 0.5rem 0.25rem;
+  position: relative;
+  margin-top: 0.5rem;
+  background-color: var(--color-background-darkest);
+}
+
+.box-title {
+  position: absolute;
+  top: -12px;
+  left: 0.75rem;
+  padding: 0 0.25rem;
+  background-color: var(--color-background-dark);
+  color: var(--color-text-dim);
+  font-size: var(--text-md);
+  font-weight: 500;
+}
+
+.code-content {
+  max-height: 55vh;
+  overflow: auto;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.action-btn:hover,
+.action-btn:active,
+.action-btn:focus-visible {
+  background-color: rgba(96, 165, 250, 0.1) !important;
+}
+</style>

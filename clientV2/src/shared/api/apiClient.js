@@ -1,0 +1,273 @@
+import { OpenApiOps } from './openApiOps.js'
+/*
+ * See docs/architecture/fetching-asyncDataOperations-ErrorHandling.md
+ */
+
+let getAccessToken = () => null
+let apiSpecObj = null
+
+// For raw fetch() callers (streamed downloads) that can't go through apiFetch
+export function getAuthToken() {
+  return getAccessToken()
+}
+
+export function configureAuth({ getToken }) {
+  if (getToken) {
+    getAccessToken = getToken
+  }
+}
+
+export function configureApiSpec(definition) {
+  apiSpecObj = new OpenApiOps({ definition })
+}
+
+export class ApiError extends Error {
+  constructor(message, { request, response } = {}) {
+    super(message)
+    this.name = 'ApiError'
+    this.request = request
+    this.response = response
+  }
+
+  // Derived from request/response, which hold the single copy of each value
+  get status() {
+    return this.response?.status
+  }
+
+  get url() {
+    return this.request?.url
+  }
+
+  get body() {
+    return this.response?.body
+  }
+}
+
+/**
+ * Extracts the HTTP status code from an error, regardless of its shape.
+ * Works with ApiError (err.status) and any other error that carries a status.
+ * @param {unknown} err
+ * @returns {number|null} HTTP status code, or null if not available
+ */
+export function getHttpStatus(err) {
+  return err?.status ?? null
+}
+
+function safeJson(text) {
+  try {
+    return JSON.parse(text)
+  }
+  catch {
+    return text
+  }
+}
+
+// Readable copy of an outgoing body for error reports; file contents are summarized, not copied.
+function describeBody(body) {
+  if (body == null) {
+    return undefined
+  }
+  if (typeof body === 'string') {
+    return safeJson(body)
+  }
+  if (typeof File !== 'undefined' && body instanceof File) {
+    return `[File ${body.name}: ${body.size} bytes, ${body.type || 'unknown type'}]`
+  }
+  if (typeof Blob !== 'undefined' && body instanceof Blob) {
+    return `[Blob: ${body.size} bytes, ${body.type || 'unknown type'}]`
+  }
+  if (typeof FormData !== 'undefined' && body instanceof FormData) {
+    return Object.fromEntries([...body.entries()].map(([k, v]) => [k, describeBody(v)]))
+  }
+  if (typeof URLSearchParams !== 'undefined' && body instanceof URLSearchParams) {
+    return body.toString()
+  }
+  return `[${body.constructor?.name ?? typeof body}]`
+}
+
+function describeRequest(url, { method = 'GET', headers, body }) {
+  const h = Object.fromEntries(new Headers(headers))
+  if (h.authorization) {
+    h.authorization = '<removed>'
+  }
+  return { method, url, headers: h, body: describeBody(body) }
+}
+
+/**
+ * THis eventually does the fetch request
+ */
+async function doFetch(url, opts) {
+  const { responseType = 'json', ...fetchOpts } = opts
+  let res
+  try {
+    res = await fetch(url, fetchOpts)
+  }
+  catch (err) {
+    // Network/CORS failures carry no URL; attach the request so reports show what failed
+    if (err && typeof err === 'object' && err.name !== 'AbortError') {
+      err.request = describeRequest(url, fetchOpts)
+    }
+    throw err
+  }
+
+  if (!res.ok) {
+    // For non-OK responses, try to parse body as JSON or text for error message
+    let errorBody
+    try {
+      const text = await res.text()
+      errorBody = text ? safeJson(text) : null
+    }
+    catch {
+      errorBody = null
+    }
+    // dev note: if not using useAsyncState you are responsible for handling the error
+    throw new ApiError(`HTTP ${res.status}`, {
+      request: describeRequest(url, fetchOpts),
+      response: {
+        status: res.status,
+        statusText: res.statusText,
+        url: res.url,
+        redirected: res.redirected,
+        headers: res.headers instanceof Headers ? Object.fromEntries(res.headers) : res.headers,
+        body: errorBody,
+      },
+    })
+  }
+
+  if (responseType === 'response') {
+    return res
+  }
+  if (responseType === 'blob') {
+    return res.blob()
+  }
+  if (responseType === 'text') {
+    return res.text()
+  }
+
+  // Default 'json'
+  const text = await res.text()
+  return text ? safeJson(text) : null
+}
+// to be edited
+export function getBaseUrl() {
+  try {
+    return STIGMAN.Env.apiBase
+  }
+  catch {
+    return import.meta.env.VITE_API_BASE_URL ?? '/api'
+  }
+}
+
+// this is regular fetch by path
+/**
+ * opts:
+ *  - method, headers, signal, etc (RequestInit)
+ *  - json: object (json data)
+ *  - rawBody: FormData/Blob/etc
+ *  - responseType: 'json' | 'blob' | 'text'
+ * EXAMPLE CALL:
+ * apiFetch('/stigs', { method: 'GET' })
+ * api.get('/stigs')
+ * api.post('/stigs', { name: 'test' })
+ */
+export async function apiFetch(path, opts = {}) {
+  let url
+  // to be edited
+  if (path.startsWith('http')) {
+    url = path
+  }
+  else {
+    url = `${getBaseUrl()}${path}`
+  }
+
+  // Extract non-fetch options to prevent leaking them to fetch()
+  const {
+    rawBody,
+    json: jsonBody,
+    responseType,
+    headers: optsHeaders,
+    ...fetchOpts
+  } = opts
+
+  const headers = new Headers(optsHeaders)
+  headers.set('Accept', 'application/json')
+
+  const token = getAccessToken()
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`)
+  }
+
+  let finalBody
+  if (rawBody !== undefined) {
+    finalBody = rawBody // FormData etc
+  }
+  else if (jsonBody !== undefined) {
+    headers.set('Content-Type', 'application/json')
+    finalBody = JSON.stringify(jsonBody)
+  }
+
+  return await doFetch(url, {
+    ...fetchOpts,
+    headers,
+    body: finalBody,
+    responseType,
+  })
+}
+
+// this is for opId fetching (use this)
+/**
+ * opts:
+ *  - method, headers, signal, etc (RequestInit)
+ *  - json: object (json data)
+ *  - rawBody: FormData/Blob/etc
+ *  - responseType: 'json' | 'blob' | 'text'
+ */
+
+/**
+ * EXAMPLE CALL:
+ * apiCall('getStigById', { id: 1 })
+ * apiCall('createStig', { id: 1 }, { name: 'test' })
+ * apiCall('updateStig', { id: 1 }, { name: 'test' })
+ * apiCall('deleteStig', { id: 1 })
+ */
+export async function apiCall(operationId, params = {}, body = undefined, opts = {}) {
+  if (!apiSpecObj) {
+    throw new Error('API spec not configured. Call configureApiSpecObj first.')
+  }
+
+  // to be edited
+  apiSpecObj.apiBase = getBaseUrl()
+  // if (base.startsWith('http')) {
+  //   apiSpecObj.apiBase = base
+  // }
+  // else {
+  //   apiSpecObj.apiBase = new URL(base, window.location.origin).toString()
+  // }
+
+  const url = apiSpecObj.getUrl(operationId, params)
+  const method = apiSpecObj.operationMap.get(operationId)?.method.toUpperCase()
+
+  if (!method) {
+    throw new Error(`Operation ${operationId} not found in spec`)
+  }
+
+  return apiFetch(url, { ...opts, method, json: body })
+}
+
+export const api = {
+  get(path, opts) {
+    return apiFetch(path, { ...opts, method: 'GET' })
+  },
+  post(path, body, opts) {
+    return apiFetch(path, { ...opts, method: 'POST', json: body })
+  },
+  put(path, body, opts) {
+    return apiFetch(path, { ...opts, method: 'PUT', json: body })
+  },
+  patch(path, body, opts) {
+    return apiFetch(path, { ...opts, method: 'PATCH', json: body })
+  },
+  del(path, opts) {
+    return apiFetch(path, { ...opts, method: 'DELETE' })
+  },
+}

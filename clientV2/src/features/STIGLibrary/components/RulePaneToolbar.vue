@@ -1,0 +1,115 @@
+<script setup>
+import { computed } from 'vue'
+import ActionButton from '../../../components/common/ActionButton.vue'
+import DensityControls from '../../../components/common/DensityControls.vue'
+import GridFilterButton from '../../../components/common/GridFilterButton.vue'
+import GridSearch from '../../../components/common/GridSearch.vue'
+import RevisionSelect from './RevisionSelect.vue'
+
+const props = defineProps({
+  revisions: {
+    type: Array,
+    default: () => [],
+  },
+  revisionsLoading: {
+    type: Boolean,
+    default: false,
+  },
+  viewRev: {
+    type: String,
+    default: null,
+  },
+  compareRev: {
+    type: String,
+    default: null,
+  },
+  // filterColumns and valueOptions from the pane's useGridSearch
+  filterColumns: {
+    type: Array,
+    default: () => [],
+  },
+  valueOptions: {
+    type: Object,
+    default: () => ({}),
+  },
+})
+
+const emit = defineEmits([
+  'change-view-rev',
+  'change-compare-rev',
+])
+const search = defineModel('search', { type: String, default: '' })
+const filters = defineModel('filters', { type: Array, default: () => [] })
+
+const diffMode = computed(() => !!props.compareRev)
+const hasOtherRevisions = computed(() => (props.revisions ?? []).length > 1)
+
+function onChangeViewRev(rev) {
+  emit('change-view-rev', rev)
+}
+
+function onChangeCompareRev(rev) {
+  emit('change-compare-rev', rev)
+}
+</script>
+
+<template>
+  <div class="stiglib-subbar rule-pane-toolbar">
+    <RevisionSelect
+      label="View"
+      :options="revisions"
+      :model-value="viewRev"
+      :exclude-value="compareRev"
+      :disabled="revisionsLoading"
+      @update:model-value="onChangeViewRev"
+    />
+    <template v-if="hasOtherRevisions">
+      <RevisionSelect
+        label="Compare with"
+        :options="revisions"
+        :model-value="compareRev"
+        :exclude-value="viewRev"
+        allow-none
+        none-label="None"
+        :disabled="revisionsLoading"
+        @update:model-value="onChangeCompareRev"
+      />
+      <ActionButton
+        v-if="diffMode"
+        icon="pi pi-times icon-grey"
+        title="Exit diff"
+        aria-label="Exit diff"
+        @click="onChangeCompareRev(null)"
+      />
+    </template>
+    <div class="stiglib-panel__spacer" />
+    <div class="rule-pane-toolbar__search">
+      <GridSearch v-model="search" class="rule-pane-toolbar__input" label="Search rules" placeholder="Search rules..." />
+      <GridFilterButton v-model="filters" :columns="filterColumns" :value-options="valueOptions" />
+    </div>
+    <DensityControls grid-key="stig-library-rules" />
+  </div>
+</template>
+
+<style scoped>
+.rule-pane-toolbar {
+  gap: 0.5rem;
+}
+
+/* Flex wraps on basis, not on shrunk size, so the search keeps a small basis
+   and grows into free space ahead of the spacer, up to 32rem. .stiglib-subbar
+   then wraps only when the pane is narrower than the controls' minimums. */
+.rule-pane-toolbar__search {
+  --checklist-control-height: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 100 1 10rem;
+  max-width: 32rem;
+}
+
+.rule-pane-toolbar__input {
+  flex: 1;
+  min-width: 0;
+}
+</style>
