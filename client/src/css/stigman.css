@@ -388,6 +388,39 @@
   text-decoration: underline;
 }
 
+.sm-whats-new-featured {
+  margin: 10px;
+  padding: 10px 9px;
+  border: 1px solid #9db8e8;
+  border-left: 4px solid #36c;
+  border-radius: 4px;
+  background-color: #eef4ff;
+}
+
+/* The item body carries an inline width sized for the unframed layout */
+.sm-whats-new-featured > div + div {
+  width: auto !important;
+  max-width: 800px;
+}
+
+.sm-whats-new-featured .sm-home-widget-subtitle {
+  font-size: 18px;
+}
+
+.sm-whats-new a.sm-whats-new-cta {
+  display: inline-block;
+  padding: 8px 18px;
+  border-radius: 4px;
+  background-color: #36c;
+  color: #fff;
+  font: bold 14px Open Sans, helvetica, sans-serif;
+  text-decoration: none;
+}
+
+.sm-whats-new a.sm-whats-new-cta:hover {
+  background-color: #254a99;
+}
+
 .sm-whats-new-title {
   padding-top: 10px;
 }
@@ -1034,6 +1067,27 @@ body {
   border-radius: 3px;
   margin-left: 11px;
   user-select: none
+}
+
+.sm-navtree-sprite-cta {
+  background-color: #d9720b;
+}
+
+.x-tree-node .x-tree-node-el.sm-navtree-cta {
+  margin: 2px 0 6px;
+  padding: 3px 0;
+  border-left: 3px solid #36c;
+  border-radius: 3px;
+  background-color: #e6efff;
+}
+
+.x-tree-node .x-tree-node-el.sm-navtree-cta.x-tree-node-over {
+  background-color: #d3e2ff;
+}
+
+.x-tree-node .sm-navtree-cta a span {
+  color: #254a99;
+  font-weight: bold;
 }
 
 .sm-severity-high {
