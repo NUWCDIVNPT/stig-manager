@@ -42,6 +42,11 @@ describe('client.historyBase config', () => {
     expect(config.client.historyBase).to.equal('/stigman/')
   })
 
+  it('adds a missing leading slash', () => {
+    const config = loadConfig({ STIGMAN_CLIENT_HISTORY_BASE: 'stigman' })
+    expect(config.client.historyBase).to.equal('/stigman/')
+  })
+
   it('accepts the origin root', () => {
     const config = loadConfig({ STIGMAN_CLIENT_HISTORY_BASE: '/' })
     expect(config.client.historyBase).to.equal('/')

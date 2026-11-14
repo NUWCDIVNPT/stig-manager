@@ -162,7 +162,7 @@ function serveStaticV2Files(app){
     app.use('/client-v2', (req, res, next) => {
         req.component = 'static'
         
-        if (config.client.historyBase && (req.path === '/' || req.path === '/index.html' || !path.extname(req.path))) {
+        if (indexTemplate && config.client.historyBase && (req.path === '/' || req.path === '/index.html' || !path.extname(req.path))) {
             // Change below when nextgen client is served from root instead of /client-v2
             const injectedHtml = indexTemplate.replace('<head>', `<head>\n    <base href="${config.client.historyBase}client-v2/">`)
             res.setHeader('Content-Type', 'text/html')

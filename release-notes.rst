@@ -19,6 +19,10 @@ Note 2: Before users can sign in to the new client, add its redirect URIs to the
 
 Note 3: The new client uses ``#`` fragment URLs by default. Email gateways, Teams, ticketing systems and link scanners often drop or rewrite the fragment, so a shared link opens the landing page instead of the intended view. Deployments whose users share links through such systems should set ``STIGMAN_CLIENT_HISTORY_BASE`` to the public path at which STIG Manager is served (``/`` or ``/stigman/``) and ensure the reverse proxy forwards every path under ``/client-v2/`` to the API. See the Reverse Proxy documentation.
 
+Note 4: ``STIGMAN_CLIENT_REAUTH_ACTION`` is deprecated. The new client always prompts for re-authentication with a popup window and does not use the variable. The legacy client continues to honor it, and the variable will be removed when the legacy client is retired. Deployments that set a value other than ``popup`` should plan for the popup behavior.
+
+Note 5: Users should close all open STIG Manager browser tabs after the upgrade. A tab left open from the previous release keeps the old sign-in worker running, and tabs opened afterward cannot re-authenticate until every STIG Manager tab has been closed.
+
 1.6.18
 -------
 
