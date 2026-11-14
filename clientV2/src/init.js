@@ -1,6 +1,7 @@
 import activityHandler from './auth/ActivityHandler.js'
 import { appRootUrl, classifyCallback, restoreTarget } from './auth/oidcRedirect.js'
 import { sendWorkerRequest } from './auth/workerRequest.js'
+import { resolveApiBase } from './shared/lib/apiBase.js'
 import { resolveDocsUrl } from './shared/lib/docsUrl.js'
 
 // Same global console gate as the legacy client (client/src/js/init.js):
@@ -14,16 +15,13 @@ if (!consoleEnabled) {
 }
 
 console.log('import.meta.env:', import.meta.env)
-if (import.meta.env.DEV) {
-  // vite proxies /api to VITE_API_ORIGIN, keeping API calls same-origin
-  STIGMAN.Env.apiBase = `${window.location.origin}/api`
-}
-else if (STIGMAN.Env.historyBase) {
-  STIGMAN.Env.apiBase = `${window.location.origin}${STIGMAN.Env.historyBase}api`
-}
-else {
-  STIGMAN.Env.apiBase = new URL(`../api`, window.location.href).toString() // change when nextgen client is served from root instead of /client-v2
-}
+STIGMAN.Env.apiBase = resolveApiBase({
+  apiBase: STIGMAN.Env.apiBase,
+  origin: window.location.origin,
+  href: window.location.href,
+  historyBase: STIGMAN.Env.historyBase,
+  dev: import.meta.env.DEV,
+})
 STIGMAN.Env.apiUrl = STIGMAN.Env.apiBase
 STIGMAN.Env.docsUrl = resolveDocsUrl(STIGMAN.Env.apiUrl, STIGMAN.Env.docsDisabled)
 
@@ -301,7 +299,6 @@ async function setupStateWorker() {
   const SW = STIGMAN.stateWorker
   SW.worker.port.start()
 
-  // const apiBase = import.meta.env.DEV || STIGMAN.Env.historyBase? STIGMAN.Env.apiBase : `../${STIGMAN.Env.apiBase}` // ensure correct relative path in development vs production
   const response = await SW.sendWorkerRequest({ request: 'initialize', apiBase: STIGMAN.Env.apiBase })
   if (response.error) {
     console.error(`[init] Error initializing state worker:`, response.error)
