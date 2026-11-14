@@ -50,8 +50,29 @@ describe('GET - Op', () => {
             [`collections.${rtc.collectionId}.assetsDisabled`]: rtc.appinfo.assetsDisabled,
             [`collections.${rtc.collectionId}.reviews`]: rtc.appinfo.reviews,
             [`collections.${rtc.collectionId}.reviewsDisabled`]: rtc.appinfo.reviewsDisabled,
-           
+
           })
+        })
+
+        it('Return the tours each user has seen and a count of users by tour', async () => {
+          const res = await utils.executeRequest(`${config.baseUrl}/op/appinfo?elevate=true`, 'GET', iteration.token)
+          if(iteration.name !== "stigmanadmin"){
+            expect(res.status).to.eql(403)
+            return
+          }
+          expect(res.status).to.eql(200)
+          const { userInfo, userTourCounts } = res.body.users
+          const users = Object.values(userInfo)
+          for (const user of users) {
+            expect(user.tours).to.be.an('object')
+          }
+          expect(userTourCounts).to.have.all.keys('overall', 'activeInLast30Days', 'activeInLast90Days')
+          const usersWithoutTours = users.filter(user => Object.keys(user.tours).length === 0).length
+          expect(userTourCounts.overall.none).to.eql(usersWithoutTours)
+          for (const tourId of Object.keys(userTourCounts.overall).filter(key => key !== 'none')) {
+            const usersWithTour = users.filter(user => tourId in user.tours).length
+            expect(userTourCounts.overall[tourId]).to.eql(usersWithTour)
+          }
         })
 
         it('Return API Deployment Details with includeRowCounts=true', async () => {

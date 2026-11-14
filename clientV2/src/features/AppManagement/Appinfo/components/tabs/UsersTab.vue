@@ -24,7 +24,10 @@ const splitterPt = {
       <UsersTable :rows="userRows" />
     </SplitterPanel>
     <SplitterPanel :size="30" :min-size="15" class="users-panel bottom-row-panel">
-      <UserPrivilegeCounts :user-privilege-counts="users?.userPrivilegeCounts ?? null" />
+      <UserPrivilegeCounts
+        :user-privilege-counts="users?.userPrivilegeCounts ?? null"
+        :user-tour-counts="users?.userTourCounts ?? null"
+      />
     </SplitterPanel>
   </Splitter>
 </template>

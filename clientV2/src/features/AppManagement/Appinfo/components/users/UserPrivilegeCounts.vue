@@ -4,9 +4,11 @@ import SplitterPanel from 'primevue/splitterpanel'
 import { computed } from 'vue'
 import { buildPrivilegeRows } from '../../lib/adapters/userRows.js'
 import KeyValueTable from '../common/KeyValueTable.vue'
+import UserTourCounts from './UserTourCounts.vue'
 
 const props = defineProps({
   userPrivilegeCounts: { type: Object, default: null },
+  userTourCounts: { type: Object, default: null },
 })
 
 const PANELS = [
@@ -33,7 +35,7 @@ const splitterPt = {
     <SplitterPanel
       v-for="panel in panelRows"
       :key="panel.key"
-      :size="34"
+      :size="23"
       :min-size="15"
       class="privilege-panel"
     >
@@ -45,6 +47,9 @@ const splitterPt = {
         noun="privilege"
         :export-filename="panel.exportFilename"
       />
+    </SplitterPanel>
+    <SplitterPanel :size="31" :min-size="15" class="privilege-panel tour-panel">
+      <UserTourCounts :user-tour-counts="userTourCounts" />
     </SplitterPanel>
   </Splitter>
 </template>
@@ -59,5 +64,9 @@ const splitterPt = {
   border: 1px solid var(--color-border-default);
   border-radius: 4px;
   overflow: hidden;
+}
+
+.tour-panel {
+  min-width: 30rem;
 }
 </style>

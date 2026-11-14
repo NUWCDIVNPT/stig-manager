@@ -2622,6 +2622,10 @@ SM.AppInfo.Users.InfoGrid = Ext.extend(Ext.grid.GridPanel, {
         mapping: 'roles.owner',
         useNull: true,
         type: 'int'
+      },
+      {
+        name: 'tours',
+        convert: v => Object.keys(v ?? {})
       }
     ]
 
@@ -2691,6 +2695,13 @@ SM.AppInfo.Users.InfoGrid = Ext.extend(Ext.grid.GridPanel, {
         renderer: v => JSON.stringify(v)
       },
       {
+        header: 'Tours',
+        dataIndex: 'tours',
+        sortable: true,
+        align: 'right',
+        renderer: v => JSON.stringify(v)
+      },
+      {
         header: 'Created',
         dataIndex: 'created',
         sortable: true,
@@ -2752,6 +2763,103 @@ SM.AppInfo.Users.InfoGrid = Ext.extend(Ext.grid.GridPanel, {
   }
 })
 
+// Users who have seen each Vue client tour, by activity category
+SM.AppInfo.Users.TourCountsGrid = Ext.extend(Ext.grid.GridPanel, {
+  initComponent: function () {
+    const categories = ['overall', 'activeInLast30Days', 'activeInLast90Days']
+    const store = new Ext.data.JsonStore({
+      fields: ['key', ...categories.map(name => ({ name, type: 'int' }))],
+      root: '',
+      idProperty: 'key',
+      sortInfo: {
+        field: 'key',
+        direction: 'ASC'
+      }
+    })
+
+    const countColumn = (header, dataIndex) => ({
+      header,
+      dataIndex,
+      sortable: true,
+      align: 'right',
+      renderer: SM.AppInfo.numberRenderer
+    })
+
+    const columns = [
+      {
+        header: 'Tour',
+        dataIndex: 'key',
+        sortable: true,
+        filter: { type: 'string' }
+      },
+      countColumn('Overall', 'overall'),
+      countColumn('Active last 30d', 'activeInLast30Days'),
+      countColumn('Active last 90d', 'activeInLast90Days')
+    ]
+
+    const view = new SM.ColumnFilters.GridView({
+      emptyText: 'No records to display',
+      deferEmptyText: false,
+      forceFit: true,
+      markDirty: false,
+      listeners: {
+        filterschanged: function (view) {
+          store.filter(view.getFilterFns())
+        }
+      }
+    })
+
+    const bbar = new Ext.Toolbar({
+      items: [
+        {
+          xtype: 'exportbutton',
+          hasMenu: false,
+          grid: this,
+          gridBasename: 'tours',
+          iconCls: 'sm-export-icon',
+          text: 'CSV'
+        },
+        {
+          xtype: 'tbfill'
+        },
+        {
+          xtype: 'tbseparator'
+        },
+        new SM.RowCountTextItem({
+          store,
+          noun: 'tour',
+          iconCls: 'sm-circle-icon'
+        })
+      ]
+    })
+
+    // expects the value of appinfo.users.userTourCounts, absent from older reports
+    function loadData(counts = {}) {
+      const tourIds = new Set(categories.flatMap(category => Object.keys(counts[category] ?? {})))
+      const rows = [...tourIds].map(key => {
+        const row = { key }
+        for (const category of categories) {
+          row[category] = counts[category]?.[key] ?? 0
+        }
+        return row
+      })
+      this.store.loadData(rows)
+    }
+
+    const config = {
+      cls: 'sm-round-panel',
+      store,
+      view,
+      sm: new Ext.grid.RowSelectionModel({ singleSelect: true }),
+      columns,
+      bbar,
+      loadData
+    }
+    Ext.apply(this, Ext.apply(this.initialConfig, config))
+    this.superclass().initComponent.call(this)
+  }
+})
+
 SM.AppInfo.Users.Container = Ext.extend(Ext.Container, {
   initComponent: function () {
     // expects just the value of appinfo.users
@@ -2771,6 +2879,7 @@ SM.AppInfo.Users.Container = Ext.extend(Ext.Container, {
       for (const key in data.userPrivilegeCounts) {
         privilegePropertyGridMap[key].loadData(data.userPrivilegeCounts[key])
       }
+      tourCountsGrid.loadData(data.userTourCounts)
     }
 
     const privilegeGridOptions = {
@@ -2795,8 +2904,14 @@ SM.AppInfo.Users.Container = Ext.extend(Ext.Container, {
     })
     const last90Grid = new SM.AppInfo.KeyValueGrid({
       title: 'Privileges - Active last 90d',
-      margins: { top: 0, right: 0, bottom: 0, left: 5 },
+      margins: { top: 0, right: 5, bottom: 0, left: 5 },
       ...privilegeGridOptions
+    })
+    const tourCountsGrid = new SM.AppInfo.Users.TourCountsGrid({
+      title: 'New client tours - Users',
+      border: false,
+      flex: 2,
+      margins: { top: 0, right: 0, bottom: 0, left: 5 }
     })
 
     const privilegePropertyGridMap = {
@@ -2824,7 +2939,8 @@ SM.AppInfo.Users.Container = Ext.extend(Ext.Container, {
       items: [
         overallGrid,
         last30Grid,
-        last90Grid
+        last90Grid,
+        tourCountsGrid
       ]
     })
 
