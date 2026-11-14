@@ -1585,19 +1585,18 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
 
 /* Kept pale so it is never mistaken for a classification marking */
 .sm-preview-banner {
-  height: 29px;
-  line-height: 29px;
+  height: 39px;
   text-align: center;
-  font: 13px/29px Open Sans, helvetica, sans-serif;
+  font: 14px/39px Open Sans, helvetica, sans-serif;
   color: #1d3c7a;
   background-color: #e6efff;
   border-bottom: 1px solid #9db8e8;
 }
 
 .sm-preview-banner-link {
-  margin-left: 12px;
-  padding: 2px 10px;
-  border-radius: 3px;
+  margin-left: 14px;
+  padding: 4px 14px;
+  border-radius: 4px;
   background-color: #36c;
   color: #fff;
   font-weight: bold;

@@ -194,7 +194,7 @@ async function loadApp () {
 		// Banner inviting users to the new UI
 		const previewBanner = new Ext.Panel({
 			region: 'north',
-			height: 30,
+			height: 40,
 			border: false,
 			html: `<div class="sm-preview-banner">` +
 				`<span>A preview of the new STIG Manager interface is available and works with your existing data.</span>` +
