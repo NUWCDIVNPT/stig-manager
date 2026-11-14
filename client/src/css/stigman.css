@@ -1074,7 +1074,7 @@ body {
 }
 
 .x-tree-node .x-tree-node-el.sm-navtree-cta {
-  margin: 2px 0 6px;
+  margin: 6px 0 2px;
   padding: 3px 0;
   border-left: 3px solid #36c;
   border-radius: 3px;
@@ -1581,6 +1581,31 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   background-color: var(--color-marking-sci);
   color: #000;
   height: 20px
+}
+
+/* Kept pale so it is never mistaken for a classification marking */
+.sm-preview-banner {
+  height: 29px;
+  line-height: 29px;
+  text-align: center;
+  font: 13px/29px Open Sans, helvetica, sans-serif;
+  color: #1d3c7a;
+  background-color: #e6efff;
+  border-bottom: 1px solid #9db8e8;
+}
+
+.sm-preview-banner-link {
+  margin-left: 12px;
+  padding: 2px 10px;
+  border-radius: 3px;
+  background-color: #36c;
+  color: #fff;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.sm-preview-banner-link:hover {
+  background-color: #254a99;
 }
 
 .sm-banner-body-text {

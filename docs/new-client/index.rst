@@ -9,7 +9,7 @@ New Client
 .. note::
    The current version of STIG Manager includes two versions of its web UI: the legacy UI, which is the default, and a preview of the new UI. Both work with the same API and data, so your Collections, Assets, and Reviews are the same in each. The legacy UI will be deprecated and then removed in a future release, replaced by the new UI.
 
-These pages describe the new UI. From the legacy UI, open it with the "Try the new UI" link at the top of the Navigation Tree.
+These pages describe the new UI. From the legacy UI, open it with the "Try the new UI" link at the bottom of the Navigation Tree.
 
 .. thumbnail:: /assets/images/legacy-try-new-ui.png
       :width: 25% 

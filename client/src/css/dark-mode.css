@@ -2440,6 +2440,20 @@ td.sort-asc, td.sort-desc, td.x-grid3-hd-menu-open, td.x-grid3-hd-over {
     color: #5c98d6
 }
 
+.sm-preview-banner {
+    color: #c4d9f5;
+    background-color: #1c2a42;
+    border-bottom-color: #33486b
+}
+
+.sm-preview-banner-link {
+    background-color: #2f62c4
+}
+
+.sm-preview-banner-link:hover {
+    background-color: #3b72dc
+}
+
 .sm-banner-unclassified {
     background-color: #006229;
     color: #e8e6e3

@@ -10,7 +10,7 @@ SM.WhatsNew.Sources = [
 
     <p><a class="sm-whats-new-cta" target="_blank" href="client-v2/">Open the new interface &rarr;</a></p>
 
-    <p>You can also open it at any time from the <b>Try the new UI</b> node at the top of the Navigation Tree.</p>
+    <p>You can also open it at any time from the <b>Try the new UI</b> node at the bottom of the Navigation Tree.</p>
 
     <p>This interface remains fully available, and your existing links and bookmarks continue to open it.</p>
 
