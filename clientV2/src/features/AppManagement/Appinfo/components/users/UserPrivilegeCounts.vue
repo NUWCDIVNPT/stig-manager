@@ -2,11 +2,12 @@
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
 import { computed } from 'vue'
-import { buildPrivilegeRows } from '../../lib/adapters/userRows.js'
+import { buildPrivilegeRows, buildTourRows } from '../../lib/adapters/userRows.js'
 import KeyValueTable from '../common/KeyValueTable.vue'
 
 const props = defineProps({
   userPrivilegeCounts: { type: Object, default: null },
+  userTourCounts: { type: Object, default: null },
 })
 
 const PANELS = [
@@ -15,12 +16,22 @@ const PANELS = [
   { key: 'activeInLast90Days', title: 'Privileges - Active last 90d', exportFilename: 'appinfo-privileges-active-90d' },
 ]
 
-const panelRows = computed(() =>
-  PANELS.map(panel => ({
+const panelRows = computed(() => [
+  ...PANELS.map(panel => ({
     ...panel,
+    keyHeader: 'Privilege',
+    noun: 'privilege',
     rows: buildPrivilegeRows(props.userPrivilegeCounts?.[panel.key]),
   })),
-)
+  {
+    key: 'tours',
+    title: 'New client tours',
+    exportFilename: 'appinfo-tours',
+    keyHeader: 'Tour',
+    noun: 'tour',
+    rows: buildTourRows(props.userTourCounts),
+  },
+])
 
 const splitterPt = {
   root: { style: 'border: none; background: transparent; height: 100%; min-width: max-content;' },
@@ -33,16 +44,16 @@ const splitterPt = {
     <SplitterPanel
       v-for="panel in panelRows"
       :key="panel.key"
-      :size="34"
+      :size="25"
       :min-size="15"
       class="privilege-panel"
     >
       <KeyValueTable
         :title="panel.title"
         :rows="panel.rows"
-        key-header="Privilege"
+        :key-header="panel.keyHeader"
         value-header="User count"
-        noun="privilege"
+        :noun="panel.noun"
         :export-filename="panel.exportFilename"
       />
     </SplitterPanel>

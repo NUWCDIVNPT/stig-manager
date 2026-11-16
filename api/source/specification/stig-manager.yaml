@@ -5465,6 +5465,8 @@ components:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/AppInfoUserPrivilegeCounts'
+        userTourCounts:
+          $ref: '#/components/schemas/AppInfoUserTourCounts'
       required:
         - userInfo
         - userPrivilegeCounts
@@ -5481,6 +5483,12 @@ components:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/AppInfoPrivilegeTimeSeriesCounts'
+    AppInfoUserTourCounts:
+      description: The number of users who have seen each Vue client tour, keyed by tour id. The key "none" counts users with no recorded tour.
+      type: object
+      additionalProperties:
+        type: integer
+        minimum: 0
     AppInfoPrivilegeTimeSeriesCounts:
       type: object
       additionalProperties:
@@ -5498,6 +5506,12 @@ components:
           $ref: '#/components/schemas/AppInfoUserPrivileges'
         roles:
           $ref: '#/components/schemas/AppInfoUserRoles'
+        tours:
+          description: The version date of each Vue client tour the user has seen, keyed by tour id
+          type: object
+          additionalProperties:
+            type: string
+            format: date
       required: 
         - username
         - created

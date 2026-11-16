@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   buildPrivilegeRows,
+  buildTourRows,
   buildUserRows,
   formatLastAccess,
 } from '../lib/adapters/userRows.js'
@@ -15,6 +16,7 @@ describe('buildUserRows', () => {
           lastAccess: 1754578353,
           privileges: ['create_collection', 'admin'],
           roles: { restricted: 0, full: 0, manage: 0, owner: 7 },
+          tours: { shell: '2026-10-04', assetReview: '2026-11-02' },
         },
       },
     }
@@ -28,6 +30,7 @@ describe('buildUserRows', () => {
       owner: 7,
       restricted: 0,
       privileges: ['create_collection', 'admin'],
+      tours: ['shell', 'assetReview'],
     })
   })
 
@@ -36,6 +39,7 @@ describe('buildUserRows', () => {
 
     expect(rows[0]).toMatchObject({
       privileges: [],
+      tours: [],
       owner: null,
       lastAccess: null,
     })
@@ -56,6 +60,20 @@ describe('buildPrivilegeRows', () => {
 
   it('returns no rows for a missing category', () => {
     expect(buildPrivilegeRows(null)).toEqual([])
+  })
+})
+
+describe('buildTourRows', () => {
+  it('maps the tour counts to key/value rows', () => {
+    expect(buildTourRows({ none: 8, shell: 4, assetReview: 2 })).toEqual([
+      { key: 'none', value: 8 },
+      { key: 'shell', value: 4 },
+      { key: 'assetReview', value: 2 },
+    ])
+  })
+
+  it('returns no rows for a report without tour counts', () => {
+    expect(buildTourRows(null)).toEqual([])
   })
 })
 

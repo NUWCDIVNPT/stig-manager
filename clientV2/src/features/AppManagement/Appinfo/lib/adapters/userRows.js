@@ -18,6 +18,7 @@ export function buildUserRows(users) {
       full: u.roles?.full ?? null,
       manage: u.roles?.manage ?? null,
       owner: u.roles?.owner ?? null,
+      tours: Object.keys(u.tours ?? {}),
     })
   }
   return rows
@@ -30,6 +31,11 @@ export function buildPrivilegeRows(counts) {
     rows.push({ key: privilege, value: counts[privilege] })
   }
   return rows
+}
+
+/** Key/value rows for the number of users who have seen each Vue client tour. */
+export function buildTourRows(counts) {
+  return Object.entries(counts ?? {}).map(([key, value]) => ({ key, value }))
 }
 
 /** lastAccess is epoch seconds; created is already an ISO string. */

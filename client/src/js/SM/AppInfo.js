@@ -2622,6 +2622,10 @@ SM.AppInfo.Users.InfoGrid = Ext.extend(Ext.grid.GridPanel, {
         mapping: 'roles.owner',
         useNull: true,
         type: 'int'
+      },
+      {
+        name: 'tours',
+        convert: v => Object.keys(v ?? {})
       }
     ]
 
@@ -2686,6 +2690,13 @@ SM.AppInfo.Users.InfoGrid = Ext.extend(Ext.grid.GridPanel, {
       {
         header: 'Privileges',
         dataIndex: 'privileges',
+        sortable: true,
+        align: 'right',
+        renderer: v => JSON.stringify(v)
+      },
+      {
+        header: 'Tours',
+        dataIndex: 'tours',
         sortable: true,
         align: 'right',
         renderer: v => JSON.stringify(v)
@@ -2771,6 +2782,7 @@ SM.AppInfo.Users.Container = Ext.extend(Ext.Container, {
       for (const key in data.userPrivilegeCounts) {
         privilegePropertyGridMap[key].loadData(data.userPrivilegeCounts[key])
       }
+      tourCountsGrid.loadData(data.userTourCounts)
     }
 
     const privilegeGridOptions = {
@@ -2795,8 +2807,16 @@ SM.AppInfo.Users.Container = Ext.extend(Ext.Container, {
     })
     const last90Grid = new SM.AppInfo.KeyValueGrid({
       title: 'Privileges - Active last 90d',
-      margins: { top: 0, right: 0, bottom: 0, left: 5 },
+      margins: { top: 0, right: 5, bottom: 0, left: 5 },
       ...privilegeGridOptions
+    })
+    const tourCountsGrid = new SM.AppInfo.KeyValueGrid({
+      title: 'New client tours',
+      margins: { top: 0, right: 0, bottom: 0, left: 5 },
+      ...privilegeGridOptions,
+      keyColumnConfig: { header: 'Tour' },
+      exportName: 'tours',
+      rowCountNoun: 'tour'
     })
 
     const privilegePropertyGridMap = {
@@ -2824,7 +2844,8 @@ SM.AppInfo.Users.Container = Ext.extend(Ext.Container, {
       items: [
         overallGrid,
         last30Grid,
-        last90Grid
+        last90Grid,
+        tourCountsGrid
       ]
     })
 

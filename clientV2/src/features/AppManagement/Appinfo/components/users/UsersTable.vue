@@ -13,6 +13,7 @@ const COLUMNS = [
   { field: 'full', header: 'Full', type: 'number' },
   { field: 'restricted', header: 'Restricted', type: 'number' },
   { field: 'privileges', header: 'Privileges', type: 'string', align: 'right' },
+  { field: 'tours', header: 'Tours', type: 'string', align: 'right' },
   { field: 'created', header: 'Created', type: 'string', align: 'right' },
 ]
 </script>
@@ -27,13 +28,16 @@ const COLUMNS = [
     data-key="userId"
     export-filename="appinfo-users"
     noun="user"
-    table-min-width="70rem"
+    table-min-width="80rem"
   >
     <template #cell-lastAccess="{ data }">
       <span :class="{ 'dim-value': !data.lastAccess }">{{ formatLastAccess(data.lastAccess) }}</span>
     </template>
     <template #cell-privileges="{ data }">
       <span :class="{ 'dim-value': !data.privileges?.length }">{{ JSON.stringify(data.privileges) }}</span>
+    </template>
+    <template #cell-tours="{ data }">
+      <span :class="{ 'dim-value': !data.tours?.length }">{{ JSON.stringify(data.tours) }}</span>
     </template>
   </ReportTableBase>
 </template>

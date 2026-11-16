@@ -626,6 +626,10 @@ exports.getAppInfo = async function(options = {}) {
       JSON_EXTRACT(ud.lastClaims, '$.${config.oauth.claims.privileges}'),
       json_array()
     ) as privileges,
+    coalesce(
+      JSON_EXTRACT(ud.webPreferences, '$.tours'),
+      json_object()
+    ) as tours,
     json_object(
 		  "restricted", sum(case when cg.roleId = 1 then 1 else 0 end),
       "full", sum(case when cg.roleId = 2 then 1 else 0 end),
@@ -858,6 +862,20 @@ exports.getAppInfo = async function(options = {}) {
   //count privilege assignments and break out by lastAccess time periods
   const userPrivilegeCounts = breakOutPrivilegeUsage(userInfo)
 
+  // Count the users who have seen each Vue client tour. Only that client records
+  // tours, so this indicates how many users have worked in it. "none" counts the
+  // users with no recorded tour.
+  const userTourCounts = { none: 0 }
+  for (const user of userInfo) {
+    const tourIds = Object.keys(user.tours)
+    if (tourIds.length === 0) {
+      userTourCounts.none++
+    }
+    for (const tourId of tourIds) {
+      userTourCounts[tourId] = (userTourCounts[tourId] ?? 0) + 1
+    }
+  }
+
   //create working copy of operational stats
   const requests = klona(logger.requestStats)
 
@@ -913,7 +931,8 @@ exports.getAppInfo = async function(options = {}) {
     requests,
     users: {
       userInfo: createObjectFromKeyValue(userInfo, "userId", null),
-      userPrivilegeCounts
+      userPrivilegeCounts,
+      userTourCounts
     },
     groups: createObjectFromKeyValue(userGroupInfo, "userGroupId", null),
     mysql: {
