@@ -54,7 +54,14 @@ describe('GET - Op', () => {
           })
         })
 
+        const tourId = 'appinfoTest'
+        const usersWithTour = (appinfo, id) => Object.values(appinfo.users.userInfo).filter(user => id in user.tours)
+
         it('Return the tours each user has seen and a count of users by tour', async () => {
+          if(iteration.name === "stigmanadmin"){
+            const patched = await utils.executeRequest(`${config.baseUrl}/user/web-preferences`, 'PATCH', iteration.token, { tours: { [tourId]: '2026-01-01' } })
+            expect(patched.status).to.eql(200)
+          }
           const res = await utils.executeRequest(`${config.baseUrl}/op/appinfo?elevate=true`, 'GET', iteration.token)
           if(iteration.name !== "stigmanadmin"){
             expect(res.status).to.eql(403)
@@ -69,10 +76,19 @@ describe('GET - Op', () => {
           expect(userTourCounts).to.have.all.keys('overall', 'activeInLast30Days', 'activeInLast90Days')
           const usersWithoutTours = users.filter(user => Object.keys(user.tours).length === 0).length
           expect(userTourCounts.overall.none).to.eql(usersWithoutTours)
-          for (const tourId of Object.keys(userTourCounts.overall).filter(key => key !== 'none')) {
-            const usersWithTour = users.filter(user => tourId in user.tours).length
-            expect(userTourCounts.overall[tourId]).to.eql(usersWithTour)
+          expect(usersWithTour(res.body, tourId)).to.have.lengthOf(1)
+          expect(userTourCounts.overall[tourId]).to.eql(1)
+        })
+
+        it('Stop counting a tour the user has forgotten', async () => {
+          if(iteration.name !== "stigmanadmin"){
+            return
           }
+          await utils.executeRequest(`${config.baseUrl}/user/web-preferences`, 'PATCH', iteration.token, { tours: { [tourId]: null } })
+          const res = await utils.executeRequest(`${config.baseUrl}/op/appinfo?elevate=true`, 'GET', iteration.token)
+          expect(res.status).to.eql(200)
+          expect(usersWithTour(res.body, tourId)).to.have.lengthOf(0)
+          expect(res.body.users.userTourCounts.overall).to.not.have.property(tourId)
         })
 
         it('Return API Deployment Details with includeRowCounts=true', async () => {
