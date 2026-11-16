@@ -18,7 +18,7 @@
 "STIGMAN_CLIENT_ADMIN_TIMEOUT","| **Default** ``0``
 | The maximum time (in minutes) a user with admin privileges can be inactive in the web client before discarding their access token and requiring reauthorization. Activity is defined as mouse click, keypress, or scrolling in any tab or window of a same-origin browsing context group. Set to zero to disable idle detection.","Client"
 "STIGMAN_CLIENT_API_BASE","| **Default** ``api``
-| The base URL for Client requests to the API. A relative value is resolved against the URL path at which STIG Manager is served. An absolute path such as ``/stigman/api`` or a full URL is used as given. The API itself always serves at ``/api``, so a reverse proxy must map any other value to that path.","Client"
+| The base URL for Client requests to the API relative to ``window.location`` ","Client"
 "STIGMAN_CLIENT_CONSOLE_MODE","| **Default** ``production``
 | The console mode of the web client, setting to ``development`` enables console logging which is otherwise disabled","Client"
 "STIGMAN_CLIENT_DIRECTORY","| **Default** ``./clients``
