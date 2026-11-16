@@ -150,8 +150,7 @@ const centerPt = { columnHeaderContent: { style: 'justify-content: center;' }, b
           :show-refresh="false"
           :show-export="true"
           :dt="statusRef"
-          total-label="reviews"
-          total-icon="pi pi-file"
+          total-label="assets"
         />
       </div>
 
