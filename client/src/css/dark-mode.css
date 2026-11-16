@@ -2243,6 +2243,23 @@ a.x-menu-item {
     color: #e6e4e1!important
 }
 
+.sm-navtree-sprite-cta {
+    background-color: #b35c00
+}
+
+.x-tree-node .x-tree-node-el.sm-navtree-cta {
+    border-left-color: #5c98d6;
+    background-color: #1c2a42
+}
+
+.x-tree-node .x-tree-node-el.sm-navtree-cta.x-tree-node-over {
+    background-color: #243756
+}
+
+.x-tree-node .sm-navtree-cta a span {
+    color: #9cc3f0
+}
+
 .sm-severity-high {
     color: hsl(0deg 50% 50%);
     background-color: #1e2021
@@ -2421,6 +2438,20 @@ td.sort-asc, td.sort-desc, td.x-grid3-hd-menu-open, td.x-grid3-hd-over {
 
 .sm-dialog-panel-title, .sm-home-widget-collectionName, .sm-home-widget-subtitle, .sm-home-widget-title {
     color: #5c98d6
+}
+
+.sm-preview-banner {
+    color: #c4d9f5;
+    background-color: #1c2a42;
+    border-bottom-color: #33486b
+}
+
+.sm-preview-banner .sm-cta-link, .sm-whats-new .sm-cta-link {
+    background-color: #2f62c4
+}
+
+.sm-preview-banner .sm-cta-link:hover, .sm-whats-new .sm-cta-link:hover {
+    background-color: #3b72dc
 }
 
 .sm-banner-unclassified {
@@ -3132,6 +3163,12 @@ embed[type="application/pdf"] {
 }
 .sm-whats-new img {
   border: 1px solid hsl(0 0% 20% / 1)
+}
+
+.sm-whats-new-featured {
+  border-color: #33486b;
+  border-left-color: #5c98d6;
+  background-color: #1c2a42;
 }
 
 .sm-feedback-box {

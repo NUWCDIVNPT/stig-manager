@@ -5,7 +5,7 @@ Changes:
 
   - (UI) Added a preview of the new STIG Manager web client, served alongside the legacy client at ``/client-v2/``. Both clients use the same API and data. The preview covers the collection and meta-collection dashboards, the asset review and collection review workspaces, the findings report and POA&M export, the checklist import wizard (CKL, CKLB, XCCDF and zip archives), checklist and CSV exports with classification markings, collection management, the STIG library with full-text rule search and revision diffs, and application management (users, user groups, collections, STIGs, service jobs, application info, log stream and appdata transfer). Every view is addressable by URL, and a Recent Views list replaces the legacy client's workspace tabs.
   - (UI) Added guided tours and a What's New panel to the new client. The tours a user has seen are recorded in their web preferences.
-  - (UI) The legacy client shows a "Try the new UI" node at the bottom of the Navigation Tree and a What's New entry introducing the preview. The legacy client remains the default and is otherwise unchanged.
+  - (UI) The legacy client shows a banner across the top of the page, a "Try the new UI" node at the bottom of the Navigation Tree and a What's New entry, each inviting users to the preview. The legacy client remains the default and is otherwise unchanged.
   - (UI) Both clients share one OIDC worker and re-authentication page. The new client signs in with a single redirect URI and returns the user to the page they requested.
   - (API) Added ``STIGMAN_CLIENT_HISTORY_BASE``, which switches the new client from ``#`` fragment URLs to hashless (HTML5 history) URLs, and ``STIGMAN_CLIENT_NEXT_DIRECTORY``, the location of the new client files. The API serves the new client and its ``Env.js`` at ``/client-v2/``.
   - (API) Added a ``tours`` property to the user web preferences schema.
@@ -18,6 +18,10 @@ Note 1: The new client is a preview released for user feedback. The legacy clien
 Note 2: Before users can sign in to the new client, add its redirect URIs to the OIDC client registration: ``<STIG Manager URL>/client-v2/`` and ``<STIG Manager URL>/client-v2/reauth.html``. See the Authentication and Identity documentation.
 
 Note 3: The new client uses ``#`` fragment URLs by default. Email gateways, Teams, ticketing systems and link scanners often drop or rewrite the fragment, so a shared link opens the landing page instead of the intended view. Deployments whose users share links through such systems should set ``STIGMAN_CLIENT_HISTORY_BASE`` to the public path at which STIG Manager is served (``/`` or ``/stigman/``) and ensure the reverse proxy forwards every path under ``/client-v2/`` to the API. See the Reverse Proxy documentation.
+
+Note 4: ``STIGMAN_CLIENT_REAUTH_ACTION`` is deprecated. The new client always prompts for re-authentication with a popup window and does not use the variable. The legacy client continues to honor it, and the variable will be removed when the legacy client is retired. Deployments that set a value other than ``popup`` should plan for the popup behavior.
+
+Note 5: Users should close all open STIG Manager browser tabs after the upgrade. A tab left open from the previous release keeps the old sign-in worker running, and tabs opened afterward cannot re-authenticate until every STIG Manager tab has been closed.
 
 1.6.18
 -------

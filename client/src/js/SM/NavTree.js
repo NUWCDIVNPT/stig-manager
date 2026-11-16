@@ -353,7 +353,8 @@ SM.NavTree.TreePanel = Ext.extend(Ext.tree.TreePanel, {
             content.push(
               {
                 id: 'client-v2-preview',
-                text: 'Try the new UI <span class="sm-navtree-sprite">preview</span>',
+                text: 'Try the new UI <span class="sm-navtree-sprite sm-navtree-sprite-cta">preview</span>',
+                cls: 'sm-navtree-cta',
                 iconCls: 'sm-preview-icon',
                 qtip: 'Open a preview of the next STIG Manager interface in a new tab',
                 // Relative href keeps the link correct behind a path prefix

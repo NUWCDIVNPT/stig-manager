@@ -191,6 +191,25 @@ async function loadApp () {
 			items: [],
 		}
 	
+		// Banner inviting users to the new UI
+		const previewBanner = new Ext.Panel({
+			region: 'north',
+			height: 40,
+			border: false,
+			html: `<div class="sm-preview-banner">` +
+				`A preview of the new STIG Manager interface is available and works with your existing data.` +
+				// Relative href keeps the link correct behind a path prefix
+				`<a class="sm-cta-link" target="_blank" href="client-v2/">Try the new UI &rarr;</a>` +
+				`</div>`
+		})
+		const workspacePanel = new Ext.Panel({
+			region: 'center',
+			layout: 'border',
+			border: false,
+			items: [mainNavTree, mainTabPanel]
+		})
+		const workspaceItems = [previewBanner, workspacePanel]
+
 		let classification = new Classification(STIGMAN.apiConfig?.classification)
 		let contentPanel
 		if (classification.showBanner) {
@@ -198,7 +217,7 @@ async function loadApp () {
 				region: 'center',
 				layout: 'border',
 				border: false,
-				items: [mainNavTree, mainTabPanel]
+				items: workspaceItems
 			})
 			let bannerTpl = new Ext.XTemplate(
 				`<div class=sm-banner-{classificationCls}>`,
@@ -218,7 +237,7 @@ async function loadApp () {
 			viewportConfig.items.push( classificationBanner, contentPanel)
 		}
 		else {
-			viewportConfig.items.push( mainNavTree, mainTabPanel )
+			viewportConfig.items.push( ...workspaceItems )
 		}
 		
 		new Ext.Viewport(viewportConfig)

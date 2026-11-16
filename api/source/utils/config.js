@@ -22,9 +22,13 @@ const config = {
     },
     client: {
         clientId: process.env.STIGMAN_CLIENT_ID || "stig-manager",
-        historyBase: process.env.STIGMAN_CLIENT_HISTORY_BASE
-            ? process.env.STIGMAN_CLIENT_HISTORY_BASE.replace(/\/+$/, "") + "/"
-            : "",
+        // A URL path, so it always begins and ends with a slash
+        historyBase: (() => {
+            const val = process.env.STIGMAN_CLIENT_HISTORY_BASE
+            if (!val) return ""
+            const path = val.replace(/^\/+|\/+$/g, "")
+            return path ? `/${path}/` : "/"
+        })(),
         consoleMode: process.env.STIGMAN_CLIENT_CONSOLE_MODE || "production",
         displayAppManagers: process.env.STIGMAN_CLIENT_DISPLAY_APPMANAGERS || "true",
         idleTimeoutUser: (() => {
