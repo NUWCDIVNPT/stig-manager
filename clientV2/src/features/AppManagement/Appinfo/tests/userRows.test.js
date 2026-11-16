@@ -64,17 +64,11 @@ describe('buildPrivilegeRows', () => {
 })
 
 describe('buildTourRows', () => {
-  it('makes one row per tour id with a count for each category', () => {
-    const rows = buildTourRows({
-      overall: { none: 8, shell: 4, assetReview: 2 },
-      activeInLast30Days: { none: 1, shell: 3 },
-      activeInLast90Days: { none: 2, shell: 4, assetReview: 1 },
-    })
-
-    expect(rows).toEqual([
-      { key: 'none', overall: 8, activeInLast30Days: 1, activeInLast90Days: 2 },
-      { key: 'shell', overall: 4, activeInLast30Days: 3, activeInLast90Days: 4 },
-      { key: 'assetReview', overall: 2, activeInLast30Days: 0, activeInLast90Days: 1 },
+  it('maps the tour counts to key/value rows', () => {
+    expect(buildTourRows({ none: 8, shell: 4, assetReview: 2 })).toEqual([
+      { key: 'none', value: 8 },
+      { key: 'shell', value: 4 },
+      { key: 'assetReview', value: 2 },
     ])
   })
 

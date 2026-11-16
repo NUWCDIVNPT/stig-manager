@@ -5486,19 +5486,6 @@ components:
     AppInfoUserTourCounts:
       description: The number of users who have seen each Vue client tour, keyed by tour id. The key "none" counts users with no recorded tour.
       type: object
-      properties:
-        overall:
-          $ref: '#/components/schemas/AppInfoUserTourCountsByTour'
-        activeInLast30Days:
-          $ref: '#/components/schemas/AppInfoUserTourCountsByTour'
-        activeInLast90Days:
-          $ref: '#/components/schemas/AppInfoUserTourCountsByTour'
-      required:
-        - overall
-        - activeInLast30Days
-        - activeInLast90Days
-    AppInfoUserTourCountsByTour:
-      type: object
       additionalProperties:
         type: integer
         minimum: 0

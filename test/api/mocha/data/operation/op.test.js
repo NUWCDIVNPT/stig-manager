@@ -55,7 +55,7 @@ describe('GET - Op', () => {
         })
 
         const tourId = 'appinfoTest'
-        const usersWithTour = (appinfo, id) => Object.values(appinfo.users.userInfo).filter(user => id in user.tours)
+        const usersWithTour = appinfo => Object.values(appinfo.users.userInfo).filter(user => tourId in user.tours)
 
         it('Return the tours each user has seen and a count of users by tour', async () => {
           if(iteration.name === "stigmanadmin"){
@@ -73,11 +73,10 @@ describe('GET - Op', () => {
           for (const user of users) {
             expect(user.tours).to.be.an('object')
           }
-          expect(userTourCounts).to.have.all.keys('overall', 'activeInLast30Days', 'activeInLast90Days')
           const usersWithoutTours = users.filter(user => Object.keys(user.tours).length === 0).length
-          expect(userTourCounts.overall.none).to.eql(usersWithoutTours)
-          expect(usersWithTour(res.body, tourId)).to.have.lengthOf(1)
-          expect(userTourCounts.overall[tourId]).to.eql(1)
+          expect(userTourCounts.none).to.eql(usersWithoutTours)
+          expect(usersWithTour(res.body)).to.have.lengthOf(1)
+          expect(userTourCounts[tourId]).to.eql(1)
         })
 
         it('Stop counting a tour the user has forgotten', async () => {
@@ -87,8 +86,8 @@ describe('GET - Op', () => {
           await utils.executeRequest(`${config.baseUrl}/user/web-preferences`, 'PATCH', iteration.token, { tours: { [tourId]: null } })
           const res = await utils.executeRequest(`${config.baseUrl}/op/appinfo?elevate=true`, 'GET', iteration.token)
           expect(res.status).to.eql(200)
-          expect(usersWithTour(res.body, tourId)).to.have.lengthOf(0)
-          expect(res.body.users.userTourCounts.overall).to.not.have.property(tourId)
+          expect(usersWithTour(res.body)).to.have.lengthOf(0)
+          expect(res.body.users.userTourCounts).to.not.have.property(tourId)
         })
 
         it('Return API Deployment Details with includeRowCounts=true', async () => {

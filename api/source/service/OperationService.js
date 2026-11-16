@@ -862,8 +862,19 @@ exports.getAppInfo = async function(options = {}) {
   //count privilege assignments and break out by lastAccess time periods
   const userPrivilegeCounts = breakOutPrivilegeUsage(userInfo)
 
-  // count the users who have seen each Vue client tour, broken out the same way
-  const userTourCounts = breakOutTourUsage(userInfo)
+  // Count the users who have seen each Vue client tour. Only that client records
+  // tours, so this indicates how many users have worked in it. "none" counts the
+  // users with no recorded tour.
+  const userTourCounts = { none: 0 }
+  for (const user of userInfo) {
+    const tourIds = Object.keys(user.tours)
+    if (tourIds.length === 0) {
+      userTourCounts.none++
+    }
+    for (const tourId of tourIds) {
+      userTourCounts[tourId] = (userTourCounts[tourId] ?? 0) + 1
+    }
+  }
 
   //create working copy of operational stats
   const requests = klona(logger.requestStats)
@@ -984,40 +995,6 @@ exports.getAppInfo = async function(options = {}) {
       }
     }
     return privilegeCounts
-  }
-
-  // Tours are only recorded by the Vue client, so these counts indicate how many
-  // users have worked in it. "none" counts the users with no recorded tour.
-  function breakOutTourUsage(userInfo) {
-    const tourCounts = {
-      overall: {none:0},
-      activeInLast30Days: {none:0},
-      activeInLast90Days: {none:0}
-    }
-
-    const currentTime = Math.floor(Date.now() / 1000)
-    const thirtyDaysAgo = currentTime - (30 * 24 * 60 * 60)
-    const ninetyDaysAgo = currentTime - (90 * 24 * 60 * 60)
-    const updateCounts = (categoryCounts, tourIds) => {
-      if (tourIds.length === 0) {
-        categoryCounts.none++
-      }
-      for (const tourId of tourIds) {
-        categoryCounts[tourId] = (categoryCounts[tourId] ?? 0) + 1
-      }
-    }
-
-    for (const user of userInfo) {
-      const tourIds = Object.keys(user.tours)
-      updateCounts(tourCounts.overall, tourIds)
-      if (user.lastAccess >= ninetyDaysAgo) {
-        updateCounts(tourCounts.activeInLast90Days, tourIds)
-      }
-      if (user.lastAccess >= thirtyDaysAgo) {
-        updateCounts(tourCounts.activeInLast30Days, tourIds)
-      }
-    }
-    return tourCounts
   }
 
   function getNodeValues() {

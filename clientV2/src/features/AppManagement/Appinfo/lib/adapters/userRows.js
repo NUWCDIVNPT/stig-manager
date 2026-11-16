@@ -33,20 +33,9 @@ export function buildPrivilegeRows(counts) {
   return rows
 }
 
-/**
- * One row per tour id, with the number of users who have seen it in each
- * activity category. Tours are only recorded by the Vue client.
- */
+/** Key/value rows for the number of users who have seen each Vue client tour. */
 export function buildTourRows(counts) {
-  const categories = ['overall', 'activeInLast30Days', 'activeInLast90Days']
-  const tourIds = new Set(categories.flatMap(category => Object.keys(counts?.[category] ?? {})))
-  return [...tourIds].map((tourId) => {
-    const row = { key: tourId }
-    for (const category of categories) {
-      row[category] = counts?.[category]?.[tourId] ?? 0
-    }
-    return row
-  })
+  return Object.entries(counts ?? {}).map(([key, value]) => ({ key, value }))
 }
 
 /** lastAccess is epoch seconds; created is already an ISO string. */
