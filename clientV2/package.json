@@ -14,7 +14,7 @@
     "lint:fix": "eslint --fix"
   },
   "dependencies": {
-    "@nuwcdivnpt/stig-manager-client-modules": "^1.6.8",
+    "@nuwcdivnpt/stig-manager-client-modules": "^1.6.9",
     "@primeuix/themes": "^1.2.3",
     "@primevue/themes": "^4.4.1",
     "@trojs/openapi-dereference": "^0.2.5",
