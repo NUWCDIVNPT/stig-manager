@@ -31,10 +31,10 @@ Every STIG Manager deployment consists of:
   - Handles all application logic and data operations
   - No persistent storage - all data flows to MySQL
 
-**Web Client** (User Interface, provided by the STIGMan project)
-  - Single Page Application using ExtJS 3.4
-  - Served as static content from the API container
-  - Provides interactive access for users
+**Web Clients** (User Interface, provided by the STIGMan project)
+  - Two Single Page Applications: the web client (ExtJS 3.4) and the new web client (Vue 3) at ``/client-v2``
+  - Served as static content by the API
+  - Provide interactive access for users
 
 **OpenID Connect (OIDC) Provider** (Authentication Service, deployer-provided)
   - Manages user accounts and authentication
@@ -108,7 +108,7 @@ TLS and Proxy Configuration
 STIG Manager supports native TLS connections configured via environment variables. A reverse proxy is only required for mTLS/CAC authentication or when mandated by environmental requirements.
 
 **Native TLS:**
-  - Configure HTTPS directly using environment variables
+  - Enable HTTPS by setting ``STIGMAN_API_TLS_CERT_FILE`` and ``STIGMAN_API_TLS_KEY_FILE`` to the paths of your PEM encoded server certificate and private key
   - No reverse proxy needed for basic TLS encryption
   - See :ref:`Environment Variables` beginning with ``STIGMAN_API_TLS_*`` for TLS configuration options
 

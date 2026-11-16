@@ -102,7 +102,7 @@ The application automatically sets the ``x-accel-buffering: no`` header which ng
 Essential Streaming Endpoints
 ________________________________________________________
 
-The following endpoints require unbuffered, real-time response streaming:
+The following endpoints require unbuffered, real-time response streaming. The API paths are relative to the API base path, ``/api``:
 
 **Streaming Responses (NDJSON):**
 
@@ -172,11 +172,11 @@ ________________________________________________________
 
 After deployment, test the SSE endpoint to verify proper streaming::
 
-  curl -N http://<api-url>/op/state/sse
+  curl -N <origin>/api/op/state/sse
 
 Or open in a browser::
 
-  http://<api-url>/op/state/sse
+  <origin>/api/op/state/sse
 
 **Expected behavior:**
   - Immediate initial response (within 1-2 seconds)
