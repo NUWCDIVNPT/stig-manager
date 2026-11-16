@@ -397,9 +397,12 @@
   background-color: #eef4ff;
 }
 
-/* The item body carries an inline width sized for the unframed layout */
-.sm-whats-new-featured > div + div {
-  width: auto !important;
+.sm-whats-new-body {
+  width: 800px;
+}
+
+.sm-whats-new-featured .sm-whats-new-body {
+  width: auto;
   max-width: 800px;
 }
 
@@ -407,18 +410,25 @@
   font-size: 18px;
 }
 
-.sm-whats-new a.sm-whats-new-cta {
-  display: inline-block;
-  padding: 8px 18px;
+/* Button-style link to the new UI, shared by the preview banner and What's New */
+.sm-preview-banner .sm-cta-link,
+.sm-whats-new .sm-cta-link {
   border-radius: 4px;
   background-color: #36c;
   color: #fff;
-  font: bold 14px Open Sans, helvetica, sans-serif;
+  font-weight: bold;
   text-decoration: none;
 }
 
-.sm-whats-new a.sm-whats-new-cta:hover {
+.sm-preview-banner .sm-cta-link:hover,
+.sm-whats-new .sm-cta-link:hover {
   background-color: #254a99;
+}
+
+.sm-whats-new .sm-cta-link {
+  display: inline-block;
+  padding: 8px 18px;
+  font-size: 14px;
 }
 
 .sm-whats-new-title {
@@ -1593,18 +1603,9 @@ td.x-grid3-hd-over .x-grid3-hd-inner {
   border-bottom: 1px solid #9db8e8;
 }
 
-.sm-preview-banner-link {
+.sm-preview-banner .sm-cta-link {
   margin-left: 14px;
   padding: 4px 14px;
-  border-radius: 4px;
-  background-color: #36c;
-  color: #fff;
-  font-weight: bold;
-  text-decoration: none;
-}
-
-.sm-preview-banner-link:hover {
-  background-color: #254a99;
 }
 
 .sm-banner-body-text {

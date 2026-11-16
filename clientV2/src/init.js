@@ -15,16 +15,6 @@ if (!consoleEnabled) {
 }
 
 console.log('import.meta.env:', import.meta.env)
-STIGMAN.Env.apiBase = resolveApiBase({
-  apiBase: STIGMAN.Env.apiBase,
-  origin: window.location.origin,
-  href: window.location.href,
-  historyBase: STIGMAN.Env.historyBase,
-  dev: import.meta.env.DEV,
-})
-STIGMAN.Env.apiUrl = STIGMAN.Env.apiBase
-STIGMAN.Env.docsUrl = resolveDocsUrl(STIGMAN.Env.apiUrl, STIGMAN.Env.docsDisabled)
-
 // The one redirect URI the OP returns to, whatever page the user opened
 const appRoot = appRootUrl({
   origin: window.location.origin,
@@ -32,6 +22,10 @@ const appRoot = appRootUrl({
   historyBase: STIGMAN.Env.historyBase,
   dev: import.meta.env.DEV,
 })
+
+STIGMAN.Env.apiBase = resolveApiBase({ apiBase: STIGMAN.Env.apiBase, appRoot, dev: import.meta.env.DEV })
+STIGMAN.Env.apiUrl = STIGMAN.Env.apiBase
+STIGMAN.Env.docsUrl = resolveDocsUrl(STIGMAN.Env.apiUrl, STIGMAN.Env.docsDisabled)
 
 const statusEl = document.getElementById('loading-text')
 let OW // aka STIGMAN.oidcWorker, created in setupOidcWorker()

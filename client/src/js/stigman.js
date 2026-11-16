@@ -197,9 +197,9 @@ async function loadApp () {
 			height: 40,
 			border: false,
 			html: `<div class="sm-preview-banner">` +
-				`<span>A preview of the new STIG Manager interface is available and works with your existing data.</span>` +
+				`A preview of the new STIG Manager interface is available and works with your existing data.` +
 				// Relative href keeps the link correct behind a path prefix
-				`<a class="sm-preview-banner-link" target="_blank" href="client-v2/">Try the new UI &rarr;</a>` +
+				`<a class="sm-cta-link" target="_blank" href="client-v2/">Try the new UI &rarr;</a>` +
 				`</div>`
 		})
 		const workspacePanel = new Ext.Panel({

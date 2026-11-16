@@ -2446,11 +2446,11 @@ td.sort-asc, td.sort-desc, td.x-grid3-hd-menu-open, td.x-grid3-hd-over {
     border-bottom-color: #33486b
 }
 
-.sm-preview-banner-link {
+.sm-preview-banner .sm-cta-link, .sm-whats-new .sm-cta-link {
     background-color: #2f62c4
 }
 
-.sm-preview-banner-link:hover {
+.sm-preview-banner .sm-cta-link:hover, .sm-whats-new .sm-cta-link:hover {
     background-color: #3b72dc
 }
 
@@ -3169,15 +3169,6 @@ embed[type="application/pdf"] {
   border-color: #33486b;
   border-left-color: #5c98d6;
   background-color: #1c2a42;
-}
-
-.sm-whats-new a.sm-whats-new-cta {
-  background-color: #2f62c4;
-  color: #fff;
-}
-
-.sm-whats-new a.sm-whats-new-cta:hover {
-  background-color: #3b72dc;
 }
 
 .sm-feedback-box {

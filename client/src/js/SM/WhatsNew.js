@@ -8,7 +8,7 @@ SM.WhatsNew.Sources = [
     body: `
     <p>A preview of the next STIG Manager web interface is now available, and we encourage you to start using it. It is a redesigned client built on the same API, so your Collections, Assets, and Reviews are the same in both interfaces and work done in one appears in the other.</p>
 
-    <p><a class="sm-whats-new-cta" target="_blank" href="client-v2/">Open the new interface &rarr;</a></p>
+    <p><a class="sm-cta-link" target="_blank" href="client-v2/">Open the new interface &rarr;</a></p>
 
     <p>You can also open it at any time from the <b>Try the new UI</b> node at the bottom of the Navigation Tree.</p>
 
@@ -599,7 +599,7 @@ SM.WhatsNew.BodyTpl = new Ext.XTemplate(
     `<tpl if="xindex &gt; 1"><hr style="margin-left:20px;margin-right:20px;" /></tpl>`,
     `<div class="sm-whats-new sm-home-widget-text{[values.featured ? ' sm-whats-new-featured' : '']}">`,
       `<div class=sm-home-widget-subtitle>{header}<div style="font-size:70%; font-style:italic;">({date})</div></div> `,
-      `<div style="width:800px;">{body}</div>`,
+      `<div class="sm-whats-new-body">{body}</div>`,
     `</div>`,
   `</tpl>`
 )
