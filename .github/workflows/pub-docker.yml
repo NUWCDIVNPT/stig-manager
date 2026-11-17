@@ -66,7 +66,8 @@ jobs:
         id: prep
         run: |
           DOCKER_IMAGE=${{ env.DOCKERHUB_REPOSITORY }}
-          BRANCH=$(git symbolic-ref --short HEAD)
+          # A tag checkout has a detached HEAD and no branch name
+          BRANCH=$(git symbolic-ref --short -q HEAD || echo main)
           SHA=$(git rev-parse --short=10 HEAD)
           DESCRIBE=$(git describe --tags)
           TAG=$(git describe --tags --abbrev=0)
