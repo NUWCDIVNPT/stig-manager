@@ -24,7 +24,8 @@ vi.mock('../../../shared/api/collectionsApi.js', () => ({
   fetchCollectionAssetSummary: vi.fn(),
 }))
 
-// Each grid lists its rows as buttons and shows its selected key, both keyed by aggType
+// Each grid lists its rows as buttons and shows its selected key. Like the real grid, a
+// selected row is not the API row, so only its key is emitted.
 vi.mock('../../../components/common/MetricsSummaryGrid.vue', () => ({
   default: {
     name: 'MetricsSummaryGrid',
@@ -36,7 +37,7 @@ vi.mock('../../../components/common/MetricsSummaryGrid.vue', () => ({
           v-for="row in apiMetricsSummary"
           :key="String(row[dataKey])"
           :data-testid="aggType + '-' + String(row[dataKey])"
-          @click="$emit('row-select', row)"
+          @click="$emit('row-select', { [dataKey]: row[dataKey] })"
         >row</button>
       </div>
     `,
@@ -211,39 +212,39 @@ describe('labels tab selection in the URL', () => {
     expect(fetchCollectionAssetSummary).not.toHaveBeenCalled()
   })
 
-  it('writes the clicked label and asset to the URL', async () => {
+  it('writes the clicked label (by name) and asset to the URL', async () => {
     await open(CollectionLabelsTab, 'labels')
     await click('label-L2')
     await click('asset-2')
-    expect(query()).toEqual({ label: 'L2', asset: '2' })
-    expect(fetchCollectionAssetSummary).toHaveBeenLastCalledWith('c1', { labelId: 'L2' })
+    expect(query()).toEqual({ label: 'db', asset: '2' })
+    expect(fetchCollectionAssetSummary).toHaveBeenLastCalledWith('c1', { labelName: 'db' })
   })
 
   it('clears the asset when another label is picked', async () => {
-    await open(CollectionLabelsTab, 'labels', { label: 'L2', asset: '2' })
+    await open(CollectionLabelsTab, 'labels', { label: 'db', asset: '2' })
     await click('label-L1')
-    expect(query()).toEqual({ label: 'L1' })
+    expect(query()).toEqual({ label: 'web' })
   })
 
   it('restores the label and asset from the URL', async () => {
-    await open(CollectionLabelsTab, 'labels', { label: 'L2', asset: '2' })
+    await open(CollectionLabelsTab, 'labels', { label: 'db', asset: '2' })
     expect(selectedIn('label')).toBe('L2')
     expect(assetsGrid().dataset.selected).toBe('2')
-    expect(fetchCollectionAssetSummary).toHaveBeenCalledWith('c1', { labelId: 'L2' })
+    expect(fetchCollectionAssetSummary).toHaveBeenCalledWith('c1', { labelName: 'db' })
     expect(fetchCollectionAssetStigs).toHaveBeenCalledWith('c1', '2')
   })
 
-  it('keeps the unlabeled row as label=none', async () => {
+  it('keeps the unlabeled row as the unlabeled marker', async () => {
     await open(CollectionLabelsTab, 'labels')
     await click('label-null')
-    expect(query()).toEqual({ label: 'none' })
+    expect(query()).toEqual({ label: '(unlabeled-assets)' })
     expect(fetchCollectionAssetSummary).toHaveBeenLastCalledWith('c1', { labelMatch: 'null' })
   })
 
-  it('restores the unlabeled row from label=none', async () => {
-    await open(CollectionLabelsTab, 'labels', { label: 'none' })
+  it('restores the unlabeled row from the unlabeled marker', async () => {
+    await open(CollectionLabelsTab, 'labels', { label: '(unlabeled-assets)' })
     expect(fetchCollectionAssetSummary).toHaveBeenCalledWith('c1', { labelMatch: 'null' })
-    expect(query()).toEqual({ label: 'none' })
+    expect(query()).toEqual({ label: '(unlabeled-assets)' })
   })
 
   it('clears both levels when the URL label is not listed', async () => {
@@ -253,8 +254,8 @@ describe('labels tab selection in the URL', () => {
   })
 
   it('clears only the asset when the URL asset is not under the label', async () => {
-    await open(CollectionLabelsTab, 'labels', { label: 'L2', asset: '99' })
-    expect(query()).toEqual({ label: 'L2' })
+    await open(CollectionLabelsTab, 'labels', { label: 'db', asset: '99' })
+    expect(query()).toEqual({ label: 'db' })
     expect(fetchCollectionAssetStigs).not.toHaveBeenCalled()
   })
 })

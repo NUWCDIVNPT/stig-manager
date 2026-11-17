@@ -9,7 +9,7 @@ import { useCollectionStigSummary } from '../composables/useCollectionStigSummar
 import { useFindingReviews } from '../composables/useFindingReviews.js'
 import { useFindings } from '../composables/useFindings.js'
 import { useFindingsColumns } from '../composables/useFindingsColumns.js'
-import { FINDINGS_AGGREGATOR_VALUES, FINDINGS_AGGREGATORS } from '../constants.js'
+import { FINDINGS_AGGREGATOR_VALUES, FINDINGS_AGGREGATORS, FINDINGS_GROUP_BY_PARAM } from '../constants.js'
 import AggregatedFindingsGrid from './AggregatedFindingsGrid.vue'
 import IndividualFindingsGrid from './IndividualFindingsGrid.vue'
 
@@ -24,18 +24,18 @@ const props = defineProps({
 const collectionId = computed(() => (props.ready ? props.collectionId : null))
 const labelNames = toRef(props, 'selectedLabelNames')
 
-// View state lives in the URL (?stig, ?agg, ?sel) so Back, reload and links restore it.
-// No stig means all Collection STIGs; agg is left out at its default.
+// View state lives in the URL (?stig, ?groupBy, ?finding) so Back, reload and links restore it.
+// No stig means all Collection STIGs; groupBy is left out at its default (group).
 const selectedBenchmarkId = useQuerySelection('stig')
-const aggParam = useQuerySelection('agg')
+const groupByParam = useQuerySelection('groupBy')
 const aggregator = computed({
-  get: () => (FINDINGS_AGGREGATOR_VALUES.includes(aggParam.value) ? aggParam.value : FINDINGS_AGGREGATORS.GROUP),
+  get: () => FINDINGS_AGGREGATOR_VALUES.find(a => FINDINGS_GROUP_BY_PARAM[a] === groupByParam.value) ?? FINDINGS_AGGREGATORS.GROUP,
   set: (value) => {
-    aggParam.value = value === FINDINGS_AGGREGATORS.GROUP ? null : value
+    groupByParam.value = value === FINDINGS_AGGREGATORS.GROUP ? null : FINDINGS_GROUP_BY_PARAM[value]
   },
 })
-// ?sel is the selected row's value for the aggregator (e.g. a group, rule or CCI id)
-const selectedValue = useQuerySelection('sel')
+// ?finding is the selected row's id for the grouping (a group, rule or CCI id)
+const selectedFindingId = useQuerySelection('finding')
 const isAllStigsMode = computed(() => selectedBenchmarkId.value === null)
 
 // Per-STIG metrics + collection totals. Drives both the popover STIG list and
@@ -58,18 +58,18 @@ const {
   totalOccurrences,
 } = useFindings({ collectionId, aggregator, benchmarkId: selectedBenchmarkId, labelNames })
 
-// The selected row is the loaded row matching ?sel; none while it isn't listed
+// The selected row is the loaded row matching ?finding; none while it isn't listed
 const selectedFinding = computed({
-  get: () => findings.value?.find(r => r[aggregator.value] === selectedValue.value) ?? null,
+  get: () => findings.value?.find(r => r[aggregator.value] === selectedFindingId.value) ?? null,
   set: (row) => {
-    selectedValue.value = row?.[aggregator.value] ?? null
-    // ?sel only means something next to its aggregator, so agg is pinned while a row is selected
-    aggParam.value = row || aggregator.value !== FINDINGS_AGGREGATORS.GROUP ? aggregator.value : null
+    selectedFindingId.value = row?.[aggregator.value] ?? null
+    // ?finding only means something next to its grouping, so groupBy is pinned while a row is selected
+    groupByParam.value = row || aggregator.value !== FINDINGS_AGGREGATORS.GROUP ? FINDINGS_GROUP_BY_PARAM[aggregator.value] : null
   },
 })
-// A ?sel the loaded rows don't include (deleted, filtered out, stale link) is dropped so the URL matches the grid
+// A ?finding the loaded rows don't include (deleted, filtered out, stale link) is dropped so the URL matches the grid
 watch(findings, () => {
-  if (selectedValue.value && !selectedFinding.value) {
+  if (selectedFindingId.value && !selectedFinding.value) {
     selectedFinding.value = null
   }
 })

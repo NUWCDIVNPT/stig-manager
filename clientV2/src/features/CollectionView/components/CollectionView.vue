@@ -116,7 +116,7 @@ const tabToRoute = {
 }
 
 // Active tab based on route. A tab reopens with the query it was left with
-// (e.g. Findings ?agg/stig/sel), so the URL matches what the tab still shows.
+// (e.g. Findings ?groupBy/stig/finding), so the URL matches what the tab still shows.
 const activeTab = computed({
   get: () => routeToTab[route.name] || 'stigs',
   set: (newTab) => {

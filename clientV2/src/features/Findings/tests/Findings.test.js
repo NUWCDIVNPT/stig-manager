@@ -74,18 +74,18 @@ beforeEach(() => {
 })
 
 describe('findings URL state', () => {
-  it('mirrors a selection into ?sel= with the aggregator pinned', async () => {
+  it('mirrors a selection into ?finding= with the aggregator pinned', async () => {
     await mountFindings()
     await waitFor(() => expect(fetchFindings).toHaveBeenCalled())
 
     screen.getByTestId('select-row').click()
-    // agg is normally omitted at its default, but a sel value is only
-    // meaningful relative to its aggregator, so it is pinned alongside.
-    await waitFor(() => expect(urlQuery()).toEqual({ agg: 'groupId', sel: 'V-219148' }))
+    // groupBy is normally left out at its default, but a finding id only
+    // means something next to its grouping, so it is pinned alongside.
+    await waitFor(() => expect(urlQuery()).toEqual({ groupBy: 'group', finding: 'V-219148' }))
   })
 
-  it('restores the ?sel= selection once findings load', async () => {
-    await mountFindings({ query: { sel: 'V-219150' } })
+  it('restores the ?finding= selection once findings load', async () => {
+    await mountFindings({ query: { finding: 'V-219150' } })
     await waitFor(() =>
       expect(screen.getByTestId('selected-value')).toHaveTextContent('V-219150'),
     )
@@ -97,7 +97,7 @@ describe('findings URL state', () => {
   })
 
   it('scopes the right pane to the STIG in the URL', async () => {
-    await mountFindings({ query: { stig: 'VPN_SRG_TEST', sel: 'V-219150' } })
+    await mountFindings({ query: { stig: 'VPN_SRG_TEST', finding: 'V-219150' } })
     await waitFor(() =>
       expect(screen.getByTestId('selected-value')).toHaveTextContent('V-219150'),
     )
@@ -108,23 +108,23 @@ describe('findings URL state', () => {
     }, { signal: expect.any(AbortSignal) })
   })
 
-  it('follows a ?sel= change on the same page (Back, Recent views)', async () => {
-    await mountFindings({ query: { sel: 'V-219148' } })
+  it('follows a ?finding= change on the same page (Back, Recent views)', async () => {
+    await mountFindings({ query: { finding: 'V-219148' } })
     await waitFor(() => expect(screen.getByTestId('selected-value')).toHaveTextContent('V-219148'))
 
-    await router.replace({ query: { sel: 'V-219150' } })
+    await router.replace({ query: { finding: 'V-219150' } })
     await waitFor(() => expect(screen.getByTestId('selected-value')).toHaveTextContent('V-219150'))
   })
 
-  it('drops a ?sel= that matches no loaded row', async () => {
-    await mountFindings({ query: { agg: 'groupId', sel: 'V-999999' } })
+  it('drops a ?finding= that matches no loaded row', async () => {
+    await mountFindings({ query: { groupBy: 'group', finding: 'V-999999' } })
     await waitFor(() => expect(urlQuery()).toEqual({}))
     expect(screen.getByTestId('selected-value')).toHaveTextContent('none')
     expect(fetchFailedReviews).not.toHaveBeenCalled()
   })
 
-  it('drops ?sel= when a later load no longer lists the row (label filter)', async () => {
-    const { rerender } = await mountFindings({ query: { sel: 'V-219148' } })
+  it('drops ?finding= when a later load no longer lists the row (label filter)', async () => {
+    const { rerender } = await mountFindings({ query: { finding: 'V-219148' } })
     await waitFor(() => expect(screen.getByTestId('selected-value')).toHaveTextContent('V-219148'))
 
     fetchFindings.mockResolvedValue([GROUP_ROWS[1]])
@@ -133,7 +133,7 @@ describe('findings URL state', () => {
     expect(screen.getByTestId('selected-value')).toHaveTextContent('none')
   })
 
-  it('clears the selection and drops ?sel= when the aggregator changes', async () => {
+  it('clears the selection and drops ?finding= when the aggregator changes', async () => {
     await mountFindings()
     await waitFor(() => expect(fetchFindings).toHaveBeenCalled())
     screen.getByTestId('select-row').click()
@@ -145,11 +145,11 @@ describe('findings URL state', () => {
     await waitFor(() =>
       expect(screen.getByTestId('selected-value')).toHaveTextContent('none'),
     )
-    await waitFor(() => expect(urlQuery()).toEqual({ agg: 'ruleId' }))
+    await waitFor(() => expect(urlQuery()).toEqual({ groupBy: 'rule' }))
   })
 
-  it('honors ?agg= from the URL on mount', async () => {
-    await mountFindings({ query: { agg: 'cci' } })
+  it('honors ?groupBy= from the URL on mount', async () => {
+    await mountFindings({ query: { groupBy: 'cci' } })
     await waitFor(() => expect(fetchFindings).toHaveBeenCalled())
     expect(screen.getByTestId('agg-grid').dataset.aggregator).toBe('cci')
     expect(fetchFindings).toHaveBeenCalledWith('17', {

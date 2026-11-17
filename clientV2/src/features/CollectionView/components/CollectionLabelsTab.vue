@@ -36,24 +36,21 @@ const { state: labels, isLoading: labelsLoading, execute: loadLabels } = useAsyn
   { initialState: [], immediate: false },
 )
 
-// The unlabeled row has a null labelId and name; the URL holds it as NO_LABEL
-const NO_LABEL = 'none'
-const selectedLabelKey = useQuerySelection('label')
-const isLabelSelected = computed(() => selectedLabelKey.value !== null)
-const selectedLabelId = computed(() => (selectedLabelKey.value === NO_LABEL ? null : selectedLabelKey.value))
-const selectedLabelName = computed(() => {
-  if (!isLabelSelected.value) {
-    return ''
-  }
-  return labels.value?.find(l => l.labelId === selectedLabelId.value)?.name ?? 'No label'
-})
+// ?label holds the label's name (unique in a collection). The unlabeled row has a null name, so the URL
+// holds UNLABELED: longer than the 16-character name limit, so no real label can be called that.
+const UNLABELED = '(unlabeled-assets)'
+const rowLabelName = row => row.name ?? UNLABELED
+const selectedLabelName = useQuerySelection('label')
+const isLabelSelected = computed(() => selectedLabelName.value !== null)
+const selectedLabelId = computed(() => labels.value?.find(l => rowLabelName(l) === selectedLabelName.value)?.labelId ?? null)
+const selectedLabelBadge = computed(() => (selectedLabelName.value === UNLABELED ? 'No label' : selectedLabelName.value ?? ''))
 
 const { state: assets, isLoading: assetsLoading, execute: loadAssets } = useAsyncState(
   () => {
-    if (selectedLabelId.value === null) {
+    if (selectedLabelName.value === UNLABELED) {
       return fetchCollectionAssetSummary(props.collectionId, { labelMatch: 'null' })
     }
-    return fetchCollectionAssetSummary(props.collectionId, { labelId: selectedLabelId.value })
+    return fetchCollectionAssetSummary(props.collectionId, { labelName: selectedLabelName.value })
   },
   { initialState: [], immediate: false },
 )
@@ -76,12 +73,12 @@ watch([() => props.ready, () => props.collectionId, () => props.selectedLabelNam
 
 // Keep the selected label (clicked or from the URL) while it is still listed, else clear both levels
 watch(labels, (newLabels) => {
-  const key = selectedLabelKey.value
-  if (key !== null && newLabels?.some(l => (l.labelId ?? NO_LABEL) === key)) {
+  const name = selectedLabelName.value
+  if (name !== null && newLabels?.some(l => rowLabelName(l) === name)) {
     loadAssets()
   }
   else {
-    selectedLabelKey.value = null
+    selectedLabelName.value = null
     selectedAssetId.value = null
     assets.value = []
   }
@@ -110,8 +107,10 @@ watch(selectedAssetId, (newVal) => {
   }
 })
 
+// The grid emits its own row shape, so the name comes from the API row with that labelId
 function handleLabelSelect(labelId) {
-  selectedLabelKey.value = labelId ?? NO_LABEL
+  const label = labels.value?.find(l => l.labelId === labelId)
+  selectedLabelName.value = label ? rowLabelName(label) : null
   selectedAssetId.value = null
   loadAssets()
 }
@@ -169,7 +168,7 @@ function assetReviewTo(rowData) {
           <div class="grid-container">
             <MetricsSummaryGrid
               title="Assets"
-              :badge="selectedLabelName"
+              :badge="selectedLabelBadge"
               :api-metrics-summary="assets"
               agg-type="asset"
               :is-loading="assetsLoading"

@@ -101,7 +101,7 @@ describe('navigation matrix', () => {
     [`${assetReview}?labelName=web`, 'Collections crumb', crumb('Collections'), '/collections'],
     [`${assetReview}?labelName=web&ruleId=SV-1`, 'collection crumb', crumb('Five'), '/collection/5/stigs?labelName=web'],
     [`${collectionReview}?labelName=web&ruleId=SV-1`, 'collection crumb', crumb('Five'), '/collection/5/stigs?labelName=web'],
-    ['/collection/5/findings?agg=ruleId&sel=SV-1&labelName=web', 'collection crumb', crumb('Five'), '/collection/5/stigs?labelName=web'],
+    ['/collection/5/findings?groupBy=rule&finding=SV-1&labelName=web', 'collection crumb', crumb('Five'), '/collection/5/stigs?labelName=web'],
     ['/collection/5/assets?labelName=prod&labelMatch=null&foo=bar', 'collection crumb', crumb('Five'), '/collection/5/stigs?labelMatch=null&labelName=prod'],
     ['/collection/5/management', 'collection crumb', crumb('Five'), '/collection/5/stigs'],
     [`${library}?ruleId=SV-1`, 'STIG Library crumb', crumb('STIG Library'), '/stig-library'],
@@ -114,7 +114,7 @@ describe('navigation matrix', () => {
     [`${collectionReview}?labelName=web`, 'collection picker', pickCollection('7'), '/collection/7/stigs'],
     [`${assetReview}?labelName=web`, 'collection picker', pickCollection('7'), '/collection/7/stigs'],
     ['/collection/5/assets?asset=12&labelName=web', 'collection picker', pickCollection('7'), '/collection/7/assets'],
-    ['/collection/5/findings?agg=ruleId&sel=SV-1', 'collection picker', pickCollection('7'), '/collection/7/findings'],
+    ['/collection/5/findings?groupBy=rule&finding=SV-1', 'collection picker', pickCollection('7'), '/collection/7/findings'],
   ])('%s → %s', async (from, _, action, expected) => {
     await go(from)
     await action()
@@ -125,10 +125,10 @@ describe('navigation matrix', () => {
 // From a review page the collection crumb reopens the tab and selection last left there, with the current label filter
 describe('collection crumb returns to the last view', () => {
   it('reopens Findings as it was left', async () => {
-    await go('/collection/5/findings?agg=ruleId&sel=SV-1&labelName=web')
+    await go('/collection/5/findings?groupBy=rule&finding=SV-1&labelName=web')
     await go(`${assetReview}?labelName=web&ruleId=SV-1`)
     await crumb('Five')()
-    expect(router.currentRoute.value.fullPath).toBe('/collection/5/findings?labelName=web&agg=ruleId&sel=SV-1')
+    expect(router.currentRoute.value.fullPath).toBe('/collection/5/findings?labelName=web&groupBy=rule&finding=SV-1')
   })
 
   it('applies the current label filter, not the one the tab was left with', async () => {
@@ -140,7 +140,7 @@ describe('collection crumb returns to the last view', () => {
   })
 
   it('remembers each collection separately', async () => {
-    await go('/collection/5/findings?agg=ruleId')
+    await go('/collection/5/findings?groupBy=rule')
     await go('/collection/7/assets?asset=3')
     await go('/collection/7/asset/3/stig/RHEL_9/revision/V2R1')
     await crumb('Seven')()
@@ -156,7 +156,7 @@ describe('collection crumb returns to the last view', () => {
 
   it('on a tab, opens the STIGs tab with the STIG last selected there', async () => {
     await go('/collection/5/stigs?stig=RHEL_9&labelName=web')
-    await go('/collection/5/findings?agg=ruleId&labelName=web')
+    await go('/collection/5/findings?groupBy=rule&labelName=web')
     await crumb('Five')()
     expect(router.currentRoute.value.fullPath).toBe('/collection/5/stigs?labelName=web&stig=RHEL_9')
   })
