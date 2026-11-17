@@ -99,7 +99,6 @@ import { stylesheets, scripts, isMinimizedSource } from './resources.js'
   } 
 
   function extractParamString(url) {
-    if (url.hash) return url.hash.substring(1) // Remove the leading '#'
     if (url.search) return url.search.substring(1) // Remove the leading '?'
     return ''
   }

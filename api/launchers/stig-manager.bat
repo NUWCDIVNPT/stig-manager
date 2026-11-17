@@ -205,9 +205,9 @@
 ::==============================================================================
 :: STIGMAN_CLIENT_RESPONSE_MODE
 ::
-::  | Default: "fragment" | The response_mode the web client should specify when
-::  requesting an authorization code from the OIDC provider. Available values:
-::  "fragment", "query"
+::  | No default | *No longer supported.* This variable is ignored. The web
+::  clients always request the "query" response mode from the OIDC provider. A
+::  warning is logged at startup when the variable is set.
 ::
 ::  Affects: Client
 ::==============================================================================
