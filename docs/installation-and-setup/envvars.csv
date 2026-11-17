@@ -38,7 +38,7 @@
 "STIGMAN_CLIENT_OIDC_PROVIDER","| **Default** Value of ``STIGMAN_OIDC_PROVIDER``
 | Client override of the base URL of the OIDC provider issuing signed JWTs for the API.  The string ``/.well-known/openid-configuration`` will be appended by the client when fetching metadata.","Client "
 "STIGMAN_CLIENT_REAUTH_ACTION","| **Default** ``popup``
-| How to prompt for re-authentication when user credentials expire. Available values: ``popup``, ``iframe``, ``tab``, or ``reload``. See :ref:`stigman_client_reauth_action` in the Authentication document for details.","Client"
+| *Deprecated, will be removed when the legacy client is retired.* How the legacy client prompts for re-authentication when user credentials expire. Available values: ``popup``, ``iframe``, ``tab``, or ``reload``. The new client (clientV2) does not use this variable and always prompts with a popup window. See :ref:`stigman_client_reauth_action` in the Authentication document for details.","Client"
 "STIGMAN_CLIENT_RESPONSE_MODE","| **No default**
 | *No longer supported.* This variable is ignored. The web clients always request the ``query`` response mode from the OIDC provider. A warning is logged at startup when the variable is set.","Client"
 "STIGMAN_CLIENT_SCOPE_PREFIX","| **No default**

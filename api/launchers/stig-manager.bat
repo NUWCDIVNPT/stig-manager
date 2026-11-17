@@ -158,6 +158,19 @@
 :: set STIGMAN_CLIENT_EXTRA_SCOPES=
 
 ::==============================================================================
+:: STIGMAN_CLIENT_HISTORY_BASE
+::
+::  | No default | Turns on HTML5 history (hashless) routing for the new web
+::  client (clientV2). The value is the URL path at which the application is
+::  served: "/" at the origin root, or a path such as "/stigman/". If this
+::  variable is not set, clientV2 uses hash routing. The legacy client does not
+::  use this variable.
+::
+::  Affects: Client
+::==============================================================================
+:: set STIGMAN_CLIENT_HISTORY_BASE=
+
+::==============================================================================
 :: STIGMAN_CLIENT_ID
 ::
 ::  | Default: "stig-manager" | The OIDC clientId of the web client
@@ -193,10 +206,12 @@
 ::==============================================================================
 :: STIGMAN_CLIENT_REAUTH_ACTION
 ::
-::  | Default: "popup" | How to prompt for re-authentication when user
+::  | Default: "popup" | *Deprecated, will be removed when the legacy client is
+::  retired.* How the legacy client prompts for re-authentication when user
 ::  credentials expire. Available values: "popup", "iframe", "tab", or "reload".
-::  See :ref:`stigman_client_reauth_action` in the Authentication document for
-::  details.
+::  The new client (clientV2) does not use this variable and always prompts
+::  with a popup window. See :ref:`stigman_client_reauth_action` in the
+::  Authentication document for details.
 ::
 ::  Affects: Client
 ::==============================================================================
