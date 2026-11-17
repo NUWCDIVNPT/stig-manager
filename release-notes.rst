@@ -6,10 +6,11 @@ Changes:
   - (UI) Added a preview of the new STIG Manager web client, served alongside the legacy client at ``/client-v2/``. Both clients use the same API and data.
   - (UI) Added guided tours and a What's New panel to the new client.
   - (UI) The legacy client now shows a banner, a "Try the new UI" Navigation Tree node, and a What's New entry inviting users to the preview.
-  - (UI) Both clients now share one OIDC worker and re-authentication page.
+  - (UI) Both clients now share one OIDC worker.
   - (UI) Signing out now ends the session in every open STIG Manager tab.
   - (UI) Fixed the OIDC worker enforcing ``STIGMAN_CLIENT_STRICT_PKCE`` only on the first page load.
   - (API) Added ``STIGMAN_CLIENT_HISTORY_BASE``, which enables hashless URLs in the new client, and ``STIGMAN_CLIENT_NEXT_DIRECTORY``, the location of the new client files.
+  - (API) ``STIGMAN_CLIENT_RESPONSE_MODE`` is now ignored. The clients always use the ``query`` response mode.
   - (API) Added the ``tours`` and ``lastWhatsNewV2`` properties to user web preferences.
   - (API/UI) Added new client tour usage to the App Info report.
   - (API) Fixed export-to-collection failures being reported as a success.
@@ -19,15 +20,17 @@ Changes:
 
 Note 1: The new client is a preview released for user feedback, and the legacy client remains the default. Unless noted below, the new client provides every feature of the legacy client. Report problems and suggestions at https://github.com/NUWCDIVNPT/stig-manager/issues.
 
-Note 2: RECOMMENDATION: Set ``STIGMAN_CLIENT_HISTORY_BASE`` to enable hashless URLs in the new client. Unless this is set, the new client must use ``#`` fragment URLs, which email gateways, ticketing systems and link scanners often strip. The client works without the setting, but links shared through those systems open the landing page instead of the intended view. Reverse proxies that allow only specific paths must then permit everything under ``/client-v2/``; proxies that forward all paths require no change. See the Reverse Proxy documentation.
+Note 2: RECOMMENDATION: Set ``STIGMAN_CLIENT_HISTORY_BASE`` to the URL path where STIG Manager is served (``/`` or a prefix such as ``/stigman/``) to enable hashless URLs in the new client. Unless this is set, the new client must use ``#`` fragment URLs, which email gateways, ticketing systems and link scanners often strip. The client works without the setting, but links shared through those systems open the landing page instead of the intended view. Reverse proxies that allow only specific paths must then permit everything under ``/client-v2/``; proxies that forward all paths require no change. See the Reverse Proxy documentation.
 
 Note 3: OIDC client registrations that list specific redirect URIs must add ``<STIG Manager URL>/client-v2/`` and ``<STIG Manager URL>/client-v2/reauth.html`` before users can sign in to the new client. Wildcard registrations require no change.
 
-Note 4: Review attachments are deprecated and are not available in the new client. They remain available in the legacy client until it is retired.
+Note 4: The ``fragment`` OIDC response mode is no longer supported, completing the deprecation announced in 1.6.14. ``STIGMAN_CLIENT_RESPONSE_MODE`` is now ignored and the clients always use ``query``.
 
-Note 5: ``STIGMAN_CLIENT_REAUTH_ACTION`` is deprecated. The new client always re-authenticates with a popup window; the legacy client continues to honor the variable.
+Note 5: Review attachments are deprecated and are not available in the new client. They remain available in the legacy client until it is retired.
 
-Note 6: Users should close all open STIG Manager browser tabs after the upgrade. Tabs left open from the previous release can prevent re-authentication.
+Note 6: ``STIGMAN_CLIENT_REAUTH_ACTION`` is deprecated. The new client always re-authenticates with a popup window; the legacy client continues to honor the variable.
+
+Note 7: Users should close all open STIG Manager browser tabs after the upgrade. Tabs left open from the previous release can prevent re-authentication.
 
 1.6.18
 -------
