@@ -240,7 +240,8 @@ const columns = computed(() => {
     case 'unagg':
       if (props.parentAggType === 'asset') {
         return [
-          benchmarkColumn,
+          // One asset's checklists: the STIG shield opens that asset's review
+          { ...benchmarkColumn, shieldTitle: 'Open Asset Review' },
           titleColumn,
           revisionColumn,
           ...commonColumns,

@@ -1,7 +1,6 @@
 import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
-import { getLastStigLibraryUrl } from '../features/STIGLibrary/lastVisited.js'
 import { isAppDataEnabled, isLogStreamEnabled } from '../shared/lib/featureFlags.js'
-import { pickLabelFilterQuery } from '../shared/lib/labelFilters.js'
+import { lastQuery, lastViewIn, rememberView } from './lastViews.js'
 import { navigationGuard } from './navigationGuards.js'
 
 // Lazy load components
@@ -25,10 +24,17 @@ const NotFound = () => import('../features/NotFound/components/NotFound.vue')
 
 const EmptyComponent = { template: '<div><router-view></router-view></div>' }
 
-// Collection-name crumb; carries the label filter back to the Collection dashboard
+// Collection-name crumb. From outside the collection's tabs (a review page) it reopens the tab and
+// selection last left there; on a tab it goes to the STIGs tab as last left. useAppBreadcrumb adds the label filter.
+function collectionCrumbLocation(route) {
+  const stigsTab = { name: 'collection-stigs', params: { collectionId: route.params.collectionId } }
+  return (route.meta.viewGroup !== 'collection' && lastViewIn('collection', route.params))
+    || { ...stigsTab, query: lastQuery(stigsTab) }
+}
+
 const collectionCrumb = {
   label: (route, getCollectionName) => getCollectionName(route.params.collectionId),
-  route: route => ({ name: 'collection', params: { collectionId: route.params.collectionId }, query: pickLabelFilterQuery(route.query) }),
+  route: collectionCrumbLocation,
   pickerType: 'collection',
 }
 
@@ -45,6 +51,8 @@ const routes = [
     meta: {
       requiresCollectionGrant: true,
       collectionView: true,
+      // tabs remember where they were left (lastViews.js)
+      viewGroup: 'collection',
       // shows the collection label filter after the breadcrumb (MenuBar); tabs inherit it
       labelFilter: true,
       breadcrumbs: [
@@ -197,14 +205,14 @@ const routes = [
     path: '/stig-library',
     name: 'stig-library',
     component: StigLibrary,
-    meta: { breadcrumbs: [{ label: 'STIG Library' }] },
+    meta: { viewGroup: 'stig-library', breadcrumbs: [{ label: 'STIG Library' }] },
     beforeEnter: (to, from) => {
-      // Restore the last view only when entering from outside the library (e.g. nav rail), not from the breadcrumb
-      if (from.name?.startsWith('stig-library')) {
+      // Entering from outside the library (e.g. nav rail) reopens its last page; from inside (the crumb) it doesn't
+      if (from.meta.viewGroup === 'stig-library') {
         return
       }
-      const last = getLastStigLibraryUrl()
-      if (last && last !== '/stig-library') {
+      const last = lastViewIn('stig-library')
+      if (last && last.name !== 'stig-library') {
         return last
       }
     },
@@ -214,6 +222,7 @@ const routes = [
     name: 'stig-library-benchmark',
     component: StigLibrary,
     meta: {
+      viewGroup: 'stig-library',
       breadcrumbs: [
         { label: 'STIG Library', route: { name: 'stig-library' } },
         { label: route => route.params.benchmarkId },
@@ -252,5 +261,6 @@ const router = createRouter({
 })
 
 router.beforeEach(navigationGuard)
+router.afterEach(rememberView)
 
 export default router

@@ -1,12 +1,11 @@
 import { fireEvent, screen } from '@testing-library/vue'
 import { flushPromises } from '@vue/test-utils'
 import { describe, expect, it, vi } from 'vitest'
+import { createMemoryHistory, createRouter } from 'vue-router'
 import { renderWithProviders } from '../../../testUtils/utils.js'
 import CollectionAssetsTab from '../components/CollectionAssetsTab.vue'
 import CollectionLabelsTab from '../components/CollectionLabelsTab.vue'
 import CollectionStigsTab from '../components/CollectionStigsTab.vue'
-
-vi.mock('vue-router', () => ({ useRouter: () => ({ replace: vi.fn() }), useRoute: () => ({ name: 'collection-tab', query: {} }) }))
 
 // One row that satisfies every grid in every tab
 const row = { benchmarkId: 'RHEL_9', revisionStr: 'V2R1', assetId: 'a1', labelId: 'l1', name: 'web-01' }
@@ -50,11 +49,22 @@ const tabs = [
   ['Labels', CollectionLabelsTab, ['select-label', 'select-asset']],
 ]
 
+const Empty = { template: '<div />' }
 const shieldTarget = aggType => JSON.parse(screen.getByTestId(`shield-${aggType}`).textContent)
 
 describe('asset Review links from the collection tabs', () => {
-  async function checklistShieldTarget(Tab, path, selectedLabelNames) {
-    renderWithProviders(Tab, { props: { collectionId: 'c1', selectedLabelNames } })
+  // The label filter comes from the URL, as on the real collection tabs
+  async function checklistShieldTarget(Tab, path, query) {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        { path: '/collection/:collectionId/tab', name: 'collection-tab', component: Empty },
+        { path: '/collection/:collectionId/asset/:assetId/stig/:benchmarkId/revision/:revisionStr', name: 'collection-asset-review', component: Empty },
+        { path: '/collection/:collectionId/benchmark/:benchmarkId/revision/:revisionStr', name: 'collection-benchmark-review', component: Empty },
+      ],
+    })
+    await router.push({ name: 'collection-tab', params: { collectionId: 'c1' }, query })
+    renderWithProviders(Tab, { props: { collectionId: 'c1' }, global: { plugins: [router] } })
     await flushPromises()
     for (const testId of path) {
       await click(testId)
@@ -63,7 +73,7 @@ describe('asset Review links from the collection tabs', () => {
   }
 
   it.each(tabs)('%s tab carries the label filter into Asset Review', async (_, Tab, path) => {
-    const to = await checklistShieldTarget(Tab, path, ['Alpha', null])
+    const to = await checklistShieldTarget(Tab, path, { labelName: 'Alpha', labelMatch: 'null' })
 
     expect(to).toEqual({
       name: 'collection-asset-review',
@@ -73,7 +83,7 @@ describe('asset Review links from the collection tabs', () => {
   })
 
   it.each(tabs)('%s tab sends an empty query when no labels are selected', async (_, Tab, path) => {
-    const to = await checklistShieldTarget(Tab, path, [])
+    const to = await checklistShieldTarget(Tab, path, {})
 
     expect(to.query).toEqual({})
   })

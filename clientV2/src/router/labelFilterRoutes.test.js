@@ -29,19 +29,5 @@ describe('label filter routes', () => {
   ])('%s does not show the label filter', (name, params) => {
     expect(router.resolve({ name, params }).meta.labelFilter).toBeFalsy()
   })
-
-  // The collection-name crumb keeps the label filter; the dashboard redirect keeps the query
-  it.each([
-    ['collection-assets', collection],
-    ['collection-asset-review', assetReview],
-    ['collection-benchmark-review', review],
-  ])('%s collection crumb carries the label filter', (name, params) => {
-    const route = router.resolve({ name, params, query: { labelName: 'prod', labelMatch: 'null', foo: 'bar' } })
-    const crumb = route.matched[0].meta.breadcrumbs[1]
-    expect(crumb.route(route)).toEqual({
-      name: 'collection',
-      params: { collectionId: '1' },
-      query: { labelName: ['prod'], labelMatch: 'null' },
-    })
-  })
+  // Breadcrumbs carrying the filter: navigationMatrix.test.js
 })

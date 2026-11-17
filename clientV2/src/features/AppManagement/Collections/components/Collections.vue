@@ -3,6 +3,7 @@ import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
 import { ref, watch } from 'vue'
 import DeleteModal from '../../../../components/common/DeleteModal.vue'
+import { forgetCollection } from '../../../../router/lastViews.js'
 import { useAsyncState } from '../../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
@@ -68,6 +69,7 @@ async function onDeleteConfirmed() {
   }
   try {
     await deleteCollection(collectionToDelete.value.collectionId)
+    forgetCollection(collectionToDelete.value.collectionId)
     // The watcher reconciles selection after the reload: the deleted id is gone,
     // so it falls back to the first row (or null when the list is now empty).
     await loadCollections()

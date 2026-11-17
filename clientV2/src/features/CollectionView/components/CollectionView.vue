@@ -8,6 +8,8 @@ import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { lastQuery } from '../../../router/lastViews.js'
+import { linkTo } from '../../../router/links.js'
 import { notFoundLocation } from '../../../router/notFound.js'
 import { getHttpStatus } from '../../../shared/api/apiClient.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
@@ -65,7 +67,7 @@ const { state: collection, execute: loadCollection } = useAsyncState(
 const collectionName = computed(() => collection.value?.name || 'Collection')
 
 // Label filter (set from the breadcrumb) shared by the dashboard metrics and every tab.
-const { selectedLabelNames, labelFilterParams } = useLabelFilterQuery()
+const { selectedLabelNames } = useLabelFilterQuery()
 
 // Findings and Manage get their own Recent entries; the other tabs share one
 const RECENT_SECTIONS = {
@@ -113,24 +115,15 @@ const tabToRoute = {
   management: 'collection-management',
 }
 
-// Each tab's own query (e.g. Findings ?agg/stig/sel), saved on leave and restored on
-// return so the URL matches the hidden tab's retained state. Label keys stay current.
-const tabQueries = new Map()
-
-// Active tab based on route
+// Active tab based on route. A tab reopens with the query it was left with
+// (e.g. Findings ?agg/stig/sel), so the URL matches what the tab still shows.
 const activeTab = computed({
   get: () => routeToTab[route.name] || 'stigs',
   set: (newTab) => {
     const routeName = tabToRoute[newTab]
     if (routeName) {
-      const { labelName, labelMatch, ...ownQuery } = route.query
-      tabQueries.set(activeTab.value, ownQuery)
       const target = { name: routeName, params: { collectionId: props.collectionId } }
-      // A tab that hides the label filter (meta.labelFilter false, i.e. Management)
-      // does not carry it either, so the filter is never applied invisibly
-      const carriesLabelFilter = router.resolve(target).meta.labelFilter !== false
-      const savedQuery = tabQueries.get(newTab) ?? {}
-      router.push({ ...target, query: carriesLabelFilter ? { ...savedQuery, ...labelFilterParams.value } : savedQuery })
+      router.push(linkTo(router, { ...target, query: lastQuery(target) }))
     }
   },
 })
@@ -163,7 +156,6 @@ watch([activeTab, selectedLabelNames], ([tab, names]) => {
 }, { immediate: true })
 watch(() => props.collectionId, () => {
   visitedTabs.value = new Set([activeTab.value])
-  tabQueries.clear()
 })
 
 const tabPanelsPt = {

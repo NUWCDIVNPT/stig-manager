@@ -3,6 +3,7 @@ import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
 import { computed, watch } from 'vue'
 import MetricsSummaryGrid from '../../../components/common/MetricsSummaryGrid.vue'
+import { useLinkTo } from '../../../router/links.js'
 import { fetchCollectionAssetSummary } from '../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useQuerySelection } from '../../../shared/composables/useQuerySelection.js'
@@ -24,6 +25,8 @@ const props = defineProps({
     default: true,
   },
 })
+
+const linkTo = useLinkTo()
 
 const { state: labels, isLoading: labelsLoading, execute: loadLabels } = useAsyncState(
   () => fetchCollectionLabelSummary(
@@ -121,7 +124,7 @@ function assetReviewTo(rowData) {
   if (!selectedAssetId.value) {
     return null
   }
-  return {
+  return linkTo({
     name: 'collection-asset-review',
     params: {
       collectionId: props.collectionId,
@@ -129,8 +132,7 @@ function assetReviewTo(rowData) {
       benchmarkId: rowData.benchmarkId,
       revisionStr: rowData.revisionStr,
     },
-    query: buildLabelFilterParams(props.selectedLabelNames),
-  }
+  })
 }
 </script>
 

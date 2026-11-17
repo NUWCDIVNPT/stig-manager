@@ -11,7 +11,6 @@ import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useBenchmarkList } from '../composables/useBenchmarkList.js'
 import { useRevisionDiff } from '../composables/useRevisionDiff.js'
 import { useRevisionRules } from '../composables/useRevisionRules.js'
-import { setLastStigLibraryUrl } from '../lastVisited.js'
 import BenchmarkListTable from './BenchmarkListTable.vue'
 import BenchmarksTable from './BenchmarksTable.vue'
 import DiffDetailPanel from './DiffDetailPanel.vue'
@@ -195,24 +194,7 @@ watch(benchmarkRevisions, (revs) => {
   }
 })
 
-// Remember the most-recent STIG Library URL so the navrail (and any other
-// external entry point) can land back on it instead of the bare list.
-watch(
-  () => route.fullPath,
-  (path) => {
-    if (route.name === 'stig-library' || route.name === 'stig-library-benchmark') {
-      setLastStigLibraryUrl(path)
-    }
-  },
-  { immediate: true },
-)
-
 function goToList() {
-  // The page-header title is the user's explicit "back to the list" gesture.
-  // Clear the cached deep URL so the navrail's beforeEnter doesn't bounce us
-  // straight back to it; the route-watch above will reseed lastVisited as the
-  // bare list path on the next tick.
-  setLastStigLibraryUrl(null)
   router.replace({ name: 'stig-library' })
 }
 function goToBenchmark(benchmark) {
@@ -231,38 +213,17 @@ function setViewRev(rev) {
     query: compareRev.value ? { compareRev: compareRev.value } : {},
   })
 }
+// A new comparison starts with nothing selected
 function setCompareRev(rev) {
-  const query = { ...route.query }
-  if (rev) {
-    query.compareRev = rev
-  }
-  else {
-    delete query.compareRev
-  }
-  delete query.ruleId
-  delete query.diffKey
-  router.replace({ name: route.name, params: route.params, query })
+  replaceQuery({ compareRev: rev || null, ruleId: null, diffKey: null })
 }
 function setSelectedRule(ruleId) {
-  const query = { ...route.query }
-  if (ruleId) {
-    query.ruleId = ruleId
-  }
-  else {
-    delete query.ruleId
-  }
-  router.replace({ name: route.name, params: route.params, query })
+  replaceQuery({ ruleId: ruleId || null })
 }
 function setSelectedDiffRow(key) {
-  const query = { ...route.query }
-  if (key) {
-    query.diffKey = key
-  }
-  else {
-    delete query.diffKey
-  }
-  router.replace({ name: route.name, params: route.params, query })
+  replaceQuery({ diffKey: key || null })
 }
+// The URL is this page's state: read through the computeds above, written here (replace, no history)
 function replaceQuery(patch) {
   const query = { ...route.query, ...patch }
   for (const [k, v] of Object.entries(patch)) {

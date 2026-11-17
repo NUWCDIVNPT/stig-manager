@@ -3,6 +3,7 @@ import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
 import { watch } from 'vue'
 import MetricsSummaryGrid from '../../../components/common/MetricsSummaryGrid.vue'
+import { useLinkTo } from '../../../router/links.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useQuerySelection } from '../../../shared/composables/useQuerySelection.js'
 import { buildLabelFilterParams } from '../../../shared/lib/labelFilters.js'
@@ -27,6 +28,8 @@ const props = defineProps({
     default: true,
   },
 })
+
+const linkTo = useLinkTo()
 
 // Queries
 const fetchStigs = () => {
@@ -93,7 +96,7 @@ function checklistAssetTo(rowData) {
   if (!selectedBenchmarkId.value) {
     return null
   }
-  return {
+  return linkTo({
     name: 'collection-asset-review',
     params: {
       collectionId: props.collectionId,
@@ -101,22 +104,20 @@ function checklistAssetTo(rowData) {
       benchmarkId: selectedBenchmarkId.value,
       revisionStr: rowData.revisionStr,
     },
-    query: buildLabelFilterParams(props.selectedLabelNames),
-  }
+  })
 }
 
 // Carries the dashboard label filter along so Collection Review opens scoped
 // to the same Assets the grid was showing.
 function stigReviewTo(rowData) {
-  return {
+  return linkTo({
     name: 'collection-benchmark-review',
     params: {
       collectionId: props.collectionId,
       benchmarkId: rowData.benchmarkId,
       revisionStr: rowData.revisionStr,
     },
-    query: buildLabelFilterParams(props.selectedLabelNames),
-  }
+  })
 }
 </script>
 

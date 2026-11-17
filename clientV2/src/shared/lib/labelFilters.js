@@ -42,3 +42,9 @@ export function parseLabelFilterParams(query = {}) {
 export function pickLabelFilterQuery(query = {}) {
   return buildLabelFilterParams(parseLabelFilterParams(query))
 }
+
+// A route query without the label filter: the view's own keys.
+export function omitLabelFilterQuery(query = {}) {
+  const { labelName, labelMatch, ...rest } = query
+  return rest
+}
