@@ -48,7 +48,7 @@ function logAppConfig(config) {
 function logAppConfigWarnings() {
     if (process.env.STIGMAN_CLIENT_RESPONSE_MODE) {
         logger.writeWarn('bootstrapUtils', 'deprecation', {
-            message: 'STIGMAN_CLIENT_RESPONSE_MODE is deprecated and will be removed in a future release, after which the client will always use the query response mode.'
+            message: 'STIGMAN_CLIENT_RESPONSE_MODE is no longer supported and is ignored. The web clients always use the query response mode.'
         })
     }
 }

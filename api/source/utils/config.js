@@ -48,7 +48,9 @@ const config = {
         next_directory: process.env.STIGMAN_CLIENT_NEXT_DIRECTORY || '../../clientV2/dist',
         extraScopes: process.env.STIGMAN_CLIENT_EXTRA_SCOPES,
         scopePrefix: process.env.STIGMAN_CLIENT_SCOPE_PREFIX,
-        responseMode: process.env.STIGMAN_CLIENT_RESPONSE_MODE || "query",
+        // Always "query". The web clients read the authorization response only from
+        // the query string, so STIGMAN_CLIENT_RESPONSE_MODE is ignored.
+        responseMode: "query",
         reauthAction: process.env.STIGMAN_CLIENT_REAUTH_ACTION || "popup",
         strictPkce: process.env.STIGMAN_CLIENT_STRICT_PKCE !== 'false',
         stateEvents: process.env.STIGMAN_CLIENT_STATE_EVENTS !== 'false',
