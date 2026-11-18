@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { forgetCollection, forgetViews, lastQuery, lastViewIn, rememberView } from './lastViews.js'
 
 const tab = (name, collectionId, query = {}) => ({ name, params: { collectionId }, query, meta: { viewGroup: 'collection' } })
+// The 404 page as notFoundLocation builds it for a URL
+const notFound = path => ({ name: 'not-found', params: { pathMatch: path.substring(1).split('/') }, query: {}, meta: {} })
 
 describe('lastViews', () => {
   beforeEach(() => forgetViews())
@@ -30,13 +32,21 @@ describe('lastViews', () => {
 
   it('forgets a page that sent its URL to the 404 page', () => {
     rememberView(tab('collection-findings', '5', { finding: 'SV-1' }))
-    const bad = tab('collection-assets', '5', { asset: '999' })
+    const bad = { ...tab('collection-assets', '5', { asset: '999' }), path: '/collection/5/assets' }
     rememberView(bad)
-    rememberView({ name: 'not-found', params: {}, query: {}, meta: {} }, bad)
+    rememberView(notFound('/collection/5/assets'), bad)
 
     expect(lastQuery(bad)).toEqual({})
     expect(lastViewIn('collection', { collectionId: '5' })).toBeNull()
     expect(lastQuery({ name: 'collection-findings', params: { collectionId: '5' } })).toEqual({ finding: 'SV-1' })
+  })
+
+  it('keeps the page that was left when another URL goes to the 404 page', () => {
+    const left = { ...tab('collection-findings', '5', { finding: 'SV-1' }), path: '/collection/5/findings' }
+    rememberView(left)
+    rememberView(notFound('/collection/9/stigs'), left)
+
+    expect(lastViewIn('collection', { collectionId: '5' })).toEqual({ name: 'collection-findings', params: { collectionId: '5' }, query: { finding: 'SV-1' } })
   })
 
   it('forgets a deleted collection and keeps the others', () => {

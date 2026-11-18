@@ -58,9 +58,9 @@ const {
   totalOccurrences,
 } = useFindings({ collectionId, aggregator, benchmarkId: selectedBenchmarkId, labelNames })
 
-// The selected row is the loaded row matching ?finding; none while it isn't listed
+// The selected row is the loaded row matching ?finding; none without ?finding or while it isn't listed
 const selectedFinding = computed({
-  get: () => findings.value?.find(r => r[aggregator.value] === selectedFindingId.value) ?? null,
+  get: () => (selectedFindingId.value && findings.value?.find(r => r[aggregator.value] === selectedFindingId.value)) || null,
   set: (row) => {
     selectedFindingId.value = row?.[aggregator.value] ?? null
     // ?finding only means something next to its grouping, so groupBy is pinned while a row is selected

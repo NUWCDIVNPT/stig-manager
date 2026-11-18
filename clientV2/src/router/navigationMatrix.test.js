@@ -167,6 +167,14 @@ describe('collection crumb returns to the last view', () => {
     expect(router.currentRoute.value.fullPath).toBe('/collection/5/stigs?stig=WIN_11')
   })
 
+  it('still reopens the tab after a link from it ended at the 404 page', async () => {
+    await go('/collection/5/findings?groupBy=rule&finding=SV-1')
+    await go('/no-such-page')
+    await go(assetReview)
+    await crumb('Five')()
+    expect(router.currentRoute.value.fullPath).toBe('/collection/5/findings?groupBy=rule&finding=SV-1')
+  })
+
   it('shows the restored URL as the crumb link', async () => {
     await go('/collection/5/assets?asset=12')
     await go(assetReview)

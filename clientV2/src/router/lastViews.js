@@ -1,4 +1,5 @@
 import { omitLabelFilterQuery } from '../shared/lib/labelFilters.js'
+import { isNotFoundFor } from './notFound.js'
 
 // Where the user last was in each view, so a link back can reopen it. In memory for the session.
 // Routes opt in with meta.viewGroup; only the view's own keys are kept, never the label filter.
@@ -13,9 +14,12 @@ export function rememberView(to, from, failure) {
   if (failure) {
     return
   }
-  // A page that finds its URL bad (e.g. an unknown STIG) sends it to the 404 page; don't link back to it
-  if (to.name === 'not-found' && from?.meta?.viewGroup) {
-    forgetView(from)
+  // A page that finds its own URL bad (e.g. an unknown STIG) replaces it with the 404 page; don't link back to it.
+  // A 404 for any other URL (e.g. a link to a collection with no grant) says nothing about the page that was left.
+  if (to.name === 'not-found') {
+    if (from?.meta?.viewGroup && isNotFoundFor(to, from)) {
+      forgetView(from)
+    }
     return
   }
   if (!to.meta.viewGroup) {

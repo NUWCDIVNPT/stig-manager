@@ -22,7 +22,7 @@ vi.mock('../components/AggregatedFindingsGrid.vue', () => ({
     props: ['rows', 'selectedRow', 'aggregator', 'selectedBenchmarkId'],
     emits: ['select-finding', 'update:aggregator', 'select-stig'],
     template: `
-      <div data-testid="agg-grid" :data-aggregator="aggregator">
+      <div data-testid="agg-grid" :data-aggregator="aggregator" :data-selected="selectedRow ? 'row' : rows.length ? 'none' : 'loading'">
         <button data-testid="select-row" @click="$emit('select-finding', rows[0])">select</button>
         <button data-testid="switch-agg" @click="$emit('update:aggregator', 'ruleId')">agg</button>
       </div>
@@ -120,6 +120,13 @@ describe('findings URL state', () => {
     await mountFindings({ query: { groupBy: 'group', finding: 'V-999999' } })
     await waitFor(() => expect(urlQuery()).toEqual({}))
     expect(screen.getByTestId('selected-value')).toHaveTextContent('none')
+    expect(fetchFailedReviews).not.toHaveBeenCalled()
+  })
+
+  it('selects no row without ?finding=, even one whose id is null', async () => {
+    fetchFindings.mockResolvedValue([{ groupId: null, severity: 'high', assetCount: 2 }, ...GROUP_ROWS])
+    await mountFindings()
+    await waitFor(() => expect(screen.getByTestId('agg-grid')).toHaveAttribute('data-selected', 'none'))
     expect(fetchFailedReviews).not.toHaveBeenCalled()
   })
 
