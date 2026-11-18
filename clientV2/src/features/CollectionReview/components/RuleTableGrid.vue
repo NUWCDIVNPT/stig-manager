@@ -8,6 +8,7 @@ import assessmentIcon from '../../../assets/assessment.svg'
 import readOnlyIcon from '../../../assets/read-only.svg'
 import LabelsRow from '../../../components/columns/LabelsRow.vue'
 import EngineBadge from '../../../components/common/EngineBadge.vue'
+import HelpIcon from '../../../components/common/HelpIcon.vue'
 import HighlightText from '../../../components/common/HighlightText.vue'
 import ManualBadge from '../../../components/common/ManualBadge.vue'
 import OverrideBadge from '../../../components/common/OverrideBadge.vue'
@@ -23,6 +24,7 @@ import { gridColumnPt } from '../../../shared/lib/dataTablePt.js'
 import { exportTimestamp } from '../../../shared/lib/exportCells.js'
 import { statusSortValue } from '../../../shared/lib/gridSorts.js'
 import { formatReviewDate, statusPayloadForAction } from '../../../shared/lib/reviewFormUtils.js'
+import { getReviewFieldTooltipHtml, TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import { patchReview, putReview } from '../../AssetReview/api/assetReviewApi.js'
 
 const props = defineProps({
@@ -86,6 +88,9 @@ const props = defineProps({
 const emit = defineEmits(['review-saved', 'update:selection'])
 
 const dataTableRef = ref(null)
+
+const detailTooltipHtml = computed(() => getReviewFieldTooltipHtml('detail', props.fieldSettings?.detail))
+const commentTooltipHtml = computed(() => getReviewFieldTooltipHtml('comment', props.fieldSettings?.comment))
 
 const { itemSize } = useGridDensity('collection-rule-table')
 
@@ -445,7 +450,10 @@ const dataTablePt = {
     </Column>
 
     <!-- Result -->
-    <Column field="result" header="Result" sortable :style="{ width: '7rem', minWidth: '6rem' }" :pt="columnPt.center">
+    <Column field="result" export-header="Result" sortable :style="{ width: '7rem', minWidth: '6rem' }" :pt="columnPt.center">
+      <template #header>
+        Result <HelpIcon :content="TOOLTIPS.reviewFields.result" @click.stop />
+      </template>
       <template #body="{ data }">
         <ResultBadge v-if="getResultDisplay(data.result)" :status="getResultDisplay(data.result)" />
         <span v-else class="cell-result__empty">—</span>
@@ -453,7 +461,10 @@ const dataTablePt = {
     </Column>
 
     <!-- Detail -->
-    <Column v-if="visibleFields.has('detail')" field="detail" header="Detail" sortable :style="{ width: '20%', minWidth: '12rem' }" :pt="columnPt.left">
+    <Column v-if="visibleFields.has('detail')" field="detail" export-header="Detail" sortable :style="{ width: '20%', minWidth: '12rem' }" :pt="columnPt.left">
+      <template #header>
+        Detail <HelpIcon :content="detailTooltipHtml" @click.stop />
+      </template>
       <template #body="{ data }">
         <div class="cell-text-field">
           <span v-if="data.detail" class="cell-text cell-text--clamped" :title="data.detail"><HighlightText :text="data.detail" :term="highlightTerm('detail')" /></span>
@@ -463,7 +474,10 @@ const dataTablePt = {
     </Column>
 
     <!-- Comment -->
-    <Column v-if="visibleFields.has('comment')" field="comment" header="Comment" sortable :style="{ width: '20%', minWidth: '12rem' }" :pt="columnPt.left">
+    <Column v-if="visibleFields.has('comment')" field="comment" export-header="Comment" sortable :style="{ width: '20%', minWidth: '12rem' }" :pt="columnPt.left">
+      <template #header>
+        Comment <HelpIcon :content="commentTooltipHtml" @click.stop />
+      </template>
       <template #body="{ data }">
         <span class="cell-text cell-text--clamped" :title="data.comment"><HighlightText :text="data.comment" :term="highlightTerm('comment')" /></span>
       </template>

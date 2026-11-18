@@ -15,6 +15,7 @@ import { severityMap } from '../../../shared/lib/checklistUtils.js'
 import { gridColumnPt } from '../../../shared/lib/dataTablePt.js'
 import { severitySortValue } from '../../../shared/lib/gridSorts.js'
 import { dashZero } from '../../../shared/lib/numberFormat.js'
+import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
 
 const props = defineProps({
   // Rows after search and filters
@@ -243,12 +244,12 @@ const dataTablePt = {
     <!-- Timestamp Columns -->
     <Column v-if="visibleFields.has('oldest')" field="timestamps.ts.min" header="Oldest" sortable :style="{ width: '5.5rem', minWidth: '5.5rem' }" :pt="columnPt.center">
       <template #body="{ data }">
-        <span v-if="data.timestamps?.ts?.min" class="cell-text" :title="data.timestamps.ts.min">{{ durationToNow(data.timestamps.ts.min) }}</span>
+        <span v-if="data.timestamps?.ts?.min" class="cell-text" :title="formatReviewDate(data.timestamps.ts.min)">{{ durationToNow(data.timestamps.ts.min) }}</span>
       </template>
     </Column>
     <Column v-if="visibleFields.has('newest')" field="timestamps.ts.max" header="Newest" sortable :style="{ width: '5.5rem', minWidth: '5.5rem' }" :pt="columnPt.center">
       <template #body="{ data }">
-        <span v-if="data.timestamps?.ts?.max" class="cell-text" :title="data.timestamps.ts.max">{{ durationToNow(data.timestamps.ts.max) }}</span>
+        <span v-if="data.timestamps?.ts?.max" class="cell-text" :title="formatReviewDate(data.timestamps.ts.max)">{{ durationToNow(data.timestamps.ts.max) }}</span>
       </template>
     </Column>
 

@@ -153,6 +153,12 @@ watch(() => props.active, (isActive) => {
   }
 }, { immediate: true })
 
+// Option hover text, as the legacy ACL tree showed it.
+function stigOptionTitle(stig) {
+  const lines = [stig.title, stig.ruleCount != null && `Rules: ${stig.ruleCount}`, stig.assetCount != null && `Assets: ${stig.assetCount}`]
+  return lines.filter(Boolean).join('\n') || undefined
+}
+
 function clear() {
   selectedAsset.value = null
   selectedLabel.value = null
@@ -234,7 +240,9 @@ defineExpose({ clear })
           <span v-else class="builder-placeholder">{{ placeholder }}</span>
         </template>
         <template #option="{ option }">
-          <LabelChip :value="option.name" :color="option.color" />
+          <span :title="option.uses != null ? `Assets: ${option.uses}` : undefined">
+            <LabelChip :value="option.name" :color="option.color" />
+          </span>
         </template>
       </Select>
     </div>
@@ -259,7 +267,7 @@ defineExpose({ clear })
         :pt="{ label: { style: 'font-size: var(--text-lg);' }, item: { style: 'font-size: var(--text-lg);' } }"
       >
         <template #option="{ option }">
-          <span class="builder-option">
+          <span class="builder-option" :title="stigOptionTitle(option)">
             <img :src="shieldSvg" class="svg-icon">
             <span>{{ option.benchmarkId }}</span>
           </span>

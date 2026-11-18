@@ -15,6 +15,7 @@ import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../components/common/GridSearch.vue'
 import PinnedRevisionIcon from '../../../components/common/PinnedRevisionIcon.vue'
 import { useGlobalError } from '../../../shared/composables/useGlobalError.js'
+import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import AssetStigImportModal from '../../AssetStigImport/components/AssetStigImportModal.vue'
 import { CHECKLIST_EXPORT_FORMATS, exportAssetStigChecklist } from '../api/assetReviewApi.js'
 
@@ -195,16 +196,19 @@ const checklistMenuItems = computed(() => {
       items: [
         {
           label: 'CKL - STIG Viewer v2',
+          tooltip: TOOLTIPS.assetReview.downloadCkl,
           disabled: exportIsRunning.value,
           command: () => exportChecklist(CHECKLIST_EXPORT_FORMATS.CKL),
         },
         {
           label: 'CKLB - STIG Viewer v3',
+          tooltip: TOOLTIPS.assetReview.downloadCklb,
           disabled: exportIsRunning.value,
           command: () => exportChecklist(CHECKLIST_EXPORT_FORMATS.CKLB),
         },
         {
           label: 'XCCDF',
+          tooltip: TOOLTIPS.assetReview.downloadXccdf,
           disabled: exportIsRunning.value,
           command: () => exportChecklist(CHECKLIST_EXPORT_FORMATS.XCCDF),
         },
@@ -226,7 +230,7 @@ const checklistMenuItems = computed(() => {
 const checklistMenuPT = {
   root: { style: 'background: var(--color-background-dark); border: 1px solid var(--color-border-default); border-radius: 4px; box-shadow: 0 6px 24px rgba(0,0,0,0.6); padding: 0.25rem 0; min-width: 12rem;' },
   rootList: { style: 'background: transparent; outline: none;' },
-  item: { style: 'margin: 0;' },
+  item: ({ context }) => ({ title: context.item.tooltip, style: 'margin: 0;' }),
   itemContent: { style: 'color: var(--color-text-primary); border-radius: 0; transition: background-color 0.1s;' },
   itemIcon: { style: 'color: var(--color-text-dim); font-size: var(--text-md);' },
   itemLabel: { style: 'font-size: var(--text-md);' },

@@ -142,7 +142,7 @@ function removePill(pill) {
       </template>
 
       <template #option="slotProps">
-        <LabelChip :value="slotProps.option.name" :color="slotProps.option.color" />
+        <LabelChip :value="slotProps.option.name" :color="slotProps.option.color" :description="slotProps.option.description" />
       </template>
 
       <template #footer>

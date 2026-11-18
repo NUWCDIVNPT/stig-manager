@@ -16,6 +16,10 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  description: {
+    type: String,
+    default: '',
+  },
 })
 
 const style = computed(() => labelChipStyle(props.color))
@@ -23,7 +27,7 @@ const style = computed(() => labelChipStyle(props.color))
 
 <template>
   <!-- .label-tag is global (style.css) -->
-  <span class="label-tag" :style="style">
+  <span class="label-tag" :style="style" :title="description || undefined">
     <HighlightText :text="value" :term="searchTerm" />
   </span>
 </template>

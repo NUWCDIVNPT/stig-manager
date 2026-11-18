@@ -19,6 +19,9 @@ const route = useRoute()
 
 const oidcWorker = inject('worker')
 const env = useEnv()
+const versionTitle = env?.commit
+  ? `branch: ${env.commit.branch}\nsha: ${env.commit.sha}\ndescribe: ${env.commit.describe}`
+  : undefined
 const {
   breadcrumbItems,
   collectionOptions,
@@ -165,7 +168,7 @@ const pt = {
         </router-link>
         <div class="badges">
           <span class="badge badge-oss">OSS</span>
-          <span class="badge badge-version">{{ env?.version }}</span>
+          <span class="badge badge-version" :title="versionTitle">{{ env?.version }}</span>
         </div>
 
         <!-- Global breadcrumb -->
