@@ -4,6 +4,7 @@ import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { forgetCollection } from '../../../../router/lastViews.js'
 import { deleteCollection } from '../../../../shared/api/collectionsApi.js'
 import { useCurrentUser } from '../../../../shared/composables/useCurrentUser.js'
 import { useGlobalError } from '../../../../shared/composables/useGlobalError.js'
@@ -57,6 +58,7 @@ const performDelete = async () => {
   deleting.value = true
   try {
     await deleteCollection(props.collectionId)
+    forgetCollection(props.collectionId)
     showDeleteModal.value = false
     // The collection's grant no longer exists; refresh so the nav rail,
     // breadcrumb and Recent views drop the deleted collection.

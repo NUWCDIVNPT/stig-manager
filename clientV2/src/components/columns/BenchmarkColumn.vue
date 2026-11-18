@@ -16,6 +16,10 @@ defineProps({
     type: Function,
     default: null,
   },
+  shieldTitle: {
+    type: String,
+    default: 'Open Benchmark Review',
+  },
 })
 </script>
 
@@ -30,7 +34,7 @@ defineProps({
           v-if="shieldTo"
           :to="shieldTo(slotProps.data)"
           :icon="shieldGreenCheck"
-          title="Open Benchmark Review"
+          :title="shieldTitle"
           alt="Review"
         />
       </div>

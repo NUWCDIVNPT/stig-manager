@@ -50,7 +50,12 @@ describe('useAppBreadcrumb', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockPush = vi.fn()
-    useRouter.mockReturnValue({ push: mockPush })
+    // linkTo reads the current route and the target's meta; every review route shows the filter
+    useRouter.mockReturnValue({
+      push: mockPush,
+      get currentRoute() { return { value: useRoute() } },
+      resolve: to => ({ params: to.params ?? {}, meta: {} }),
+    })
     useCurrentUser.mockReturnValue({ user: ref({ collectionGrants: [] }) })
     fetchCollectionStigs.mockResolvedValue([])
     fetchCollectionStig.mockResolvedValue(null)

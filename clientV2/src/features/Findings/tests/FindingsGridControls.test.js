@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { renderWithProviders } from '../../../testUtils/utils.js'
 import IndividualFindingsGrid from '../components/IndividualFindingsGrid.vue'
 
-vi.mock('vue-router', () => ({ useRouter: () => ({ push: vi.fn() }) }))
+vi.mock('vue-router', () => ({ useRouter: () => ({ push: vi.fn() }), useRoute: () => ({ params: {}, query: {} }) }))
 
 describe('individualFindingsGrid controls', () => {
   it('hides the search toolbar until a finding is selected', async () => {

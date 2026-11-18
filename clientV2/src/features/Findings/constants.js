@@ -8,6 +8,13 @@ export const FINDINGS_AGGREGATOR_VALUES = Object.freeze(
   Object.values(FINDINGS_AGGREGATORS),
 )
 
+// Each aggregator's readable value in the URL (?groupBy=rule)
+export const FINDINGS_GROUP_BY_PARAM = Object.freeze({
+  [FINDINGS_AGGREGATORS.GROUP]: 'group',
+  [FINDINGS_AGGREGATORS.RULE]: 'rule',
+  [FINDINGS_AGGREGATORS.CCI]: 'cci',
+})
+
 export const FINDINGS_AGGREGATOR_OPTIONS = Object.freeze([
   { label: 'Group', value: FINDINGS_AGGREGATORS.GROUP },
   { label: 'Rule', value: FINDINGS_AGGREGATORS.RULE },

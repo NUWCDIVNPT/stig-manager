@@ -1,12 +1,8 @@
 import { screen, waitFor } from '@testing-library/vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { createMemoryHistory, createRouter } from 'vue-router'
 import { renderWithProviders } from '../../../testUtils/utils.js'
 import Findings from '../components/Findings.vue'
-
-vi.mock('vue-router', () => ({
-  useRoute: vi.fn(),
-  useRouter: vi.fn(),
-}))
 
 vi.mock('../api/findingsApi.js', () => ({
   fetchFindings: vi.fn(),
@@ -26,7 +22,7 @@ vi.mock('../components/AggregatedFindingsGrid.vue', () => ({
     props: ['rows', 'selectedRow', 'aggregator', 'selectedBenchmarkId'],
     emits: ['select-finding', 'update:aggregator', 'select-stig'],
     template: `
-      <div data-testid="agg-grid" :data-aggregator="aggregator">
+      <div data-testid="agg-grid" :data-aggregator="aggregator" :data-selected="selectedRow ? 'row' : rows.length ? 'none' : 'loading'">
         <button data-testid="select-row" @click="$emit('select-finding', rows[0])">select</button>
         <button data-testid="switch-agg" @click="$emit('update:aggregator', 'ruleId')">agg</button>
       </div>
@@ -37,16 +33,15 @@ vi.mock('../components/AggregatedFindingsGrid.vue', () => ({
 vi.mock('../components/IndividualFindingsGrid.vue', () => ({
   default: {
     name: 'IndividualFindingsGrid',
-    props: ['rows', 'selectedAggregated', 'selectedLabelNames'],
+    props: ['rows', 'selectedAggregated'],
     template: `
-      <div data-testid="ind-grid" :data-labels="JSON.stringify(selectedLabelNames)">
+      <div data-testid="ind-grid">
         <span data-testid="selected-value">{{ selectedAggregated?.groupId ?? selectedAggregated?.ruleId ?? 'none' }}</span>
       </div>
     `,
   },
 }))
 
-const { useRoute, useRouter } = await import('vue-router')
 const { fetchFindings, fetchFailedReviews, fetchCollectionStigSummary } = await import('../api/findingsApi.js')
 const { fetchCollectionLabels } = await import('../../../shared/api/collectionsApi.js')
 
@@ -55,14 +50,18 @@ const GROUP_ROWS = [
   { groupId: 'V-219150', severity: 'medium', assetCount: 1 },
 ]
 
-let replace
+let router
+const urlQuery = () => router.currentRoute.value.query
 
-function mountFindings({ query = {}, selectedLabelNames = [] } = {}) {
-  useRoute.mockReturnValue({ query })
-  replace = vi.fn()
-  useRouter.mockReturnValue({ replace })
+async function mountFindings({ query = {}, selectedLabelNames = [] } = {}) {
+  router = createRouter({
+    history: createMemoryHistory(),
+    routes: [{ path: '/collection/:collectionId/findings', name: 'collection-findings', component: { template: '<div />' } }],
+  })
+  await router.push({ name: 'collection-findings', params: { collectionId: '17' }, query })
   return renderWithProviders(Findings, {
     props: { collectionId: '17', selectedLabelNames },
+    global: { plugins: [router] },
   })
 }
 
@@ -75,21 +74,18 @@ beforeEach(() => {
 })
 
 describe('findings URL state', () => {
-  it('mirrors a selection into ?sel= with the aggregator pinned', async () => {
-    mountFindings()
+  it('mirrors a selection into ?finding= with the aggregator pinned', async () => {
+    await mountFindings()
     await waitFor(() => expect(fetchFindings).toHaveBeenCalled())
 
     screen.getByTestId('select-row').click()
-    await waitFor(() => expect(replace).toHaveBeenCalled())
-    expect(replace).toHaveBeenLastCalledWith({
-      // agg is normally omitted at its default, but a sel value is only
-      // meaningful relative to its aggregator, so it is pinned alongside.
-      query: { agg: 'groupId', sel: 'V-219148' },
-    })
+    // groupBy is normally left out at its default, but a finding id only
+    // means something next to its grouping, so it is pinned alongside.
+    await waitFor(() => expect(urlQuery()).toEqual({ groupBy: 'group', finding: 'V-219148' }))
   })
 
-  it('restores the ?sel= selection once findings load', async () => {
-    mountFindings({ query: { sel: 'V-219150' } })
+  it('restores the ?finding= selection once findings load', async () => {
+    await mountFindings({ query: { finding: 'V-219150' } })
     await waitFor(() =>
       expect(screen.getByTestId('selected-value')).toHaveTextContent('V-219150'),
     )
@@ -101,7 +97,7 @@ describe('findings URL state', () => {
   })
 
   it('scopes the right pane to the STIG in the URL', async () => {
-    mountFindings({ query: { stig: 'VPN_SRG_TEST', sel: 'V-219150' } })
+    await mountFindings({ query: { stig: 'VPN_SRG_TEST', finding: 'V-219150' } })
     await waitFor(() =>
       expect(screen.getByTestId('selected-value')).toHaveTextContent('V-219150'),
     )
@@ -112,15 +108,40 @@ describe('findings URL state', () => {
     }, { signal: expect.any(AbortSignal) })
   })
 
-  it('restores nothing when ?sel= matches no loaded row', async () => {
-    mountFindings({ query: { sel: 'V-999999' } })
-    await waitFor(() => expect(fetchFindings).toHaveBeenCalled())
+  it('follows a ?finding= change on the same page (Back, Recent views)', async () => {
+    await mountFindings({ query: { finding: 'V-219148' } })
+    await waitFor(() => expect(screen.getByTestId('selected-value')).toHaveTextContent('V-219148'))
+
+    await router.replace({ query: { finding: 'V-219150' } })
+    await waitFor(() => expect(screen.getByTestId('selected-value')).toHaveTextContent('V-219150'))
+  })
+
+  it('drops a ?finding= that matches no loaded row', async () => {
+    await mountFindings({ query: { groupBy: 'group', finding: 'V-999999' } })
+    await waitFor(() => expect(urlQuery()).toEqual({}))
     expect(screen.getByTestId('selected-value')).toHaveTextContent('none')
     expect(fetchFailedReviews).not.toHaveBeenCalled()
   })
 
-  it('clears the selection and drops ?sel= when the aggregator changes', async () => {
-    mountFindings()
+  it('selects no row without ?finding=, even one whose id is null', async () => {
+    fetchFindings.mockResolvedValue([{ groupId: null, severity: 'high', assetCount: 2 }, ...GROUP_ROWS])
+    await mountFindings()
+    await waitFor(() => expect(screen.getByTestId('agg-grid')).toHaveAttribute('data-selected', 'none'))
+    expect(fetchFailedReviews).not.toHaveBeenCalled()
+  })
+
+  it('drops ?finding= when a later load no longer lists the row (label filter)', async () => {
+    const { rerender } = await mountFindings({ query: { finding: 'V-219148' } })
+    await waitFor(() => expect(screen.getByTestId('selected-value')).toHaveTextContent('V-219148'))
+
+    fetchFindings.mockResolvedValue([GROUP_ROWS[1]])
+    await rerender({ collectionId: '17', selectedLabelNames: ['web'] })
+    await waitFor(() => expect(urlQuery()).toEqual({}))
+    expect(screen.getByTestId('selected-value')).toHaveTextContent('none')
+  })
+
+  it('clears the selection and drops ?finding= when the aggregator changes', async () => {
+    await mountFindings()
     await waitFor(() => expect(fetchFindings).toHaveBeenCalled())
     screen.getByTestId('select-row').click()
     await waitFor(() =>
@@ -131,26 +152,16 @@ describe('findings URL state', () => {
     await waitFor(() =>
       expect(screen.getByTestId('selected-value')).toHaveTextContent('none'),
     )
-    expect(replace).toHaveBeenLastCalledWith({ query: { agg: 'ruleId' } })
+    await waitFor(() => expect(urlQuery()).toEqual({ groupBy: 'rule' }))
   })
 
-  it('honors ?agg= from the URL on mount', async () => {
-    mountFindings({ query: { agg: 'cci' } })
+  it('honors ?groupBy= from the URL on mount', async () => {
+    await mountFindings({ query: { groupBy: 'cci' } })
     await waitFor(() => expect(fetchFindings).toHaveBeenCalled())
     expect(screen.getByTestId('agg-grid').dataset.aggregator).toBe('cci')
     expect(fetchFindings).toHaveBeenCalledWith('17', {
       aggregator: 'cci',
       benchmarkId: undefined,
     }, { signal: expect.any(AbortSignal) })
-  })
-})
-
-describe('findings label filter', () => {
-  // The grid needs it to carry the filter into Asset Review
-  it('passes the label filter to the individual findings grid', async () => {
-    mountFindings({ selectedLabelNames: ['Alpha', null] })
-    await waitFor(() => expect(fetchFindings).toHaveBeenCalled())
-
-    expect(JSON.parse(screen.getByTestId('ind-grid').dataset.labels)).toEqual(['Alpha', null])
   })
 })

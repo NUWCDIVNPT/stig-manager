@@ -102,6 +102,21 @@ describe('metricsSummaryGrid row links', () => {
     ])
   })
 
+  // The Assets and Labels tabs' checklist grid: one asset's STIGs
+  it('titles the STIG shield Open Asset Review on one asset\'s checklists', () => {
+    const shieldTo = row => ({
+      name: 'collection-asset-review',
+      params: { collectionId: 'c1', assetId: 'a1', benchmarkId: row.benchmarkId, revisionStr: row.revisionStr },
+    })
+    renderGrid({ apiMetricsSummary: stigRows, aggType: 'unagg', parentAggType: 'asset', shieldTo })
+
+    expect(hrefs('Open Benchmark Review')).toEqual([])
+    expect(hrefs('Open Asset Review')).toEqual([
+      '/collection/c1/asset/a1/stig/RHEL_9/revision/V2R1',
+      '/collection/c1/asset/a1/stig/Win_11/revision/V1R3',
+    ])
+  })
+
   it('links the asset shield on a checklist row', () => {
     const shieldTo = row => ({
       name: 'collection-asset-review',

@@ -1,5 +1,6 @@
 import { computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { linkTo } from '../../../router/links.js'
 import { fetchAsset, fetchAssetStigs } from '../../../shared/api/assetsApi.js'
 import { fetchCollectionStig, fetchCollectionStigs } from '../../../shared/api/collectionsApi.js'
 import { fetchStigRevisions } from '../../../shared/api/stigsApi.js'
@@ -7,7 +8,6 @@ import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useCurrentUser } from '../../../shared/composables/useCurrentUser.js'
 import { useLabelFilterQuery } from '../../../shared/composables/useLabelFilterQuery.js'
 import { isRevisionPinnedBy } from '../../../shared/lib/checklistUtils.js'
-import { pickLabelFilterQuery } from '../../../shared/lib/labelFilters.js'
 import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 
 /**
@@ -194,7 +194,7 @@ export function useAppBreadcrumb() {
       return {
         ...step,
         label,
-        route: routeLocation,
+        route: routeLocation && linkTo(router, routeLocation),
       }
     })
   })
@@ -221,76 +221,28 @@ export function useAppBreadcrumb() {
     }
   }
 
-  // Navigation helper for STIG dropdown (review)
+  // STIG and revision pickers: same review, one param changed. The view's own keys
+  // (ruleId) are dropped because they belong to the old STIG or revision.
   function navigateToStig(newBenchmarkId) {
     if (!newBenchmarkId) {
       return
     }
-
-    const currentRouteName = route.name
-    const isCollectionReview = currentRouteName === 'collection-benchmark-review'
     const stigData = assetStigOptions.value.find(s => s.benchmarkId === newBenchmarkId)
-
-    if (isCollectionReview) {
-      router.push({
-        name: 'collection-benchmark-review',
-        params: {
-          collectionId: route.params.collectionId,
-          benchmarkId: newBenchmarkId,
-          revisionStr: stigData?.revisionStr || route.params.revisionStr,
-        },
-        query: pickLabelFilterQuery(route.query),
-      })
-    }
-    else {
-      router.push({
-        name: 'collection-asset-review',
-        params: {
-          collectionId: route.params.collectionId,
-          assetId: route.params.assetId,
-          benchmarkId: newBenchmarkId,
-          revisionStr: stigData?.revisionStr || undefined,
-        },
-        query: pickLabelFilterQuery(route.query),
-      })
-    }
+    // The API always names a revision; the current one is only a fallback so the link can't lack the param
+    router.push(linkTo(router, {
+      name: route.name,
+      params: { ...route.params, benchmarkId: newBenchmarkId, revisionStr: stigData?.revisionStr || route.params.revisionStr },
+    }))
   }
 
   // Whether a revision option is the route Collection's pinned default
   const isRevisionPinned = option => isRevisionPinnedBy(option, collectionId.value)
 
-  // Navigation helper for revision dropdown (review)
   function navigateToRevision(newRevisionStr) {
     if (!newRevisionStr) {
       return
     }
-
-    const currentRouteName = route.name
-    const isCollectionReview = currentRouteName === 'collection-benchmark-review'
-
-    if (isCollectionReview) {
-      router.push({
-        name: 'collection-benchmark-review',
-        params: {
-          collectionId: route.params.collectionId,
-          benchmarkId: route.params.benchmarkId,
-          revisionStr: newRevisionStr,
-        },
-        query: pickLabelFilterQuery(route.query),
-      })
-    }
-    else {
-      router.push({
-        name: 'collection-asset-review',
-        params: {
-          collectionId: route.params.collectionId,
-          assetId: route.params.assetId,
-          benchmarkId: route.params.benchmarkId,
-          revisionStr: newRevisionStr,
-        },
-        query: pickLabelFilterQuery(route.query),
-      })
-    }
+    router.push(linkTo(router, { name: route.name, params: { ...route.params, revisionStr: newRevisionStr } }))
   }
 
   return {

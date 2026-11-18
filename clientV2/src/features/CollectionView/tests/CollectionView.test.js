@@ -2,6 +2,7 @@ import { fireEvent, screen } from '@testing-library/vue'
 import { flushPromises } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createMemoryHistory, createRouter } from 'vue-router'
+import { forgetViews, rememberView } from '../../../router/lastViews.js'
 import { renderWithProviders } from '../../../testUtils/utils.js'
 import { fetchCollection } from '../api/collectionApi.js'
 import CollectionView from '../components/CollectionView.vue'
@@ -49,21 +50,24 @@ vi.mock('../../../shared/composables/useGlobalError.js', () => ({
 
 const Empty = { template: '<div />' }
 
+// Matches the real routes: tabs remember where they were left, Management hides the label filter
 function makeRouter() {
-  return createRouter({
+  forgetViews()
+  const router = createRouter({
     history: createMemoryHistory(),
     routes: [
       ...['stigs', 'assets', 'labels', 'findings', 'management'].map(tab => ({
         path: `/collection/:collectionId/${tab}`,
         name: `collection-${tab}`,
         component: Empty,
-        // matches the real route: Management hides the label filter
-        meta: tab === 'management' ? { labelFilter: false } : {},
+        meta: { viewGroup: 'collection', ...(tab === 'management' ? { labelFilter: false } : {}) },
       })),
       { path: '/collection/:collectionId/asset/:assetId', name: 'collection-asset-review', component: Empty },
       { path: '/:pathMatch(.*)*', name: 'not-found', component: Empty },
     ],
   })
+  router.afterEach(rememberView)
+  return router
 }
 
 describe('collectionView label filter', () => {
@@ -218,7 +222,7 @@ describe('collectionView per-tab query', () => {
   })
 
   it('restores the Findings query after a round trip to another tab', async () => {
-    await start('findings', { agg: 'ruleId', sel: 'SV-1' })
+    await start('findings', { groupBy: 'rule', finding: 'SV-1' })
 
     await clickTab('STIGs')
     expect(router.currentRoute.value.name).toBe('collection-stigs')
@@ -226,11 +230,11 @@ describe('collectionView per-tab query', () => {
 
     await clickTab('Findings')
     expect(router.currentRoute.value.name).toBe('collection-findings')
-    expect(query()).toEqual({ agg: 'ruleId', sel: 'SV-1' })
+    expect(query()).toEqual({ groupBy: 'rule', finding: 'SV-1' })
   })
 
   it('does not leak one tab\'s query into another tab', async () => {
-    await start('findings', { agg: 'ruleId' })
+    await start('findings', { groupBy: 'rule' })
 
     await clickTab('Assets')
     await clickTab('Labels')
@@ -245,39 +249,39 @@ describe('collectionView per-tab query', () => {
   })
 
   it('applies the current label filter, not the one the tab had when it was left', async () => {
-    await start('findings', { agg: 'ruleId', labelName: 'Old' })
+    await start('findings', { groupBy: 'rule', labelName: 'Old' })
 
     await clickTab('STIGs')
     await router.replace({ query: { labelName: 'New' } })
     await flushPromises()
 
     await clickTab('Findings')
-    expect(query().agg).toBe('ruleId')
+    expect(query().groupBy).toBe('rule')
     expect(labels()).toEqual(['New'])
   })
 
   it('does not bring back a label filter that was cleared on another tab', async () => {
-    await start('findings', { agg: 'ruleId', labelName: 'Old' })
+    await start('findings', { groupBy: 'rule', labelName: 'Old' })
 
     await clickTab('STIGs')
     await router.replace({ query: {} })
     await flushPromises()
 
     await clickTab('Findings')
-    expect(query()).toEqual({ agg: 'ruleId' })
+    expect(query()).toEqual({ groupBy: 'rule' })
   })
 
   it('keeps the label filter off Management', async () => {
     mockRoleId = 3
-    await start('findings', { agg: 'ruleId', labelName: 'Alpha' })
+    await start('findings', { groupBy: 'rule', labelName: 'Alpha' })
 
     await clickTab('Management')
     expect(router.currentRoute.value.name).toBe('collection-management')
     expect(query()).toEqual({})
   })
 
-  it('forgets saved queries when the collection changes', async () => {
-    await start('findings', { agg: 'ruleId' })
+  it('does not carry one collection\'s tab queries into another', async () => {
+    await start('findings', { groupBy: 'rule' })
     await clickTab('STIGs')
 
     await router.push({ name: 'collection-stigs', params: { collectionId: 'c2' } })
@@ -290,14 +294,14 @@ describe('collectionView per-tab query', () => {
   })
 
   it('back from Asset Review returns to the restored Findings URL', async () => {
-    await start('findings', { agg: 'ruleId', sel: 'SV-1' })
+    await start('findings', { groupBy: 'rule', finding: 'SV-1' })
     await clickTab('STIGs')
     await clickTab('Findings')
 
     await router.push({ name: 'collection-asset-review', params: { collectionId: 'c1', assetId: 'a1' } })
     router.back()
     await vi.waitFor(() => expect(router.currentRoute.value.name).toBe('collection-findings'))
-    expect(query()).toEqual({ agg: 'ruleId', sel: 'SV-1' })
+    expect(query()).toEqual({ groupBy: 'rule', finding: 'SV-1' })
   })
 })
 

@@ -62,6 +62,7 @@ describe('individualFindingsGrid Asset Review link', () => {
       history: createMemoryHistory(),
       routes: [
         { path: '/', component: Empty },
+        { path: '/collection/:collectionId/findings', name: 'collection-findings', component: Empty },
         { path: '/collection/:collectionId/asset/:assetId/stig/:benchmarkId/revision/:revisionStr', name: 'collection-asset-review', component: Empty },
       ],
     })
@@ -69,7 +70,9 @@ describe('individualFindingsGrid Asset Review link', () => {
     await router.isReady()
   })
 
-  async function render(props) {
+  // The label filter comes from the URL, as on the real Findings tab
+  async function render(props, query = {}) {
+    await router.push({ name: 'collection-findings', params: { collectionId: 'c1' }, query })
     renderWithProviders(IndividualFindingsGrid, {
       props: { rows: [row], collectionId: 'c1', selectedAggregated: { groupId: 'V-1' }, ...props },
       global: { plugins: [router] },
@@ -81,13 +84,13 @@ describe('individualFindingsGrid Asset Review link', () => {
   const hrefFor = query => router.resolve({ name: 'collection-asset-review', params, query }).href
 
   it('links the label filter alongside ruleId', async () => {
-    const link = await render({ selectedLabelNames: ['Alpha', null] })
+    const link = await render({}, { labelName: 'Alpha', labelMatch: 'null' })
 
     expect(link.getAttribute('href')).toBe(hrefFor({ labelMatch: 'null', labelName: ['Alpha'], ruleId: 'SV-1_rule' }))
   })
 
   it('links only ruleId when no labels are selected', async () => {
-    const link = await render({ selectedLabelNames: [] })
+    const link = await render({})
 
     expect(link.getAttribute('href')).toBe(hrefFor({ ruleId: 'SV-1_rule' }))
   })

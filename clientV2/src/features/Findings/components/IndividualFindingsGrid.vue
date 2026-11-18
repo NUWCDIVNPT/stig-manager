@@ -18,6 +18,7 @@ import ManualBadge from '../../../components/common/ManualBadge.vue'
 import OverrideBadge from '../../../components/common/OverrideBadge.vue'
 import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
+import { useLinkTo } from '../../../router/links.js'
 import { useColumnVisibility } from '../../../shared/composables/useColumnVisibility.js'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
@@ -25,7 +26,6 @@ import { durationToNow } from '../../../shared/lib.js'
 import { getEngineDisplay } from '../../../shared/lib/checklistUtils.js'
 import { compactTablePt } from '../../../shared/lib/dataTablePt.js'
 import { capitalize, statusText } from '../../../shared/lib/exportCells.js'
-import { buildLabelFilterParams } from '../../../shared/lib/labelFilters.js'
 import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
 import { rowHeightPx } from '../../../shared/lib/rowHeights.js'
 
@@ -46,11 +46,11 @@ const props = defineProps({
   // under the cci aggregator in "All STIGs" mode where one CCI maps to rules
   // across multiple STIGs.
   selectedBenchmarkId: { type: [String, null], default: null },
-  // Collection label filter, carried into Asset Review so its breadcrumb can return with it
-  selectedLabelNames: { type: Array, default: () => [] },
 })
 
 const emit = defineEmits(['retry'])
+
+const linkTo = useLinkTo()
 
 const dataTableRef = ref(null)
 
@@ -138,7 +138,7 @@ function assetReviewTo(row) {
   if (!stig?.benchmarkId || !stig?.revisionStr || !props.collectionId) {
     return null
   }
-  return {
+  return linkTo({
     name: 'collection-asset-review',
     params: {
       collectionId: props.collectionId,
@@ -146,8 +146,8 @@ function assetReviewTo(row) {
       benchmarkId: stig.benchmarkId,
       revisionStr: stig.revisionStr,
     },
-    query: { ...buildLabelFilterParams(props.selectedLabelNames), ruleId: row.ruleId },
-  }
+    query: { ruleId: row.ruleId },
+  })
 }
 
 // Standard app table PT (compactTablePt) with two density-specific additions:

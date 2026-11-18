@@ -1,15 +1,15 @@
 <script setup>
 import Splitter from 'primevue/splitter'
 import SplitterPanel from 'primevue/splitterpanel'
-import { computed, ref, toRef, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { computed, toRef, watch } from 'vue'
 import { fetchCollectionLabels } from '../../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
+import { useQuerySelection } from '../../../shared/composables/useQuerySelection.js'
 import { useCollectionStigSummary } from '../composables/useCollectionStigSummary.js'
 import { useFindingReviews } from '../composables/useFindingReviews.js'
 import { useFindings } from '../composables/useFindings.js'
 import { useFindingsColumns } from '../composables/useFindingsColumns.js'
-import { FINDINGS_AGGREGATOR_VALUES, FINDINGS_AGGREGATORS } from '../constants.js'
+import { FINDINGS_AGGREGATOR_VALUES, FINDINGS_AGGREGATORS, FINDINGS_GROUP_BY_PARAM } from '../constants.js'
 import AggregatedFindingsGrid from './AggregatedFindingsGrid.vue'
 import IndividualFindingsGrid from './IndividualFindingsGrid.vue'
 
@@ -24,67 +24,19 @@ const props = defineProps({
 const collectionId = computed(() => (props.ready ? props.collectionId : null))
 const labelNames = toRef(props, 'selectedLabelNames')
 
-const route = useRoute()
-const router = useRouter()
-
-// Restore initial selection from URL query params so back-navigation from Asset
-// Review (and full reloads) preserve the user's last view. benchmarkId === null
-// means "All Collection STIGs".
-const initialAggregator = FINDINGS_AGGREGATOR_VALUES.includes(route.query.agg)
-  ? route.query.agg
-  : FINDINGS_AGGREGATORS.GROUP
-const initialBenchmarkId = typeof route.query.stig === 'string' && route.query.stig ? route.query.stig : null
-// One-shot: the dimension value (?sel=...) to re-select once the first findingsz
-// fetch lands. Consumed by the restore watcher below; never re-applied after
-// later loads so a scope change can't resurrect a stale selection.
-let pendingSelectionValue = typeof route.query.sel === 'string' && route.query.sel ? route.query.sel : null
-
-const selectedBenchmarkId = ref(initialBenchmarkId)
-const aggregator = ref(initialAggregator)
-const selectedFinding = ref(null)
+// View state lives in the URL (?stig, ?groupBy, ?finding) so Back, reload and links restore it.
+// No stig means all Collection STIGs; groupBy is left out at its default (group).
+const selectedBenchmarkId = useQuerySelection('stig')
+const groupByParam = useQuerySelection('groupBy')
+const aggregator = computed({
+  get: () => FINDINGS_AGGREGATOR_VALUES.find(a => FINDINGS_GROUP_BY_PARAM[a] === groupByParam.value) ?? FINDINGS_AGGREGATORS.GROUP,
+  set: (value) => {
+    groupByParam.value = value === FINDINGS_AGGREGATORS.GROUP ? null : FINDINGS_GROUP_BY_PARAM[value]
+  },
+})
+// ?finding is the selected row's id for the grouping (a group, rule or CCI id)
+const selectedFindingId = useQuerySelection('finding')
 const isAllStigsMode = computed(() => selectedBenchmarkId.value === null)
-
-// Cascading reset: changing the STIG scope or aggregator invalidates the
-// previously selected finding (different rule/cci/group dimension). Registered
-// BEFORE the URL mirror and useFindingReviews so a scope change clears the
-// selection before either reacts — no stale ?sel= write, and no window where
-// the reviews composable could see the old selection under the new scope.
-watch([selectedBenchmarkId, aggregator], () => {
-  selectedFinding.value = null
-})
-
-// Mirror selection into the URL with replace (not push) so each click doesn't
-// pollute browser history. Omit defaults (groupId aggregator, no stig, no
-// selection) so the URL stays clean for the common case.
-watch([selectedBenchmarkId, aggregator, selectedFinding], ([stig, agg, sel]) => {
-  const next = { ...route.query }
-  if (stig) {
-    next.stig = stig
-  }
-  else {
-    delete next.stig
-  }
-  if (agg && agg !== FINDINGS_AGGREGATORS.GROUP) {
-    next.agg = agg
-  }
-  else {
-    delete next.agg
-  }
-  // The row's value for the active aggregator (e.g. V-220706 / SV-…_rule / a
-  // CCI) — the same key the reviews fetch uses, so it round-trips cleanly.
-  const selValue = sel?.[agg]
-  if (selValue) {
-    next.sel = selValue
-    // A sel value is only meaningful relative to its aggregator, so pin agg
-    // (overriding the omit-default above) whenever a selection is present —
-    // saved links survive a future change of the default aggregator.
-    next.agg = agg
-  }
-  else {
-    delete next.sel
-  }
-  router.replace({ query: next })
-})
 
 // Per-STIG metrics + collection totals. Drives both the popover STIG list and
 // the "Overall" CAT 1/2/3 totals in the AggregatedFindingsGrid header. Like
@@ -106,19 +58,19 @@ const {
   totalOccurrences,
 } = useFindings({ collectionId, aggregator, benchmarkId: selectedBenchmarkId, labelNames })
 
-// Restore the ?sel= selection once the first findings load completes. One-shot:
-// pending is consumed on the first load regardless of outcome, so subsequent
-// loads (aggregator/STIG changes) never re-apply it. Selecting the matched row
-// flows through the normal path — reviews fetch, grid highlight, URL mirror.
-watch(findings, (rows) => {
-  const sel = pendingSelectionValue
-  pendingSelectionValue = null
-  if (!sel) {
-    return
-  }
-  const match = (rows ?? []).find(r => r[aggregator.value] === sel)
-  if (match) {
-    selectedFinding.value = match
+// The selected row is the loaded row matching ?finding; none without ?finding or while it isn't listed
+const selectedFinding = computed({
+  get: () => (selectedFindingId.value && findings.value?.find(r => r[aggregator.value] === selectedFindingId.value)) || null,
+  set: (row) => {
+    selectedFindingId.value = row?.[aggregator.value] ?? null
+    // ?finding only means something next to its grouping, so groupBy is pinned while a row is selected
+    groupByParam.value = row || aggregator.value !== FINDINGS_AGGREGATORS.GROUP ? FINDINGS_GROUP_BY_PARAM[aggregator.value] : null
+  },
+})
+// A ?finding the loaded rows don't include (deleted, filtered out, stale link) is dropped so the URL matches the grid
+watch(findings, () => {
+  if (selectedFindingId.value && !selectedFinding.value) {
+    selectedFinding.value = null
   }
 })
 
@@ -156,12 +108,15 @@ const labelMap = computed(() => {
   return m
 })
 
+// A new STIG scope or aggregator makes the selected row meaningless, so it is cleared
 function onSelectStig(benchmarkId) {
   selectedBenchmarkId.value = benchmarkId
+  selectedFinding.value = null
 }
 
 function onUpdateAggregator(val) {
   aggregator.value = val
+  selectedFinding.value = null
 }
 
 function onSelectFinding(row) {
@@ -211,7 +166,6 @@ function onSelectFinding(row) {
           :label-map="labelMap"
           :collection-id="props.collectionId"
           :selected-benchmark-id="selectedBenchmarkId"
-          :selected-label-names="props.selectedLabelNames"
           @retry="retryReviews"
         />
       </SplitterPanel>
