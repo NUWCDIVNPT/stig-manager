@@ -110,7 +110,7 @@ const selectPt = computed(() => {
       <div v-if="modelValue != null" class="breadcrumb-select-value" :class="{ 'is-invalid': !isValidSelection }">
         <i
           v-if="!isValidSelection"
-          v-tooltip.bottom="invalidTooltip"
+          :title="invalidTooltip"
           class="pi pi-exclamation-triangle"
           role="img"
           :aria-label="invalidTooltip"

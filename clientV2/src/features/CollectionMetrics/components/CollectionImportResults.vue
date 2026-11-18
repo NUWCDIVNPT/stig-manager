@@ -1,6 +1,8 @@
 <script setup>
 import Button from 'primevue/button'
 import { ref, watch } from 'vue'
+import HelpIcon from '../../../components/common/HelpIcon.vue'
+import { TOOLTIPS } from '../../../shared/lib/tooltips.js'
 import ImportResultsModal from '../../ImportWizard/components/ImportResultsModal.vue'
 
 const props = defineProps({
@@ -36,13 +38,12 @@ function onImported() {
   <div class="import-card metric-card">
     <div class="metric-header">
       <h2 class="metric-title">
-        Import Results
+        Import Results <HelpIcon :content="TOOLTIPS.importFromCollection.panel" />
       </h2>
     </div>
 
     <div class="content">
       <Button
-        v-tooltip.bottom="'Bulk import CKL, CKLB, or SCAP results. Does not create Assets or change STIG assignments.'"
         label="Import CKL(B) or SCAP..."
         icon="pi pi-upload"
         :pt="buttonPt"
