@@ -4,11 +4,15 @@ import { useRoute, useRouter } from 'vue-router'
 // Collections page filter, kept in the route query: ?collectionId=12&collectionId=40.
 // Every filter key of this page lives here; labelName, labelMatch, collectionLabel and label are reserved for a label filter (#2258).
 
+// Every id goes in the request URL, so keep it well under proxy URL limits
+export const MAX_SENT_IDS = 250
+
 const isCollectionId = id => typeof id === 'string' && /^\d+$/.test(id)
 
-// A repeated key may arrive as a string or an array; duplicates and non-ids are dropped
+// A repeated key may arrive as a string or an array; duplicates and non-ids are dropped,
+// and ids past MAX_SENT_IDS are ignored
 export function parseCollectionIds(query = {}) {
-  return [...new Set([].concat(query.collectionId ?? []).filter(isCollectionId))]
+  return [...new Set([].concat(query.collectionId ?? []).filter(isCollectionId))].slice(0, MAX_SENT_IDS)
 }
 
 // selectedCollectionIds: writable; [] means all collections

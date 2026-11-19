@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick, reactive, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { parseCollectionIds, useMetaCollectionFilter } from '../composables/useMetaCollectionFilter.js'
+import { MAX_SENT_IDS, parseCollectionIds, useMetaCollectionFilter } from '../composables/useMetaCollectionFilter.js'
 
 vi.mock('vue-router', () => ({
   useRoute: vi.fn(),
@@ -22,6 +22,13 @@ describe('useMetaCollectionFilter', () => {
     expect(parseCollectionIds({ collectionId: ['1', '1', 'x', '2'] })).toEqual(['1', '2'])
     expect(parseCollectionIds({ collectionId: '3' })).toEqual(['3'])
     expect(parseCollectionIds({})).toEqual([])
+  })
+
+  it('ignores ids past the request limit', () => {
+    const collectionId = Array.from({ length: MAX_SENT_IDS + 10 }, (_, i) => String(i + 1))
+    const ids = parseCollectionIds({ collectionId })
+    expect(ids).toHaveLength(MAX_SENT_IDS)
+    expect(ids.at(-1)).toBe(String(MAX_SENT_IDS))
   })
 
   it('writes the selection with router.replace, keeping unrelated query keys', () => {

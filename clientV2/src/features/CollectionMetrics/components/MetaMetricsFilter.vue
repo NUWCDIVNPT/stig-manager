@@ -5,6 +5,7 @@ import { pillsMultiSelectPt } from '../../../components/common/pillsPicker.js'
 import PillsTrigger from '../../../components/common/PillsTrigger.vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { fetchMetaCollections } from '../../MetaCollectionView/api/metaApi.js'
+import { MAX_SENT_IDS } from '../../MetaCollectionView/composables/useMetaCollectionFilter.js'
 
 const props = defineProps({
   // Selected collection ids; [] means all
@@ -15,9 +16,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:modelValue'])
-
-// Every id goes in the request URL, so keep it well under proxy URL limits
-const MAX_SENT_IDS = 250
 
 const { state: options, isLoading } = useAsyncState(
   fetchMetaCollections,
@@ -63,8 +61,13 @@ function syncDraftFromModel() {
   draftIds.value = [...props.modelValue]
 }
 
-// Follow outside changes (clear button, chip remove, URL) so the menu never opens on a stale draft
-watch(() => props.modelValue, syncDraftFromModel, { immediate: true })
+// Follow outside changes (clear button, chip remove, URL) so the menu never opens on a stale draft.
+// Not while the menu is open: that would discard picks in progress.
+watch(() => props.modelValue, () => {
+  if (!isOverlayOpen.value) {
+    syncDraftFromModel()
+  }
+}, { immediate: true })
 
 function applyFilters() {
   emit('update:modelValue', [...draftIds.value])

@@ -52,6 +52,19 @@ describe('metaMetricsFilter', () => {
     expect(emitted()['update:modelValue'].at(-1)).toEqual([['1']])
   })
 
+  it('keeps picks in progress when the selection changes while the menu is open', async () => {
+    const { container, rerender } = renderFilter(['1', '2'])
+    await flushPromises()
+    await fireEvent.click(container.querySelector('.p-multiselect'))
+    await flushPromises()
+    await fireEvent.click(screen.getByRole('option', { name: 'Dev' }))
+    expect(screen.getByRole('option', { name: 'Dev' })).toHaveAttribute('aria-selected', 'true')
+
+    await rerender({ modelValue: ['1'] })
+    await flushPromises()
+    expect(screen.getByRole('option', { name: 'Dev' })).toHaveAttribute('aria-selected', 'true')
+  })
+
   it('leaves a selection of known collections alone', async () => {
     const { emitted } = renderFilter(['1'])
     await flushPromises()

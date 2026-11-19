@@ -14,11 +14,6 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  // Text before the chips, e.g. "Excluding"
-  prefix: {
-    type: String,
-    default: '',
-  },
   // While the overlay is open chip remove is hidden (space kept): removing would reset the draft
   open: {
     type: Boolean,
@@ -36,7 +31,6 @@ const hiddenPillCount = computed(() => props.pills.length - visiblePills.value.l
   <div class="trigger-pills">
     <span v-if="!pills.length" class="trigger-pills__placeholder">{{ placeholder }}</span>
     <template v-else>
-      <span v-if="prefix" class="trigger-pills__mode">{{ prefix }}</span>
       <span class="trigger-pills__chips">
         <span
           v-for="pill in visiblePills"
@@ -71,13 +65,6 @@ const hiddenPillCount = computed(() => props.pills.length - visiblePills.value.l
   align-items: center;
   gap: 0.3rem;
   min-width: 0;
-}
-
-.trigger-pills__mode {
-  flex-shrink: 0;
-  font-size: var(--text-md);
-  color: var(--color-text-dim);
-  white-space: nowrap;
 }
 
 /* Shrinks when the menu bar runs out of room: names ellipsize, then the row clips */
