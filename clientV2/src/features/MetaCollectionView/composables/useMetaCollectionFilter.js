@@ -9,10 +9,14 @@ export const MAX_SENT_IDS = 250
 
 const isCollectionId = id => typeof id === 'string' && /^\d+$/.test(id)
 
-// A repeated key may arrive as a string or an array; duplicates and non-ids are dropped,
-// and ids past MAX_SENT_IDS are ignored
+// Duplicates and non-ids are dropped, and ids past MAX_SENT_IDS are ignored
+function normalizeIds(ids) {
+  return [...new Set(ids.filter(isCollectionId))].slice(0, MAX_SENT_IDS)
+}
+
+// A repeated key may arrive as a string or an array
 export function parseCollectionIds(query = {}) {
-  return [...new Set([].concat(query.collectionId ?? []).filter(isCollectionId))].slice(0, MAX_SENT_IDS)
+  return normalizeIds([].concat(query.collectionId ?? []))
 }
 
 // selectedCollectionIds: writable; [] means all collections
@@ -25,7 +29,8 @@ export function useMetaCollectionFilter() {
 
   const selectedCollectionIds = computed({
     get: () => JSON.parse(idsKey.value),
-    set: (ids) => {
+    set: (value) => {
+      const ids = normalizeIds(value)
       const { collectionId, ...rest } = route.query
       router.replace({ query: ids.length ? { ...rest, collectionId: ids } : rest })
     },

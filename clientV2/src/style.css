@@ -571,7 +571,7 @@ mark.search-highlight {
 .p-checkbox[data-p-indeterminate="true"] .p-checkbox-icon {
   display: none;
 }
-/* data-sm-indeterminate: set by partialToggleAllPt (pillsPicker.js) */
+/* data-sm-indeterminate: set by pillsPickerPt (pillsPicker.js) */
 .p-checkbox[data-p-indeterminate="true"] .p-checkbox-box::before,
 .p-checkbox[data-sm-indeterminate="true"] .p-checkbox-box::before {
   content: "";

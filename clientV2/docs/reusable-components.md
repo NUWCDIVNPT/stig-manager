@@ -96,10 +96,9 @@ MenuBar renders the matching pills component.
 | **PillsTrigger** | MultiSelect `#value` chips: removable chips for applied options, "+N" overflow, chevron. Chip remove is hidden while the overlay is open | LabelFilterPicker, MetaMetricsFilter |
 | **LabelFilterPicker** | Collection Label picker with a "No label" option; refetches Labels on open and prunes names the Collection no longer has. Selection lives in the route query (`useLabelFilterQuery`) | LabelFilterPills |
 | **MetaMetricsFilter** | Collection picker; drops ids of Collections the user can no longer open. Selection lives in the route query (`useMetaCollectionFilter`) | CollectionFilterPills |
-
 | **MultiSelectFilterIcon** | MultiSelect `#filtericon` content: the search glyph, swapped for a clear button while the filter box has text | LabelFilterPicker, MetaMetricsFilter, ColumnToggle |
 
-Both pickers apply "everything ticked" as no filter, and their select-all box shows a dash while only part of the list is ticked (`partialToggleAllPt`).
+Both pickers apply "everything ticked" as no filter, and their select-all box shows a dash while only part of the list is ticked (`pillsPickerPt`).
 
 Shared styling for the picker overlay is in `pillsPicker.css` / `pillsPicker.js`.
 

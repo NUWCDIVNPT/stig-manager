@@ -6,7 +6,7 @@ import { useAsyncState } from '../../shared/composables/useAsyncState.js'
 import { labelChipStyle } from '../../shared/lib/colorUtils.js'
 import LabelChip from './Label.vue'
 import MultiSelectFilterIcon from './MultiSelectFilterIcon.vue'
-import { partialToggleAllPt, pillsMultiSelectPt } from './pillsPicker.js'
+import { pillsPickerPt } from './pillsPicker.js'
 import PillsTrigger from './PillsTrigger.vue'
 
 // Collection label picker for the breadcrumb filter: the applied labels are removable
@@ -56,11 +56,8 @@ watch([() => props.modelValue, loaded], () => {
 const multiSelectRef = ref()
 const draftValues = ref([])
 const isOverlayOpen = ref(false)
+const multiSelectPt = computed(() => pillsPickerPt(draftValues.value.length > 0))
 
-const multiSelectPt = computed(() => ({
-  ...pillsMultiSelectPt,
-  ...partialToggleAllPt(draftValues.value.length > 0),
-}))
 // MultiSelect cannot hold null, so "no label" is a sentinel in draftValues and
 // mapped back to null for the model. Label selections are label names; the
 // sentinel is only ever produced for noLabelOption (see optionValueOf) and is
@@ -108,7 +105,13 @@ function syncDraftFromModel() {
   draftValues.value = props.modelValue.map(name => name === null ? NO_LABEL_SENTINEL : name)
 }
 
-watch(() => props.modelValue, syncDraftFromModel, { immediate: true })
+// Follow outside changes (clear button, chip remove, URL) so the menu never opens on a stale draft.
+// Not while the menu is open: that would discard picks in progress.
+watch(() => props.modelValue, () => {
+  if (!isOverlayOpen.value) {
+    syncDraftFromModel()
+  }
+}, { immediate: true })
 
 // Every label and "No label" ticked is the same as no filter, and is applied as one
 const isEverythingTicked = computed(() => {

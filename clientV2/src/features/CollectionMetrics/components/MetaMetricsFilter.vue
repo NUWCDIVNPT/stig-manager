@@ -2,7 +2,7 @@
 import MultiSelect from 'primevue/multiselect'
 import { computed, ref, watch } from 'vue'
 import MultiSelectFilterIcon from '../../../components/common/MultiSelectFilterIcon.vue'
-import { partialToggleAllPt, pillsMultiSelectPt } from '../../../components/common/pillsPicker.js'
+import { pillsPickerPt } from '../../../components/common/pillsPicker.js'
 import PillsTrigger from '../../../components/common/PillsTrigger.vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { fetchMetaCollections } from '../../MetaCollectionView/api/metaApi.js'
@@ -49,7 +49,7 @@ const nameOf = opt => opt.name || 'unnamed collection'
 
 // Every collection ticked is the same as no filter, and is applied as one
 const isEverythingTicked = computed(() => {
-  if (!options.value?.length) {
+  if (!options.value?.length || draftIds.value.length < options.value.length) {
     return false
   }
   const ticked = new Set(draftIds.value)
@@ -58,10 +58,7 @@ const isEverythingTicked = computed(() => {
 
 const tooManyIds = computed(() => !isEverythingTicked.value && draftIds.value.length > MAX_SENT_IDS)
 
-const multiSelectPt = computed(() => ({
-  ...pillsMultiSelectPt,
-  ...partialToggleAllPt(draftIds.value.length > 0),
-}))
+const multiSelectPt = computed(() => pillsPickerPt(draftIds.value.length > 0))
 
 // Collections have no colour, so neutral chips
 const pills = computed(() => appliedOptions.value.map(opt => ({

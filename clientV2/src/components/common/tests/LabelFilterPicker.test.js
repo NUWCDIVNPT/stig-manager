@@ -125,6 +125,19 @@ describe('labelFilterPicker', () => {
       expect(screen.getByText('new-label')).toBeInTheDocument()
     })
 
+    it('keeps picks in progress when the selection changes while the menu is open', async () => {
+      const { container, rerender } = renderPills(['prod', 'dmz'])
+      await flushPromises()
+      await fireEvent.click(container.querySelector('.p-multiselect'))
+      await flushPromises()
+      await fireEvent.click(screen.getByRole('option', { name: 'linux' }))
+      expect(screen.getByRole('option', { name: 'linux' })).toHaveAttribute('aria-selected', 'true')
+
+      await rerender({ modelValue: ['prod'] })
+      await flushPromises()
+      expect(screen.getByRole('option', { name: 'linux' })).toHaveAttribute('aria-selected', 'true')
+    })
+
     it('applies every label plus "No label" ticked as no filter', async () => {
       const { container, emitted } = renderPills(['prod'])
       await flushPromises()
