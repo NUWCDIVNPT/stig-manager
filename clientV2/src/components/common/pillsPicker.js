@@ -14,5 +14,18 @@ export const pillsMultiSelectPt = {
   pcFilter: { root: { style: { padding: '0.3rem 0.5rem', fontSize: 'var(--text-md)' } } },
 }
 
+// Merge into the picker's pt so the select-all box shows a dash while only part of the
+// list is ticked (a ticked option may be scrolled or filtered out of sight). MultiSelect
+// has no indeterminate state for its header checkbox; style.css draws the dash.
+export function partialToggleAllPt(hasSelection) {
+  const isPartial = context => hasSelection && !context.checked
+  return {
+    pcHeaderCheckbox: {
+      root: ({ context }) => isPartial(context) ? { 'data-sm-indeterminate': 'true' } : {},
+      input: ({ context }) => isPartial(context) ? { 'aria-checked': 'mixed' } : {},
+    },
+  }
+}
+
 // Chips shown before folding the rest into "+N"
 export const MAX_VISIBLE_PILLS = 4

@@ -1,7 +1,8 @@
 <script setup>
 import MultiSelect from 'primevue/multiselect'
 import { computed, ref, watch } from 'vue'
-import { pillsMultiSelectPt } from '../../../components/common/pillsPicker.js'
+import MultiSelectFilterIcon from '../../../components/common/MultiSelectFilterIcon.vue'
+import { partialToggleAllPt, pillsMultiSelectPt } from '../../../components/common/pillsPicker.js'
 import PillsTrigger from '../../../components/common/PillsTrigger.vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { fetchMetaCollections } from '../../MetaCollectionView/api/metaApi.js'
@@ -46,7 +47,21 @@ const appliedOptions = computed(() => {
 
 const nameOf = opt => opt.name || 'unnamed collection'
 
-const tooManyIds = computed(() => draftIds.value.length > MAX_SENT_IDS)
+// Every collection ticked is the same as no filter, and is applied as one
+const isEverythingTicked = computed(() => {
+  if (!options.value?.length) {
+    return false
+  }
+  const ticked = new Set(draftIds.value)
+  return options.value.every(opt => ticked.has(opt.collectionId))
+})
+
+const tooManyIds = computed(() => !isEverythingTicked.value && draftIds.value.length > MAX_SENT_IDS)
+
+const multiSelectPt = computed(() => ({
+  ...pillsMultiSelectPt,
+  ...partialToggleAllPt(draftIds.value.length > 0),
+}))
 
 // Collections have no colour, so neutral chips
 const pills = computed(() => appliedOptions.value.map(opt => ({
@@ -70,7 +85,7 @@ watch(() => props.modelValue, () => {
 }, { immediate: true })
 
 function applyFilters() {
-  emit('update:modelValue', [...draftIds.value])
+  emit('update:modelValue', isEverythingTicked.value ? [] : [...draftIds.value])
   multiSelectRef.value?.hide?.()
 }
 
@@ -97,7 +112,7 @@ function removeCollection(collectionId) {
       :filter="true"
       :show-toggle-all="true"
       :loading="isLoading"
-      :pt="pillsMultiSelectPt"
+      :pt="multiSelectPt"
       @show="syncDraftFromModel"
       @before-show="isOverlayOpen = true"
       @before-hide="isOverlayOpen = false"
@@ -110,6 +125,10 @@ function removeCollection(collectionId) {
           :title="titleText"
           @remove="removeCollection($event.key)"
         />
+      </template>
+
+      <template #filtericon>
+        <MultiSelectFilterIcon :multi-select="multiSelectRef" label="Clear collection search" />
       </template>
 
       <template #option="slotProps">

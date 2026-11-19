@@ -125,6 +125,44 @@ describe('labelFilterPicker', () => {
       expect(screen.getByText('new-label')).toBeInTheDocument()
     })
 
+    it('applies every label plus "No label" ticked as no filter', async () => {
+      const { container, emitted } = renderPills(['prod'])
+      await flushPromises()
+      await fireEvent.click(container.querySelector('.p-multiselect'))
+      await flushPromises()
+      await fireEvent.click(document.querySelector('.p-multiselect-header .p-checkbox input'))
+      await fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+      expect(emitted()['update:modelValue'].at(-1)).toEqual([[]])
+    })
+
+    it('keeps every named label ticked without "No label" as a filter', async () => {
+      const { container, emitted } = renderPills(['prod', 'dmz', 'linux', 'win'])
+      await flushPromises()
+      await fireEvent.click(container.querySelector('.p-multiselect'))
+      await flushPromises()
+      await fireEvent.click(screen.getByRole('option', { name: 'test' }))
+      await fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+      expect(emitted()['update:modelValue'].at(-1)).toEqual([['prod', 'dmz', 'linux', 'win', 'test']])
+    })
+
+    it('clears the search box from its clear button', async () => {
+      const { container } = renderPills([])
+      await flushPromises()
+      await fireEvent.click(container.querySelector('.p-multiselect'))
+      await flushPromises()
+      // PrimeVue's InputIcon wrapper is aria-hidden, hence `hidden: true`
+      const clearButton = () => screen.queryByRole('button', { name: 'Clear label search', hidden: true })
+      expect(clearButton()).not.toBeInTheDocument()
+
+      await fireEvent.update(screen.getByRole('searchbox'), 'pro')
+      expect(screen.queryByRole('option', { name: 'dmz' })).not.toBeInTheDocument()
+
+      await fireEvent.click(clearButton())
+      expect(screen.getByRole('searchbox')).toHaveValue('')
+      expect(screen.getByRole('option', { name: 'dmz' })).toBeInTheDocument()
+      expect(clearButton()).not.toBeInTheDocument()
+    })
+
     it('shows four chips and folds the rest into +N', async () => {
       renderPills(['prod', 'dmz', 'linux', 'win', 'test'])
       await flushPromises()

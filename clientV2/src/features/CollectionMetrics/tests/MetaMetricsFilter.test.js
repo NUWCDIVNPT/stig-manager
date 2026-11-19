@@ -65,6 +65,34 @@ describe('metaMetricsFilter', () => {
     expect(screen.getByRole('option', { name: 'Dev' })).toHaveAttribute('aria-selected', 'true')
   })
 
+  it('applies every collection ticked as no filter', async () => {
+    const { container, emitted } = renderFilter(['1'])
+    await flushPromises()
+    await fireEvent.click(container.querySelector('.p-multiselect'))
+    await flushPromises()
+    await fireEvent.click(screen.getByRole('option', { name: 'Lab' }))
+    await fireEvent.click(screen.getByRole('option', { name: 'Dev' }))
+    await fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+    expect(emitted()['update:modelValue'].at(-1)).toEqual([[]])
+  })
+
+  it('marks select-all as partial only while some, not all, are ticked', async () => {
+    const { container } = renderFilter(['1'])
+    await flushPromises()
+    await fireEvent.click(container.querySelector('.p-multiselect'))
+    await flushPromises()
+    const toggleAll = () => document.querySelector('.p-multiselect-header .p-checkbox')
+    expect(toggleAll()).toHaveAttribute('data-sm-indeterminate', 'true')
+
+    await fireEvent.click(screen.getByRole('option', { name: 'Lab' }))
+    await fireEvent.click(screen.getByRole('option', { name: 'Dev' }))
+    expect(toggleAll()).not.toHaveAttribute('data-sm-indeterminate')
+
+    await fireEvent.click(toggleAll().querySelector('input'))
+    expect(toggleAll()).not.toHaveAttribute('data-sm-indeterminate')
+    expect(screen.getByRole('option', { name: 'Dev' })).toHaveAttribute('aria-selected', 'false')
+  })
+
   it('leaves a selection of known collections alone', async () => {
     const { emitted } = renderFilter(['1'])
     await flushPromises()
