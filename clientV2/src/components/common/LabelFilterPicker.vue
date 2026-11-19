@@ -5,7 +5,8 @@ import { fetchCollectionLabels } from '../../shared/api/collectionsApi.js'
 import { useAsyncState } from '../../shared/composables/useAsyncState.js'
 import { labelChipStyle } from '../../shared/lib/colorUtils.js'
 import LabelChip from './Label.vue'
-import { pillsMultiSelectPt } from './pillsPicker.js'
+import MultiSelectFilterIcon from './MultiSelectFilterIcon.vue'
+import { pillsPickerPt } from './pillsPicker.js'
 import PillsTrigger from './PillsTrigger.vue'
 
 // Collection label picker for the breadcrumb filter: the applied labels are removable
@@ -55,6 +56,8 @@ watch([() => props.modelValue, loaded], () => {
 const multiSelectRef = ref()
 const draftValues = ref([])
 const isOverlayOpen = ref(false)
+const multiSelectPt = computed(() => pillsPickerPt(draftValues.value.length > 0))
+
 // MultiSelect cannot hold null, so "no label" is a sentinel in draftValues and
 // mapped back to null for the model. Label selections are label names; the
 // sentinel is only ever produced for noLabelOption (see optionValueOf) and is
@@ -102,10 +105,33 @@ function syncDraftFromModel() {
   draftValues.value = props.modelValue.map(name => name === null ? NO_LABEL_SENTINEL : name)
 }
 
-watch(() => props.modelValue, syncDraftFromModel, { immediate: true })
+// Follow outside changes (clear button, chip remove, URL) so the menu never opens on a stale draft.
+// Not while the menu is open: that would discard picks in progress.
+watch(() => props.modelValue, () => {
+  if (!isOverlayOpen.value) {
+    syncDraftFromModel()
+  }
+}, { immediate: true })
+
+// Every label and "No label" ticked is the same as no filter, and is applied as one
+const isEverythingTicked = computed(() => {
+  if (loaded.value?.collectionId !== props.collectionId) {
+    return false
+  }
+  const ticked = new Set(draftValues.value)
+  return renderedOptions.value.every(opt => ticked.has(optionValueOf(opt)))
+})
+
+// The draft is only edited while the menu is open; once it closes it mirrors the applied
+// selection again, whether that changed before the close (Apply) or changes after it.
+function onBeforeHide() {
+  isOverlayOpen.value = false
+  syncDraftFromModel()
+}
 
 function applyFilters() {
-  emit('update:modelValue', draftValues.value.map(value => value === NO_LABEL_SENTINEL ? null : value))
+  const values = isEverythingTicked.value ? [] : draftValues.value
+  emit('update:modelValue', values.map(value => value === NO_LABEL_SENTINEL ? null : value))
   multiSelectRef.value?.hide?.()
 }
 
@@ -132,13 +158,17 @@ function removePill(pill) {
       :filter="true"
       :show-toggle-all="true"
       :loading="isLoading && !options.length"
-      :pt="pillsMultiSelectPt"
+      :pt="multiSelectPt"
       @show="syncDraftFromModel"
       @before-show="onBeforeShow"
-      @before-hide="isOverlayOpen = false"
+      @before-hide="onBeforeHide"
     >
       <template #value>
         <PillsTrigger :pills="pills" placeholder="Filter by label" :open="isOverlayOpen" @remove="removePill" />
+      </template>
+
+      <template #filtericon>
+        <MultiSelectFilterIcon :multi-select="multiSelectRef" label="Clear label search" />
       </template>
 
       <template #option="slotProps">

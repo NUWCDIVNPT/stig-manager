@@ -14,11 +14,6 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  // Text before the chips, e.g. "Excluding"
-  prefix: {
-    type: String,
-    default: '',
-  },
   // While the overlay is open chip remove is hidden (space kept): removing would reset the draft
   open: {
     type: Boolean,
@@ -36,7 +31,6 @@ const hiddenPillCount = computed(() => props.pills.length - visiblePills.value.l
   <div class="trigger-pills">
     <span v-if="!pills.length" class="trigger-pills__placeholder">{{ placeholder }}</span>
     <template v-else>
-      <span v-if="prefix" class="trigger-pills__mode">{{ prefix }}</span>
       <span class="trigger-pills__chips">
         <span
           v-for="pill in visiblePills"
@@ -71,13 +65,6 @@ const hiddenPillCount = computed(() => props.pills.length - visiblePills.value.l
   align-items: center;
   gap: 0.3rem;
   min-width: 0;
-}
-
-.trigger-pills__mode {
-  flex-shrink: 0;
-  font-size: var(--text-md);
-  color: var(--color-text-dim);
-  white-space: nowrap;
 }
 
 /* Shrinks when the menu bar runs out of room: names ellipsize, then the row clips */
@@ -155,18 +142,15 @@ const hiddenPillCount = computed(() => props.pills.length - visiblePills.value.l
   text-decoration: underline;
 }
 
-/* Same chevron box as BreadcrumbSelect's picker-only mode */
+/* Plain chevron: dim until the picker is hovered */
 .trigger-pills__chevron {
   display: inline-grid;
   flex-shrink: 0;
   place-items: center;
   margin-left: 0.15rem;
   padding: 0.18rem 0.32rem;
-  border: 1px solid var(--color-border-default);
-  border-radius: 0.25rem;
-  background-color: var(--color-bg-hover);
-  color: var(--color-text-primary);
-  transition: background-color 0.15s, border-color 0.15s;
+  color: var(--color-text-dim);
+  transition: color 0.15s;
 }
 
 .trigger-pills__chevron .pi {
@@ -174,7 +158,6 @@ const hiddenPillCount = computed(() => props.pills.length - visiblePills.value.l
 }
 
 .pills-picker:hover .trigger-pills__chevron {
-  background-color: var(--color-bg-hover-strong);
-  border-color: var(--color-text-dim);
+  color: var(--color-text-primary);
 }
 </style>

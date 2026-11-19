@@ -54,6 +54,7 @@ export function useNavItems() {
   function typeIcon(type) {
     switch (type) {
       case 'collection': return 'nav-icon-collection'
+      case 'collections': return 'pi pi-desktop'
       case 'asset-review': return 'pi pi-file-edit'
       case 'collection-review': return 'pi pi-list-check'
       case 'library': return 'nav-icon-library'

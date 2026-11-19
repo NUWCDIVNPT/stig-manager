@@ -32,6 +32,12 @@ function collectionCrumbLocation(route) {
     || { ...stigsTab, query: lastQuery(stigsTab) }
 }
 
+// Collections crumb: reopens the Collections page with the filter it was last left with
+const collectionsCrumb = {
+  label: 'Collections',
+  route: () => lastViewIn('collections') || { name: 'collections' },
+}
+
 const collectionCrumb = {
   label: (route, getCollectionName) => getCollectionName(route.params.collectionId),
   route: collectionCrumbLocation,
@@ -56,7 +62,7 @@ const routes = [
       // shows the collection label filter after the breadcrumb (MenuBar); tabs inherit it
       labelFilter: true,
       breadcrumbs: [
-        { label: 'Collections', route: { name: 'collections' } },
+        collectionsCrumb,
         collectionCrumb,
       ],
     },
@@ -111,7 +117,7 @@ const routes = [
     meta: {
       requiresCollectionGrant: true,
       breadcrumbs: [
-        { label: 'Collections', route: { name: 'collections' } },
+        collectionsCrumb,
         collectionCrumb,
         { label: (route, _, asset) => asset.value?.name || `Asset ${route.params.assetId}` },
         { label: route => route.params.benchmarkId || 'STIG', isDropdown: true, dropdownType: 'stig' },
@@ -127,7 +133,7 @@ const routes = [
       requiresCollectionGrant: true,
       labelFilter: true,
       breadcrumbs: [
-        { label: 'Collections', route: { name: 'collections' } },
+        collectionsCrumb,
         collectionCrumb,
         { label: route => route.params.benchmarkId || 'STIG', isDropdown: true, dropdownType: 'stig' },
         { label: route => route.params.revisionStr, isDropdown: true, dropdownType: 'revision' },
@@ -138,7 +144,8 @@ const routes = [
     path: '/collections',
     name: 'collections',
     component: MetaCollectionView,
-    meta: { collectionFilter: true, breadcrumbs: [{ label: 'Collections' }] },
+    // collectionFilter: the collection filter after the breadcrumb (MenuBar), kept in the query
+    meta: { viewGroup: 'collections', collectionFilter: true, breadcrumbs: [{ label: 'Collections' }] },
   },
   {
     path: '/app-management',

@@ -1,6 +1,7 @@
 <script setup>
 import MultiSelect from 'primevue/multiselect'
 import { computed, ref } from 'vue'
+import MultiSelectFilterIcon from './MultiSelectFilterIcon.vue'
 
 const props = defineProps({
   columns: {
@@ -31,21 +32,6 @@ const options = computed(() => {
 })
 
 const multiSelectRef = ref(null)
-const filterText = ref('')
-
-function onFilter(event) {
-  filterText.value = event.value ?? ''
-}
-
-// MultiSelect keeps its filter text private and only resets it on hide, so
-// clearing goes through the same handler its input uses. That keeps the
-// list, the focused option and the filter event in step, as if the user had
-// emptied the box themselves.
-function clearFilter() {
-  const ms = multiSelectRef.value
-  ms?.onFilterChange({ target: { value: '' } })
-  ms?.$refs.filterInput?.$el?.focus()
-}
 
 // The theme's small variant sizes root/box/icon from matched tokens,
 // keeping the check centered in the box
@@ -90,7 +76,6 @@ const columnTogglePT = {
     :pt="columnTogglePT"
     scroll-height="22rem"
     filter
-    @filter="onFilter"
   >
     <template #value>
       <div class="column-toggle__value">
@@ -109,16 +94,7 @@ const columnTogglePT = {
       <i class="pi pi-chevron-down" />
     </template>
     <template #filtericon>
-      <button
-        v-if="filterText"
-        type="button"
-        class="column-toggle__filter-clear"
-        aria-label="Clear column filter"
-        @click.stop="clearFilter"
-      >
-        <i class="pi pi-times" />
-      </button>
-      <i v-else class="pi pi-search" />
+      <MultiSelectFilterIcon :multi-select="multiSelectRef" label="Clear column filter" />
     </template>
   </MultiSelect>
 </template>
@@ -167,24 +143,5 @@ const columnTogglePT = {
 
 .column-toggle__option-text {
   font-size: var(--text-md);
-}
-
-/* The icon slot sits in an InputIcon, which ignores pointer events so the
-   input underneath stays clickable; the clear button has to opt back in. */
-.column-toggle__filter-clear {
-  pointer-events: auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: none;
-  background: transparent;
-  color: var(--color-text-dim);
-  cursor: pointer;
-  font-size: inherit;
-}
-
-.column-toggle__filter-clear:hover {
-  color: var(--color-text-bright);
 }
 </style>

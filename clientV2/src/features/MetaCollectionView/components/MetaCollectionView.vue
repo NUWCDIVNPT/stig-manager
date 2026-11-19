@@ -6,7 +6,8 @@ import TabList from 'primevue/tablist'
 import TabPanel from 'primevue/tabpanel'
 import TabPanels from 'primevue/tabpanels'
 import Tabs from 'primevue/tabs'
-import { onUnmounted, ref } from 'vue'
+import { ref } from 'vue'
+import { useTrackRecentView } from '../../../shared/composables/useRecentViews.js'
 import { viewTabListPt, viewTabPt, viewTabsPt } from '../../../shared/lib/tabPt.js'
 import MetaCollectionMetrics from '../../CollectionMetrics/components/MetaCollectionMetrics.vue'
 import MetaExportMetrics from '../../CollectionMetrics/components/MetaExportMetrics.vue'
@@ -17,9 +18,9 @@ import MetaStigsTab from './MetaStigsTab.vue'
 const activeTab = ref('collections')
 const DASHBOARD_STORAGE_KEY = 'stigman:metaDashboardCollapsed'
 const dashboardCollapsed = ref(localStorage.getItem(DASHBOARD_STORAGE_KEY) === 'true')
-// Set from the collection filter after the breadcrumb (MenuBar); each visit starts unfiltered
-const { selectedCollectionIds, reset: resetCollectionFilter } = useMetaCollectionFilter()
-onUnmounted(resetCollectionFilter)
+// From the collection filter in the URL (picker after the breadcrumb)
+const { selectedCollectionIds } = useMetaCollectionFilter()
+useTrackRecentView(() => ({ type: 'collections', label: 'Collections' }))
 const isAnimating = ref(false)
 
 function toggleDashboardSidebar() {
