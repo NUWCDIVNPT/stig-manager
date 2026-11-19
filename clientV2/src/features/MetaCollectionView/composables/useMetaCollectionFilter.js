@@ -1,21 +1,31 @@
-import { ref } from 'vue'
-import { valuesFilter } from '../../../shared/lib/columnFilters.js'
+import { computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
-// Collections page filter, shared by the breadcrumb picker (MenuBar) and the page.
-// In memory only (not the URL or storage): a bookmarked exclude filter could only be
-// resolved to ids after the full collection list loads, holding up the page's first
-// fetches, and an include filter can run to MAX_SENT_IDS ids. Module state so the two
-// can share it; the page resets it on unmount so each visit starts unfiltered and no
-// stale collection ids are sent.
-const collectionFilter = ref(valuesFilter())
-// Collection ids the filter resolves to (set by MetaMetricsFilter); empty means all
-const selectedCollectionIds = ref([])
+// Collections page filter, kept in the route query: ?collectionId=12&collectionId=40.
+// Every filter key of this page lives here; labelName, labelMatch, collectionLabel and label are reserved for a label filter (#2258).
 
-function reset() {
-  collectionFilter.value = valuesFilter()
-  selectedCollectionIds.value = []
+const isCollectionId = id => typeof id === 'string' && /^\d+$/.test(id)
+
+// A repeated key may arrive as a string or an array; duplicates and non-ids are dropped
+export function parseCollectionIds(query = {}) {
+  return [...new Set([].concat(query.collectionId ?? []).filter(isCollectionId))]
 }
 
+// selectedCollectionIds: writable; [] means all collections
 export function useMetaCollectionFilter() {
-  return { collectionFilter, selectedCollectionIds, reset }
+  const route = useRoute()
+  const router = useRouter()
+
+  // String key so the array is only rebuilt when the filter itself changes
+  const idsKey = computed(() => JSON.stringify(parseCollectionIds(route.query)))
+
+  const selectedCollectionIds = computed({
+    get: () => JSON.parse(idsKey.value),
+    set: (ids) => {
+      const { collectionId, ...rest } = route.query
+      router.replace({ query: ids.length ? { ...rest, collectionId: ids } : rest })
+    },
+  })
+
+  return { selectedCollectionIds }
 }

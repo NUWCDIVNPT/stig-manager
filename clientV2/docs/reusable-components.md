@@ -95,7 +95,7 @@ MenuBar renders the matching pills component.
 | **BreadcrumbFilter** | The filter box: a slot for the picker plus a clear button | LabelFilterPills, CollectionFilterPills |
 | **PillsTrigger** | MultiSelect `#value` chips: removable chips for applied options, "+N" overflow, chevron. Chip remove is hidden while the overlay is open | LabelFilterPicker, MetaMetricsFilter |
 | **LabelFilterPicker** | Collection Label picker with a "No label" option; refetches Labels on open and prunes names the Collection no longer has. Selection lives in the route query (`useLabelFilterQuery`) | LabelFilterPills |
-| **MetaMetricsFilter** | Include/exclude Collection picker; selection lives in `useMetaCollectionFilter` (in memory only) | CollectionFilterPills |
+| **MetaMetricsFilter** | Collection picker; drops ids of Collections the user can no longer open. Selection lives in the route query (`useMetaCollectionFilter`) | CollectionFilterPills |
 
 Shared styling for the picker overlay is in `pillsPicker.css` / `pillsPicker.js`.
 

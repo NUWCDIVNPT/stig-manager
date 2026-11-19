@@ -182,6 +182,29 @@ describe('collection crumb returns to the last view', () => {
   })
 })
 
+// The Collections crumb reopens the Collections page with the filter it was left with
+describe('collections crumb returns to the last view', () => {
+  it('reopens the Collections page with its filter', async () => {
+    await go('/collections?collectionId=5&collectionId=7')
+    await go('/collection/5/stigs')
+    await crumb('Collections')()
+    expect(router.currentRoute.value.fullPath).toBe('/collections?collectionId=5&collectionId=7')
+  })
+
+  it('leaves the label filter behind', async () => {
+    await go('/collections?collectionId=7')
+    await go(`${assetReview}?labelName=web`)
+    await crumb('Collections')()
+    expect(router.currentRoute.value.fullPath).toBe('/collections?collectionId=7')
+  })
+
+  it('opens the page unfiltered on first visit', async () => {
+    await go(collectionReview)
+    await crumb('Collections')()
+    expect(router.currentRoute.value.fullPath).toBe('/collections')
+  })
+})
+
 describe('sTIG Library entry', () => {
   it('nav rail returns to the last STIG Library page', async () => {
     await go(`${library}?ruleId=SV-1`)

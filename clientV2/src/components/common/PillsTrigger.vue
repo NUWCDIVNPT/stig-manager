@@ -155,18 +155,15 @@ const hiddenPillCount = computed(() => props.pills.length - visiblePills.value.l
   text-decoration: underline;
 }
 
-/* Same chevron box as BreadcrumbSelect's picker-only mode */
+/* Plain chevron: dim until the picker is hovered */
 .trigger-pills__chevron {
   display: inline-grid;
   flex-shrink: 0;
   place-items: center;
   margin-left: 0.15rem;
   padding: 0.18rem 0.32rem;
-  border: 1px solid var(--color-border-default);
-  border-radius: 0.25rem;
-  background-color: var(--color-bg-hover);
-  color: var(--color-text-primary);
-  transition: background-color 0.15s, border-color 0.15s;
+  color: var(--color-text-dim);
+  transition: color 0.15s;
 }
 
 .trigger-pills__chevron .pi {
@@ -174,7 +171,6 @@ const hiddenPillCount = computed(() => props.pills.length - visiblePills.value.l
 }
 
 .pills-picker:hover .trigger-pills__chevron {
-  background-color: var(--color-bg-hover-strong);
-  border-color: var(--color-text-dim);
+  color: var(--color-text-primary);
 }
 </style>
