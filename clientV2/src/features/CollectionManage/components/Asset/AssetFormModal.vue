@@ -229,7 +229,7 @@ const checkboxPt = {
                     @click.stop
                     @update:model-value="toggleLabel(label.labelId)"
                   />
-                  <LabelChip :value="label.name" :color="label.color" />
+                  <LabelChip :value="label.name" :color="label.color" :description="label.description" />
                 </div>
                 <div v-if="labelFilter && filteredLabels.length === 0" class="label-empty">
                   No labels match "{{ labelFilter }}"

@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import ActionButton from '../../../../components/common/ActionButton.vue'
+import { TOOLTIPS } from '../../../../shared/lib/tooltips.js'
 import ImportResultsModal from '../../../ImportWizard/components/ImportResultsModal.vue'
 
 const props = defineProps({
@@ -20,7 +21,7 @@ function handleImported() {
 </script>
 
 <template>
-  <ActionButton icon="pi pi-upload icon-blue" title="Import CKL(B) or XCCDF" @click="showImportModal = true">
+  <ActionButton icon="pi pi-upload icon-blue" :title="TOOLTIPS.importFromCollection.manager" @click="showImportModal = true">
     Import CKL(B) or XCCDF...
   </ActionButton>
 

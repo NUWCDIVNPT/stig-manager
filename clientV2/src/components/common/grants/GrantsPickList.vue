@@ -72,6 +72,11 @@ const {
 
 // "Add All" moves only the grantees matching the active search/last-active
 // filters, so select those rather than the composable's default of everything.
+// Hover shows what the name hides: a user's username, a group's description.
+function granteeTitle(option) {
+  return option.type === 'group' ? option.description || option.name : option.username || option[itemLabel]
+}
+
 function onMoveAllRight(event) {
   selectionSource.value = [...filteredSource.value]
   onMoveRight(event)
@@ -134,7 +139,7 @@ const onCancel = () => {
               </div>
             </template>
             <template #option="slotProps">
-              <div v-if="!slotProps.option.collapsed" class="option-item" :title="slotProps.option[itemLabel]">
+              <div v-if="!slotProps.option.collapsed" class="option-item" :title="granteeTitle(slotProps.option)">
                 <i :class="slotProps.option.type === 'user' ? 'pi pi-user' : 'pi pi-users'" />
                 <span>{{ slotProps.option[itemLabel] }}</span>
               </div>
@@ -159,7 +164,7 @@ const onCancel = () => {
           >
             <template #option="slotProps">
               <div class="target-option-item">
-                <div class="target-option-name" :title="slotProps.option[itemLabel]">
+                <div class="target-option-name" :title="granteeTitle(slotProps.option)">
                   <i :class="slotProps.option.type === 'user' ? 'pi pi-user' : 'pi pi-users'" />
                   <span>{{ slotProps.option[itemLabel] }}</span>
                 </div>

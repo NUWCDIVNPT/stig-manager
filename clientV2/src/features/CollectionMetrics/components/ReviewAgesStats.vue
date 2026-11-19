@@ -1,6 +1,7 @@
 <script setup>
 import { computed, toRefs } from 'vue'
 import { formatAge } from '../../../shared/lib.js'
+import { formatReviewDate } from '../../../shared/lib/reviewFormUtils.js'
 
 const props = defineProps({
   ages: {
@@ -17,9 +18,9 @@ const data = computed(() => {
     return null
   }
   return [
-    { label: 'Oldest', value: formatAge(ages.value.minTs), color: 'var(--color-review-age)' },
-    { label: 'Newest', value: formatAge(ages.value.maxTs), color: 'var(--color-review-age)' },
-    { label: 'Updated', value: formatAge(ages.value.maxTouchTs), color: 'var(--color-review-age)' },
+    { label: 'Oldest', value: formatAge(ages.value.minTs), ts: ages.value.minTs, color: 'var(--color-review-age)' },
+    { label: 'Newest', value: formatAge(ages.value.maxTs), ts: ages.value.maxTs, color: 'var(--color-review-age)' },
+    { label: 'Updated', value: formatAge(ages.value.maxTouchTs), ts: ages.value.maxTouchTs, color: 'var(--color-review-age)' },
   ]
 })
 </script>
@@ -37,6 +38,7 @@ const data = computed(() => {
         :key="index"
         class="metric-badge"
         :style="{ backgroundColor: stat.color }"
+        :title="stat.ts ? formatReviewDate(stat.ts) : undefined"
       >
         <span class="metric-badge-label dark-text">{{ stat.label }}</span>
         <span class="metric-badge-value dark-text">{{ stat.value }}</span>

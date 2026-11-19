@@ -4,8 +4,11 @@ import Dialog from 'primevue/dialog'
 import RadioButton from 'primevue/radiobutton'
 import Select from 'primevue/select'
 import { computed } from 'vue'
+import HelpIcon from '../../../../components/common/HelpIcon.vue'
 import { frameDialogPt, primaryBtnPt, secondaryBtnPt } from '../../../../shared/lib/dialogPt.js'
+import { TOOLTIPS } from '../../../../shared/lib/tooltips.js'
 import { useExportModal } from '../composables/useExportModal.js'
+import { COLLECTION_MAX } from '../exportResultsLogic.js'
 
 /**
  * Shared export-dialog chrome (header, options bar, footer). The variable
@@ -34,6 +37,11 @@ const emit = defineEmits([
   'collection-export-error',
   'archive-export',
 ])
+
+const TARGET_HELP = {
+  archive: TOOLTIPS.exportOptions.zipArchive,
+  collection: TOOLTIPS.exportOptions.toCollection.replace('{maxItems}', COLLECTION_MAX),
+}
 
 const effectiveSelections = computed(() => props.effectiveSelections)
 const busy = computed(() => props.busy)
@@ -111,6 +119,7 @@ const radioButtonPt = {
             <div v-for="opt in EXPORT_TARGETS" :key="opt.value" class="radio-option">
               <RadioButton v-model="target" :value="opt.value" :input-id="`target-${opt.value}`" :pt="radioButtonPt" />
               <label :for="`target-${opt.value}`">{{ opt.label }}</label>
+              <HelpIcon :content="TARGET_HELP[opt.value]" />
             </div>
           </div>
         </div>

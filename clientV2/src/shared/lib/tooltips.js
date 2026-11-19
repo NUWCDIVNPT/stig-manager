@@ -168,6 +168,13 @@ The claims presented by the authentication provider the last time this User auth
     archiveXccdf: `Download an archive with results in XCCDF format for each asset in the collection`,
   }),
 
+  // Asset Review "Export to file" menu.
+  assetReview: Object.freeze({
+    downloadCkl: `Download this checklist in DISA STIG Viewer V2 format`,
+    downloadCklb: `Download this checklist in DISA STIG Viewer V3 format`,
+    downloadXccdf: `Download this checklist in XCCDF format`,
+  }),
+
   // Pin glyph beside a Revision that is the Collection default (grids, review headers, breadcrumb).
   pinnedRevision: `Pinned as the Collection default Revision`,
 
