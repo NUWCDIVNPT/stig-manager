@@ -100,7 +100,7 @@ const resolvedActions = computed(() => {
     base.push({
       key: 'refresh',
       icon: 'pi pi-refresh',
-      ariaLabel: 'Refresh data',
+      title: 'Reload this grid',
       loading: props.refreshLoading,
       disabled: props.refreshLoading,
     })
@@ -112,7 +112,7 @@ const resolvedActions = computed(() => {
       key: 'export',
       icon: 'pi pi-download',
       label: 'CSV',
-      ariaLabel: 'Export to CSV',
+      title: 'Export to CSV',
     })
   }
 

@@ -7,7 +7,7 @@ defineEmits(['dismiss'])
     <div class="card-header">
       <slot name="header" />
       <slot name="close">
-        <button class="card-close" @click="$emit('dismiss')">
+        <button class="card-close" title="Dismiss" @click="$emit('dismiss')">
           <span class="pi pi-times" />
         </button>
       </slot>

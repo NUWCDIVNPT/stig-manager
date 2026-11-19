@@ -298,7 +298,7 @@ const tablePt = {
             <div class="row-actions">
               <Button
                 v-if="canModify(data) && !elevate"
-                v-tooltip.top="'Access Control List'"
+                title="Access Control List"
                 text
                 rounded
                 severity="secondary"
@@ -312,6 +312,7 @@ const tablePt = {
               <Button
                 v-if="canModify(data)"
                 icon="pi pi-pencil"
+                title="Edit grant"
                 text
                 rounded
                 severity="secondary"
@@ -321,6 +322,7 @@ const tablePt = {
               <Button
                 v-if="canModify(data)"
                 icon="pi pi-trash"
+                title="Remove grant"
                 text
                 rounded
                 severity="danger"

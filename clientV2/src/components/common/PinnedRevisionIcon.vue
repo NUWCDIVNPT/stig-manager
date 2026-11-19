@@ -6,5 +6,5 @@ import { TOOLTIPS } from '../../shared/lib/tooltips.js'
 </script>
 
 <template>
-  <span v-tooltip.bottom="TOOLTIPS.pinnedRevision" class="icon-pin" role="img" :aria-label="TOOLTIPS.pinnedRevision" />
+  <span :title="TOOLTIPS.pinnedRevision" class="icon-pin" role="img" :aria-label="TOOLTIPS.pinnedRevision" />
 </template>

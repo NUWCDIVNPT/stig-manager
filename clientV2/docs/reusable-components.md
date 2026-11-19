@@ -46,12 +46,12 @@ These don't need wrapper components—just inline templates with helper function
 | Pattern | Template Example | Helper Needed |
 |---------|------------------|---------------|
 | Count with own header slot | `{{ dashZero(data.count) }}` (use `CountColumn` when the column has no custom slots) | `dashZero()` |
-| IconColumn | `<i :class="getIcon(data)" v-tooltip="label" />` | per-feature |
+| IconColumn | `<i :class="getIcon(data)" :title="label" />` | per-feature |
 | BadgeColumn | `<Tag v-for="item in items" ...>` | none |
 | DataWithBadgeColumn | `{{ name }} <Tag>{{ classification }}</Tag>` | none |
 | ListInline | `{{ items.join(', ') }}` | none |
 | ListNewline | `<div v-for="item in items">{{ item }}</div>` | none |
-| ActionColumn | `<Button icon="pi pi-pencil" @click="edit" />...` | none |
+| ActionColumn | `<Button icon="pi pi-pencil" title="Edit" @click="edit" />...` | none |
 
 ### Wrapper Components (`src/components/columns/`)
 
@@ -109,14 +109,48 @@ Don't reinvent these—use PrimeVue's built-in capabilities.
 |---------|-------------------|
 | **Row expansion** | `v-model:expandedRows` + `#expansion` template |
 | **Cell editing** | `editMode="cell"` + `#editor` template |
-| **Tooltips** | `v-tooltip` directive (positioning, delays, custom styling) |
+| **Tooltips** | Native `title` for short labels, `HelpIcon` for rich help. See [Tooltips](#tooltips) |
 | **Severity colors** | `<Tag severity="danger/warn/success/info">` |
 | **Row styling** | `:rowClass` or `:rowStyle` props |
 | **Cell background** | Dynamic classes in `#body` template |
 | **Sorting** | Native Column `sortable` prop |
 | **Filtering** | Native + custom `#filter` template |
 | **Checkbox selection** | Native `selectionMode="multiple"` |
-| **Header info icon** | Custom `#header` template with icon + tooltip |
+| **Header info icon** | Custom `#header` template with `HelpIcon` |
+
+---
+
+## Tooltips
+
+Pick the mechanism by what the tooltip says.
+
+| Content | Use | Text lives |
+|---|---|---|
+| Short label: what an icon button does, a truncated value, a status dot | Native `title` on the element | Inline |
+| Rich help: HTML, several sentences, something users may want to select | `HelpIcon` | `TOOLTIPS` in `src/shared/lib/tooltips.js` |
+
+```vue
+<template>
+  <!-- Short label -->
+  <Button icon="pi pi-pencil" text title="Edit grant" @click="editGrant(data)" />
+  <span class="cell-text" :title="data.detail">{{ data.detail }}</span>
+
+  <!-- Rich help -->
+  <label>Grants <HelpIcon :content="TOOLTIPS.cloneOptions.grants" /></label>
+</template>
+```
+
+- **Every icon-only button or link gets a `title`.** With no visible text, it's the only thing that says what the control does.
+- **`title` is the default.** It needs no JS or extra DOM, so it costs nothing in large or virtual-scrolled grids.
+- **`v-tooltip` is only for:**
+  - `HelpIcon` itself
+  - data-driven rich HTML (`ResultEngineBadges`), with `TOOLTIP_OPTS` spread into the binding
+  - lists built with `listTooltip()` (`CountColumn`)
+
+  Never pass it a plain string; use `title`. Any other use needs a one-line comment saying why.
+- **`TOOLTIPS` holds** multi-sentence or HTML help, and sentence-length descriptions reused in more than one place (e.g. `collectionReview.archive*`).
+- **`TOOLTIPS` doesn't hold** short labels ("Edit rule"), data-driven text (`:title="data.detail"`), or per-row builders.
+- **Styling a rich tooltip:** its popup renders outside the component, so scoped styles can't reach it. Pass `tip-class` to `HelpIcon` and put the CSS in `style.css` (e.g. `.sm-cora-tip`).
 
 ---
 
@@ -134,7 +168,7 @@ Columns must be:
 - Sorting: `sortable` prop
 - Filtering: `#filter` template
 - Checkbox: Column with `selectionMode`
-- Info tooltip: `#header` template + `v-tooltip`
+- Info tooltip: `#header` template + `HelpIcon`
 
 ### Cell Options (via `#body` template)
 - Background color: dynamic `:class` binding

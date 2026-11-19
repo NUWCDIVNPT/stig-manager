@@ -141,7 +141,7 @@ defineExpose({ reload })
           <template #body="{ data }">
             <div class="row-actions">
               <Button
-                v-tooltip.top="'View effective access'"
+                title="View effective access"
                 text
                 rounded
                 class="action-btn"

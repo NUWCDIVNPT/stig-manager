@@ -109,9 +109,9 @@ async function onQuickCreated(created) {
       </button>
       <button
         v-if="canCreateCollection"
-        v-tooltip.bottom="'Create New Collection'"
         type="button"
         class="nav-rail-icon-btn"
+        title="Create New Collection"
         aria-label="Create New Collection"
         @click.stop="openQuickCreate"
       >
@@ -177,9 +177,9 @@ async function onQuickCreated(created) {
         <span>{{ label }}</span>
         <button
           v-if="canCreateCollection"
-          v-tooltip.bottom="'Create New Collection'"
           type="button"
           class="nav-rail-icon-btn"
+          title="Create New Collection"
           aria-label="Create New Collection"
           @click="openQuickCreate"
         >
