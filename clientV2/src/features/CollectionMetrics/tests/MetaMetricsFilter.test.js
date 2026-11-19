@@ -76,6 +76,21 @@ describe('metaMetricsFilter', () => {
     expect(emitted()['update:modelValue'].at(-1)).toEqual([[]])
   })
 
+  it('leaves nothing ticked after applying every collection', async () => {
+    const { container, rerender } = renderFilter(['1'])
+    await flushPromises()
+    await fireEvent.click(container.querySelector('.p-multiselect'))
+    await flushPromises()
+    await fireEvent.click(screen.getByRole('option', { name: 'Lab' }))
+    await fireEvent.click(screen.getByRole('option', { name: 'Dev' }))
+    await fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+    // the parent applies the emitted [] before MultiSelect's deferred hide runs
+    await rerender({ modelValue: [] })
+    await new Promise(resolve => setTimeout(resolve, 0))
+    await flushPromises()
+    expect(container.querySelector('.p-multiselect')).not.toHaveClass('p-inputwrapper-filled')
+  })
+
   it('marks select-all as partial only while some, not all, are ticked', async () => {
     const { container } = renderFilter(['1'])
     await flushPromises()

@@ -122,6 +122,13 @@ const isEverythingTicked = computed(() => {
   return renderedOptions.value.every(opt => ticked.has(optionValueOf(opt)))
 })
 
+// The draft is only edited while the menu is open; once it closes it mirrors the applied
+// selection again, whether that changed before the close (Apply) or changes after it.
+function onBeforeHide() {
+  isOverlayOpen.value = false
+  syncDraftFromModel()
+}
+
 function applyFilters() {
   const values = isEverythingTicked.value ? [] : draftValues.value
   emit('update:modelValue', values.map(value => value === NO_LABEL_SENTINEL ? null : value))
@@ -154,7 +161,7 @@ function removePill(pill) {
       :pt="multiSelectPt"
       @show="syncDraftFromModel"
       @before-show="onBeforeShow"
-      @before-hide="isOverlayOpen = false"
+      @before-hide="onBeforeHide"
     >
       <template #value>
         <PillsTrigger :pills="pills" placeholder="Filter by label" :open="isOverlayOpen" @remove="removePill" />

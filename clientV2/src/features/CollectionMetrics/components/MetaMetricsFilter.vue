@@ -81,6 +81,13 @@ watch(() => props.modelValue, () => {
   }
 }, { immediate: true })
 
+// The draft is only edited while the menu is open; once it closes it mirrors the applied
+// selection again, whether that changed before the close (Apply) or changes after it.
+function onBeforeHide() {
+  isOverlayOpen.value = false
+  syncDraftFromModel()
+}
+
 function applyFilters() {
   emit('update:modelValue', isEverythingTicked.value ? [] : [...draftIds.value])
   multiSelectRef.value?.hide?.()
@@ -112,7 +119,7 @@ function removeCollection(collectionId) {
       :pt="multiSelectPt"
       @show="syncDraftFromModel"
       @before-show="isOverlayOpen = true"
-      @before-hide="isOverlayOpen = false"
+      @before-hide="onBeforeHide"
     >
       <template #value>
         <PillsTrigger
