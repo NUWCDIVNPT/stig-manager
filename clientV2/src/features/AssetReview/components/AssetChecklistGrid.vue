@@ -3,6 +3,7 @@ import { computed, ref, toRefs, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 import ReviewEditPopover from '../../../components/common/ReviewEditPopover.vue'
+import ReviewFilterOption from '../../../components/common/ReviewFilterOption.vue'
 import { fetchReview, patchReview, putReview } from '../../../shared/api/reviewsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useColumnVisibility } from '../../../shared/composables/useColumnVisibility.js'
@@ -99,21 +100,22 @@ const {
   onApplied: () => emit('refresh'),
 })
 
-// Quick search covers the text columns whether shown or not, as before
+// Quick search covers the text columns whether shown or not, as before; the Filter button
+// lists the shown ones.
+// Listed in grid column order, which is the order of the Filter button's menu.
 const { term: searchFilter, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(() => props.gridData, [
+  { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false, optionComponent: ReviewFilterOption },
   { field: 'groupId', header: 'Group' },
   { field: 'ruleId', header: 'Rule Id' },
   { field: 'ruleTitle', header: 'Rule Title' },
   { field: 'groupTitle', header: 'Group Title' },
+  { field: 'result', header: 'Result', filterValues: r => getResultDisplay(r.result), quickSearch: false, optionComponent: ReviewFilterOption },
   { field: 'detail', header: 'Detail' },
   { field: 'comment', header: 'Comment' },
-  { field: 'username', header: 'User', searchText: r => [r.username, r.status?.user?.username].filter(Boolean).join(' ') },
-  { field: 'engineInfo', header: 'Engine product', searchText: r => [r.resultEngine?.product, r.resultEngine?.type, r.resultEngine?.version].filter(Boolean).join(' ') },
-  { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false },
-  { field: 'result', header: 'Result', filterValues: r => getResultDisplay(r.result), quickSearch: false },
-  { field: 'resultEngine', header: 'Engine', filterValues: r => capitalize(getEngineDisplay(r)), quickSearch: false },
-  { field: 'status', header: 'Status', filterValues: r => statusText(r.status), quickSearch: false },
-])
+  { field: 'resultEngine', header: 'Engine', filterValues: r => capitalize(getEngineDisplay(r)), quickSearch: false, optionComponent: ReviewFilterOption },
+  { field: 'engineInfo', header: 'Engine product', shownWith: 'resultEngine', filterValues: r => r.resultEngine?.product, searchText: r => [r.resultEngine?.product, r.resultEngine?.type, r.resultEngine?.version].filter(Boolean).join(' ') },
+  { field: 'status', header: 'Status', filterValues: r => statusText(r.status), quickSearch: false, optionComponent: ReviewFilterOption },
+], { visibleFields: () => visibleFields.value, searchHidden: true })
 
 // Bulk submit/accept act on the rows left after search and filters
 watch(filteredRows, (rows) => {
