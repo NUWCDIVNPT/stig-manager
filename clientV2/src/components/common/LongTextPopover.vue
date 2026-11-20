@@ -56,17 +56,10 @@ defineExpose({ show, hide })
 /* Unscoped: PrimeVue Popover renders outside this component's scope. */
 .long-text-popover {
   background-color: var(--color-background-light) !important;
-  border: 1px solid var(--color-primary-highlight) !important;
-  border-radius: 8px !important;
-  box-shadow:
-    0 16px 40px rgba(0, 0, 0, 0.65),
-    0 0 0 1px rgba(255, 255, 255, 0.05),
-    0 0 24px color-mix(in srgb, var(--color-primary-highlight) 25%, transparent) !important;
+  border: 1px solid var(--color-border-default) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.65) !important;
   overflow: hidden;
-}
-
-.long-text-popover::before {
-  border-color: var(--color-primary-highlight) transparent !important;
 }
 
 .long-text-popover__inner {
@@ -83,11 +76,8 @@ defineExpose({ show, hide })
   justify-content: space-between;
   gap: 1rem;
   padding: 0.55rem 0.85rem;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--color-primary-highlight) 22%, var(--color-background-light)),
-    var(--color-background-light)
-  );
+  background-color: var(--color-background-light);
+  border-bottom: 1px solid var(--color-border-default);
 }
 
 .long-text-popover__label {
