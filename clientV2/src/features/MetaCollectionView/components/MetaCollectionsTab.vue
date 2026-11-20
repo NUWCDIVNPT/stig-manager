@@ -136,6 +136,7 @@ function collectionTo(rowData) {
               :is-loading="collectionsLoading"
               selectable
               :collection-icon-to="collectionTo"
+              :open-to="collectionTo"
               :selected-key="selectedCollectionId"
               @row-select="(row) => handleCollectionSelect(row.collectionId)"
               @refresh="loadCollections"

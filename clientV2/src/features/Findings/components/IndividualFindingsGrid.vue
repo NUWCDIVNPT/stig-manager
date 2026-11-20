@@ -2,7 +2,7 @@
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
 import { computed, ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 import bot2 from '../../../assets/bot2.svg'
 import shieldGreenCheck from '../../../assets/shield-green-check.svg'
 import LabelsRow from '../../../components/columns/LabelsRow.vue'
@@ -150,6 +150,16 @@ function assetReviewTo(row) {
   })
 }
 
+// Double-clicking a row opens the same Asset Review as its shield
+const router = useRouter()
+
+function onRowDblclick(event) {
+  const to = assetReviewTo(event.data)
+  if (to) {
+    router.push(to)
+  }
+}
+
 // Standard app table PT (compactTablePt) with two density-specific additions:
 // rows are pinned to the density-driven height, and body cells are top-aligned
 // with tight padding so short cells line up with multi-line Detail/Comment and
@@ -226,6 +236,7 @@ const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-con
           striped-rows
           class="ind-grid-panel__table"
           :pt="tablePt"
+          @row-dblclick="onRowDblclick"
         >
           <Column field="assetName" header="Asset" sortable :style="{ width: '18rem', minWidth: '12rem' }" :pt="borderPt">
             <template #body="{ data }">

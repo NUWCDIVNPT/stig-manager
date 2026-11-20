@@ -150,6 +150,8 @@ function openEditModal(stig) {
         :table-style="{ 'table-layout': 'fixed' }"
         :pt="tablePt"
         selection-mode="multiple"
+        meta-key-selection
+        @row-dblclick="openEditModal($event.data)"
       >
         <Column selection-mode="multiple" style="width: 1rem; height: var(--item-size); padding: 0 0.5rem;" />
 

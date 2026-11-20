@@ -29,7 +29,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:selected-labels', 'edit-label', 'footer-action'])
+const emit = defineEmits(['update:selected-labels', 'edit-label', 'tag-assets', 'footer-action'])
 
 const selection = computed({
   get: () => props.selectedLabels,
@@ -94,11 +94,13 @@ const dataTableRef = ref(null)
       resizable-columns
       column-resize-mode="fit"
       selection-mode="multiple"
+      meta-key-selection
       :loading="isLoading"
       export-filename="CollectionLabels"
       class="flex-fill"
       :table-style="{ 'table-layout': 'fixed' }"
       :pt="tablePt"
+      @row-dblclick="emit('tag-assets', $event.data)"
     >
       <Column selection-mode="multiple" style="width: 2.7rem; height: 32px; padding: 0 0.5rem;" />
 

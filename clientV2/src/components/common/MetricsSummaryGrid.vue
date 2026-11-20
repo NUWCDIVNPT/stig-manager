@@ -1,6 +1,7 @@
 <script setup>
 import DataTable from 'primevue/datatable'
 import { computed, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useColumnVisibility } from '../../shared/composables/useColumnVisibility.js'
 import { useGridSearch } from '../../shared/composables/useGridSearch.js'
 import { calculateCora } from '../../shared/lib.js'
@@ -75,6 +76,12 @@ const props = defineProps({
     type: Function,
     default: null,
   },
+  // (row) => route location a double-click on the row opens, or null for none.
+  // Left unset, a double-click opens the shield's target.
+  openTo: {
+    type: Function,
+    default: null,
+  },
   selectedKey: {
     type: [String, Number],
     default: null,
@@ -125,6 +132,15 @@ const selectedRow = ref(null)
 
 function onRowSelect(event) {
   emit('row-select', event.data)
+}
+
+const router = useRouter()
+
+function onRowDblclick(event) {
+  const to = (props.openTo ?? props.shieldTo)?.(event.data)
+  if (to) {
+    router.push(to)
+  }
 }
 
 const aggregationType = computed(() => {
@@ -448,6 +464,7 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
       :data-key="dataKey"
       :export-filename="exportFilename"
       :selection-mode="selectable ? 'single' : null"
+      meta-key-selection
       :loading="isLoading"
       :pt="{
         emptyMessageCell: { class: 'agg-grid-empty-cell' },
@@ -462,6 +479,7 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
       :virtual-scroller-options="{ itemSize: ROW_HEIGHT, delay: 0 }"
       :style="{ '--item-size': `${ROW_HEIGHT}px` }"
       @row-select="onRowSelect"
+      @row-dblclick="onRowDblclick"
     >
       <template v-for="col in visibleColumns" :key="col.field">
         <component :is="col.component" v-bind="col" :search-term="highlightTerm(col.field)" sortable />

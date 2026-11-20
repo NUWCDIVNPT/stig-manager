@@ -182,6 +182,7 @@ async function onDeleteConfirmed() {
         resizable-columns
         column-resize-mode="fit"
         selection-mode="multiple"
+        meta-key-selection
         :loading="isLoading"
         :virtual-scroller-options="{ itemSize: ROW_HEIGHT, delay: 0 }"
         :style="{ '--item-size': `${ROW_HEIGHT}px` }"
@@ -189,6 +190,7 @@ async function onDeleteConfirmed() {
         class="flex-fill clickable-rows"
         :table-style="{ 'table-layout': 'fixed' }"
         :pt="tablePt"
+        @row-dblclick="openEditModal($event.data.assetId)"
       >
         <Column selection-mode="multiple" style="width: 1rem; height: var(--item-size); padding: 0 0.5rem;" />
 
