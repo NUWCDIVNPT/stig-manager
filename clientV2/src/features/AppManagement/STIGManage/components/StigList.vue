@@ -69,7 +69,7 @@ const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibilit
 ], 'adminStigs.columns')
 
 const { term: searchTerm, filteredRows, isFiltered, highlightTerm } = useGridSearch(rows, [
-  { field: 'benchmarkId', header: 'Benchmark ID' },
+  { field: 'benchmarkId', header: 'STIG', filterValues: r => r.benchmarkId },
   { field: 'title', header: 'Title' },
   { field: 'status', header: 'Status' },
   { field: 'lastRevisionStr', header: 'Latest Revision' },

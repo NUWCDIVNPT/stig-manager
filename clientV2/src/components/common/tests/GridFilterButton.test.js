@@ -4,6 +4,8 @@ import { searchFilter } from '../../../shared/lib/gridSearch.js'
 import { renderWithProviders } from '../../../testUtils/utils.js'
 import GridFilterButton from '../GridFilterButton.vue'
 
+// The menu, quick filter and rule builder have their own tests in gridFilter/tests; these cover
+// the popover around them and switching between them.
 const columns = [
   { field: 'name', header: 'Name', kind: 'text' },
   { field: 'os', header: 'OS', kind: 'text' },
@@ -12,7 +14,6 @@ const columns = [
 const osColumn = { field: 'os', header: 'OS', kind: 'values' }
 const osOptions = { os: [{ value: 'linux', name: 'linux', color: null }, { value: 'windows', name: 'windows', color: null }] }
 
-// The button opens the column menu; "Add rule" swaps it for the rule builder
 async function openRules() {
   await fireEvent.click(screen.getByRole('button', { name: 'Filters' }))
   await fireEvent.click(await screen.findByRole('button', { name: 'Add rule' }))
@@ -22,10 +23,6 @@ async function openRules() {
 async function openPanel() {
   renderWithProviders(GridFilterButton, { props: { modelValue: [], columns } })
   await openRules()
-}
-
-function lastModel(emitted) {
-  return emitted()['update:modelValue'].at(-1)[0]
 }
 
 describe('gridFilterButton.vue', () => {
@@ -69,53 +66,73 @@ describe('gridFilterButton.vue', () => {
     expect(screen.queryByText('Rows must match every rule')).toBeNull()
   })
 
-  it('lists the columns in the order given, leaving out hidden ones without a rule', async () => {
-    const cols = [
-      { field: 'ip', header: 'IP', kind: 'text' },
-      { field: 'name', header: 'Name', kind: 'text', hidden: true },
-      { field: 'fqdn', header: 'FQDN', kind: 'text', hidden: true },
-      { field: 'mac', header: 'MAC', kind: 'text' },
-    ]
-    renderWithProviders(GridFilterButton, { props: { modelValue: [searchFilter('fqdn', 'text', { value: 'lab' })], columns: cols } })
-    await fireEvent.click(screen.getByRole('button', { name: 'Filters, 1 applied' }))
-    const items = await screen.findAllByRole('menuitem')
-    expect(items.map(i => i.querySelector('.grid-filter__menu-label').textContent)).toEqual(['IP', 'FQDN', 'MAC'])
+  it('opens on the column menu, goes to the builder and back', async () => {
+    await openPanel()
+    await fireEvent.click(screen.getByRole('button', { name: 'Back' }))
+    expect(await screen.findByRole('menuitem', { name: 'Name' })).toBeTruthy()
+    expect(screen.queryByText('Rows must match every rule')).toBeNull()
   })
 
-  it('applies a picked value at once and toggles it off again', async () => {
+  it('keeps unapplied builder rules across Back, until the popover closes', async () => {
+    await openPanel()
+    await fireEvent.update(screen.getByRole('textbox', { name: 'Value' }), 'web')
+    await fireEvent.click(screen.getByRole('button', { name: 'Back' }))
+    await fireEvent.click(await screen.findByRole('button', { name: 'Add rule' }))
+    expect(await screen.findByRole('textbox', { name: 'Value' })).toHaveValue('web')
+
+    await fireEvent.mouseDown(document.body)
+    await waitFor(() => expect(screen.queryByText('Rows must match every rule')).toBeNull())
+    await openRules()
+    expect(screen.getByRole('textbox', { name: 'Value' }).value).toBe('')
+  })
+
+  it('drops kept builder rules once the menu changes the applied rules', async () => {
     const { emitted, rerender } = renderWithProviders(GridFilterButton, {
+      props: { modelValue: [], columns: [{ field: 'name', header: 'Name', kind: 'text' }, osColumn], valueOptions: osOptions },
+    })
+    await openRules()
+    await fireEvent.update(screen.getByRole('textbox', { name: 'Value' }), 'web')
+    await fireEvent.click(screen.getByRole('button', { name: 'Back' }))
+    await fireEvent.click(await screen.findByRole('menuitem', { name: 'OS' }))
+    await fireEvent.click(await screen.findByRole('menuitemcheckbox', { name: 'linux' }))
+    await rerender({ modelValue: emitted()['update:modelValue'].at(-1)[0] })
+    await fireEvent.click(screen.getByRole('button', { name: 'Edit rules (1)' }))
+    await screen.findByText('Rows must match every rule')
+    expect(screen.getAllByRole('combobox', { name: 'Column' }).map(c => c.textContent)).toEqual(['OS'])
+  })
+
+  it('reopens on the column menu after closing in the builder', async () => {
+    await openPanel()
+    await fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+    await waitFor(() => expect(screen.queryByText('Rows must match every rule')).toBeNull())
+    await fireEvent.click(screen.getByRole('button', { name: 'Filters' }))
+    expect(await screen.findByRole('menuitem', { name: 'Name' })).toBeTruthy()
+  })
+
+  it('applies a quick pick from the menu straight to the model', async () => {
+    const { emitted } = renderWithProviders(GridFilterButton, {
       props: { modelValue: [], columns: [osColumn], valueOptions: osOptions },
     })
     await fireEvent.click(screen.getByRole('button', { name: 'Filters' }))
     await fireEvent.click(await screen.findByRole('menuitem', { name: 'OS' }))
     await fireEvent.click(await screen.findByRole('menuitemcheckbox', { name: 'linux' }))
-    expect(lastModel(emitted)).toEqual([searchFilter('os', 'values', { value: ['linux'] })])
-
-    await rerender({ modelValue: lastModel(emitted) })
-    await fireEvent.click(screen.getByRole('menuitemcheckbox', { name: 'windows' }))
-    expect(lastModel(emitted)).toEqual([searchFilter('os', 'values', { value: ['linux', 'windows'] })])
-
-    await rerender({ modelValue: [searchFilter('os', 'values', { value: ['linux'] })] })
-    await fireEvent.click(screen.getByRole('menuitemcheckbox', { name: 'linux' }))
-    expect(lastModel(emitted)).toEqual([])
+    expect(emitted()['update:modelValue'].at(-1)[0]).toEqual([searchFilter('os', 'values', { value: ['linux'] })])
   })
 
-  it('filters a text column as its box is typed in', async () => {
-    const { emitted } = renderWithProviders(GridFilterButton, { props: { modelValue: [], columns } })
+  it('opens the builder from a column\'s quick filter with a rule for that column', async () => {
+    renderWithProviders(GridFilterButton, { props: { modelValue: [], columns: [osColumn], valueOptions: osOptions } })
     await fireEvent.click(screen.getByRole('button', { name: 'Filters' }))
-    await fireEvent.click(await screen.findByRole('menuitem', { name: 'Name' }))
-    await fireEvent.update(await screen.findByRole('textbox', { name: 'Name contains' }), 'web')
-    expect(lastModel(emitted)).toEqual([searchFilter('name', 'text', { value: 'web' })])
+    await fireEvent.click(await screen.findByRole('menuitem', { name: 'OS' }))
+    await fireEvent.click(await screen.findByRole('button', { name: 'More options…' }))
+    await screen.findByText('Rows must match every rule')
+    expect(screen.getAllByRole('combobox', { name: 'Column' })).toHaveLength(1)
+    expect(screen.getByText('Pick values')).toBeTruthy()
   })
 
-  it('leaves a rule the builder made alone and adds its own beside it', async () => {
-    const excluded = searchFilter('os', 'values', { value: ['windows'], exclude: true })
-    const { emitted } = renderWithProviders(GridFilterButton, {
-      props: { modelValue: [excluded], columns: [osColumn], valueOptions: osOptions },
-    })
-    await fireEvent.click(screen.getByRole('button', { name: 'Filters, 1 applied' }))
-    await fireEvent.click(await screen.findByRole('menuitem', { name: /OS/ }))
-    await fireEvent.click(await screen.findByRole('menuitemcheckbox', { name: 'linux' }))
-    expect(lastModel(emitted)).toEqual([excluded, searchFilter('os', 'values', { value: ['linux'] })])
+  it('closes after Apply', async () => {
+    await openPanel()
+    await fireEvent.update(screen.getByRole('textbox', { name: 'Value' }), 'web')
+    await fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
+    await waitFor(() => expect(screen.queryByText('Rows must match every rule')).toBeNull())
   })
 })

@@ -92,8 +92,8 @@ const TOGGLE_COLUMNS = [
   { field: 'stigs', header: 'STIGs' },
   { field: 'detail', header: 'Detail' },
   { field: 'comment', header: 'Comment' },
-  { field: 'resultEngine', header: 'Engine', optionComponent: REVIEW_FILTER_OPTIONS.engine },
-  { field: 'status', header: 'Status', optionComponent: REVIEW_FILTER_OPTIONS.status },
+  { field: 'resultEngine', header: 'Engine' },
+  { field: 'status', header: 'Status' },
   { field: 'username', header: 'Reviewer' },
 ]
 const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibility(TOGGLE_COLUMNS, 'findingsIndividual.columns')
@@ -106,8 +106,8 @@ const { term: searchTerm, filters: gridFilters, filteredRows, isFiltered, filter
   { field: 'stigs', header: 'STIGs', filterValues: stigIds, multiple: true },
   { field: 'detail', header: 'Detail' },
   { field: 'comment', header: 'Comment' },
-  { field: 'resultEngine', header: 'Engine', filterValues: r => capitalize(r._engineDisplay) },
-  { field: 'status', header: 'Status', filterValues: r => statusText(r.status) },
+  { field: 'resultEngine', header: 'Engine', filterValues: r => capitalize(r._engineDisplay), optionComponent: REVIEW_FILTER_OPTIONS.engine },
+  { field: 'status', header: 'Status', filterValues: r => statusText(r.status), optionComponent: REVIEW_FILTER_OPTIONS.status },
   { field: 'username', header: 'Reviewer', filterValues: r => r.username },
 ], { visibleFields })
 

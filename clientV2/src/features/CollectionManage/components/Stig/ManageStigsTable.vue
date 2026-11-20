@@ -78,7 +78,7 @@ const {
   valueOptions,
   highlightTerm,
 } = useGridSearch(tableData, [
-  { field: 'benchmarkId', header: 'Benchmark ID' },
+  { field: 'benchmarkId', header: 'STIG', filterValues: r => r.benchmarkId },
   { field: 'title', header: 'Title', shownWith: 'benchmarkId' },
   { field: 'revisionStr', header: 'Revision' },
 ], { visibleFields, selection: selectedStigs, dataKey: 'benchmarkId' })
