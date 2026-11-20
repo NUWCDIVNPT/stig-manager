@@ -18,6 +18,7 @@ import LongTextPopover from '../LongTextPopover.vue'
 import ManualBadge from '../ManualBadge.vue'
 import OverrideBadge from '../OverrideBadge.vue'
 import ResultBadge from '../ResultBadge.vue'
+import { REVIEW_FILTER_OPTIONS } from '../reviewFilterOptions.js'
 import StatusBadge from '../StatusBadge.vue'
 import StatusFooter from '../StatusFooter.vue'
 import { reviewResourcesTablePt } from './tablePt.js'
@@ -93,12 +94,12 @@ const tabBarEnd = inject('reviewTabBarEnd', null)
 
 const { filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, clear: clearFilters } = useGridSearch(processedHistory, [
   { field: 'ruleId', header: 'Rule' },
-  { field: 'result', header: 'Result', filterValues: r => getResultDisplay(r.result) ?? '' },
-  { field: '_engineDisplay', header: 'Engine', filterValues: r => capitalize(r._engineDisplay) },
+  { field: 'result', header: 'Result', filterValues: r => getResultDisplay(r.result) ?? '', optionComponent: REVIEW_FILTER_OPTIONS.result },
+  { field: '_engineDisplay', header: 'Engine', filterValues: r => capitalize(r._engineDisplay), optionComponent: REVIEW_FILTER_OPTIONS.engine },
   { field: 'detail', header: 'Detail' },
   { field: 'comment', header: 'Comment' },
   { field: 'statusText', header: 'Status Text', searchText: r => r.status?.text },
-  { field: '_statusLabel', header: 'Status', filterValues: r => capitalize(r._statusLabel) },
+  { field: '_statusLabel', header: 'Status', filterValues: r => capitalize(r._statusLabel), optionComponent: REVIEW_FILTER_OPTIONS.status },
   { field: 'username', header: 'User', filterValues: r => r.username },
 ])
 

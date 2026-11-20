@@ -39,6 +39,11 @@ export function withColumn(f, key, kind) {
   return f.kind === 'text' && kind === 'text' ? { ...f, key } : searchFilter(key, kind)
 }
 
+// The rule a quick pick writes: a plain include with nothing else set
+export function isQuickRule(f) {
+  return f.kind === 'values' ? f.match === 'any' && !f.exclude : f.mode === 'contains' && !f.matchWord
+}
+
 export function isNegated(f) {
   return f.kind === 'values' ? Boolean(f.exclude) : f.mode in NEGATED_MODES
 }

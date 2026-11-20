@@ -1,5 +1,6 @@
 <script setup>
 import { computed, watch } from 'vue'
+import { REVIEW_FILTER_OPTIONS } from '../../../components/common/reviewFilterOptions.js'
 import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 import { catLabel } from '../../../shared/lib/exportCells.js'
 import DiffRuleTable from './DiffRuleTable.vue'
@@ -110,7 +111,7 @@ const bodyError = computed(() => (diffMode.value ? props.diffError : props.rules
 // The rules arrive with the detail, check, fix and ccis projections, so the view-mode search
 // also reads the rule content that only the detail pane renders.
 const viewColumns = [
-  { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false },
+  { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false, optionComponent: REVIEW_FILTER_OPTIONS.cat },
   { field: 'version', header: 'STIG ID' },
   { field: 'groupId', header: 'Group' },
   { field: 'ruleId', header: 'Rule Id' },
@@ -124,7 +125,7 @@ const diffColumns = computed(() => [
   { field: 'stigId', header: 'STIG ID' },
   { field: 'leftRule', header: `Rule in ${props.compareRev ?? 'compared'}` },
   { field: 'rightRule', header: `Rule in ${props.viewRev ?? 'viewed'}` },
-  { field: 'cat', header: 'CAT', filterValues: r => catLabel(r.cat) ?? '', quickSearch: false },
+  { field: 'cat', header: 'CAT', filterValues: r => catLabel(r.cat) ?? '', quickSearch: false, optionComponent: REVIEW_FILTER_OPTIONS.cat },
   { field: 'changed', header: 'Changed properties', filterValues: r => r.changed, multiple: true },
 ])
 
