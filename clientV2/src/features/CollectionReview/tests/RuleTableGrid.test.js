@@ -310,11 +310,20 @@ describe('ruleTableGrid.vue', () => {
     })
 
     it('clicking read-only row does not open editor', async () => {
-      createWrapper()
+      const { emitted } = createWrapper()
       const row2 = screen.getByText('Asset 2').closest('tr') // access: r
       await fireEvent.click(row2)
 
       expect(screen.queryByTestId('popover-asset-id')).not.toBeInTheDocument()
+      expect(emitted()['update:selection']).toBeUndefined()
+    })
+
+    it('a plain click makes the row the only selected row', async () => {
+      const { emitted } = createWrapper({ selection: [mockGridData[2]] })
+
+      await fireEvent.click(screen.getByText('Asset 1').closest('tr'))
+
+      expect(emitted()['update:selection'].at(-1)[0]).toEqual([mockGridData[0]])
     })
   })
 
@@ -404,6 +413,17 @@ describe('ruleTableGrid.vue', () => {
       expect(popoverApi.openForRow).not.toHaveBeenCalled()
       expect(popoverApi.triggerUnsavedWarning).toHaveBeenCalled()
       expect(screen.getByTestId('popover-asset-id')).toHaveTextContent('asset-1')
+    })
+
+    it('leaves the selection on the row being edited when the click is blocked', async () => {
+      const { emitted } = renderWithProviders(RuleTableGrid, { props: defaultProps })
+      await fireEvent.click(screen.getByText('Asset 1'))
+      popoverApi.isDirty = true
+
+      await fireEvent.click(screen.getByText('Asset 3'))
+
+      expect(emitted()['update:selection']).toHaveLength(1)
+      expect(emitted()['update:selection'][0][0]).toMatchObject([{ assetId: 'asset-1' }])
     })
 
     it('still moves the editor to another row when the form is clean', async () => {

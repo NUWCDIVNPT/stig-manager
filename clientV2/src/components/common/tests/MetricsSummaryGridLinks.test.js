@@ -11,20 +11,20 @@ vi.mock('primevue/datatable', async () => {
   const { defineComponent, h, provide } = await import('vue')
   const Row = defineComponent({
     props: ['row'],
-    emits: ['select'],
+    emits: ['select', 'dblclick'],
     setup(props, { slots, emit }) {
       provide('mockRow', props.row)
-      return () => h('div', { 'data-testid': 'row', 'onClick': () => emit('select') }, slots.default?.())
+      return () => h('div', { 'data-testid': 'row', 'onClick': () => emit('select'), 'onDblclick': () => emit('dblclick') }, slots.default?.())
     },
   })
   return {
     default: defineComponent({
       name: 'DataTable',
       props: ['value'],
-      emits: ['row-select'],
+      emits: ['row-select', 'row-dblclick'],
       setup(props, { slots, emit }) {
         return () => h('div', (props.value ?? []).map((row, i) =>
-          h(Row, { row, key: i, onSelect: () => emit('row-select', { data: row }) }, () => slots.default?.())))
+          h(Row, { row, key: i, onSelect: () => emit('row-select', { data: row }), onDblclick: () => emit('row-dblclick', { data: row }) }, () => slots.default?.())))
       },
     }),
   }
@@ -152,7 +152,7 @@ describe('metricsSummaryGrid row links', () => {
   })
 
   it('navigates on a shield click without selecting the row', async () => {
-    const { emitted } = renderGrid({ apiMetricsSummary: stigRows, aggType: 'stig', selectable: true, shieldTo: stigReviewTo })
+    const { emitted } = renderGrid({ apiMetricsSummary: stigRows, aggType: 'stig', shieldTo: stigReviewTo })
 
     await fireEvent.click(screen.getAllByTitle('Open Benchmark Review')[0])
     await flushPromises()
@@ -162,11 +162,65 @@ describe('metricsSummaryGrid row links', () => {
   })
 
   it('still selects the row on a click outside the shield', async () => {
-    const { emitted } = renderGrid({ apiMetricsSummary: stigRows, aggType: 'stig', selectable: true, shieldTo: stigReviewTo })
+    const { emitted } = renderGrid({ apiMetricsSummary: stigRows, aggType: 'stig', shieldTo: stigReviewTo })
 
     await fireEvent.click(screen.getAllByTestId('row')[0])
 
     expect(emitted()['row-select'][0][0]).toMatchObject({ benchmarkId: 'RHEL_9' })
     expect(router.currentRoute.value.name).toBe('home')
+  })
+
+  it('opens the shield target on a row double-click', async () => {
+    renderGrid({ apiMetricsSummary: stigRows, aggType: 'stig', shieldTo: stigReviewTo })
+
+    await fireEvent.dblClick(screen.getAllByTestId('row')[1])
+    await flushPromises()
+
+    expect(router.currentRoute.value.fullPath).toBe('/collection/c1/benchmark/Win_11/revision/V1R3?labelName=web')
+  })
+
+  it('opens the openTo target, not the shield, when one is given', async () => {
+    renderGrid({
+      apiMetricsSummary: collectionRows,
+      aggType: 'collection',
+      shieldTo: row => ({ name: 'collection-benchmark-review', params: { collectionId: row.collectionId, benchmarkId: 'RHEL_9', revisionStr: 'V2R1' } }),
+      openTo: row => ({ name: 'collection-stigs', params: { collectionId: row.collectionId } }),
+    })
+
+    await fireEvent.dblClick(screen.getAllByTestId('row')[0])
+    await flushPromises()
+
+    expect(router.currentRoute.value.fullPath).toBe('/collection/c1/stigs')
+  })
+
+  it('does not open the collection icon target on a double-click', async () => {
+    renderGrid({
+      apiMetricsSummary: collectionRows,
+      aggType: 'collection',
+      collectionIconTo: row => ({ name: 'collection-stigs', params: { collectionId: row.collectionId } }),
+    })
+
+    await fireEvent.dblClick(screen.getAllByTestId('row')[0])
+    await flushPromises()
+
+    expect(router.currentRoute.value.name).toBe('home')
+  })
+
+  it('stays put on a double-click of a row with no target', async () => {
+    renderGrid({ apiMetricsSummary: stigRows, aggType: 'stig', shieldTo: () => null })
+
+    await fireEvent.dblClick(screen.getAllByTestId('row')[0])
+    await flushPromises()
+
+    expect(router.currentRoute.value.name).toBe('home')
+  })
+
+  it('shows a CAT badge only where there are findings', () => {
+    const rows = [{ benchmarkId: 'RHEL_9', revisionStr: 'V2R1', metrics: { ...metrics, findings: { low: 0, medium: 4, high: 0 } } }]
+    renderGrid({ apiMetricsSummary: rows, aggType: 'stig' })
+
+    expect(screen.queryByTitle('CAT 3')).toBeNull()
+    expect(screen.getByTitle('CAT 2').textContent.trim()).toBe('4')
+    expect(screen.queryByTitle('CAT 1')).toBeNull()
   })
 })

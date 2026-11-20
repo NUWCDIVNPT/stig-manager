@@ -141,7 +141,6 @@ function assetReviewTo(rowData) {
               :api-metrics-summary="stigs"
               agg-type="stig"
               :is-loading="stigsLoading"
-              selectable
               collection-count
               data-key="revisionKey"
               :selected-key="selectedStig?.revisionKey"
@@ -161,7 +160,6 @@ function assetReviewTo(rowData) {
               agg-type="collection"
               :is-loading="collectionsLoading"
               :empty-message="selectedStig ? 'No collections found for the selected STIG. Try refresh.' : 'Select a STIG to view associated collections.'"
-              selectable
               data-key="collectionId"
               :shield-to="stigReviewTo"
               :selected-key="selectedCollectionId"
@@ -184,6 +182,7 @@ function assetReviewTo(rowData) {
               :empty-message="selectedCollectionId ? 'No assets associated with this STIG in the selected collection. Try refresh.' : 'Select a collection to view its assets for this STIG.'"
               parent-agg-type="stig"
               :shield-to="assetReviewTo"
+              data-key="assetId"
               @refresh="loadAssets"
             />
           </div>

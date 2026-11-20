@@ -153,7 +153,6 @@ function assetReviewTo(rowData) {
               :api-metrics-summary="labels"
               agg-type="label"
               :is-loading="labelsLoading"
-              selectable
               data-key="labelId"
               :selected-key="selectedLabelId"
               @row-select="(row) => handleLabelSelect(row.labelId)"
@@ -173,7 +172,6 @@ function assetReviewTo(rowData) {
               agg-type="asset"
               :is-loading="assetsLoading"
               :empty-message="isLabelSelected ? 'No assets found for this label. Try refresh.' : 'Select a label to view associated assets.'"
-              selectable
               data-key="assetId"
               :selected-key="selectedAssetId"
               @row-select="(row) => handleAssetSelect(row.assetId)"
@@ -195,6 +193,7 @@ function assetReviewTo(rowData) {
               :empty-message="selectedAssetId ? 'No checklists associated with this asset. Try refresh.' : 'Select an asset to view its checklists.'"
               parent-agg-type="asset"
               :shield-to="assetReviewTo"
+              data-key="benchmarkId"
               @refresh="loadAssetStigs"
             />
           </div>

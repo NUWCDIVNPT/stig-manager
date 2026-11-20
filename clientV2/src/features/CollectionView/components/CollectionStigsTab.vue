@@ -139,7 +139,6 @@ function stigReviewTo(rowData) {
               agg-type="stig"
               :is-loading="stigsLoading"
               :selected-key="selectedBenchmarkId"
-              selectable
               data-key="benchmarkId"
               :shield-to="stigReviewTo"
               @row-select="(row) => handleStigSelect(row.benchmarkId)"

@@ -448,6 +448,11 @@ textarea:focus {
   background-color: var(--color-border-hover);
 }
 
+/* Grid text is not selectable: clicks and double-clicks are row actions, and the right-click menu copies a cell or row. */
+.p-datatable {
+  user-select: none;
+}
+
 .p-datatable-mask {
   background: var(--color-background-subtle) !important;
   backdrop-filter: blur(2px);

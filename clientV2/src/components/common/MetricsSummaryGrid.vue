@@ -1,6 +1,7 @@
 <script setup>
 import DataTable from 'primevue/datatable'
 import { computed, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useColumnVisibility } from '../../shared/composables/useColumnVisibility.js'
 import { useGridSearch } from '../../shared/composables/useGridSearch.js'
 import { calculateCora } from '../../shared/lib.js'
@@ -58,10 +59,6 @@ const props = defineProps({
     type: [String, Number],
     default: '',
   },
-  selectable: {
-    type: Boolean,
-    default: false,
-  },
   dataKey: {
     type: String,
     default: null,
@@ -72,6 +69,12 @@ const props = defineProps({
     default: null,
   },
   collectionIconTo: {
+    type: Function,
+    default: null,
+  },
+  // (row) => route location a double-click on the row opens, or null for none.
+  // Left unset, a double-click opens the shield's target.
+  openTo: {
     type: Function,
     default: null,
   },
@@ -125,6 +128,15 @@ const selectedRow = ref(null)
 
 function onRowSelect(event) {
   emit('row-select', event.data)
+}
+
+const router = useRouter()
+
+function onRowDblclick(event) {
+  const to = (props.openTo ?? props.shieldTo)?.(event.data)
+  if (to) {
+    router.push(to)
+  }
 }
 
 const aggregationType = computed(() => {
@@ -392,7 +404,8 @@ const {
   highlightTerm,
 } = useGridSearch(data, () => columns.value.filter(c => c.searchable), { visibleFields })
 
-// CSV export basename per aggregation entity — same names the legacy client used.
+// CSV export basename — same names the legacy client used: one per aggregation
+// entity, and Checklists for every unaggregated grid.
 const EXPORT_BASENAME_BY_KEY = {
   assetId: 'Assets',
   benchmarkId: 'STIGs',
@@ -400,7 +413,9 @@ const EXPORT_BASENAME_BY_KEY = {
   labelId: 'Labels',
   collectionId: 'Collections',
 }
-const exportFilename = computed(() => EXPORT_BASENAME_BY_KEY[props.dataKey] ?? 'Metrics')
+const exportFilename = computed(() => aggregationType.value === 'unagg'
+  ? 'Checklists'
+  : EXPORT_BASENAME_BY_KEY[props.dataKey] ?? 'Metrics')
 
 // Sync selectedRow when selectedKey or data changes (for programmatic selection)
 watch([() => props.selectedKey, data], ([newKey, newData]) => {
@@ -447,7 +462,8 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
       :value="filteredData"
       :data-key="dataKey"
       :export-filename="exportFilename"
-      :selection-mode="selectable ? 'single' : null"
+      selection-mode="single"
+      meta-key-selection
       :loading="isLoading"
       :pt="{
         emptyMessageCell: { class: 'agg-grid-empty-cell' },
@@ -462,6 +478,7 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
       :virtual-scroller-options="{ itemSize: ROW_HEIGHT, delay: 0 }"
       :style="{ '--item-size': `${ROW_HEIGHT}px` }"
       @row-select="onRowSelect"
+      @row-dblclick="onRowDblclick"
     >
       <template v-for="col in visibleColumns" :key="col.field">
         <component :is="col.component" v-bind="col" :search-term="highlightTerm(col.field)" sortable />
@@ -478,7 +495,6 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
           :dt="dataTableRef"
           :total-count="data.length"
           :filtered-count="isSearching ? filteredData.length : null"
-          :show-selected="selectable && selectedRow?.length > 0"
           @refresh="emit('refresh')"
         />
       </template>

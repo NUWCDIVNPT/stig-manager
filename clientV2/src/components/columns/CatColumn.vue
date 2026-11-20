@@ -16,7 +16,9 @@ defineProps({
   <Column :field="field" :header="header">
     <template #body="slotProps">
       <div style="display: flex; justify-content: center;">
+        <!-- Zero findings leave the cell blank so the eye lands on the counts that matter -->
         <CatBadge
+          v-if="Number(slotProps.data[field]) > 0"
           :category="category"
           :count="slotProps.data[field]"
         />

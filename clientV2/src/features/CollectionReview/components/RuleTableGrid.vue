@@ -171,16 +171,15 @@ const { isLoading: isSavingStatus, execute: executeSaveStatus } = useAsyncState(
 
 const isSaving = computed(() => isSavingReview.value || isSavingStatus.value)
 
+// Returns false when another row's review still has unsaved edits
 function openRowEditor(event, rowData) {
-  if (!rowData || rowData.access !== 'rw') {
-    return
-  }
   const isSameRow = editingRow.value?.assetId === rowData.assetId
   if (!isSameRow && blockIfUnsaved()) {
-    return
+    return false
   }
   editingRow.value = rowData
   reviewEditPopover.value?.openForRow(event, isSameRow)
+  return true
 }
 
 function onRowClick(event) {
@@ -194,7 +193,14 @@ function onRowClick(event) {
     onToggleSelectRow(rowData, shiftKey)
     return
   }
-  openRowEditor(event.originalEvent || event, rowData)
+  // A plain click opens the row's review and makes it the only selected row
+  if (openRowEditor(event.originalEvent || event, rowData)) {
+    // Re-clicking the lone selected row would only churn the selection
+    if (props.selection.length !== 1 || !selectedIdSet.value.has(rowData.assetId)) {
+      emit('update:selection', [rowData])
+    }
+    selectAnchorId = rowData.assetId
+  }
 }
 
 function onPopoverSave(payload) {

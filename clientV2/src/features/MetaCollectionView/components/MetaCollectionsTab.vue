@@ -134,8 +134,8 @@ function collectionTo(rowData) {
               :api-metrics-summary="collections"
               agg-type="collection"
               :is-loading="collectionsLoading"
-              selectable
               :collection-icon-to="collectionTo"
+              :open-to="collectionTo"
               :selected-key="selectedCollectionId"
               @row-select="(row) => handleCollectionSelect(row.collectionId)"
               @refresh="loadCollections"
@@ -153,7 +153,6 @@ function collectionTo(rowData) {
               agg-type="stig"
               :is-loading="stigsLoading"
               :empty-message="selectedCollectionId ? 'No STIGs found in the selected collection. Try refresh.' : 'Select a collection to view its STIGs.'"
-              selectable
               data-key="benchmarkId"
               :shield-to="stigReviewTo"
               :selected-key="selectedBenchmarkId"
@@ -176,6 +175,7 @@ function collectionTo(rowData) {
               :empty-message="selectedBenchmarkId ? 'No assets associated with this STIG in the selected collection. Try refresh.' : 'Select a STIG to view its assets.'"
               parent-agg-type="stig"
               :shield-to="assetReviewTo"
+              data-key="assetId"
               @refresh="loadAssets"
             />
           </div>

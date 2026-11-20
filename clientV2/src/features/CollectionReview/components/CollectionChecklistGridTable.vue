@@ -129,6 +129,7 @@ const dataTablePt = {
     :loading="isLoading"
     :selection="selectedRow"
     selection-mode="single"
+    meta-key-selection
     :export-filename="exportFilename"
     data-key="ruleId"
     scrollable

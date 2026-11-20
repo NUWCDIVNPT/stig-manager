@@ -96,11 +96,8 @@ async function onDeleteConfirmed() {
 const tagAssetsModalVisible = ref(false)
 const tagAssetsLabel = ref(null)
 
-function openTagAssetsModal() {
-  if (selectedLabels.value.length !== 1) {
-    return
-  }
-  tagAssetsLabel.value = selectedLabels.value[0]
+function openTagAssetsModal(label) {
+  tagAssetsLabel.value = label
   tagAssetsModalVisible.value = true
 }
 
@@ -122,7 +119,7 @@ function handleFooterAction(action) {
       :single-selection="selectedLabels.length === 1"
       @create-label="openCreateModal"
       @edit-label="openEditModal(selectedLabels[0])"
-      @tag-assets="openTagAssetsModal"
+      @tag-assets="openTagAssetsModal(selectedLabels[0])"
       @delete-labels="onDeleteLabels"
       @clear-selection="clearSelection"
     />
@@ -156,6 +153,7 @@ function handleFooterAction(action) {
       :selected-labels="selectedLabels"
       @update:selected-labels="selectedLabels = $event"
       @edit-label="openEditModal"
+      @tag-assets="openTagAssetsModal"
       @footer-action="handleFooterAction"
     />
   </div>
