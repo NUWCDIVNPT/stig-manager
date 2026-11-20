@@ -152,7 +152,7 @@ describe('metricsSummaryGrid row links', () => {
   })
 
   it('navigates on a shield click without selecting the row', async () => {
-    const { emitted } = renderGrid({ apiMetricsSummary: stigRows, aggType: 'stig', selectable: true, shieldTo: stigReviewTo })
+    const { emitted } = renderGrid({ apiMetricsSummary: stigRows, aggType: 'stig', shieldTo: stigReviewTo })
 
     await fireEvent.click(screen.getAllByTitle('Open Benchmark Review')[0])
     await flushPromises()
@@ -162,7 +162,7 @@ describe('metricsSummaryGrid row links', () => {
   })
 
   it('still selects the row on a click outside the shield', async () => {
-    const { emitted } = renderGrid({ apiMetricsSummary: stigRows, aggType: 'stig', selectable: true, shieldTo: stigReviewTo })
+    const { emitted } = renderGrid({ apiMetricsSummary: stigRows, aggType: 'stig', shieldTo: stigReviewTo })
 
     await fireEvent.click(screen.getAllByTestId('row')[0])
 
@@ -171,7 +171,7 @@ describe('metricsSummaryGrid row links', () => {
   })
 
   it('opens the shield target on a row double-click', async () => {
-    renderGrid({ apiMetricsSummary: stigRows, aggType: 'stig', selectable: true, shieldTo: stigReviewTo })
+    renderGrid({ apiMetricsSummary: stigRows, aggType: 'stig', shieldTo: stigReviewTo })
 
     await fireEvent.dblClick(screen.getAllByTestId('row')[1])
     await flushPromises()

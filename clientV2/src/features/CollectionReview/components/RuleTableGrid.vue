@@ -171,12 +171,8 @@ const { isLoading: isSavingStatus, execute: executeSaveStatus } = useAsyncState(
 
 const isSaving = computed(() => isSavingReview.value || isSavingStatus.value)
 
-// Returns false when the row cannot be opened: read-only, or another row's
-// review still has unsaved edits
+// Returns false when another row's review still has unsaved edits
 function openRowEditor(event, rowData) {
-  if (!rowData || rowData.access !== 'rw') {
-    return false
-  }
   const isSameRow = editingRow.value?.assetId === rowData.assetId
   if (!isSameRow && blockIfUnsaved()) {
     return false
@@ -199,7 +195,10 @@ function onRowClick(event) {
   }
   // A plain click opens the row's review and makes it the only selected row
   if (openRowEditor(event.originalEvent || event, rowData)) {
-    emit('update:selection', [rowData])
+    // Re-clicking the lone selected row would only churn the selection
+    if (props.selection.length !== 1 || !selectedIdSet.value.has(rowData.assetId)) {
+      emit('update:selection', [rowData])
+    }
     selectAnchorId = rowData.assetId
   }
 }

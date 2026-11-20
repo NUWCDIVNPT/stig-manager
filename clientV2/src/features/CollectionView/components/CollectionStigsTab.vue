@@ -139,7 +139,6 @@ function stigReviewTo(rowData) {
               agg-type="stig"
               :is-loading="stigsLoading"
               :selected-key="selectedBenchmarkId"
-              selectable
               data-key="benchmarkId"
               :shield-to="stigReviewTo"
               @row-select="(row) => handleStigSelect(row.benchmarkId)"
@@ -161,7 +160,6 @@ function stigReviewTo(rowData) {
               :empty-message="selectedBenchmarkId ? 'No checklists found for this STIG. Try refresh.' : 'Select a STIG to view checklists.'"
               parent-agg-type="stig"
               :shield-to="checklistAssetTo"
-              selectable
               data-key="assetId"
               @refresh="loadChecklistAssets"
             />

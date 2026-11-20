@@ -59,10 +59,6 @@ const props = defineProps({
     type: [String, Number],
     default: '',
   },
-  selectable: {
-    type: Boolean,
-    default: false,
-  },
   dataKey: {
     type: String,
     default: null,
@@ -408,7 +404,8 @@ const {
   highlightTerm,
 } = useGridSearch(data, () => columns.value.filter(c => c.searchable), { visibleFields })
 
-// CSV export basename per aggregation entity — same names the legacy client used.
+// CSV export basename — same names the legacy client used: one per aggregation
+// entity, and Checklists for every unaggregated grid.
 const EXPORT_BASENAME_BY_KEY = {
   assetId: 'Assets',
   benchmarkId: 'STIGs',
@@ -416,7 +413,9 @@ const EXPORT_BASENAME_BY_KEY = {
   labelId: 'Labels',
   collectionId: 'Collections',
 }
-const exportFilename = computed(() => EXPORT_BASENAME_BY_KEY[props.dataKey] ?? 'Metrics')
+const exportFilename = computed(() => aggregationType.value === 'unagg'
+  ? 'Checklists'
+  : EXPORT_BASENAME_BY_KEY[props.dataKey] ?? 'Metrics')
 
 // Sync selectedRow when selectedKey or data changes (for programmatic selection)
 watch([() => props.selectedKey, data], ([newKey, newData]) => {
@@ -463,7 +462,7 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
       :value="filteredData"
       :data-key="dataKey"
       :export-filename="exportFilename"
-      :selection-mode="selectable ? 'single' : null"
+      selection-mode="single"
       meta-key-selection
       :loading="isLoading"
       :pt="{
@@ -496,7 +495,6 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
           :dt="dataTableRef"
           :total-count="data.length"
           :filtered-count="isSearching ? filteredData.length : null"
-          :show-selected="selectable && selectedRow?.length > 0"
           @refresh="emit('refresh')"
         />
       </template>

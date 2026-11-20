@@ -119,7 +119,6 @@ function assetReviewTo(rowData) {
               agg-type="asset"
               :is-loading="assetsLoading"
               :selected-key="selectedAssetId"
-              selectable
               data-key="assetId"
               @row-select="(row) => handleAssetSelect(row.assetId)"
               @refresh="loadAssets(); loadSelectedAssetStigs()"
@@ -140,7 +139,6 @@ function assetReviewTo(rowData) {
               :empty-message="selectedAssetId ? 'No checklists found for this asset.' : 'Select an asset to view its checklists.'"
               parent-agg-type="asset"
               :shield-to="assetReviewTo"
-              selectable
               data-key="benchmarkId"
               @refresh="loadSelectedAssetStigs"
             />
