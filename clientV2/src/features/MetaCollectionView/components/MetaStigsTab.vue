@@ -184,6 +184,8 @@ function assetReviewTo(rowData) {
               :empty-message="selectedCollectionId ? 'No assets associated with this STIG in the selected collection. Try refresh.' : 'Select a collection to view its assets for this STIG.'"
               parent-agg-type="stig"
               :shield-to="assetReviewTo"
+              selectable
+              data-key="assetId"
               @refresh="loadAssets"
             />
           </div>

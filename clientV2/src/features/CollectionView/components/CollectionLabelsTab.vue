@@ -195,6 +195,8 @@ function assetReviewTo(rowData) {
               :empty-message="selectedAssetId ? 'No checklists associated with this asset. Try refresh.' : 'Select an asset to view its checklists.'"
               parent-agg-type="asset"
               :shield-to="assetReviewTo"
+              selectable
+              data-key="benchmarkId"
               @refresh="loadAssetStigs"
             />
           </div>

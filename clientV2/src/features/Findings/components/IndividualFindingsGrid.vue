@@ -53,6 +53,8 @@ const emit = defineEmits(['retry'])
 const linkTo = useLinkTo()
 
 const dataTableRef = ref(null)
+// Highlights the clicked row; nothing else reads it
+const selectedRow = ref(null)
 
 // Row geometry lives in useGridDensity's table (same model as
 // AggregatedFindingsGrid). lineClamp both sets the row height and drives the
@@ -224,6 +226,9 @@ const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-con
       <div v-else class="table-container">
         <DataTable
           ref="dataTableRef"
+          v-model:selection="selectedRow"
+          selection-mode="single"
+          meta-key-selection
           :value="filteredRows"
           :loading="isLoading"
           data-key="_rowKey"
