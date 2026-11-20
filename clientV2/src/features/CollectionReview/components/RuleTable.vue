@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue'
+import { REVIEW_FILTER_OPTIONS } from '../../../components/common/reviewFilterOptions.js'
 import { useColumnVisibility } from '../../../shared/composables/useColumnVisibility.js'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
@@ -83,16 +84,17 @@ const TOGGLEABLE_COLUMNS = [
 
 const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibility(TOGGLEABLE_COLUMNS, 'ruleTable.columns')
 
-// Text columns search while visible; Asset is locked on
+// Text columns search while visible; Asset is locked on. Engine, Status and Result always
+// show, so they ride on Asset. Listed in grid column order for the Filter button's menu.
 const { term: searchFilter, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(() => props.gridData, [
+  { field: 'engine', header: 'Engine', shownWith: 'assetName', filterValues: r => capitalize(getEngineDisplay(r)), quickSearch: false, optionComponent: REVIEW_FILTER_OPTIONS.engine },
+  { field: 'status', header: 'Status', shownWith: 'assetName', filterValues: r => statusText(r.status), quickSearch: false, optionComponent: REVIEW_FILTER_OPTIONS.status },
   { field: 'assetName', header: 'Asset' },
   { field: 'labels', header: 'Labels', filterValues: r => r.assetLabels, multiple: true },
+  { field: 'result', header: 'Result', shownWith: 'assetName', filterValues: r => getResultDisplay(r.result), quickSearch: false, optionComponent: REVIEW_FILTER_OPTIONS.result },
   { field: 'detail', header: 'Detail' },
   { field: 'comment', header: 'Comment' },
   { field: 'user', header: 'User', filterValues: r => r.username },
-  { field: 'engine', header: 'Engine', filterValues: r => capitalize(getEngineDisplay(r)), quickSearch: false },
-  { field: 'status', header: 'Status', filterValues: r => statusText(r.status), quickSearch: false },
-  { field: 'result', header: 'Result', filterValues: r => getResultDisplay(r.result), quickSearch: false },
 ], { visibleFields })
 </script>
 

@@ -39,6 +39,21 @@ export function withColumn(f, key, kind) {
   return f.kind === 'text' && kind === 'text' ? { ...f, key } : searchFilter(key, kind)
 }
 
+// The rule a quick filter writes: "is any/none of" or "contains/does not contain", nothing else set
+export function isQuickFilter(f) {
+  return f.kind === 'values' ? f.match === 'any' : (f.mode === 'contains' || f.mode === 'notContains') && !f.matchWord
+}
+
+const POSITIVE_MODES = Object.fromEntries(Object.entries(NEGATED_MODES).map(([neg, pos]) => [pos, neg]))
+
+// Flips a rule between include and exclude: any/none of, contains/does not contain, equals/does not equal
+export function negated(f) {
+  if (f.kind === 'values') {
+    return { ...f, exclude: !f.exclude }
+  }
+  return { ...f, mode: NEGATED_MODES[f.mode] ?? POSITIVE_MODES[f.mode] ?? f.mode }
+}
+
 export function isNegated(f) {
   return f.kind === 'values' ? Boolean(f.exclude) : f.mode in NEGATED_MODES
 }
@@ -85,25 +100,31 @@ export function applyGridSearch(rows, filters, { columns, visibleColumns = colum
   return rows.filter(row => checks.every(check => check(row)))
 }
 
-/** Distinct values of a list column as { value, name, color }, with '' for rows that have none. */
+/** Distinct values of a list column as { value, name, color, count }, with '' for rows that have none. */
 export function columnValueOptions(rows, col) {
-  const colors = new Map()
-  let hasEmpty = false
+  const seen = new Map()
+  let emptyCount = 0
   for (const row of rows ?? []) {
     const raw = col.filterValues(row)
-    let empty = true
+    const names = new Set()
     for (const item of Array.isArray(raw) ? raw : [raw]) {
       const name = item !== null && typeof item === 'object' ? item.name : item
-      if (name == null || name === '') {
+      if (name == null || name === '' || names.has(String(name))) {
         continue
       }
-      empty = false
-      if (!colors.has(String(name))) {
-        colors.set(String(name), item?.color ?? null)
+      names.add(String(name))
+      const entry = seen.get(String(name))
+      if (entry) {
+        entry.count++
+      }
+      else {
+        seen.set(String(name), { color: item?.color ?? null, count: 1 })
       }
     }
-    hasEmpty ||= empty
+    if (!names.size) {
+      emptyCount++
+    }
   }
-  const options = [...colors].map(([name, color]) => ({ value: name, name, color })).sort((a, b) => a.name.localeCompare(b.name))
-  return hasEmpty ? [{ value: '', name: `(no ${col.header.toLowerCase()})`, color: null }, ...options] : options
+  const options = [...seen].map(([name, { color, count }]) => ({ value: name, name, color, count })).sort((a, b) => a.name.localeCompare(b.name))
+  return emptyCount ? [{ value: '', name: `(no ${col.header.toLowerCase()})`, color: null, count: emptyCount }, ...options] : options
 }

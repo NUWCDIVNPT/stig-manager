@@ -94,7 +94,7 @@ const {
 } = useGridSearch(tableData, [
   { field: 'assetName', header: 'Asset' },
   { field: 'labels', header: 'Labels', filterValues: r => r.labels, multiple: true },
-  { field: 'benchmarkIds', header: 'STIG', filterValues: r => r.benchmarkIds, multiple: true, quickSearch: false },
+  { field: 'benchmarkIds', header: 'STIG', filterValues: r => r.benchmarkIds, multiple: true, quickSearch: false, shownWith: 'stigCnt' },
 ], { visibleFields, selection: selectedAssets, dataKey: 'assetId' })
 
 function clearSelection() {

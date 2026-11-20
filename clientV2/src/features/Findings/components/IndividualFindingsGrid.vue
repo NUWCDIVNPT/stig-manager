@@ -16,6 +16,7 @@ import GridToolbar from '../../../components/common/GridToolbar.vue'
 import HighlightText from '../../../components/common/HighlightText.vue'
 import ManualBadge from '../../../components/common/ManualBadge.vue'
 import OverrideBadge from '../../../components/common/OverrideBadge.vue'
+import { REVIEW_FILTER_OPTIONS } from '../../../components/common/reviewFilterOptions.js'
 import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useLinkTo } from '../../../router/links.js'
@@ -105,8 +106,8 @@ const { term: searchTerm, filters: gridFilters, filteredRows, isFiltered, filter
   { field: 'stigs', header: 'STIGs', filterValues: stigIds, multiple: true },
   { field: 'detail', header: 'Detail' },
   { field: 'comment', header: 'Comment' },
-  { field: 'resultEngine', header: 'Engine', filterValues: r => capitalize(r._engineDisplay) },
-  { field: 'status', header: 'Status', filterValues: r => statusText(r.status) },
+  { field: 'resultEngine', header: 'Engine', filterValues: r => capitalize(r._engineDisplay), optionComponent: REVIEW_FILTER_OPTIONS.engine },
+  { field: 'status', header: 'Status', filterValues: r => statusText(r.status), optionComponent: REVIEW_FILTER_OPTIONS.status },
   { field: 'username', header: 'Reviewer', filterValues: r => r.username },
 ], { visibleFields })
 

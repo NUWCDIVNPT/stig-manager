@@ -1,7 +1,7 @@
 <script setup>
 import Column from 'primevue/column'
 import DataTable from 'primevue/datatable'
-import { computed, ref } from 'vue'
+import { computed, h, ref } from 'vue'
 import CountColumn from '../../../../components/columns/CountColumn.vue'
 import ActionButton from '../../../../components/common/ActionButton.vue'
 import ActionToolbar from '../../../../components/common/ActionToolbar.vue'
@@ -15,6 +15,7 @@ import { useGridSearch } from '../../../../shared/composables/useGridSearch.js'
 import { compactTablePt } from '../../../../shared/lib/dataTablePt.js'
 import { exportTimestamp } from '../../../../shared/lib/exportCells.js'
 import { formatDateTime, formatLastAccess, sortedGroupNames, statusDetail } from '../lib/userDisplay.js'
+import UserStatusPill from './UserStatusPill.vue'
 
 const props = defineProps({
   users: {
@@ -72,6 +73,10 @@ const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibilit
   { field: 'userId', header: 'ID' },
 ], 'adminUsers.columns')
 
+// Status values in the Filter button drawn as the grid's pills
+const StatusOption = ({ option }) => h(UserStatusPill, { status: option.value })
+StatusOption.props = ['option', 'field']
+
 const {
   term: searchTerm,
   filters: gridFilters,
@@ -83,7 +88,7 @@ const {
 } = useGridSearch(rows, [
   { field: 'username', header: 'Username' },
   { field: 'displayName', header: 'Name' },
-  { field: 'status', header: 'Status', filterValues: r => r.status },
+  { field: 'status', header: 'Status', filterValues: r => r.status, optionComponent: StatusOption },
   { field: 'groupNames', header: 'Groups' },
   { field: 'userId', header: 'ID' },
 ], { visibleFields })
@@ -145,11 +150,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
       </ActionButton>
       <div class="toolbar-spacer" />
       <GridSearch v-model="searchTerm" class="list-search" label="Search users" placeholder="Search users..." />
-      <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions">
-        <template #option="{ option }">
-          <span class="status-pill" :class="option.value">{{ option.name }}</span>
-        </template>
-      </GridFilterButton>
+      <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
       <ColumnToggle v-model="selectedColumns" :columns="toggleableColumns" />
     </ActionToolbar>
 
@@ -190,9 +191,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 
         <Column v-if="visibleFields.has('status')" field="status" header="Status" sortable class="center-header" :pt="borderPt" style="width: 9%; text-align: center;">
           <template #body="{ data }">
-            <span class="status-pill" :class="data.status" :title="statusDetail(data)">
-              <HighlightText :text="data.status" :term="highlightTerm('status')" />
-            </span>
+            <UserStatusPill :status="data.status" :term="highlightTerm('status')" :title="statusDetail(data)" />
           </template>
         </Column>
 
@@ -291,27 +290,6 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
 .list-search {
   flex: 0 1 18rem;
   min-width: 10rem;
-}
-
-.status-pill {
-  display: inline-block;
-  padding: 0.1rem 0.5rem;
-  border-radius: 999px;
-  font-size: var(--text-sm);
-  font-weight: 600;
-  text-transform: capitalize;
-}
-
-.status-pill.available {
-  color: var(--color-action-green);
-  background: color-mix(in srgb, var(--color-action-green) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-action-green) 30%, transparent);
-}
-
-.status-pill.unavailable {
-  color: var(--color-action-red);
-  background: color-mix(in srgb, var(--color-action-red) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-action-red) 30%, transparent);
 }
 
 .priv-check {

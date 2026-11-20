@@ -207,7 +207,7 @@ const columns = computed(() => {
     { field: 'assessedCat2', header: 'CAT 2 Assessed', group: SEVERITY, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.severity), bodyStyle: CENTER },
     { field: 'assessedCat1', header: 'CAT 1 Assessed', group: SEVERITY, defaultHidden: true, component: CountColumn, style: cellStyle(WIDTH.severity), bodyStyle: CENTER },
   ]
-  const benchmarkColumn = { field: 'benchmarkId', header: 'Benchmark', group: 'STIG', component: BenchmarkColumn, locked: true, searchable: true, shieldTo: props.shieldTo, style: cellStyle(WIDTH.benchmark), pt: LEFT_HEADER }
+  const benchmarkColumn = { field: 'benchmarkId', header: 'Benchmark', filterHeader: 'STIG', group: 'STIG', component: BenchmarkColumn, locked: true, searchable: true, filterValues: r => r.benchmarkId, shieldTo: props.shieldTo, style: cellStyle(WIDTH.benchmark), pt: LEFT_HEADER }
   const titleColumn = { field: 'title', header: 'Title', group: 'STIG', defaultHidden: true, component: TextColumn, searchable: true, style: cellStyle(WIDTH.title), pt: LEFT_HEADER }
   const revisionColumn = { field: 'revisionStr', header: 'Revision', group: 'STIG', component: RevisionColumn, searchable: true, style: cellStyle(WIDTH.revision), pt: LEFT_HEADER }
   const assetColumn = { field: 'assetName', header: 'Asset', group: 'Asset', component: AssetColumn, locked: true, searchable: true, shieldTo: props.shieldTo, style: cellStyle(WIDTH.name), pt: LEFT_HEADER }
@@ -393,7 +393,8 @@ const data = computed(() => {
   })
 })
 
-// Quick search over the visible searchable columns, ANDed with the Filter button's rules
+// Quick search over the visible searchable columns, ANDed with the Filter button's rules.
+// filterHeader names a column in the Filter button when it differs from the grid header.
 const {
   term: searchTerm,
   filters: gridFilters,
@@ -402,7 +403,7 @@ const {
   filterColumns,
   valueOptions,
   highlightTerm,
-} = useGridSearch(data, () => columns.value.filter(c => c.searchable), { visibleFields })
+} = useGridSearch(data, () => columns.value.filter(c => c.searchable).map(c => (c.filterHeader ? { ...c, header: c.filterHeader } : c)), { visibleFields })
 
 // CSV export basename — same names the legacy client used: one per aggregation
 // entity, and Checklists for every unaggregated grid.
