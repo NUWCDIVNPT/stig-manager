@@ -10,6 +10,7 @@ import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../components/common/GridSearch.vue'
 import HighlightText from '../../../components/common/HighlightText.vue'
 import ResultBadge from '../../../components/common/ResultBadge.vue'
+import { REVIEW_FILTER_OPTIONS } from '../../../components/common/reviewFilterOptions.js'
 import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
@@ -71,12 +72,12 @@ const {
   { field: 'ruleId', header: 'Rule' },
   { field: 'title', header: 'Title' },
   { field: 'groupId', header: 'Group' },
-  { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false },
-  { field: 'currentResult', header: 'Current', filterValues: r => badgeFor(r.currentResult) ?? '', quickSearch: false },
-  { field: 'newResult', header: 'New', filterValues: r => badgeFor(r.newResult) ?? '', quickSearch: false },
+  { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false, optionComponent: REVIEW_FILTER_OPTIONS.cat },
+  { field: 'currentResult', header: 'Current', filterValues: r => badgeFor(r.currentResult) ?? '', quickSearch: false, optionComponent: REVIEW_FILTER_OPTIONS.result },
+  { field: 'newResult', header: 'New', filterValues: r => badgeFor(r.newResult) ?? '', quickSearch: false, optionComponent: REVIEW_FILTER_OPTIONS.result },
   { field: 'newDetail', header: 'New Detail' },
   { field: 'newComment', header: 'New Comment' },
-  { field: 'newStatus', header: 'New Status', filterValues: r => statusText(r.newStatus), quickSearch: false },
+  { field: 'newStatus', header: 'New Status', filterValues: r => statusText(r.newStatus), quickSearch: false, optionComponent: REVIEW_FILTER_OPTIONS.status },
 ])
 const exportResult = ({ data }) => badgeFor(data) ?? ''
 const exportStatus = ({ data }) => statusText(data)

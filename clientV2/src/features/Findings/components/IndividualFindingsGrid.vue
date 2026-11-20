@@ -16,6 +16,7 @@ import GridToolbar from '../../../components/common/GridToolbar.vue'
 import HighlightText from '../../../components/common/HighlightText.vue'
 import ManualBadge from '../../../components/common/ManualBadge.vue'
 import OverrideBadge from '../../../components/common/OverrideBadge.vue'
+import { REVIEW_FILTER_OPTIONS } from '../../../components/common/reviewFilterOptions.js'
 import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useLinkTo } from '../../../router/links.js'
@@ -91,8 +92,8 @@ const TOGGLE_COLUMNS = [
   { field: 'stigs', header: 'STIGs' },
   { field: 'detail', header: 'Detail' },
   { field: 'comment', header: 'Comment' },
-  { field: 'resultEngine', header: 'Engine' },
-  { field: 'status', header: 'Status' },
+  { field: 'resultEngine', header: 'Engine', optionComponent: REVIEW_FILTER_OPTIONS.engine },
+  { field: 'status', header: 'Status', optionComponent: REVIEW_FILTER_OPTIONS.status },
   { field: 'username', header: 'Reviewer' },
 ]
 const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibility(TOGGLE_COLUMNS, 'findingsIndividual.columns')

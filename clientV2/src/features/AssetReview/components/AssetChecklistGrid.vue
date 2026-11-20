@@ -3,7 +3,7 @@ import { computed, ref, toRefs, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 import ReviewEditPopover from '../../../components/common/ReviewEditPopover.vue'
-import ReviewFilterOption from '../../../components/common/ReviewFilterOption.vue'
+import { REVIEW_FILTER_OPTIONS } from '../../../components/common/reviewFilterOptions.js'
 import { fetchReview, patchReview, putReview } from '../../../shared/api/reviewsApi.js'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
 import { useColumnVisibility } from '../../../shared/composables/useColumnVisibility.js'
@@ -100,22 +100,47 @@ const {
   onApplied: () => emit('refresh'),
 })
 
+const TOGGLEABLE_COLUMNS = [
+  { field: 'groupId', header: 'Group' },
+  { field: 'ruleId', header: 'Rule Id', defaultHidden: true },
+  { field: 'ruleTitle', header: 'Rule Title' },
+  { field: 'groupTitle', header: 'Group Title', defaultHidden: true },
+  { field: 'detail', header: 'Detail' },
+  { field: 'comment', header: 'Comment' },
+  { field: 'touchTs', icon: 'pi pi-clock' },
+]
+
+// Group/Rule Display menu presets; each sets only these four columns
+const DISPLAY_PRESETS = {
+  groupRule: { groupId: true, ruleId: false, ruleTitle: true, groupTitle: false },
+  groupGroup: { groupId: true, ruleId: false, ruleTitle: false, groupTitle: true },
+  ruleRule: { groupId: false, ruleId: true, ruleTitle: true, groupTitle: false },
+}
+
+const { selectedColumns, visibleFields: shownFields, setShown } = useColumnVisibility(TOGGLEABLE_COLUMNS, 'assetChecklistGrid.columns')
+
+const activePreset = computed(() => Object.keys(DISPLAY_PRESETS).find(key =>
+  Object.entries(DISPLAY_PRESETS[key]).every(([field, shown]) => shownFields.value.has(field) === shown),
+) ?? null)
+
+const visibleFields = computed(() => new Set(['severity', 'result', 'resultEngine', 'status', ...shownFields.value]))
+
 // Quick search covers the text columns whether shown or not, as before; the Filter button
 // lists the shown ones.
 // Listed in grid column order, which is the order of the Filter button's menu.
 const { term: searchFilter, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(() => props.gridData, [
-  { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false, optionComponent: ReviewFilterOption },
+  { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false, optionComponent: REVIEW_FILTER_OPTIONS.cat },
   { field: 'groupId', header: 'Group' },
   { field: 'ruleId', header: 'Rule Id' },
   { field: 'ruleTitle', header: 'Rule Title' },
   { field: 'groupTitle', header: 'Group Title' },
-  { field: 'result', header: 'Result', filterValues: r => getResultDisplay(r.result), quickSearch: false, optionComponent: ReviewFilterOption },
+  { field: 'result', header: 'Result', filterValues: r => getResultDisplay(r.result), quickSearch: false, optionComponent: REVIEW_FILTER_OPTIONS.result },
   { field: 'detail', header: 'Detail' },
   { field: 'comment', header: 'Comment' },
-  { field: 'resultEngine', header: 'Engine', filterValues: r => capitalize(getEngineDisplay(r)), quickSearch: false, optionComponent: ReviewFilterOption },
+  { field: 'resultEngine', header: 'Engine', filterValues: r => capitalize(getEngineDisplay(r)), quickSearch: false, optionComponent: REVIEW_FILTER_OPTIONS.engine },
   { field: 'engineInfo', header: 'Engine product', shownWith: 'resultEngine', filterValues: r => r.resultEngine?.product, searchText: r => [r.resultEngine?.product, r.resultEngine?.type, r.resultEngine?.version].filter(Boolean).join(' ') },
-  { field: 'status', header: 'Status', filterValues: r => statusText(r.status), quickSearch: false, optionComponent: ReviewFilterOption },
-], { visibleFields: () => visibleFields.value, searchHidden: true })
+  { field: 'status', header: 'Status', filterValues: r => statusText(r.status), quickSearch: false, optionComponent: REVIEW_FILTER_OPTIONS.status },
+], { visibleFields, searchHidden: true })
 
 // Bulk submit/accept act on the rows left after search and filters
 watch(filteredRows, (rows) => {
@@ -234,31 +259,6 @@ const route = useRoute()
 const exportFilename = computed(() =>
   `${props.asset?.name ?? 'asset'}-${route.params.benchmarkId ?? 'stig'}`,
 )
-
-const TOGGLEABLE_COLUMNS = [
-  { field: 'groupId', header: 'Group' },
-  { field: 'ruleId', header: 'Rule Id', defaultHidden: true },
-  { field: 'ruleTitle', header: 'Rule Title' },
-  { field: 'groupTitle', header: 'Group Title', defaultHidden: true },
-  { field: 'detail', header: 'Detail' },
-  { field: 'comment', header: 'Comment' },
-  { field: 'touchTs', icon: 'pi pi-clock' },
-]
-
-// Group/Rule Display menu presets; each sets only these four columns
-const DISPLAY_PRESETS = {
-  groupRule: { groupId: true, ruleId: false, ruleTitle: true, groupTitle: false },
-  groupGroup: { groupId: true, ruleId: false, ruleTitle: false, groupTitle: true },
-  ruleRule: { groupId: false, ruleId: true, ruleTitle: true, groupTitle: false },
-}
-
-const { selectedColumns, visibleFields: shownFields, setShown } = useColumnVisibility(TOGGLEABLE_COLUMNS, 'assetChecklistGrid.columns')
-
-const activePreset = computed(() => Object.keys(DISPLAY_PRESETS).find(key =>
-  Object.entries(DISPLAY_PRESETS[key]).every(([field, shown]) => shownFields.value.has(field) === shown),
-) ?? null)
-
-const visibleFields = computed(() => new Set(['severity', 'result', 'resultEngine', 'status', ...shownFields.value]))
 
 const { itemSize, gridStyle } = useGridDensity('asset-review-checklist')
 

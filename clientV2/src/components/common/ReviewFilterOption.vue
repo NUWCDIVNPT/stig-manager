@@ -7,17 +7,18 @@ import CatBadge from './CatBadge.vue'
 import ResultBadge from './ResultBadge.vue'
 import StatusBadge from './StatusBadge.vue'
 
-// A Filter button value drawn as its checklist grid cell: CAT, Result, Engine and Status.
-// Use as a column's optionComponent in useGridSearch.
+// A Filter button value drawn as its checklist grid cell. Columns take it through
+// REVIEW_FILTER_OPTIONS (reviewFilterOptions.js).
 defineProps({
   // { value, name } from the Filter button
   option: {
     type: Object,
     required: true,
   },
-  field: {
+  kind: {
     type: String,
     required: true,
+    validator: v => ['cat', 'result', 'engine', 'status'].includes(v),
   },
 })
 
@@ -34,16 +35,16 @@ function catNumber(value) {
 
 <template>
   <span class="review-filter-option" :class="{ 'review-filter-option--empty': option.value === '' }">
-    <CatBadge v-if="field === 'severity' && catNumber(option.value)" :category="catNumber(option.value)" variant="label" />
-    <template v-else-if="field === 'result' && RESULT_NAMES[option.value]">
+    <CatBadge v-if="kind === 'cat' && catNumber(option.value)" :category="catNumber(option.value)" variant="label" />
+    <template v-else-if="kind === 'result' && RESULT_NAMES[option.value]">
       <ResultBadge :status="option.value" />
       <span>{{ RESULT_NAMES[option.value] }}</span>
     </template>
-    <template v-else-if="field === 'resultEngine' && ENGINE_ICONS[option.value.toLowerCase()]">
+    <template v-else-if="kind === 'engine' && ENGINE_ICONS[option.value.toLowerCase()]">
       <img :src="ENGINE_ICONS[option.value.toLowerCase()]" alt="" class="review-filter-option__icon">
       <span>{{ option.name }}</span>
     </template>
-    <template v-else-if="field === 'status' && STATUSES.has(option.value.toLowerCase())">
+    <template v-else-if="kind === 'status' && STATUSES.has(option.value.toLowerCase())">
       <StatusBadge :status="option.value" />
       <span>{{ option.name }}</span>
     </template>
