@@ -664,32 +664,40 @@ module.exports.retryOnDeadlock2 = async function ({ transactionFn, statusObj = {
       await connection.query('START TRANSACTION')
       const transactionReturn = await transactionFn(connection)
       await connection.commit()
-      await connection.release()
       return transactionReturn
     }
     catch (e) {
+      // the server has already rolled back a deadlocked transaction
       if (e.code === 'ER_LOCK_DEADLOCK') {
         throw(e)
       }
       await connection.rollback()
       afterRollbackFn?.(connection)
-      beforeReleaseFn?.(connection)
-      await connection.release()
       bail(e)
     }
   }
   statusObj.retries = 0
-  return  await retry(retryFunction, {
-    retries: 15,
-    factor: 1,
-    minTimeout: 200,
-    maxTimeout: 200,
-    onRetry: () => {
-      ++statusObj.retries
+  // The connection is held across every attempt, so it is released here
+  // for all outcomes, including exhausted retries.
+  try {
+    return await retry(retryFunction, {
+      retries: 15,
+      factor: 1,
+      minTimeout: 200,
+      maxTimeout: 200,
+      onRetry: () => {
+        ++statusObj.retries
+      }
+    })
+  }
+  finally {
+    try {
+      beforeReleaseFn?.(connection)
     }
-  })
-  // return returnValue
-
+    finally {
+      connection.release()
+    }
+  }
 }
 
 

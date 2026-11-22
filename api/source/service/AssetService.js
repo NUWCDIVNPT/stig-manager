@@ -1143,10 +1143,27 @@ exports.createAssets = async function({ assets, collectionId, svcStatus = {} }) 
     const [newAssets] = await connection.query('SELECT assetId FROM temp_assets')
     insertedAssetIds = newAssets.map(asset => asset.assetId)
 
-    // if assets with stig assignment inserted, update default rev and collection revision map
+    // If STIG assignments were inserted, add default_rev records for any benchmarkIds
+    // that are new to the Collection. Creating assignments cannot orphan a
+    // collection_rev_map record or change an existing default_rev record, so neither
+    // is recalculated. Recalculating them locks every stig_asset_map record and
+    // deadlocks concurrent Asset creation and Review posts.
     if (didInsertStigs) {
-        await dbUtils.pruneCollectionRevMap(connection)
-        await dbUtils.updateDefaultRev(connection, { collectionId: parseInt(collectionId) })
+      // FOR SHARE keeps a concurrent transaction from removing the default_rev
+      // records this transaction relies on until it commits.
+      const sqlNewBenchmarkIds = `
+        SELECT DISTINCT sa.benchmarkId
+        FROM temp_assets t
+        INNER JOIN stig_asset_map sa ON sa.assetId = t.assetId
+        LEFT JOIN default_rev dr
+            ON dr.collectionId = t.collectionId
+            AND dr.benchmarkId = sa.benchmarkId
+        WHERE dr.benchmarkId IS NULL
+        FOR SHARE OF dr`
+      const [newBenchmarkIds] = await connection.query(sqlNewBenchmarkIds)
+      for (const { benchmarkId } of newBenchmarkIds) {
+        await dbUtils.updateDefaultRev(connection, { collectionId: parseInt(collectionId), benchmarkId })
+      }
     }
   }
   await dbUtils.retryOnDeadlock2({ transactionFn, statusObj: svcStatus })
