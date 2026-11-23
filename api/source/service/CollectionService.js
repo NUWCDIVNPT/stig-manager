@@ -1948,7 +1948,7 @@ exports.cloneCollection = async function ({collectionId, userObject, name, descr
     }
 
     connection = await dbUtils.pool.getConnection()
-    connection.query('set @srcCollectionId = ?, @userId = ?, @name = ?, @description = ?', [
+    await connection.query('set @srcCollectionId = ?, @userId = ?, @name = ?, @description = ?', [
       parseInt(collectionId),
       parseInt(userObject.userId),
       name,
@@ -2394,7 +2394,7 @@ exports.exportToCollection = async function ({srcCollectionId, dstCollectionId, 
       }
     }
     connection = await dbUtils.pool.getConnection()
-    connection.query('set @srcCollectionId = ?, @dstCollectionId = ?, @userId = ?, @json = ?',
+    await connection.query('set @srcCollectionId = ?, @dstCollectionId = ?, @userId = ?, @json = ?',
     [parseInt(srcCollectionId), parseInt(dstCollectionId), parseInt(userObject.userId), JSON.stringify(assetStigArguments)])
     const prepQueries = ['dropArg', 'createArg', 'dropCollectionSetting', 'createCollectionSetting', 'dropSrcReviewId', 'createSrcReviewId']
     const assetQueries = ['insertAsset', 'dropAssetIdMap', 'createAssetIdMap', 'insertStigAssetMap', 'deleteDefaultRev', 'insertDefaultRev']
