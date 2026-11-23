@@ -664,32 +664,40 @@ module.exports.retryOnDeadlock2 = async function ({ transactionFn, statusObj = {
       await connection.query('START TRANSACTION')
       const transactionReturn = await transactionFn(connection)
       await connection.commit()
-      await connection.release()
       return transactionReturn
     }
     catch (e) {
+      // the server has already rolled back a deadlocked transaction
       if (e.code === 'ER_LOCK_DEADLOCK') {
         throw(e)
       }
       await connection.rollback()
       afterRollbackFn?.(connection)
-      beforeReleaseFn?.(connection)
-      await connection.release()
       bail(e)
     }
   }
   statusObj.retries = 0
-  return  await retry(retryFunction, {
-    retries: 15,
-    factor: 1,
-    minTimeout: 200,
-    maxTimeout: 200,
-    onRetry: () => {
-      ++statusObj.retries
+  // The connection is held across every attempt, so it is released here
+  // for all outcomes, including exhausted retries.
+  try {
+    return await retry(retryFunction, {
+      retries: 15,
+      factor: 1,
+      minTimeout: 200,
+      maxTimeout: 200,
+      onRetry: () => {
+        ++statusObj.retries
+      }
+    })
+  }
+  finally {
+    try {
+      beforeReleaseFn?.(connection)
     }
-  })
-  // return returnValue
-
+    finally {
+      connection.release()
+    }
+  }
 }
 
 
@@ -755,11 +763,42 @@ exports.createAssetValidation = async function({ assets, collectionId}) {
   return results  
 }
 
-module.exports.pruneCollectionRevMap = async function (connection) {
-  const sql = `delete crm from collection_rev_map crm
-  left join( select distinct a.collectionId, sa.benchmarkId from stig_asset_map sa left join enabled_asset a using (assetId)) maps using (collectionId, benchmarkId)
-  where maps.collectionId is null`
-  await (connection ?? _this.pool).query(sql)
+/**
+ * Deletes collection_rev_map records (revision pins) for benchmarkIds that are
+ * no longer assigned to an enabled Asset in their Collection.
+ *
+ * Callers pass the Collection(s), and the benchmarkId when only one is affected,
+ * whose STIG assignments they removed. The statement takes shared locks on the
+ * stig_asset_map and asset records it reads, so an unscoped call locks those
+ * tables for the whole instance. Scoped, it reads them only for the pins that
+ * exist in the given Collection(s).
+ * @param {PoolConnection} [connection] - The transaction connection.
+ * @param {Object} [scope]
+ * @param {string|number} [scope.collectionId]
+ * @param {Array<string|number>} [scope.collectionIds]
+ * @param {string} [scope.benchmarkId]
+ */
+module.exports.pruneCollectionRevMap = async function (connection, {collectionId, collectionIds, benchmarkId} = {}) {
+  const predicates = [`not exists (
+    select 1
+    from stig_asset_map sa
+      inner join enabled_asset a on sa.assetId = a.assetId
+    where a.collectionId = crm.collectionId and sa.benchmarkId = crm.benchmarkId)`]
+  const binds = []
+  if (collectionId) {
+    predicates.push('crm.collectionId = ?')
+    binds.push(collectionId)
+  }
+  if (collectionIds) {
+    predicates.push('crm.collectionId IN ?')
+    binds.push([collectionIds])
+  }
+  if (benchmarkId) {
+    predicates.push('crm.benchmarkId = ?')
+    binds.push(benchmarkId)
+  }
+  const sql = `delete crm from collection_rev_map crm where ${predicates.join(' and ')}`
+  await (connection ?? _this.pool).query(sql, binds)
 }
 
 module.exports.updateDefaultRev = async function (connection, {collectionId, collectionIds, benchmarkId}) {
