@@ -1179,7 +1179,7 @@ exports.deleteAsset = async function(assetId, userId, collectionId, svcStatus) {
       const sqlDelete = `UPDATE asset SET state = "disabled", stateDate = NOW(), stateUserId = ? where assetId = ?`
       await connection.query(sqlDelete, [userId, assetId])
       // changes above might have affected need for records in collection_rev_map
-      await dbUtils.pruneCollectionRevMap(connection)
+      await dbUtils.pruneCollectionRevMap(connection, {collectionId})
       await dbUtils.updateDefaultRev(connection, {collectionId})
       await connection.commit()
     }
@@ -1208,7 +1208,7 @@ exports.deleteAssets = async function(assetIds, userId, collectionId, svcStatus)
       const sqlDelete = `UPDATE asset SET state = "disabled", stateDate = NOW(), stateUserId = ? where assetId IN ?`
       await connection.query(sqlDelete, [userId, [assetIds]])
       // changes above might have affected need for records in collection_rev_map
-      await dbUtils.pruneCollectionRevMap(connection)
+      await dbUtils.pruneCollectionRevMap(connection, {collectionId})
       await dbUtils.updateDefaultRev(connection, {collectionId})
       await connection.commit()
     }
@@ -1274,12 +1274,13 @@ exports.removeStigFromAsset = async function ({assetId, benchmarkId, grant, svcS
       const sqlDelete = `DELETE FROM stig_asset_map where assetId = ? and benchmarkId = ?`
       await connection.query(sqlDelete, [assetId, benchmarkId])
       // changes above might have affected need for records in collection_rev_map
-      await dbUtils.pruneCollectionRevMap(connection)
+      await dbUtils.pruneCollectionRevMap(connection, {collectionId: grant.collectionId, benchmarkId})
       await dbUtils.updateDefaultRev(connection, {collectionId: grant.collectionId, benchmarkId})
       await connection.commit()
       return true
     }
-    return dbUtils.retryOnDeadlock(transaction, svcStatus)
+    // awaited so the connection is not released while the transaction is running
+    return await dbUtils.retryOnDeadlock(transaction, svcStatus)
   }
   catch (err) {
     if (typeof connection !== 'undefined') {
@@ -1305,7 +1306,7 @@ exports.removeStigsFromAsset = async function (assetId, grant, svcStatus) {
       await connection.query(sqlDelete, [assetId])
       
       // changes above might have affected need for records in collection_rev_map
-      await dbUtils.pruneCollectionRevMap(connection)
+      await dbUtils.pruneCollectionRevMap(connection, {collectionId: grant.collectionId})
       await dbUtils.updateDefaultRev(connection, {collectionId: grant.collectionId})
       await connection.commit()
     }
@@ -1552,7 +1553,7 @@ exports.attachAssetsToStig = async function(collectionId, benchmarkId, assetIds,
       }
 
       // changes above might have affected need for records in collection_rev_map 
-      await dbUtils.pruneCollectionRevMap(connection)
+      await dbUtils.pruneCollectionRevMap(connection, {collectionId, benchmarkId})
 
       await dbUtils.updateDefaultRev(connection, {
         collectionId: collectionId,
@@ -1694,11 +1695,12 @@ exports.updateAsset = async function( {assetId, body, currentCollectionId, trans
       }
 
       if (stigs || transferring) {
-        await dbUtils.pruneCollectionRevMap(connection)
         if (transferring) {
+          await dbUtils.pruneCollectionRevMap(connection, {collectionIds: [transferring.oldCollectionId, transferring.newCollectionId]})
           await dbUtils.updateDefaultRev(connection, {collectionIds: [transferring.oldCollectionId, transferring.newCollectionId]})
         }
         else {
+          await dbUtils.pruneCollectionRevMap(connection, {collectionId: currentCollectionId})
           await dbUtils.updateDefaultRev(connection, {collectionId: currentCollectionId})
         }
         await dbUtils.updateStatsAssetStig( connection, {assetId} ) 
