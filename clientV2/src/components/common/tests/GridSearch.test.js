@@ -65,4 +65,24 @@ describe('gridSearch.vue', () => {
     vi.advanceTimersByTime(250)
     expect(emitted()['update:modelValue']).toBeFalsy()
   })
+
+  it('offers the hidden-columns toggle only when bound, and flips it', async () => {
+    createWrapper()
+    expect(screen.queryByRole('button', { name: 'Search hidden columns' })).toBeNull()
+
+    const { emitted } = createWrapper({ searchHidden: true })
+    const toggle = screen.getByRole('button', { name: 'Search hidden columns' })
+    expect(toggle).toHaveAttribute('aria-pressed', 'true')
+    await fireEvent.click(toggle)
+    expect(emitted()['update:searchHidden']).toEqual([[false]])
+  })
+
+  it('counts results from hidden columns beside the toggle while it is on and there is a term', async () => {
+    const hiddenMatches = { count: 3, columns: ['Rule Id'] }
+    const { rerender } = createWrapper({ modelValue: 'sv', searchHidden: true, hiddenMatches })
+    expect(screen.getByRole('status', { name: '3 results from hidden columns' })).toHaveTextContent('3')
+
+    await rerender({ searchHidden: false })
+    expect(screen.queryByRole('status')).toBeNull()
+  })
 })

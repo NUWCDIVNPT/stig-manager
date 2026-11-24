@@ -74,7 +74,7 @@ const DISPLAY_PRESETS = {
 
 const { selectedColumns, visibleFields, setShown } = useColumnVisibility(TOGGLEABLE_COLUMNS, 'collectionChecklistGrid.columns')
 
-const { term: searchFilter, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(() => props.gridData, [
+const { term: searchFilter, hiddenSearch, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(() => props.gridData, [
   { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false, optionComponent: REVIEW_FILTER_OPTIONS.cat },
   { field: 'groupId', header: 'Group' },
   { field: 'groupTitle', header: 'Group Title' },
@@ -112,6 +112,7 @@ const { itemSize, gridStyle } = useGridDensity('collection-checklist')
       v-model:search-filter="searchFilter"
       v-model:selected-columns="selectedColumns"
       v-model:filters="gridFilters"
+      :hidden-search="hiddenSearch"
       :toggleable-columns="TOGGLEABLE_COLUMNS"
       :active-preset="activePreset"
       :filter-columns="filterColumns"

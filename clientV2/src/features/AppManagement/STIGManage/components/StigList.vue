@@ -68,7 +68,7 @@ const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibilit
   { field: 'collectionCount', header: 'Collections' },
 ], 'adminStigs.columns')
 
-const { term: searchTerm, filteredRows, isFiltered, highlightTerm } = useGridSearch(rows, [
+const { term: searchTerm, hiddenSearch, filteredRows, isFiltered, highlightTerm } = useGridSearch(rows, [
   { field: 'benchmarkId', header: 'STIG', filterValues: r => r.benchmarkId },
   { field: 'title', header: 'Title' },
   { field: 'status', header: 'Status' },
@@ -206,7 +206,7 @@ function onRemoveAll() {
         Open Library
       </ActionButton>
       <div class="toolbar-spacer" />
-      <GridSearch v-model="searchTerm" class="list-search" label="Search STIGs" placeholder="Search STIGs..." />
+      <GridSearch v-model="searchTerm" v-bind="hiddenSearch" class="list-search" label="Search STIGs" placeholder="Search STIGs..." />
       <ColumnToggle v-model="selectedColumns" :columns="toggleableColumns" />
     </ActionToolbar>
 

@@ -125,10 +125,9 @@ const activePreset = computed(() => Object.keys(DISPLAY_PRESETS).find(key =>
 
 const visibleFields = computed(() => new Set(['severity', 'result', 'resultEngine', 'status', ...shownFields.value]))
 
-// Quick search covers the text columns whether shown or not, as before; the Filter button
-// lists the shown ones.
+// Quick search starts out covering the text columns whether shown or not.
 // Listed in grid column order, which is the order of the Filter button's menu.
-const { term: searchFilter, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(() => props.gridData, [
+const { term: searchFilter, hiddenSearch, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(() => props.gridData, [
   { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false, optionComponent: REVIEW_FILTER_OPTIONS.cat },
   { field: 'groupId', header: 'Group' },
   { field: 'ruleId', header: 'Rule Id' },
@@ -399,6 +398,7 @@ function onRowClick(event) {
       v-model:search-filter="searchFilter"
       v-model:filters="gridFilters"
       v-model:selected-columns="selectedColumns"
+      :hidden-search="hiddenSearch"
       :active-preset="activePreset"
       :toggleable-columns="TOGGLEABLE_COLUMNS"
       :filter-columns="filterColumns"

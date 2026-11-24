@@ -32,6 +32,11 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  // hiddenSearch from useGridSearch, bound onto the search box
+  hiddenSearch: {
+    type: Object,
+    default: () => ({}),
+  },
 })
 
 const emit = defineEmits([
@@ -84,7 +89,7 @@ function onChangeCompareRev(rev) {
     </template>
     <div class="stiglib-panel__spacer" />
     <div class="rule-pane-toolbar__search">
-      <GridSearch v-model="search" class="rule-pane-toolbar__input" label="Search rules" placeholder="Search rules..." />
+      <GridSearch v-model="search" v-bind="hiddenSearch" class="rule-pane-toolbar__input" label="Search rules" placeholder="Search rules..." />
       <GridFilterButton v-model="filters" :columns="filterColumns" :value-options="valueOptions" />
     </div>
     <DensityControls grid-key="stig-library-rules" />

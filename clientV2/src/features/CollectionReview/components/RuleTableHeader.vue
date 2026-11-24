@@ -34,6 +34,11 @@ defineProps({
     type: Object,
     default: () => ({}),
   },
+  // hiddenSearch from useGridSearch, bound onto the search box
+  hiddenSearch: {
+    type: Object,
+    default: () => ({}),
+  },
 })
 
 const emit = defineEmits(['bulk-action'])
@@ -58,7 +63,7 @@ function onAction(actionType) {
       </div>
 
       <div class="rule-table__search">
-        <GridSearch v-model="searchFilter" class="rule-table__search-input" label="Search reviews" />
+        <GridSearch v-model="searchFilter" v-bind="hiddenSearch" class="rule-table__search-input" label="Search reviews" />
         <GridFilterButton v-model="filters" :columns="filterColumns" :value-options="filterValueOptions" />
       </div>
 

@@ -3,6 +3,7 @@ import Popover from 'primevue/popover'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { isActive } from '../../shared/lib/columnFilters.js'
 import { describeFilter } from '../../shared/lib/gridSearch.js'
+import { listTooltip } from '../../shared/lib/tooltips.js'
 import GridFilterMenu from './gridFilter/GridFilterMenu.vue'
 import RuleBuilderFilter from './gridFilter/RuleBuilderFilter.vue'
 
@@ -47,7 +48,8 @@ onMounted(() => document.addEventListener('mousedown', onDocumentMousedown, true
 onBeforeUnmount(() => document.removeEventListener('mousedown', onDocumentMousedown, true))
 
 const applied = computed(() => model.value.filter(isActive))
-const summary = computed(() => applied.value.map(f => describeFilter(f, props.columns)).join('\n'))
+// The applied rules, one per line; off while the popover is open, which shows them itself
+const summary = computed(() => (isOpen.value ? null : listTooltip(applied.value.map(f => describeFilter(f, props.columns)))))
 
 // Opening starts on the menu with nothing kept from last time
 function toggle(event) {
@@ -93,9 +95,9 @@ const popoverPt = computed(() => ({
 <template>
   <span ref="trigger" class="grid-filter-group" :class="{ 'is-active': applied.length > 0, 'is-open': isOpen }">
     <button
+      v-tooltip.bottom="summary"
       type="button"
       class="grid-filter-btn"
-      :title="summary"
       :aria-label="applied.length ? `Filters, ${applied.length} applied` : 'Filters'"
       @click="toggle"
     >

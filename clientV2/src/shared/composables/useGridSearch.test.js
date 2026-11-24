@@ -152,6 +152,74 @@ describe('useGridSearch', () => {
     expect(s.valueOptions.value.os.map(o => o.value)).toEqual(['aix', 'linux'])
   })
 
+  it('counts each list value against the search term and the rules on other columns', () => {
+    const s = useGridSearch(rows, [
+      { field: 'name', header: 'Name' },
+      { field: 'os', header: 'OS', filterValues: r => r.os },
+    ])
+    const counts = () => s.valueOptions.value.os.map(o => [o.value, o.count])
+    expect(counts()).toEqual([['linux', 2], ['windows', 1]])
+
+    // Its own rule leaves the counts alone, so the other values show what picking them adds
+    s.filters.value = [searchFilter('os', 'values', { value: ['linux'] })]
+    expect(counts()).toEqual([['linux', 2], ['windows', 1]])
+
+    s.filters.value = [searchFilter('name', 'text', { value: 'db' })]
+    expect(counts()).toEqual([['linux', 1], ['windows', 0]])
+
+    s.filters.value = []
+    s.term.value = 'web'
+    expect(counts()).toEqual([['linux', 1], ['windows', 1]])
+  })
+
+  it('reports the rows shown only by a match in a hidden column', () => {
+    const visible = ref(new Set(['name']))
+    const s = useGridSearch(rows, columns, { visibleFields: visible, searchHidden: true })
+    expect(s.hiddenMatches.value).toBeNull()
+
+    s.term.value = 'linux'
+    expect(names(s.filteredRows.value)).toEqual(['web-01', 'db-01'])
+    expect(s.hiddenMatches.value).toEqual({ count: 2, columns: ['OS'] })
+
+    // Rows that also match on screen are not counted
+    s.term.value = 'w'
+    expect(names(s.filteredRows.value)).toEqual(['web-01', 'web-02'])
+    expect(s.hiddenMatches.value).toBeNull()
+
+    // Switched off, hidden columns stop matching
+    s.term.value = 'linux'
+    s.searchHidden.value = false
+    expect(s.filteredRows.value).toHaveLength(0)
+    expect(s.hiddenMatches.value).toBeNull()
+
+    s.searchHidden.value = true
+    visible.value = new Set(['name', 'os'])
+    expect(s.hiddenMatches.value).toBeNull()
+  })
+
+  it('offers the hidden-columns toggle only while a searchable column is hidden', () => {
+    const visible = ref(new Set(['name', 'os']))
+    const s = useGridSearch(rows, columns, { visibleFields: visible })
+    expect(s.hiddenSearch.value.searchHidden).toBeNull()
+
+    visible.value = new Set(['name'])
+    expect(s.hiddenSearch.value.searchHidden).toBe(false)
+
+    s.hiddenSearch.value['onUpdate:searchHidden'](true)
+    s.term.value = 'linux'
+    expect(s.hiddenSearch.value.searchHidden).toBe(true)
+    expect(s.hiddenSearch.value.hiddenMatches).toEqual({ count: 2, columns: ['OS'] })
+
+    expect(useGridSearch(rows, columns).hiddenSearch.value.searchHidden).toBeNull()
+  })
+
+  it('reports no hidden matches when hidden columns are not searched', () => {
+    const s = useGridSearch(rows, columns, { visibleFields: new Set(['name']) })
+    s.term.value = 'linux'
+    expect(s.filteredRows.value).toHaveLength(0)
+    expect(s.hiddenMatches.value).toBeNull()
+  })
+
   it('drops rules whose column goes away', async () => {
     const cols = ref(columns)
     const s = useGridSearch(rows, cols)

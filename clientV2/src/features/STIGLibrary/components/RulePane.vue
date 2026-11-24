@@ -121,6 +121,8 @@ const viewColumns = [
   { field: 'fix', header: 'Fix', searchText: r => r.fix?.text },
   { field: 'ccis', header: 'CCIs', searchText: r => (r.ccis ?? []).map(c => c.cci).join(' ') },
 ]
+// The view table's columns; the other view-mode search columns show only in the detail pane
+const VIEW_TABLE_FIELDS = new Set(['severity', 'version', 'groupId', 'ruleId', 'title'])
 const diffColumns = computed(() => [
   { field: 'stigId', header: 'STIG ID' },
   { field: 'leftRule', header: `Rule in ${props.compareRev ?? 'compared'}` },
@@ -132,13 +134,17 @@ const diffColumns = computed(() => [
 const tableRows = computed(() => (diffMode.value ? props.diffRows : props.rules) ?? [])
 const {
   term: searchTerm,
+  hiddenSearch,
   filters: gridFilters,
   filteredRows,
   isFiltered,
   filterColumns,
   valueOptions,
   highlightTerm,
-} = useGridSearch(tableRows, () => (diffMode.value ? diffColumns.value : viewColumns))
+} = useGridSearch(tableRows, () => (diffMode.value ? diffColumns.value : viewColumns), {
+  visibleFields: () => (diffMode.value ? null : VIEW_TABLE_FIELDS),
+  searchHidden: true,
+})
 
 // Per-field terms for the detail pane, so a match that only lives in the rule content is still visible
 const DETAIL_FIELDS = ['ruleId', 'version', 'title', 'discussion', 'check', 'fix', 'ccis']
@@ -154,6 +160,7 @@ watch(detailHighlight, v => emit('update:highlight', v), { immediate: true })
     <RulePaneToolbar
       v-model:search="searchTerm"
       v-model:filters="gridFilters"
+      :hidden-search="hiddenSearch"
       :revisions="revisions"
       :revisions-loading="revisionsLoading"
       :view-rev="viewRev"
