@@ -197,6 +197,23 @@ describe('useGridSearch', () => {
     expect(s.hiddenSearch.value.hiddenMatches).toBeNull()
   })
 
+  it('searches hidden columns for an "Any column" rule whatever the toggle says', () => {
+    const s = useGridSearch(rows, columns, { visibleFields: new Set(['name']) })
+    s.filters.value = [searchFilter(undefined, 'text', { value: 'linux' })]
+    expect(names(s.filteredRows.value)).toEqual(['web-01', 'db-01'])
+
+    s.hiddenSearch.value['onUpdate:searchHidden'](true)
+    expect(names(s.filteredRows.value)).toEqual(['web-01', 'db-01'])
+    expect(s.hiddenSearch.value.hiddenMatches).toBeNull()
+
+    // The term stays narrowed to the columns shown while the rule is not
+    s.hiddenSearch.value['onUpdate:searchHidden'](false)
+    s.term.value = 'windows'
+    expect(s.filteredRows.value).toHaveLength(0)
+    s.term.value = 'db'
+    expect(names(s.filteredRows.value)).toEqual(['db-01'])
+  })
+
   it('offers the hidden-columns toggle only while a searchable column is hidden', () => {
     const visible = ref(new Set(['name', 'os']))
     const s = useGridSearch(rows, columns, { visibleFields: visible })

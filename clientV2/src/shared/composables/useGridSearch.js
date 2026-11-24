@@ -45,7 +45,7 @@ export function useGridSearch(rows, columns, { visibleFields = null, searchHidde
   const shownQuickColumns = computed(() => searchableColumns.value.filter(c => !c.hidden))
   const hiddenQuickColumns = computed(() => searchableColumns.value.filter(c => c.hidden))
 
-  // What the search box and "Any column" rules look in
+  // What the search box looks in. "Any column" rules always look in every searchable column.
   const quickColumns = computed(() => (searchHidden.value ? searchableColumns.value : shownQuickColumns.value))
 
   // Rules on a column that went away (e.g. a new Findings aggregator) are dropped
@@ -65,8 +65,15 @@ export function useGridSearch(rows, columns, { visibleFields = null, searchHidde
   const termRule = computed(() => (searching.value ? searchFilter(ALL_COLUMNS, 'text', { value: term.value }) : null))
   const rules = computed(() => (termRule.value ? [termRule.value, ...activeFilters.value] : activeFilters.value))
 
-  function search(inRows, withRules, visibleColumns = quickColumns.value) {
-    return applyGridSearch(inRows, withRules, { columns: allColumns.value, visibleColumns })
+  // The hidden-columns toggle narrows only the search term, so the term is applied apart from
+  // the Filter button rules
+  function search(inRows, withRules, termColumns = quickColumns.value) {
+    const columns = allColumns.value
+    const builderRules = withRules.filter(f => f !== termRule.value)
+    const matched = applyGridSearch(inRows, builderRules, { columns, visibleColumns: searchableColumns.value })
+    return builderRules.length === withRules.length
+      ? matched
+      : applyGridSearch(matched, [termRule.value], { columns, visibleColumns: termColumns })
   }
 
   const filteredRows = computed(() => search(toValue(rows) ?? [], rules.value))
