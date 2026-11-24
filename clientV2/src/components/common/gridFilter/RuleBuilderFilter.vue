@@ -16,7 +16,7 @@ import { pickedOptions } from './quickFilters.js'
 
 // The Filter button's rule builder: edits a draft of every rule, which applies on Apply
 const props = defineProps({
-  // filterColumns from useGridSearch; the builder offers them all, hidden or not
+  // filterColumns from useGridSearch; the builder offers them all, hidden ones last and marked
   columns: {
     type: Array,
     default: () => [],
@@ -44,7 +44,7 @@ const model = defineModel({ type: Array, default: () => [] })
 
 const MAX_VALUE_CHIPS = 2
 const anyColumn = { field: ALL_COLUMNS, header: 'Any column', kind: 'text' }
-const columnOptions = computed(() => [anyColumn, ...props.columns])
+const columnOptions = computed(() => [anyColumn, ...props.columns.filter(c => !c.hidden), ...props.columns.filter(c => c.hidden)])
 const applied = computed(() => model.value.filter(isActive))
 
 // Draft rules carry an id so removing one never hands its Select instances to the next rule;
@@ -151,9 +151,17 @@ const valuesPt = {
           option-label="header"
           option-value="field"
           aria-label="Column"
+          scroll-height="60vh"
           :pt="selectPt"
           @update:model-value="setColumn(i, $event)"
-        />
+        >
+          <template #option="{ option }">
+            <span class="rule-builder-filter__column" :class="{ 'is-hidden': option.hidden }">
+              <span>{{ option.header }}</span>
+              <i v-if="option.hidden" class="pi pi-eye-slash" role="img" aria-label="hidden column" title="Hidden in the grid. Rows are still filtered by it." />
+            </span>
+          </template>
+        </Select>
         <Select
           :model-value="filterOperator(rule)"
           :options="operatorOptions(rule)"
@@ -315,6 +323,17 @@ const valuesPt = {
   border-color: var(--color-primary-highlight);
   background: var(--color-primary-highlight);
   color: var(--color-text-dark);
+}
+
+.rule-builder-filter__column {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.rule-builder-filter__column.is-hidden {
+  color: var(--color-text-dim);
 }
 
 .rule-builder-filter__word {

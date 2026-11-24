@@ -20,6 +20,14 @@ describe('ruleBuilderFilter.vue', () => {
     expect(screen.getByRole('combobox', { name: 'Column' })).toHaveTextContent('Any column')
   })
 
+  it('lists hidden columns last in the column picker, marked', async () => {
+    renderBuilder({ columns: [{ ...name, hidden: true }, os] })
+    await fireEvent.click(screen.getByRole('combobox', { name: 'Column' }))
+    const options = await screen.findAllByRole('option')
+    expect(options.map(o => o.textContent.trim())).toEqual(['Any column', 'OS', 'Name'])
+    expect(options.map(o => Boolean(o.querySelector('[aria-label="hidden column"]')))).toEqual([false, false, true])
+  })
+
   it('starts with the applied rules and no blank one', () => {
     renderBuilder({ modelValue: [searchFilter('name', 'text', { value: 'web' }), searchFilter('os', 'values', { value: ['linux'] })] })
     expect(screen.getAllByRole('combobox', { name: 'Column' }).map(c => c.textContent)).toEqual(['Name', 'OS'])
