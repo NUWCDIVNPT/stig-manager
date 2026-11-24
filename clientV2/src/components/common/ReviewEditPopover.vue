@@ -322,7 +322,9 @@ const anchorEl = ref(null)
 // Place the box against the anchored row. PrimeVue only flips above the row
 // when the box as it is now would not fit below; decide instead from the
 // height it can reach with Review Resources open, so opening the panel never
-// moves the box to the other side of the row. The decision is made here, on
+// moves the box to the other side of the row. A box too tall for either side
+// takes the roomier one and is held to the room there, scrolling inside
+// rather than running off the screen. The decision is made here, on
 // show and reposition, and pinToAnchor only keeps it. (PrimeVue closes the
 // popover on window resize, so there is nothing to re-place then.)
 function placePopover() {
@@ -335,9 +337,17 @@ function placePopover() {
   const reserve = resourcesHeightPx()
   el.style.setProperty('--sm-resources-height', `${reserve}px`)
 
+  // Measure without the limit left by the last placement
+  el.style.removeProperty('--sm-popover-max-height')
   const anchorRect = anchor.getBoundingClientRect()
   const reachable = el.offsetHeight + (showResources.value ? 0 : reserve)
-  flippedAbove.value = anchorRect.bottom + reachable > window.innerHeight
+  // Clear of the viewport edge, the arrow and the box border
+  const edge = 20
+  const roomBelow = window.innerHeight - anchorRect.bottom - edge
+  const roomAbove = anchorRect.top - edge
+  flippedAbove.value = reachable > roomBelow && roomAbove > roomBelow
+  const room = flippedAbove.value ? roomAbove : roomBelow
+  el.style.setProperty('--sm-popover-max-height', `${Math.max(room, 200)}px`)
   el.classList.toggle('p-popover-flipped', flippedAbove.value)
   el.style.transformOrigin = flippedAbove.value ? 'bottom' : 'top'
   pinToAnchor()
@@ -488,7 +498,7 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
         'data-tour': 'review-popover',
       },
       content: {
-        style: { maxHeight: '85vh', overflowY: 'auto', overflowX: 'hidden' },
+        style: { maxHeight: 'min(85vh, var(--sm-popover-max-height, 85vh))', overflowY: 'auto', overflowX: 'hidden' },
       },
       transition: {
         enterActiveClass: 'review-popover-enter',
@@ -502,7 +512,7 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
       <button class="review-edit-popover__close" :title="isDirty ? 'Close (discards unsaved changes)' : 'Close'" :disabled="isSaving" @click="dismiss">
         <i class="pi pi-times" />
       </button>
-      <div v-if="subjectLabel" class="review-edit-popover__subject">
+      <div v-if="subjectLabel" class="review-edit-popover__subject" :class="{ 'review-edit-popover__subject--with-handle': flippedAbove }">
         <span class="review-edit-popover__subject-value" :title="subjectLabel">{{ subjectLabel }}</span>
       </div>
       <div ref="mainEl" class="review-edit-popover__main" :style="{ '--sm-main-height': `${mainHeightRem}rem` }">
@@ -597,7 +607,10 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
 
       <div
         class="review-edit-popover__resize-handle"
-        :class="{ 'review-edit-popover__resize-handle--top': flippedAbove }"
+        :class="{
+          'review-edit-popover__resize-handle--top': flippedAbove,
+          'review-edit-popover__resize-handle--in-subject': flippedAbove && subjectLabel,
+        }"
         role="separator"
         aria-orientation="horizontal"
         aria-label="Resize the review fields"
@@ -724,9 +737,10 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
   display: flex;
   gap: 0.5rem;
   align-items: stretch;
-  /* set from mainHeightRem; the cap leaves room for the rest of the box */
+  /* set from mainHeightRem; capped under half the viewport so the
+     fields leave room for the rest of the box on one side of a row */
   height: var(--sm-main-height);
-  max-height: 55vh;
+  max-height: 40vh;
   min-height: 14rem;
 }
 
@@ -745,6 +759,23 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
 .review-edit-popover__resize-handle--top {
   order: -1;
   margin: -0.5rem 0 -0.15rem;
+}
+
+/* With a subject strip, share it: the grip sits in the middle of the strip
+   and the subject text keeps the half before it. */
+.review-edit-popover__resize-handle--in-subject {
+  position: absolute;
+  top: -0.4rem;
+  left: 50%;
+  width: 8rem;
+  height: 2.3rem;
+  margin: 0 0 0 -4rem;
+}
+
+.review-edit-popover__subject--with-handle .review-edit-popover__subject-value {
+  display: inline-block;
+  max-width: calc(50% - 5rem);
+  vertical-align: bottom;
 }
 
 .review-edit-popover__resize-handle::before {
