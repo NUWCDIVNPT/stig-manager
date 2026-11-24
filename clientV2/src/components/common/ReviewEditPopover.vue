@@ -266,16 +266,16 @@ function placePopover() {
   el.style.transformOrigin = flippedAbove ? 'bottom' : 'top'
   pinToAnchor()
 
-  // Centre on the click, kept inside the viewport, with the arrow on the click
+  // Centre on the click, with the arrow on the click. The box stays inside
+  // the viewport and, when it fits, left of the grid's right edge so it does
+  // not cover the panel beside the grid.
   const gutter = 12
   const viewportW = document.documentElement.clientWidth
   const width = el.offsetWidth
   const targetX = anchorEvent.clientX ?? (anchorRect.left + anchorRect.width / 2)
-  let left = targetX - width / 2
-  left = Math.max(gutter, Math.min(left, viewportW - gutter - width))
-  if (width > viewportW - gutter * 2) {
-    left = gutter
-  }
+  const gridRect = anchorEvent.boundary?.getBoundingClientRect()
+  const maxRight = gridRect?.width ? Math.min(viewportW - gutter, gridRect.right) : viewportW - gutter
+  const left = Math.max(gutter, Math.min(targetX - width / 2, maxRight - width))
   el.style.insetInlineStart = `${left + window.scrollX}px`
   el.style.setProperty('--sm-popover-arrow-left', `${targetX - left - 10}px`)
 }
@@ -331,7 +331,12 @@ function openForRow(event, isSameRow) {
   anchorEl.value.style.top = `${rowRect.top}px`
   anchorEl.value.style.height = `${rowRect.height}px`
 
-  const anchorEvent = { currentTarget: anchorEl.value, target: anchorEl.value, clientX: clickX }
+  const anchorEvent = {
+    currentTarget: anchorEl.value,
+    target: anchorEl.value,
+    clientX: clickX,
+    boundary: row?.closest('.p-datatable') ?? null,
+  }
   if (isSameRow) {
     toggle(anchorEvent)
   }
@@ -594,7 +599,7 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
      Statused pills, fewer for an unstatused review). Wide enough for that row
      and for the Review Resources tables (history, other assets) to show their
      columns without a horizontal scroller. */
-  width: 1000px;
+  width: 1080px;
   max-width: calc(100vw - 24px);
   position: relative;
 }
@@ -627,7 +632,7 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
   display: flex;
   gap: 0.5rem;
   align-items: stretch;
-  min-height: 16rem;
+  min-height: 19rem;
 }
 
 .review-edit-popover__subject {

@@ -488,7 +488,7 @@ const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-con
   overflow: hidden;
   width: 100%;
   min-width: 0;
-  white-space: normal;
+  white-space: pre-wrap;
   overflow-wrap: anywhere;
   word-break: break-word;
 }
