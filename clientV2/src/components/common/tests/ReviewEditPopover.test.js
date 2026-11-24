@@ -354,6 +354,60 @@ describe('reviewEditPopover.vue', () => {
     })
   })
 
+  describe('resizing the review fields', () => {
+    const KEY = 'stigman:reviewPopoverMainHeight'
+    const mainHeight = () => document.querySelector('.review-edit-popover__main').style.getPropertyValue('--sm-main-height')
+
+    beforeEach(() => {
+      localStorage.removeItem(KEY)
+    })
+
+    it('starts at the default height', () => {
+      createWrapper({ currentReview: defaultReview })
+      expect(mainHeight()).toBe('19rem')
+    })
+
+    it('restores the stored height', () => {
+      localStorage.setItem(KEY, '25')
+      createWrapper({ currentReview: defaultReview })
+      expect(mainHeight()).toBe('25rem')
+    })
+
+    it('ignores a stored value that is not a height', () => {
+      localStorage.setItem(KEY, 'tall')
+      createWrapper({ currentReview: defaultReview })
+      expect(mainHeight()).toBe('19rem')
+    })
+
+    it('arrow keys on the handle resize and store the height', async () => {
+      createWrapper({ currentReview: defaultReview })
+      const handle = screen.getByRole('separator')
+
+      await fireEvent.keyDown(handle, { key: 'ArrowDown' })
+      expect(mainHeight()).toBe('20rem')
+      expect(localStorage.getItem(KEY)).toBe('20')
+
+      await fireEvent.keyDown(handle, { key: 'ArrowUp' })
+      await fireEvent.keyDown(handle, { key: 'ArrowUp' })
+      expect(mainHeight()).toBe('18rem')
+    })
+
+    it('does not shrink below the minimum', async () => {
+      localStorage.setItem(KEY, '14')
+      createWrapper({ currentReview: defaultReview })
+      await fireEvent.keyDown(screen.getByRole('separator'), { key: 'ArrowUp' })
+      expect(mainHeight()).toBe('14rem')
+    })
+
+    it('double-click resets to the default', async () => {
+      localStorage.setItem(KEY, '30')
+      createWrapper({ currentReview: defaultReview })
+      await fireEvent.dblClick(screen.getByRole('separator'))
+      expect(mainHeight()).toBe('19rem')
+      expect(localStorage.getItem(KEY)).toBe('19')
+    })
+  })
+
   describe('uI Indicators', () => {
 
     it('toggling Review Resources expands the section', async () => {
