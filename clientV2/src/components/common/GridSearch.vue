@@ -20,6 +20,11 @@ const props = defineProps({
     type: Number,
     default: 250,
   },
+  // Offers the toggle for searching hidden columns too; bound with the rest of useGridSearch's hiddenSearch
+  canSearchHidden: {
+    type: Boolean,
+    default: false,
+  },
   // hiddenMatches from useGridSearch: { count, columns } for rows shown by a match in a hidden column
   hiddenMatches: {
     type: Object,
@@ -28,8 +33,7 @@ const props = defineProps({
 })
 
 const model = defineModel({ type: String, default: '' })
-// Bind to offer the toggle for searching hidden columns too
-const searchHidden = defineModel('searchHidden', { type: Boolean, default: null })
+const searchHidden = defineModel('searchHidden', { type: Boolean, default: false })
 
 const draft = ref(model.value)
 let timer = null
@@ -95,7 +99,7 @@ function clear() {
       <i class="pi pi-times" />
     </button>
     <button
-      v-if="searchHidden !== null"
+      v-if="canSearchHidden"
       v-tooltip.bottom="toggleTooltip"
       type="button"
       class="grid-search__toggle"
@@ -159,7 +163,6 @@ function clear() {
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  gap: 0.35rem;
   padding: 0.2rem;
   border: none;
   background: none;
@@ -177,12 +180,13 @@ function clear() {
   transition: color 0.1s, background-color 0.1s;
 }
 
+.grid-search__clear:hover,
 .grid-search__clear:hover {
   color: var(--color-text-primary);
-  background: color-mix(in srgb, var(--color-text-dim) 15%, transparent);
 }
 
 .grid-search__toggle {
+  gap: 0.35rem;
   border-radius: 4px;
 }
 

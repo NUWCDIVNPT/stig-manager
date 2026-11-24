@@ -29,7 +29,6 @@ const HOVER_OPEN_MS = 60
 // Slower once a flyout is open, so a diagonal move toward it doesn't switch columns
 const HOVER_SWITCH_MS = 250
 
-const root = ref()
 const list = ref()
 const quickFilterRef = ref()
 const flyout = ref(null)
@@ -40,7 +39,7 @@ const applied = computed(() => model.value.filter(isActive))
 // Shown columns mirror the grid; hidden ones follow, still filterable
 const menuColumns = computed(() => [...props.columns.filter(c => !c.hidden), ...props.columns.filter(c => c.hidden)])
 const firstHidden = computed(() => menuColumns.value.find(c => c.hidden)?.field)
-const flyoutColumn = computed(() => menuColumns.value.find(c => c.field === flyout.value?.field) ?? null)
+const flyoutColumn = computed(() => props.columns.find(c => c.field === flyout.value?.field) ?? null)
 
 function rulesOf(col) {
   return applied.value.filter(f => f.key === col.field)
@@ -103,7 +102,7 @@ function hoverFlyout(col, event) {
 </script>
 
 <template>
-  <div ref="root" class="grid-filter-menu">
+  <div class="grid-filter-menu">
     <div class="grid-filter__head">
       <span>Filter by</span>
       <span v-if="applied.length" class="grid-filter__hint">{{ applied.length === 1 ? '1 rule' : `${applied.length} rules` }}</span>

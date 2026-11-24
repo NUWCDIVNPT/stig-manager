@@ -5,12 +5,13 @@ import { ALL_COLUMNS, applyGridSearch, columnValueOptions, searchFilter } from '
 /**
  * Quick search plus Filter button rules for one grid. The term and every rule AND together.
  *
- * Each column: { field, header, searchText?, filterValues?, multiple?, quickSearch?, shownWith? }
+ * Each column: { field, header, searchText?, filterValues?, multiple?, quickSearch?, shownWith?, offGrid? }
  * - searchText(row): text to match; defaults to the filterValues names, else row[field]
  * - filterValues(row): makes it a pick-from-list column in the Filter button (labels, CAT)
  * - multiple: rows hold several values (labels, STIGs), which adds "has all of"
  * - quickSearch: false keeps it out of the search box (still filterable)
  * - shownWith: the column it displays in, for visibility (labels under the asset name)
+ * - offGrid: never a grid column (rule text that only a detail pane shows), so always hidden
  *
  * @param {import('vue').MaybeRefOrGetter<object[]>} rows unfiltered rows
  * @param {import('vue').MaybeRefOrGetter<object[]>} columns the searchable columns
@@ -34,19 +35,18 @@ export function useGridSearch(rows, columns, { visibleFields = null, searchHidde
     searchText: c.searchText ?? (c.filterValues ? row => toValues(c.filterValues(row)).join(' ') : row => row[c.field]),
   })))
 
-  const shownQuickColumns = computed(() => {
-    const visible = toValue(visibleFields)
-    return allColumns.value.filter(c => c.quickSearch !== false && (!visible || visible.has(c.shownWith ?? c.field)))
-  })
-
-  // What the search box and "Any column" rules look in
-  const quickColumns = computed(() => (searchHidden.value ? allColumns.value.filter(c => c.quickSearch !== false) : shownQuickColumns.value))
-
   // For GridFilterButton, which marks the columns not on screen
   const filterColumns = computed(() => {
     const visible = toValue(visibleFields)
-    return allColumns.value.map(c => ({ ...c, hidden: Boolean(visible) && !visible.has(c.shownWith ?? c.field) }))
+    return allColumns.value.map(c => ({ ...c, hidden: Boolean(c.offGrid) || (Boolean(visible) && !visible.has(c.shownWith ?? c.field)) }))
   })
+
+  const searchableColumns = computed(() => filterColumns.value.filter(c => c.quickSearch !== false))
+  const shownQuickColumns = computed(() => searchableColumns.value.filter(c => !c.hidden))
+  const hiddenQuickColumns = computed(() => searchableColumns.value.filter(c => c.hidden))
+
+  // What the search box and "Any column" rules look in
+  const quickColumns = computed(() => (searchHidden.value ? searchableColumns.value : shownQuickColumns.value))
 
   // Rules on a column that went away (e.g. a new Findings aggregator) are dropped
   watch(allColumns, (cols) => {
@@ -62,34 +62,35 @@ export function useGridSearch(rows, columns, { visibleFields = null, searchHidde
   const searching = computed(() => term.value.trim() !== '')
 
   // The search box is an "Any column contains" rule
-  const rules = computed(() => searching.value
-    ? [searchFilter(ALL_COLUMNS, 'text', { value: term.value }), ...activeFilters.value]
-    : activeFilters.value)
+  const termRule = computed(() => (searching.value ? searchFilter(ALL_COLUMNS, 'text', { value: term.value }) : null))
+  const rules = computed(() => (termRule.value ? [termRule.value, ...activeFilters.value] : activeFilters.value))
 
-  const filteredRows = computed(() =>
-    applyGridSearch(toValue(rows) ?? [], rules.value, { columns: allColumns.value, visibleColumns: quickColumns.value }))
+  function search(inRows, withRules, visibleColumns = quickColumns.value) {
+    return applyGridSearch(inRows, withRules, { columns: allColumns.value, visibleColumns })
+  }
+
+  const filteredRows = computed(() => search(toValue(rows) ?? [], rules.value))
 
   const isFiltered = computed(() => rules.value.length > 0)
-
-  const hiddenQuickColumns = computed(() => allColumns.value.filter(c => c.quickSearch !== false && !shownQuickColumns.value.includes(c)))
 
   // For GridSearch: the rows shown only because the term matched a hidden column, where nothing
   // is highlighted, as { count, columns: [header] }
   const hiddenMatches = computed(() => {
-    const hiddenColumns = searchHidden.value ? hiddenQuickColumns.value : []
-    if (!searching.value || !hiddenColumns.length) {
+    if (!termRule.value || !searchHidden.value || !hiddenQuickColumns.value.length) {
       return null
     }
-    const termRule = [searchFilter(ALL_COLUMNS, 'text', { value: term.value })]
-    const matching = within => applyGridSearch(filteredRows.value, termRule, { columns: allColumns.value, visibleColumns: within })
-    const count = filteredRows.value.length - matching(shownQuickColumns.value).length
-    return count ? { count, columns: hiddenColumns.filter(c => matching([c]).length).map(c => c.header) } : null
+    const onScreen = new Set(search(filteredRows.value, [termRule.value], shownQuickColumns.value))
+    const hiddenOnly = filteredRows.value.filter(r => !onScreen.has(r))
+    return hiddenOnly.length
+      ? { count: hiddenOnly.length, columns: hiddenQuickColumns.value.filter(c => search(hiddenOnly, [termRule.value], [c]).length).map(c => c.header) }
+      : null
   })
 
   // v-bind onto GridSearch: its hidden-columns toggle, offered while a searchable column is
   // hidden, and the count of rows the hidden columns add
   const hiddenSearch = computed(() => ({
-    'searchHidden': hiddenQuickColumns.value.length ? searchHidden.value : null,
+    'canSearchHidden': hiddenQuickColumns.value.length > 0,
+    'searchHidden': searchHidden.value,
     'hiddenMatches': hiddenMatches.value,
     'onUpdate:searchHidden': (value) => {
       searchHidden.value = value
@@ -114,22 +115,29 @@ export function useGridSearch(rows, columns, { visibleFields = null, searchHidde
     }, { deep: 1 })
   }
 
-  // Props for GridFilterButton. Every value in the grid is offered; each count is the rows that
-  // value would leave, given the search term and the rules on the other columns.
+  const listColumns = computed(() => allColumns.value.filter(c => c.filterValues))
+
+  // Every value in the grid, with its count across all rows
+  const allOptions = computed(() => new Map(listColumns.value.map(c => [c.field, columnValueOptions(toValue(rows), c)])))
+
+  // Each count is the rows that value would leave, given the search term and the rules on the
+  // other columns
   function optionsOf(col) {
-    const options = columnValueOptions(toValue(rows), col)
+    const options = allOptions.value.get(col.field)
     const others = rules.value.filter(f => f.key !== col.field)
     if (!others.length) {
       return options
     }
-    const remaining = applyGridSearch(toValue(rows) ?? [], others, { columns: allColumns.value, visibleColumns: quickColumns.value })
+    const remaining = others.length === rules.value.length ? filteredRows.value : search(toValue(rows) ?? [], others)
     const counts = new Map(columnValueOptions(remaining, col).map(o => [o.value, o.count]))
     return options.map(o => ({ ...o, count: counts.get(o.value) ?? 0 }))
   }
 
-  const valueOptions = computed(() => Object.fromEntries(
-    allColumns.value.filter(c => c.filterValues).map(c => [c.field, optionsOf(c)]),
-  ))
+  // Props for GridFilterButton: field -> options, each worked out when it is read, so a closed
+  // Filter menu costs nothing while the user types
+  const valueOptions = computed(() => Object.defineProperties({}, Object.fromEntries(
+    listColumns.value.map(c => [c.field, { enumerable: true, get: () => optionsOf(c) }]),
+  )))
 
   // HighlightText marks substrings, so only contains rules highlight
   function highlightTerm(field) {
@@ -147,5 +155,5 @@ export function useGridSearch(rows, columns, { visibleFields = null, searchHidde
     filters.value = []
   }
 
-  return { term, searchHidden, hiddenSearch, filters, filteredRows, isFiltered, hiddenMatches, filterColumns, valueOptions, highlightTerm, clear }
+  return { term, hiddenSearch, filters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm, clear }
 }

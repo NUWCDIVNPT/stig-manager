@@ -116,13 +116,11 @@ const viewColumns = [
   { field: 'groupId', header: 'Group' },
   { field: 'ruleId', header: 'Rule Id' },
   { field: 'title', header: 'Rule Title' },
-  { field: 'discussion', header: 'Discussion', searchText: r => r.detail?.vulnDiscussion },
-  { field: 'check', header: 'Check', searchText: r => r.check?.content },
-  { field: 'fix', header: 'Fix', searchText: r => r.fix?.text },
-  { field: 'ccis', header: 'CCIs', searchText: r => (r.ccis ?? []).map(c => c.cci).join(' ') },
+  { field: 'discussion', header: 'Discussion', offGrid: true, searchText: r => r.detail?.vulnDiscussion },
+  { field: 'check', header: 'Check', offGrid: true, searchText: r => r.check?.content },
+  { field: 'fix', header: 'Fix', offGrid: true, searchText: r => r.fix?.text },
+  { field: 'ccis', header: 'CCIs', offGrid: true, searchText: r => (r.ccis ?? []).map(c => c.cci).join(' ') },
 ]
-// The view table's columns; the other view-mode search columns show only in the detail pane
-const VIEW_TABLE_FIELDS = new Set(['severity', 'version', 'groupId', 'ruleId', 'title'])
 const diffColumns = computed(() => [
   { field: 'stigId', header: 'STIG ID' },
   { field: 'leftRule', header: `Rule in ${props.compareRev ?? 'compared'}` },
@@ -141,10 +139,7 @@ const {
   filterColumns,
   valueOptions,
   highlightTerm,
-} = useGridSearch(tableRows, () => (diffMode.value ? diffColumns.value : viewColumns), {
-  visibleFields: () => (diffMode.value ? null : VIEW_TABLE_FIELDS),
-  searchHidden: true,
-})
+} = useGridSearch(tableRows, () => (diffMode.value ? diffColumns.value : viewColumns), { searchHidden: true })
 
 // Per-field terms for the detail pane, so a match that only lives in the rule content is still visible
 const DETAIL_FIELDS = ['ruleId', 'version', 'title', 'discussion', 'check', 'fix', 'ccis']

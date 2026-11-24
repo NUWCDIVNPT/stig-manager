@@ -175,34 +175,35 @@ describe('useGridSearch', () => {
   it('reports the rows shown only by a match in a hidden column', () => {
     const visible = ref(new Set(['name']))
     const s = useGridSearch(rows, columns, { visibleFields: visible, searchHidden: true })
-    expect(s.hiddenMatches.value).toBeNull()
+    expect(s.hiddenSearch.value.hiddenMatches).toBeNull()
 
     s.term.value = 'linux'
     expect(names(s.filteredRows.value)).toEqual(['web-01', 'db-01'])
-    expect(s.hiddenMatches.value).toEqual({ count: 2, columns: ['OS'] })
+    expect(s.hiddenSearch.value.hiddenMatches).toEqual({ count: 2, columns: ['OS'] })
 
     // Rows that also match on screen are not counted
     s.term.value = 'w'
     expect(names(s.filteredRows.value)).toEqual(['web-01', 'web-02'])
-    expect(s.hiddenMatches.value).toBeNull()
+    expect(s.hiddenSearch.value.hiddenMatches).toBeNull()
 
     // Switched off, hidden columns stop matching
     s.term.value = 'linux'
-    s.searchHidden.value = false
+    s.hiddenSearch.value['onUpdate:searchHidden'](false)
     expect(s.filteredRows.value).toHaveLength(0)
-    expect(s.hiddenMatches.value).toBeNull()
+    expect(s.hiddenSearch.value.hiddenMatches).toBeNull()
 
-    s.searchHidden.value = true
+    s.hiddenSearch.value['onUpdate:searchHidden'](true)
     visible.value = new Set(['name', 'os'])
-    expect(s.hiddenMatches.value).toBeNull()
+    expect(s.hiddenSearch.value.hiddenMatches).toBeNull()
   })
 
   it('offers the hidden-columns toggle only while a searchable column is hidden', () => {
     const visible = ref(new Set(['name', 'os']))
     const s = useGridSearch(rows, columns, { visibleFields: visible })
-    expect(s.hiddenSearch.value.searchHidden).toBeNull()
+    expect(s.hiddenSearch.value.canSearchHidden).toBe(false)
 
     visible.value = new Set(['name'])
+    expect(s.hiddenSearch.value.canSearchHidden).toBe(true)
     expect(s.hiddenSearch.value.searchHidden).toBe(false)
 
     s.hiddenSearch.value['onUpdate:searchHidden'](true)
@@ -210,14 +211,23 @@ describe('useGridSearch', () => {
     expect(s.hiddenSearch.value.searchHidden).toBe(true)
     expect(s.hiddenSearch.value.hiddenMatches).toEqual({ count: 2, columns: ['OS'] })
 
-    expect(useGridSearch(rows, columns).hiddenSearch.value.searchHidden).toBeNull()
+    expect(useGridSearch(rows, columns).hiddenSearch.value.canSearchHidden).toBe(false)
+  })
+
+  it('treats an offGrid column as hidden without a visibility set', () => {
+    const s = useGridSearch(rows, [columns[0], { ...columns[1], offGrid: true }], { searchHidden: true })
+    expect(s.filterColumns.value.map(c => c.hidden)).toEqual([false, true])
+    expect(s.hiddenSearch.value.canSearchHidden).toBe(true)
+
+    s.term.value = 'linux'
+    expect(s.hiddenSearch.value.hiddenMatches).toEqual({ count: 2, columns: ['OS'] })
   })
 
   it('reports no hidden matches when hidden columns are not searched', () => {
     const s = useGridSearch(rows, columns, { visibleFields: new Set(['name']) })
     s.term.value = 'linux'
     expect(s.filteredRows.value).toHaveLength(0)
-    expect(s.hiddenMatches.value).toBeNull()
+    expect(s.hiddenSearch.value.hiddenMatches).toBeNull()
   })
 
   it('drops rules whose column goes away', async () => {
