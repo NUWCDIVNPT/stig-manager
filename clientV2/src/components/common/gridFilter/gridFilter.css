@@ -1,0 +1,126 @@
+/* Shared by the Filter button's column menu, quick filter and rule builder */
+.grid-filter__head,
+.grid-filter__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.4rem 0.65rem;
+  background: var(--color-background-light);
+}
+
+.grid-filter__head {
+  border-bottom: 1px solid var(--color-border-default);
+  border-radius: 6px 6px 0 0;
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text-bright);
+}
+
+.grid-filter__foot {
+  border-top: 1px solid var(--color-border-default);
+  border-radius: 0 0 6px 6px;
+}
+
+.grid-filter__hint {
+  font-size: var(--text-md);
+  font-weight: 400;
+  color: var(--color-text-dim);
+}
+
+.grid-filter__head .grid-filter__hint {
+  margin-right: auto;
+}
+
+.grid-filter__link {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-primary-highlight);
+  font-size: var(--text-md);
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.grid-filter__link:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.grid-filter__link:disabled {
+  color: var(--color-text-dim);
+  cursor: default;
+}
+
+.grid-filter__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid var(--color-border-default);
+  border-radius: 4px;
+  background: var(--color-background-light);
+  color: var(--color-text-bright);
+  font-size: var(--text-md);
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.grid-filter__btn .pi {
+  font-size: var(--icon-xs);
+}
+
+.grid-filter__btn:hover:not(:disabled) {
+  background: var(--color-bg-hover-strong);
+}
+
+.grid-filter__btn:disabled {
+  color: var(--color-text-dim);
+  cursor: default;
+}
+
+.grid-filter__btn--ghost {
+  padding: 0.4rem 0.9rem;
+  border-style: dashed;
+  border-color: var(--color-primary-highlight);
+  background: color-mix(in srgb, var(--color-primary-highlight) 10%, transparent);
+  color: var(--color-primary-highlight);
+  font-weight: 600;
+}
+
+.grid-filter__btn--ghost:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-primary-highlight) 22%, transparent);
+}
+
+.grid-filter__btn--primary {
+  border-color: var(--color-primary-highlight);
+  background: var(--color-primary-highlight);
+  color: var(--color-text-dark);
+  font-weight: 600;
+}
+
+.grid-filter__btn--primary:hover:not(:disabled) {
+  background: var(--color-primary-highlight-light);
+}
+
+.grid-filter__input {
+  flex: 1;
+  min-width: 0;
+  height: 2.25rem;
+  padding: 0 0.7rem;
+  border: 1px solid var(--color-border-default);
+  border-radius: 4px;
+  background: var(--color-background-dark);
+  color: var(--color-text-bright);
+  font-size: var(--text-lg);
+  outline: none;
+}
+
+.grid-filter__input:focus {
+  border-color: var(--color-primary-highlight);
+}
+
+.grid-filter__empty {
+  margin: 0;
+  color: var(--color-text-dim);
+  font-size: var(--text-md);
+}

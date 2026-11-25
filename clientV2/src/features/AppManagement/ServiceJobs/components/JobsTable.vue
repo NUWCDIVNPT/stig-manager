@@ -55,7 +55,7 @@ const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibilit
   { field: 'lastRun.updated', header: 'Last Run' },
 ], 'serviceJobs.columns')
 
-const { term: searchTerm, filteredRows, isFiltered, highlightTerm } = useGridSearch(rows, [
+const { term: searchTerm, hiddenSearch, filteredRows, isFiltered, highlightTerm } = useGridSearch(rows, [
   { field: 'name', header: 'Name' },
   { field: 'createdByLabel', header: 'Created By' },
   { field: 'tasks', header: 'Tasks', searchText: taskNames },
@@ -91,7 +91,7 @@ const tablePt = {
         Run Now
       </ActionButton>
       <div class="toolbar-spacer" />
-      <GridSearch v-model="searchTerm" class="list-search" label="Search jobs" placeholder="Search jobs..." />
+      <GridSearch v-model="searchTerm" v-bind="hiddenSearch" class="list-search" label="Search jobs" placeholder="Search jobs..." />
       <ColumnToggle v-model="selectedColumns" :columns="toggleableColumns" />
     </ActionToolbar>
 

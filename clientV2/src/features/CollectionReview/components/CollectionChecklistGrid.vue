@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { REVIEW_FILTER_OPTIONS } from '../../../components/common/reviewFilterOptions.js'
 import { useColumnVisibility } from '../../../shared/composables/useColumnVisibility.js'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
@@ -47,15 +48,6 @@ const props = defineProps({
 
 const emit = defineEmits(['select-rule', 'refresh', 'export-archive'])
 
-const { term: searchFilter, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(() => props.gridData, [
-  { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false },
-  { field: 'groupId', header: 'Group' },
-  { field: 'groupTitle', header: 'Group Title' },
-  { field: 'version', header: 'STIG Id' },
-  { field: 'ruleId', header: 'Rule Id' },
-  { field: 'ruleTitle', header: 'Rule Title' },
-])
-
 const TOGGLEABLE_COLUMNS = [
   { field: 'groupId', header: 'Group' },
   { field: 'groupTitle', header: 'Group Title', defaultHidden: true },
@@ -81,6 +73,15 @@ const DISPLAY_PRESETS = {
 }
 
 const { selectedColumns, visibleFields, setShown } = useColumnVisibility(TOGGLEABLE_COLUMNS, 'collectionChecklistGrid.columns')
+
+const { term: searchFilter, hiddenSearch, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(() => props.gridData, [
+  { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false, optionComponent: REVIEW_FILTER_OPTIONS.cat },
+  { field: 'groupId', header: 'Group' },
+  { field: 'groupTitle', header: 'Group Title' },
+  { field: 'version', header: 'STIG Id' },
+  { field: 'ruleId', header: 'Rule Id' },
+  { field: 'ruleTitle', header: 'Rule Title' },
+], { visibleFields: () => new Set(['severity', ...visibleFields.value]), searchHidden: true })
 
 const activePreset = computed(() => Object.keys(DISPLAY_PRESETS).find(key =>
   Object.entries(DISPLAY_PRESETS[key]).every(([field, shown]) => visibleFields.value.has(field) === shown),
@@ -111,6 +112,7 @@ const { itemSize, gridStyle } = useGridDensity('collection-checklist')
       v-model:search-filter="searchFilter"
       v-model:selected-columns="selectedColumns"
       v-model:filters="gridFilters"
+      :hidden-search="hiddenSearch"
       :toggleable-columns="TOGGLEABLE_COLUMNS"
       :active-preset="activePreset"
       :filter-columns="filterColumns"

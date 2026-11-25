@@ -1,5 +1,6 @@
 <script setup>
 import { computed, watch } from 'vue'
+import { REVIEW_FILTER_OPTIONS } from '../../../components/common/reviewFilterOptions.js'
 import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 import { catLabel } from '../../../shared/lib/exportCells.js'
 import DiffRuleTable from './DiffRuleTable.vue'
@@ -110,34 +111,35 @@ const bodyError = computed(() => (diffMode.value ? props.diffError : props.rules
 // The rules arrive with the detail, check, fix and ccis projections, so the view-mode search
 // also reads the rule content that only the detail pane renders.
 const viewColumns = [
-  { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false },
+  { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false, optionComponent: REVIEW_FILTER_OPTIONS.cat },
   { field: 'version', header: 'STIG ID' },
   { field: 'groupId', header: 'Group' },
   { field: 'ruleId', header: 'Rule Id' },
   { field: 'title', header: 'Rule Title' },
-  { field: 'discussion', header: 'Discussion', searchText: r => r.detail?.vulnDiscussion },
-  { field: 'check', header: 'Check', searchText: r => r.check?.content },
-  { field: 'fix', header: 'Fix', searchText: r => r.fix?.text },
-  { field: 'ccis', header: 'CCIs', searchText: r => (r.ccis ?? []).map(c => c.cci).join(' ') },
+  { field: 'discussion', header: 'Discussion', offGrid: true, searchText: r => r.detail?.vulnDiscussion },
+  { field: 'check', header: 'Check', offGrid: true, searchText: r => r.check?.content },
+  { field: 'fix', header: 'Fix', offGrid: true, searchText: r => r.fix?.text },
+  { field: 'ccis', header: 'CCIs', offGrid: true, searchText: r => (r.ccis ?? []).map(c => c.cci).join(' ') },
 ]
 const diffColumns = computed(() => [
   { field: 'stigId', header: 'STIG ID' },
   { field: 'leftRule', header: `Rule in ${props.compareRev ?? 'compared'}` },
   { field: 'rightRule', header: `Rule in ${props.viewRev ?? 'viewed'}` },
-  { field: 'cat', header: 'CAT', filterValues: r => catLabel(r.cat) ?? '', quickSearch: false },
+  { field: 'cat', header: 'CAT', filterValues: r => catLabel(r.cat) ?? '', quickSearch: false, optionComponent: REVIEW_FILTER_OPTIONS.cat },
   { field: 'changed', header: 'Changed properties', filterValues: r => r.changed, multiple: true },
 ])
 
 const tableRows = computed(() => (diffMode.value ? props.diffRows : props.rules) ?? [])
 const {
   term: searchTerm,
+  hiddenSearch,
   filters: gridFilters,
   filteredRows,
   isFiltered,
   filterColumns,
   valueOptions,
   highlightTerm,
-} = useGridSearch(tableRows, () => (diffMode.value ? diffColumns.value : viewColumns))
+} = useGridSearch(tableRows, () => (diffMode.value ? diffColumns.value : viewColumns), { searchHidden: true })
 
 // Per-field terms for the detail pane, so a match that only lives in the rule content is still visible
 const DETAIL_FIELDS = ['ruleId', 'version', 'title', 'discussion', 'check', 'fix', 'ccis']
@@ -153,6 +155,7 @@ watch(detailHighlight, v => emit('update:highlight', v), { immediate: true })
     <RulePaneToolbar
       v-model:search="searchTerm"
       v-model:filters="gridFilters"
+      :hidden-search="hiddenSearch"
       :revisions="revisions"
       :revisions-loading="revisionsLoading"
       :view-rev="viewRev"

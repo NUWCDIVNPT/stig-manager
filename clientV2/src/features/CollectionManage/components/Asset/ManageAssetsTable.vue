@@ -85,6 +85,7 @@ const visibleMetricColumns = computed(() => metricColumns.filter(c => visibleFie
 
 const {
   term: searchTerm,
+  hiddenSearch,
   filters: gridFilters,
   filteredRows,
   isFiltered,
@@ -94,7 +95,7 @@ const {
 } = useGridSearch(tableData, [
   { field: 'assetName', header: 'Asset' },
   { field: 'labels', header: 'Labels', filterValues: r => r.labels, multiple: true },
-  { field: 'benchmarkIds', header: 'STIG', filterValues: r => r.benchmarkIds, multiple: true, quickSearch: false },
+  { field: 'benchmarkIds', header: 'STIG', filterValues: r => r.benchmarkIds, multiple: true, quickSearch: false, shownWith: 'stigCnt' },
 ], { visibleFields, selection: selectedAssets, dataKey: 'assetId' })
 
 function clearSelection() {
@@ -166,7 +167,7 @@ async function onDeleteConfirmed() {
 
     <div class="table-container">
       <GridToolbar compact>
-        <GridSearch v-model="searchTerm" label="Search assets" placeholder="Search assets..." />
+        <GridSearch v-model="searchTerm" v-bind="hiddenSearch" label="Search assets" placeholder="Search assets..." />
         <template #end>
           <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
           <ColumnToggle v-model="selectedColumns" :columns="toggleableColumns" />

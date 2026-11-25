@@ -253,6 +253,7 @@ describe('metricsSummaryGrid column toggle', () => {
     })
 
     await fireEvent.click(screen.getByRole('button', { name: 'Filters' }))
+    await fireEvent.click(await screen.findByRole('button', { name: 'Add rule' }))
     const value = await screen.findByRole('textbox', { name: 'Value' })
     await fireEvent.update(value, 'windows')
     expect(bodyRows(container)).toHaveLength(2)
@@ -260,7 +261,8 @@ describe('metricsSummaryGrid column toggle', () => {
     await fireEvent.click(screen.getByRole('button', { name: 'Apply' }))
     expect(bodyRows(container)).toEqual(['MS_Windows_11_STIG'])
     const trigger = screen.getByRole('button', { name: 'Filters, 1 applied' })
-    expect(trigger.getAttribute('title')).toBe('Any column contains "windows"')
+    await fireEvent.mouseEnter(trigger)
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Any column contains "windows"')
   })
 
   it('ignores unreadable stored values', () => {

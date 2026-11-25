@@ -44,6 +44,7 @@ const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibilit
 
 const {
   term: searchTerm,
+  hiddenSearch,
   filters: gridFilters,
   filteredRows,
   isFiltered,
@@ -78,7 +79,7 @@ const dataTableRef = ref(null)
 <template>
   <div class="table-container">
     <GridToolbar compact>
-      <GridSearch v-model="searchTerm" label="Search labels" placeholder="Search labels..." />
+      <GridSearch v-model="searchTerm" v-bind="hiddenSearch" label="Search labels" placeholder="Search labels..." />
       <template #end>
         <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
         <ColumnToggle v-model="selectedColumns" :columns="toggleableColumns" />

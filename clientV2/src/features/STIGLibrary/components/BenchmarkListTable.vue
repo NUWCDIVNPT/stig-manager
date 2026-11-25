@@ -54,6 +54,7 @@ const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibilit
 
 const {
   term: searchTerm,
+  hiddenSearch,
   filters: gridFilters,
   filteredRows,
   isFiltered,
@@ -61,7 +62,7 @@ const {
   valueOptions,
   highlightTerm,
 } = useGridSearch(rows, [
-  { field: 'benchmarkId', header: 'Benchmark ID' },
+  { field: 'benchmarkId', header: 'STIG', filterValues: r => r.benchmarkId },
   { field: 'title', header: 'Title' },
   { field: 'lastRevisionStr', header: 'Latest' },
   { field: 'earlierRevisions', header: 'Earlier Revisions' },
@@ -91,7 +92,7 @@ function onRowClick(event) {
       </span>
       <span class="stiglib-panel__hint">Select a benchmark to browse its rules and compare revisions</span>
       <div class="stiglib-panel__spacer" />
-      <GridSearch v-model="searchTerm" class="bm-list__search" label="Search benchmarks" placeholder="Search benchmarks..." />
+      <GridSearch v-model="searchTerm" v-bind="hiddenSearch" class="bm-list__search" label="Search benchmarks" placeholder="Search benchmarks..." />
       <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
       <ColumnToggle v-model="selectedColumns" :columns="toggleableColumns" />
       <ActionButton

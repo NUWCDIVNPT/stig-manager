@@ -16,6 +16,7 @@ import GridToolbar from '../../../components/common/GridToolbar.vue'
 import HighlightText from '../../../components/common/HighlightText.vue'
 import ManualBadge from '../../../components/common/ManualBadge.vue'
 import OverrideBadge from '../../../components/common/OverrideBadge.vue'
+import { REVIEW_FILTER_OPTIONS } from '../../../components/common/reviewFilterOptions.js'
 import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useLinkTo } from '../../../router/links.js'
@@ -99,14 +100,14 @@ const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibilit
 
 const stigIds = r => (r.stigs ?? []).map(s => s.benchmarkId)
 // Labels show inside the asset cell, so they search whenever Asset is visible
-const { term: searchTerm, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(decoratedRows, [
+const { term: searchTerm, hiddenSearch, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(decoratedRows, [
   { field: 'assetName', header: 'Asset' },
   { field: 'labels', header: 'Labels', filterValues: r => r.labels, multiple: true, shownWith: 'assetName' },
   { field: 'stigs', header: 'STIGs', filterValues: stigIds, multiple: true },
   { field: 'detail', header: 'Detail' },
   { field: 'comment', header: 'Comment' },
-  { field: 'resultEngine', header: 'Engine', filterValues: r => capitalize(r._engineDisplay) },
-  { field: 'status', header: 'Status', filterValues: r => statusText(r.status) },
+  { field: 'resultEngine', header: 'Engine', filterValues: r => capitalize(r._engineDisplay), optionComponent: REVIEW_FILTER_OPTIONS.engine },
+  { field: 'status', header: 'Status', filterValues: r => statusText(r.status), optionComponent: REVIEW_FILTER_OPTIONS.status },
   { field: 'username', header: 'Reviewer', filterValues: r => r.username },
 ], { visibleFields })
 
@@ -204,7 +205,7 @@ const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-con
         <DensityControls grid-key="findings-individual" />
       </header>
       <GridToolbar v-if="selectedAggregated && !error">
-        <GridSearch v-model="searchTerm" label="Search reviews" placeholder="Search reviews..." />
+        <GridSearch v-model="searchTerm" v-bind="hiddenSearch" label="Search reviews" placeholder="Search reviews..." />
         <template #end>
           <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
           <ColumnToggle v-model="selectedColumns" :columns="toggleableColumns" />

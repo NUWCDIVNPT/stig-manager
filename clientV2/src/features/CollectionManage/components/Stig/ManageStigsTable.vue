@@ -71,6 +71,7 @@ const selectedStigs = ref([])
 // Title isn't a column; it shows as the Benchmark ID tooltip
 const {
   term: searchTerm,
+  hiddenSearch,
   filters: gridFilters,
   filteredRows,
   isFiltered,
@@ -78,7 +79,7 @@ const {
   valueOptions,
   highlightTerm,
 } = useGridSearch(tableData, [
-  { field: 'benchmarkId', header: 'Benchmark ID' },
+  { field: 'benchmarkId', header: 'STIG', filterValues: r => r.benchmarkId },
   { field: 'title', header: 'Title', shownWith: 'benchmarkId' },
   { field: 'revisionStr', header: 'Revision' },
 ], { visibleFields, selection: selectedStigs, dataKey: 'benchmarkId' })
@@ -127,7 +128,7 @@ function openEditModal(stig) {
 
     <div class="table-container">
       <GridToolbar compact>
-        <GridSearch v-model="searchTerm" label="Search STIGs" placeholder="Search STIGs..." />
+        <GridSearch v-model="searchTerm" v-bind="hiddenSearch" label="Search STIGs" placeholder="Search STIGs..." />
         <template #end>
           <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
           <ColumnToggle v-model="selectedColumns" :columns="toggleableColumns" />
