@@ -108,12 +108,14 @@ function toggleResources() {
 const flippedAbove = ref(false)
 
 // Height of the Result/Detail/Comment area, set by the user with the resize
-// handle and shared by every grid that opens this popover. The stylesheet
-// also caps it against the viewport. The handle sits on the edge of the box
+// handle and shared by every grid that opens this popover. It is capped under
+// half the viewport so the fields leave room for the rest of the box on one
+// side of a row. The handle sits on the edge of the box
 // that moves, so it follows the pointer: under the fields for a box below its
 // row, which grows downward, and at the top of a flipped box, which grows
 // upward from a fixed bottom edge.
 const MAIN_HEIGHT_MIN_REM = 14
+const MAIN_HEIGHT_MAX_VH = 40
 const {
   heightRem: mainHeightRem,
   targetEl: mainEl,
@@ -122,12 +124,13 @@ const {
   storageKey: 'stigman:reviewPopoverMainHeight',
   defaultRem: 19,
   minRem: MAIN_HEIGHT_MIN_REM,
-  maxRem: 80,
+  maxRem: () => window.innerHeight * MAIN_HEIGHT_MAX_VH / 100 / rootFontSizePx(),
   inverted: flippedAbove,
 })
 const mainStyle = computed(() => ({
   '--sm-main-height': `${mainHeightRem.value}rem`,
   '--sm-main-min-height': `${MAIN_HEIGHT_MIN_REM}rem`,
+  '--sm-main-max-height': `${MAIN_HEIGHT_MAX_VH}vh`,
 }))
 
 const resizeHandleAttrs = {
@@ -697,10 +700,9 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
   display: flex;
   gap: 0.5rem;
   align-items: stretch;
-  /* set from mainHeightRem; capped under half the viewport so the
-     fields leave room for the rest of the box on one side of a row */
+  /* all three set in mainStyle */
   height: var(--sm-main-height);
-  max-height: 40vh;
+  max-height: var(--sm-main-max-height);
   min-height: var(--sm-main-min-height);
 }
 

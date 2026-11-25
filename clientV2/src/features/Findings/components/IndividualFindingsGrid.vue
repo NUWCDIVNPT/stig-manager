@@ -24,6 +24,7 @@ import { useColumnVisibility } from '../../../shared/composables/useColumnVisibi
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 import { durationToNow } from '../../../shared/lib.js'
+import { compactCellText } from '../../../shared/lib/cellText.js'
 import { getEngineDisplay } from '../../../shared/lib/checklistUtils.js'
 import { compactTablePt } from '../../../shared/lib/dataTablePt.js'
 import { capitalize, statusText } from '../../../shared/lib/exportCells.js'
@@ -280,12 +281,12 @@ const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-con
           </Column>
           <Column v-if="visibleFields.has('detail')" field="detail" header="Detail" :style="{ minWidth: '12rem' }" :pt="borderPt">
             <template #body="{ data }">
-              <span class="cell-text cell-text--clamped" :title="data.detail"><HighlightText :text="data.detail || '—'" :term="highlightTerm('detail')" /></span>
+              <span class="cell-text cell-text--clamped cell-text--multiline" :title="data.detail"><HighlightText :text="compactCellText(data.detail) || '—'" :term="highlightTerm('detail')" /></span>
             </template>
           </Column>
           <Column v-if="visibleFields.has('comment')" field="comment" header="Comment" :style="{ minWidth: '12rem' }" :pt="borderPt">
             <template #body="{ data }">
-              <span class="cell-text cell-text--clamped" :title="data.comment"><HighlightText :text="data.comment || '—'" :term="highlightTerm('comment')" /></span>
+              <span class="cell-text cell-text--clamped cell-text--multiline" :title="data.comment"><HighlightText :text="compactCellText(data.comment) || '—'" :term="highlightTerm('comment')" /></span>
             </template>
           </Column>
           <Column v-if="visibleFields.has('resultEngine')" field="resultEngine" export-header="Engine" :pt="centerBorderPt" :style="{ width: '2.8rem', minWidth: '2.8rem', textAlign: 'center' }">
@@ -489,9 +490,15 @@ const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-con
   overflow: hidden;
   width: 100%;
   min-width: 0;
-  white-space: pre-wrap;
+  white-space: normal;
   overflow-wrap: anywhere;
   word-break: break-word;
+}
+
+/* Detail and Comment keep the line breaks their author typed, except at a
+   clamp of one line (see useGridDensity) */
+.cell-text--multiline {
+  white-space: var(--cell-multiline-white-space, pre-wrap);
 }
 
 .asset-cell {

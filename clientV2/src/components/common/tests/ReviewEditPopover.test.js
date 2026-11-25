@@ -1,6 +1,6 @@
 import { fireEvent, screen } from '@testing-library/vue'
 import { flushPromises } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { h, reactive, ref } from 'vue'
 import { renderWithProviders } from '../../../testUtils/utils.js'
 
@@ -358,8 +358,17 @@ describe('reviewEditPopover.vue', () => {
     const KEY = 'stigman:reviewPopoverMainHeight'
     const mainHeight = () => document.querySelector('.review-edit-popover__main').style.getPropertyValue('--sm-main-height')
 
+    // The fields are capped at 40% of the viewport height; jsdom's root
+    // font-size is 16px, so 2000px allows 50rem
+    const innerHeight = window.innerHeight
+
     beforeEach(() => {
       localStorage.removeItem(KEY)
+      window.innerHeight = 2000
+    })
+
+    afterEach(() => {
+      window.innerHeight = innerHeight
     })
 
     it('starts at the default height', () => {
@@ -397,6 +406,33 @@ describe('reviewEditPopover.vue', () => {
       createWrapper({ currentReview: defaultReview })
       await fireEvent.keyDown(screen.getByRole('separator'), { key: 'ArrowUp' })
       expect(mainHeight()).toBe('14rem')
+    })
+
+    it('does not grow past the viewport cap', async () => {
+      window.innerHeight = 800 // 40% is 320px, 20rem
+      createWrapper({ currentReview: defaultReview })
+      const handle = screen.getByRole('separator')
+
+      await fireEvent.keyDown(handle, { key: 'ArrowDown' })
+      await fireEvent.keyDown(handle, { key: 'ArrowDown' })
+      expect(mainHeight()).toBe('20rem')
+      expect(localStorage.getItem(KEY)).toBe('20')
+    })
+
+    it('shrinks on the first key press when the stored height is over the cap', async () => {
+      localStorage.setItem(KEY, '45')
+      window.innerHeight = 800
+      createWrapper({ currentReview: defaultReview })
+
+      await fireEvent.keyDown(screen.getByRole('separator'), { key: 'ArrowUp' })
+      expect(mainHeight()).toBe('19rem')
+    })
+
+    it('passes the cap to the stylesheet', () => {
+      createWrapper({ currentReview: defaultReview })
+      const main = document.querySelector('.review-edit-popover__main')
+      expect(main.style.getPropertyValue('--sm-main-max-height')).toBe('40vh')
+      expect(main.style.getPropertyValue('--sm-main-min-height')).toBe('14rem')
     })
 
     it('double-click resets to the default', async () => {

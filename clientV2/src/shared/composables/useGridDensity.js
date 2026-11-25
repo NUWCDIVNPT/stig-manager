@@ -70,6 +70,10 @@ export function useGridDensity(gridKey) {
     '--item-size': `${itemSize.value}px`,
     '--cell-font-size': `var(--text-${geometry.textSize})`,
     '--cell-line-height': `${lineRem}rem`,
+    // Cells that keep their author's line breaks (.cell-text--multiline) flow
+    // as one line at a clamp of 1, where a break would leave the row showing
+    // only the first, often short, line
+    '--cell-multiline-white-space': lineClamp.value === 1 ? 'normal' : 'pre-wrap',
   }))
 
   const canIncrease = computed(() => lineClamp.value < MAX_LINE_CLAMP)
