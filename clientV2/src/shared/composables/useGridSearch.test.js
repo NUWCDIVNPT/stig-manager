@@ -172,6 +172,26 @@ describe('useGridSearch', () => {
     expect(counts()).toEqual([['linux', 1], ['windows', 1]])
   })
 
+  it('works out a list column\'s counts once until the term or rules change', () => {
+    let reads = 0
+    const s = useGridSearch(rows, [
+      { field: 'name', header: 'Name' },
+      { field: 'os', header: 'OS', filterValues: (r) => {
+        reads++
+        return r.os
+      } },
+    ])
+    s.term.value = 'web'
+    const first = s.valueOptions.value.os
+    const readsAfterFirst = reads
+    expect(s.valueOptions.value.os).toBe(first)
+    expect(reads).toBe(readsAfterFirst)
+
+    s.term.value = 'db'
+    expect(s.valueOptions.value.os).not.toBe(first)
+    expect(s.valueOptions.value.os.map(o => [o.value, o.count])).toEqual([['linux', 1], ['windows', 0]])
+  })
+
   it('reports the rows shown only by a match in a hidden column', () => {
     const visible = ref(new Set(['name']))
     const s = useGridSearch(rows, columns, { visibleFields: visible, searchHidden: true })

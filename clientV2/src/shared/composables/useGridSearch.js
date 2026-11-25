@@ -140,11 +140,17 @@ export function useGridSearch(rows, columns, { visibleFields = null, searchHidde
     return options.map(o => ({ ...o, count: counts.get(o.value) ?? 0 }))
   }
 
-  // Props for GridFilterButton: field -> options, each worked out when it is read, so a closed
-  // Filter menu costs nothing while the user types
-  const valueOptions = computed(() => Object.defineProperties({}, Object.fromEntries(
-    listColumns.value.map(c => [c.field, { enumerable: true, get: () => optionsOf(c) }]),
-  )))
+  // Props for GridFilterButton: field -> options, each worked out when it is first read, so a
+  // closed Filter menu costs nothing while the user types, and kept until the rows, term or
+  // rules change, so the menu re-rendering does not rescan the rows
+  const valueOptions = computed(() => {
+    const byField = {}
+    for (const col of listColumns.value) {
+      const options = computed(() => optionsOf(col))
+      Object.defineProperty(byField, col.field, { enumerable: true, get: () => options.value })
+    }
+    return byField
+  })
 
   // HighlightText marks substrings, so only contains rules highlight
   function highlightTerm(field) {
