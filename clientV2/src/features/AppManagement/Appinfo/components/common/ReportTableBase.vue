@@ -51,6 +51,7 @@ const yesNo = v => (v == null ? '' : v ? 'Yes' : 'No')
 // Search covers the lead column and the shown text columns; Filter offers every column
 const {
   term: searchTerm,
+  hiddenSearch,
   filters: gridFilters,
   filteredRows,
   filterColumns,
@@ -112,7 +113,7 @@ function columnStyle(col) {
       <span v-if="title">{{ title }}</span>
       <slot name="title-extra" />
       <div class="title-spacer" />
-      <GridSearch v-if="searchable" v-model="searchTerm" class="report-table-search" :label="`Search ${noun}s`" />
+      <GridSearch v-if="searchable" v-model="searchTerm" v-bind="hiddenSearch" class="report-table-search" :label="`Search ${noun}s`" />
       <GridFilterButton v-if="searchable" v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
       <ColumnToggle v-if="columnToggle" v-model="selectedColumns" :columns="toggleColumns" />
     </div>

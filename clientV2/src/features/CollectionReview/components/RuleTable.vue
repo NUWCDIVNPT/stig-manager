@@ -86,7 +86,7 @@ const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibilit
 
 // Text columns search while visible; Asset is locked on. Engine, Status and Result always
 // show, so they ride on Asset. Listed in grid column order for the Filter button's menu.
-const { term: searchFilter, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(() => props.gridData, [
+const { term: searchFilter, hiddenSearch, filters: gridFilters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm } = useGridSearch(() => props.gridData, [
   { field: 'engine', header: 'Engine', shownWith: 'assetName', filterValues: r => capitalize(getEngineDisplay(r)), quickSearch: false, optionComponent: REVIEW_FILTER_OPTIONS.engine },
   { field: 'status', header: 'Status', shownWith: 'assetName', filterValues: r => statusText(r.status), quickSearch: false, optionComponent: REVIEW_FILTER_OPTIONS.status },
   { field: 'assetName', header: 'Asset' },
@@ -107,6 +107,7 @@ const { term: searchFilter, filters: gridFilters, filteredRows, isFiltered, filt
       v-model:search-filter="searchFilter"
       v-model:selected-columns="selectedColumns"
       v-model:filters="gridFilters"
+      :hidden-search="hiddenSearch"
       :filter-columns="filterColumns"
       :filter-value-options="valueOptions"
       :selected-rule-id="selectedRuleId"

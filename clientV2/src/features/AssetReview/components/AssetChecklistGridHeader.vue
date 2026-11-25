@@ -48,6 +48,11 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  // hiddenSearch from useGridSearch, bound onto the search box
+  hiddenSearch: {
+    type: Object,
+    default: () => ({}),
+  },
   canAccept: {
     type: Boolean,
     default: false,
@@ -281,7 +286,7 @@ function toggleChecklistMenu(event) {
       <div class="checklist-grid__header-search">
         <GridSearch
           v-model="searchFilter" class="checklist-grid__header-search-input"
-          placeholder="Search reviews..." label="Search reviews"
+          placeholder="Search reviews..." label="Search reviews" v-bind="hiddenSearch"
         />
         <GridFilterButton v-model="filters" :columns="filterColumns" :value-options="filterValueOptions" />
       </div>

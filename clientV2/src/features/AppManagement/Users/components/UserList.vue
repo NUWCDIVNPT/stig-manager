@@ -79,6 +79,7 @@ StatusOption.props = ['option', 'field']
 
 const {
   term: searchTerm,
+  hiddenSearch,
   filters: gridFilters,
   filteredRows,
   isFiltered,
@@ -149,7 +150,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
         {{ statusToggle.label }}
       </ActionButton>
       <div class="toolbar-spacer" />
-      <GridSearch v-model="searchTerm" class="list-search" label="Search users" placeholder="Search users..." />
+      <GridSearch v-model="searchTerm" v-bind="hiddenSearch" class="list-search" label="Search users" placeholder="Search users..." />
       <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
       <ColumnToggle v-model="selectedColumns" :columns="toggleableColumns" />
     </ActionToolbar>

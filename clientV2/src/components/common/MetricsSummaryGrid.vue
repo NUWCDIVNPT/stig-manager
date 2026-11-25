@@ -397,6 +397,7 @@ const data = computed(() => {
 // filterHeader names a column in the Filter button when it differs from the grid header.
 const {
   term: searchTerm,
+  hiddenSearch,
   filters: gridFilters,
   filteredRows: filteredData,
   isFiltered: isSearching,
@@ -443,7 +444,7 @@ watch([() => props.selectedKey, data], ([newKey, newData]) => {
         </template>
       </div>
       <div class="agg-grid-header-controls">
-        <GridSearch v-model="searchTerm" class="agg-grid-search" label="Search rows" />
+        <GridSearch v-model="searchTerm" v-bind="hiddenSearch" class="agg-grid-search" label="Search rows" />
         <GridFilterButton
           v-model="gridFilters"
           :columns="filterColumns"

@@ -116,10 +116,10 @@ const viewColumns = [
   { field: 'groupId', header: 'Group' },
   { field: 'ruleId', header: 'Rule Id' },
   { field: 'title', header: 'Rule Title' },
-  { field: 'discussion', header: 'Discussion', searchText: r => r.detail?.vulnDiscussion },
-  { field: 'check', header: 'Check', searchText: r => r.check?.content },
-  { field: 'fix', header: 'Fix', searchText: r => r.fix?.text },
-  { field: 'ccis', header: 'CCIs', searchText: r => (r.ccis ?? []).map(c => c.cci).join(' ') },
+  { field: 'discussion', header: 'Discussion', offGrid: true, searchText: r => r.detail?.vulnDiscussion },
+  { field: 'check', header: 'Check', offGrid: true, searchText: r => r.check?.content },
+  { field: 'fix', header: 'Fix', offGrid: true, searchText: r => r.fix?.text },
+  { field: 'ccis', header: 'CCIs', offGrid: true, searchText: r => (r.ccis ?? []).map(c => c.cci).join(' ') },
 ]
 const diffColumns = computed(() => [
   { field: 'stigId', header: 'STIG ID' },
@@ -132,13 +132,14 @@ const diffColumns = computed(() => [
 const tableRows = computed(() => (diffMode.value ? props.diffRows : props.rules) ?? [])
 const {
   term: searchTerm,
+  hiddenSearch,
   filters: gridFilters,
   filteredRows,
   isFiltered,
   filterColumns,
   valueOptions,
   highlightTerm,
-} = useGridSearch(tableRows, () => (diffMode.value ? diffColumns.value : viewColumns))
+} = useGridSearch(tableRows, () => (diffMode.value ? diffColumns.value : viewColumns), { searchHidden: true })
 
 // Per-field terms for the detail pane, so a match that only lives in the rule content is still visible
 const DETAIL_FIELDS = ['ruleId', 'version', 'title', 'discussion', 'check', 'fix', 'ccis']
@@ -154,6 +155,7 @@ watch(detailHighlight, v => emit('update:highlight', v), { immediate: true })
     <RulePaneToolbar
       v-model:search="searchTerm"
       v-model:filters="gridFilters"
+      :hidden-search="hiddenSearch"
       :revisions="revisions"
       :revisions-loading="revisionsLoading"
       :view-rev="viewRev"

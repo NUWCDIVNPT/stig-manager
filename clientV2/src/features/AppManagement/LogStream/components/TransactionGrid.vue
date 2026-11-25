@@ -54,6 +54,7 @@ const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibilit
 
 const {
   term: searchTerm,
+  hiddenSearch,
   filters: gridFilters,
   filteredRows: rows,
   isFiltered,
@@ -129,7 +130,7 @@ const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-con
       <i class="pi pi-table" />
       <span>API Transactions</span>
       <div class="transaction-grid-controls">
-        <GridSearch v-model="searchTerm" class="transaction-grid-search" label="Search transactions" placeholder="Search transactions..." />
+        <GridSearch v-model="searchTerm" v-bind="hiddenSearch" class="transaction-grid-search" label="Search transactions" placeholder="Search transactions..." />
         <GridFilterButton v-model="gridFilters" :columns="filterColumns" :value-options="valueOptions" />
         <ColumnToggle v-model="selectedColumns" :columns="toggleableColumns" />
       </div>

@@ -60,7 +60,7 @@ const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibilit
   { field: 'collectionCount', header: '# Collections' },
 ], 'adminUserGroups.columns')
 
-const { term: searchTerm, filteredRows, isFiltered, highlightTerm } = useGridSearch(rows, [
+const { term: searchTerm, hiddenSearch, filteredRows, isFiltered, highlightTerm } = useGridSearch(rows, [
   { field: 'name', header: 'Name' },
   { field: 'description', header: 'Description' },
 ], { visibleFields })
@@ -88,7 +88,7 @@ const borderPt = { headerCell: { style: 'border-right: 1px solid var(--color-bor
         Delete Group
       </ActionButton>
       <div class="toolbar-spacer" />
-      <GridSearch v-model="searchTerm" class="list-search" label="Search groups" placeholder="Search groups..." />
+      <GridSearch v-model="searchTerm" v-bind="hiddenSearch" class="list-search" label="Search groups" placeholder="Search groups..." />
       <ColumnToggle v-model="selectedColumns" :columns="toggleableColumns" />
     </ActionToolbar>
 

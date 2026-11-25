@@ -57,7 +57,7 @@ const { toggleableColumns, selectedColumns, visibleFields } = useColumnVisibilit
   { field: 'collectionId', header: 'ID' },
 ], 'adminCollections.columns')
 
-const { term: searchTerm, filteredRows, isFiltered, highlightTerm } = useGridSearch(() => props.collections, [
+const { term: searchTerm, hiddenSearch, filteredRows, isFiltered, highlightTerm } = useGridSearch(() => props.collections, [
   { field: 'name', header: 'Name' },
   { field: 'owners', header: 'Owners', searchText: ownerNames },
   { field: 'collectionId', header: 'ID' },
@@ -83,7 +83,7 @@ const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-con
         Delete Collection
       </ActionButton>
       <div class="toolbar-spacer" />
-      <GridSearch v-model="searchTerm" class="list-search" label="Search collections" placeholder="Search collections..." />
+      <GridSearch v-model="searchTerm" v-bind="hiddenSearch" class="list-search" label="Search collections" placeholder="Search collections..." />
       <ColumnToggle v-model="selectedColumns" :columns="toggleableColumns" />
     </ActionToolbar>
 

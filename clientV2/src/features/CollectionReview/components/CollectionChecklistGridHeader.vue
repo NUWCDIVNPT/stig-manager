@@ -29,6 +29,11 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  // hiddenSearch from useGridSearch, bound onto the search box
+  hiddenSearch: {
+    type: Object,
+    default: () => ({}),
+  },
   // False while the Asset list is loading, failed or empty
   canExportArchive: {
     type: Boolean,
@@ -123,7 +128,7 @@ function toggleChecklistMenu(event) {
     <div class="checklist-grid__header-bottom">
       <TieredMenu ref="checklistMenu" :model="checklistMenuItems" :popup="true" :pt="checklistMenuPT" />
       <div class="checklist-grid__header-search">
-        <GridSearch v-model="searchFilter" class="checklist-grid__header-search-input" label="Search rules" />
+        <GridSearch v-model="searchFilter" class="checklist-grid__header-search-input" label="Search rules" v-bind="hiddenSearch" />
         <GridFilterButton v-model="filters" :columns="filterColumns" :value-options="filterValueOptions" />
       </div>
 

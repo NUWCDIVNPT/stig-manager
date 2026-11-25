@@ -278,14 +278,14 @@ const tablePt = {
         <Column header="User or Group" :export-value="exportUserGroup" sortable :sort-field="userGroupSortValue">
           <template #body="{ data }">
             <div v-if="data.user" class="user-group-cell">
-              <i class="pi pi-user" />
+              <i class="pi pi-user" title="User" />
               <div class="info-col">
                 <span class="primary-text">{{ data.user.displayName }}</span>
                 <span class="secondary-text">{{ data.user.username }}</span>
               </div>
             </div>
             <div v-else-if="data.userGroup" class="user-group-cell">
-              <i class="pi pi-users" />
+              <i class="pi pi-users" title="User Group" />
               <div class="info-col">
                 <span class="primary-text">{{ data.userGroup.name }}</span>
                 <span class="secondary-text">{{ data.userGroup.description }}</span>

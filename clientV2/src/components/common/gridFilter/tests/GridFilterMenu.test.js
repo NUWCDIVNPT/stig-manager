@@ -12,24 +12,23 @@ function renderMenu(props) {
 }
 
 describe('gridFilterMenu.vue', () => {
-  it('lists the columns in the order given, leaving out hidden ones without a rule', () => {
+  it('lists shown columns in the order given, then the hidden ones, marked', () => {
     const columns = [
       { field: 'ip', header: 'IP', kind: 'text' },
       { field: 'name', header: 'Name', kind: 'text', hidden: true },
       { field: 'fqdn', header: 'FQDN', kind: 'text', hidden: true },
       { field: 'mac', header: 'MAC', kind: 'text' },
     ]
-    renderMenu({ columns, modelValue: [searchFilter('fqdn', 'text', { value: 'lab' })] })
-    const labels = screen.getAllByRole('menuitem').map(i => i.querySelector('.grid-filter-menu__label').textContent)
-    expect(labels).toEqual(['IP', 'FQDN', 'MAC'])
+    renderMenu({ columns })
+    const items = screen.getAllByRole('menuitem')
+    expect(items.map(i => i.querySelector('.grid-filter-menu__label').textContent)).toEqual(['IP', 'MAC', 'Name', 'FQDN'])
+    expect(items.map(i => Boolean(i.querySelector('[aria-label="hidden column"]')))).toEqual([false, false, true, true])
   })
 
-  it('keeps a hidden column listed while its quick filter is open, even once its rule is emptied', async () => {
+  it('opens a hidden column\'s quick filter like any other', async () => {
     const fqdn = { field: 'fqdn', header: 'FQDN', kind: 'text', hidden: true }
-    const { rerender } = renderMenu({ columns: [fqdn], modelValue: [searchFilter('fqdn', 'text', { value: 'lab' })] })
+    renderMenu({ columns: [fqdn] })
     await fireEvent.click(screen.getByRole('menuitem', { name: /FQDN/ }))
-    await rerender({ modelValue: [] })
-    expect(screen.getByRole('menuitem', { name: 'FQDN' })).toBeTruthy()
     expect(screen.getByRole('textbox', { name: 'FQDN contains' })).toBeTruthy()
   })
 

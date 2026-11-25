@@ -8,7 +8,7 @@ import { columnSummary } from './quickFilters.js'
 // The Filter button's column list. A column unrolls its quick filter to the side on hover or
 // click; the footer opens the rule builder.
 const props = defineProps({
-  // filterColumns from useGridSearch, in grid order. A hidden column is listed only while it has a rule.
+  // filterColumns from useGridSearch, in grid order. Columns hidden in the grid are listed last, marked.
   columns: {
     type: Array,
     default: () => [],
@@ -29,16 +29,17 @@ const HOVER_OPEN_MS = 60
 // Slower once a flyout is open, so a diagonal move toward it doesn't switch columns
 const HOVER_SWITCH_MS = 250
 
-const root = ref()
+const list = ref()
 const quickFilterRef = ref()
 const flyout = ref(null)
 let hoverTimer = null
 onBeforeUnmount(() => clearTimeout(hoverTimer))
 
 const applied = computed(() => model.value.filter(isActive))
-// A hidden column stays listed while its flyout is open, so emptying its rule doesn't close it
-const menuColumns = computed(() => props.columns.filter(c => !c.hidden || ruleCount(c) > 0 || c.field === flyout.value?.field))
-const flyoutColumn = computed(() => menuColumns.value.find(c => c.field === flyout.value?.field) ?? null)
+// Shown columns mirror the grid; hidden ones follow, still filterable
+const menuColumns = computed(() => [...props.columns.filter(c => !c.hidden), ...props.columns.filter(c => c.hidden)])
+const firstHidden = computed(() => menuColumns.value.find(c => c.hidden)?.field)
+const flyoutColumn = computed(() => props.columns.find(c => c.field === flyout.value?.field) ?? null)
 
 function rulesOf(col) {
   return applied.value.filter(f => f.key === col.field)
@@ -78,7 +79,7 @@ async function openFlyout(col, item) {
   if (flyout.value?.field === col.field) {
     return
   }
-  flyout.value = { field: col.field, side: 'right', top: item.offsetTop - root.value.scrollTop }
+  flyout.value = { field: col.field, side: 'right', top: item.offsetTop - list.value.scrollTop }
   await nextTick()
   const el = quickFilterRef.value?.$el
   if (!el || flyout.value?.field !== col.field) {
@@ -101,7 +102,7 @@ function hoverFlyout(col, event) {
 </script>
 
 <template>
-  <div ref="root" class="grid-filter-menu">
+  <div class="grid-filter-menu">
     <div class="grid-filter__head">
       <span>Filter by</span>
       <span v-if="applied.length" class="grid-filter__hint">{{ applied.length === 1 ? '1 rule' : `${applied.length} rules` }}</span>
@@ -110,21 +111,22 @@ function hoverFlyout(col, event) {
       </button>
     </div>
 
-    <ul class="grid-filter-menu__list" role="menu" aria-label="Columns">
-      <li v-for="col in menuColumns" :key="col.field" role="none">
+    <ul ref="list" class="grid-filter-menu__list" role="menu" aria-label="Columns" @scroll="closeFlyout">
+      <li v-for="col in menuColumns" :key="col.field" role="none" :class="{ 'grid-filter-menu__first-hidden': col.field === firstHidden }">
         <button
           type="button"
           role="menuitem"
           aria-haspopup="true"
           :aria-expanded="flyout?.field === col.field"
           class="grid-filter-menu__item"
-          :class="{ 'is-open': flyout?.field === col.field, 'is-filtered': ruleCount(col) > 0 }"
+          :class="{ 'is-open': flyout?.field === col.field, 'is-filtered': ruleCount(col) > 0, 'is-hidden': col.hidden }"
           :title="title(col)"
           @mouseenter="hoverFlyout(col, $event)"
           @mouseleave="cancelHover"
           @click="openFlyout(col, $event.currentTarget)"
         >
           <span class="grid-filter-menu__label">{{ col.header }}</span>
+          <i v-if="col.hidden" class="pi pi-eye-slash" role="img" aria-label="hidden column" title="Hidden in the grid. Rows are still filtered by it." />
           <span v-if="ruleCount(col)" class="grid-filter-menu__summary">{{ summary(col) }}</span>
           <i class="pi pi-chevron-right" aria-hidden="true" />
         </button>
@@ -165,6 +167,14 @@ function hoverFlyout(col, event) {
   margin: 0;
   padding: 0.25rem;
   list-style: none;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.grid-filter-menu__first-hidden:not(:first-child) {
+  margin-top: 0.25rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid var(--color-border-default);
 }
 
 .grid-filter-menu__item {
@@ -186,6 +196,10 @@ function hoverFlyout(col, event) {
 .grid-filter-menu__item:hover,
 .grid-filter-menu__item.is-open {
   background: var(--color-bg-hover-strong);
+}
+
+.grid-filter-menu__item.is-hidden .grid-filter-menu__label {
+  color: var(--color-text-dim);
 }
 
 .grid-filter-menu__item.is-filtered .grid-filter-menu__label {
@@ -219,6 +233,10 @@ function hoverFlyout(col, event) {
 .grid-filter-menu__item .pi {
   color: var(--color-text-dim);
   font-size: var(--icon-xs);
+}
+
+.grid-filter-menu__item .pi-eye-slash {
+  font-size: var(--text-lg);
 }
 
 .grid-filter-menu__flyout {
