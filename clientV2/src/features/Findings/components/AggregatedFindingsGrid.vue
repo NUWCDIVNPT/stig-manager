@@ -10,6 +10,7 @@ import GridFilterButton from '../../../components/common/GridFilterButton.vue'
 import GridSearch from '../../../components/common/GridSearch.vue'
 import GridToolbar from '../../../components/common/GridToolbar.vue'
 import HighlightText from '../../../components/common/HighlightText.vue'
+import { REVIEW_FILTER_OPTIONS } from '../../../components/common/reviewFilterOptions.js'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
@@ -120,7 +121,7 @@ function onFooterAction(key) {
 // Keyed like visibleColumns so the searchable columns follow the aggregator
 const stigIds = r => (r.stigs ?? []).map(s => s.benchmarkId)
 const SEARCH_COLUMNS = {
-  cat: { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false },
+  cat: { field: 'severity', header: 'CAT', filterValues: r => catLabel(r.severity), quickSearch: false, optionComponent: REVIEW_FILTER_OPTIONS.cat },
   group: { field: 'groupId', header: 'Group' },
   rule: { field: 'ruleId', header: 'Rule' },
   cci: { field: 'cci', header: 'CCI' },

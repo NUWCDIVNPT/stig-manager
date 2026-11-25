@@ -61,7 +61,7 @@ const {
   valueOptions,
   highlightTerm,
 } = useGridSearch(rows, [
-  { field: 'benchmarkId', header: 'Benchmark ID' },
+  { field: 'benchmarkId', header: 'STIG', filterValues: r => r.benchmarkId },
   { field: 'title', header: 'Title' },
   { field: 'lastRevisionStr', header: 'Latest' },
   { field: 'earlierRevisions', header: 'Earlier Revisions' },

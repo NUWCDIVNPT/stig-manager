@@ -253,6 +253,7 @@ describe('metricsSummaryGrid column toggle', () => {
     })
 
     await fireEvent.click(screen.getByRole('button', { name: 'Filters' }))
+    await fireEvent.click(await screen.findByRole('button', { name: 'Add rule' }))
     const value = await screen.findByRole('textbox', { name: 'Value' })
     await fireEvent.update(value, 'windows')
     expect(bodyRows(container)).toHaveLength(2)

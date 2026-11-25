@@ -6,6 +6,7 @@ import {
   describeFilter,
   filterOperator,
   isNegated,
+  negated,
   searchFilter,
   withColumn,
   withOperator,
@@ -109,23 +110,23 @@ describe('columnValueOptions', () => {
       { labels: [] },
     ]
     expect(columnValueOptions(labelRows, labelCol)).toEqual([
-      { value: '', name: '(no labels)', color: null },
-      { value: 'app', name: 'app', color: 'ff0000' },
-      { value: 'prod', name: 'prod', color: '00ff00' },
+      { value: '', name: '(no labels)', color: null, count: 1 },
+      { value: 'app', name: 'app', color: 'ff0000', count: 1 },
+      { value: 'prod', name: 'prod', color: '00ff00', count: 2 },
     ])
   })
 
   it('adds a none option for blank or missing scalars, named after the header', () => {
     const osCol = { field: 'os', header: 'OS', filterValues: r => r.os }
     expect(columnValueOptions([{ os: 'linux' }, { os: '' }, { os: null }], osCol)).toEqual([
-      { value: '', name: '(no os)', color: null },
-      { value: 'linux', name: 'linux', color: null },
+      { value: '', name: '(no os)', color: null, count: 2 },
+      { value: 'linux', name: 'linux', color: null, count: 1 },
     ])
   })
 
   it('keeps the first color seen and handles missing rows', () => {
     const labelRows = [{ labels: [{ name: 'p', color: '111' }] }, { labels: [{ name: 'p', color: '222' }] }]
-    expect(columnValueOptions(labelRows, labelCol)).toEqual([{ value: 'p', name: 'p', color: '111' }])
+    expect(columnValueOptions(labelRows, labelCol)).toEqual([{ value: 'p', name: 'p', color: '111', count: 2 }])
     expect(columnValueOptions(null, labelCol)).toEqual([])
   })
 
@@ -137,6 +138,18 @@ describe('columnValueOptions', () => {
 })
 
 describe('rule helpers', () => {
+  it('negates each kind of rule to its opposite and back', () => {
+    const pairs = [['contains', 'notContains'], ['equals', 'notEquals']]
+    for (const [pos, neg] of pairs) {
+      const rule = searchFilter('name', 'text', { value: 'x', mode: pos })
+      expect(negated(rule).mode).toBe(neg)
+      expect(negated(negated(rule))).toEqual(rule)
+    }
+    const values = searchFilter('os', 'values', { value: ['a'] })
+    expect(negated(values).exclude).toBe(true)
+    expect(negated(negated(values))).toEqual(values)
+  })
+
   it('describes rules in one line', () => {
     expect(describeFilter(searchFilter('name', 'text', { value: ' web ', mode: 'notContains', matchWord: true }), cols))
       .toBe('Asset does not contain "web" (whole word)')

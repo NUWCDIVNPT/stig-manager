@@ -16,11 +16,13 @@ import { ALL_COLUMNS, applyGridSearch, columnValueOptions, searchFilter } from '
  * @param {import('vue').MaybeRefOrGetter<object[]>} columns the searchable columns
  * @param {object} [options]
  * @param {import('vue').MaybeRefOrGetter<Set<string>|null>} [options.visibleFields] hidden columns drop out of the search box
+ *   and the Filter button's menu
+ * @param {boolean} [options.searchHidden] keep hidden columns in the search box
  * @param {import('vue').Ref<object[]>} [options.selection] writable selection; rows the filter hides are dropped from it
  * @param {string|((row: object) => unknown)} [options.dataKey] row id field, or a key function for composite ids,
  *   for matching the selection to rows; compares objects when omitted
  */
-export function useGridSearch(rows, columns, { visibleFields = null, selection = null, dataKey = null } = {}) {
+export function useGridSearch(rows, columns, { visibleFields = null, searchHidden = false, selection = null, dataKey = null } = {}) {
   const term = ref('')
   const filters = ref([])
 
@@ -32,8 +34,14 @@ export function useGridSearch(rows, columns, { visibleFields = null, selection =
 
   // What the search box and "Any column" rules look in
   const quickColumns = computed(() => {
-    const visible = toValue(visibleFields)
+    const visible = searchHidden ? null : toValue(visibleFields)
     return allColumns.value.filter(c => c.quickSearch !== false && (!visible || visible.has(c.shownWith ?? c.field)))
+  })
+
+  // For GridFilterButton, which lists only the columns on screen
+  const filterColumns = computed(() => {
+    const visible = toValue(visibleFields)
+    return allColumns.value.map(c => ({ ...c, hidden: Boolean(visible) && !visible.has(c.shownWith ?? c.field) }))
   })
 
   // Rules on a column that went away (e.g. a new Findings aggregator) are dropped
@@ -98,5 +106,5 @@ export function useGridSearch(rows, columns, { visibleFields = null, selection =
     filters.value = []
   }
 
-  return { term, filters, filteredRows, isFiltered, filterColumns: allColumns, valueOptions, highlightTerm, clear }
+  return { term, filters, filteredRows, isFiltered, filterColumns, valueOptions, highlightTerm, clear }
 }
