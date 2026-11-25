@@ -2,9 +2,8 @@
 import Popover from 'primevue/popover'
 import Textarea from 'primevue/textarea'
 import { computed, nextTick, onBeforeUnmount, provide, ref, toRefs, watch } from 'vue'
+import { useResizableHeight } from '../../shared/composables/useResizableHeight.js'
 import { useReviewEditForm } from '../../shared/composables/useReviewEditForm.js'
-import { readStoredValue, storeValue } from '../../shared/lib/localStorage.js'
-import { rootFontSizePx } from '../../shared/lib/remToPx.js'
 import { REVIEW_STATUS } from '../../shared/lib/reviewConstants.js'
 import { formatReviewDate, resultOptions } from '../../shared/lib/reviewFormUtils.js'
 import { getReviewFieldTooltipHtml, TOOLTIPS } from '../../shared/lib/tooltips.js'
@@ -96,79 +95,39 @@ function toggleResources() {
   showResources.value = !showResources.value
 }
 
-// Height of the Result/Detail/Comment area, in rem. The user sets it with the
-// handle under that area and it is remembered per browser, for every grid that
-// opens this popover. The stylesheet caps it against the viewport.
-const MAIN_HEIGHT_KEY = 'stigman:reviewPopoverMainHeight'
-const MAIN_HEIGHT_DEFAULT_REM = 19
-const MAIN_HEIGHT_MIN_REM = 14
-const MAIN_HEIGHT_MAX_REM = 80
-
-function clampMainHeight(rem) {
-  if (!Number.isFinite(rem)) {
-    return MAIN_HEIGHT_DEFAULT_REM
-  }
-  return Math.min(MAIN_HEIGHT_MAX_REM, Math.max(MAIN_HEIGHT_MIN_REM, Math.round(rem * 10) / 10))
-}
-
 // Whether the box sits above its row; decided in placePopover
 const flippedAbove = ref(false)
 
-const mainEl = ref(null)
-const mainHeightRem = ref(clampMainHeight(Number.parseFloat(readStoredValue(MAIN_HEIGHT_KEY, ''))))
-let resizeDrag = null
+// Height of the Result/Detail/Comment area, set by the user with the resize
+// handle and shared by every grid that opens this popover. The stylesheet
+// also caps it against the viewport. The handle sits on the edge of the box
+// that moves, so it follows the pointer: under the fields for a box below its
+// row, which grows downward, and at the top of a flipped box, which grows
+// upward from a fixed bottom edge.
+const MAIN_HEIGHT_MIN_REM = 14
+const {
+  heightRem: mainHeightRem,
+  targetEl: mainEl,
+  handleListeners: resizeHandleListeners,
+} = useResizableHeight({
+  storageKey: 'stigman:reviewPopoverMainHeight',
+  defaultRem: 19,
+  minRem: MAIN_HEIGHT_MIN_REM,
+  maxRem: 80,
+  inverted: flippedAbove,
+})
+const mainStyle = computed(() => ({
+  '--sm-main-height': `${mainHeightRem.value}rem`,
+  '--sm-main-min-height': `${MAIN_HEIGHT_MIN_REM}rem`,
+}))
 
-function setMainHeight(rem, { persist = false } = {}) {
-  mainHeightRem.value = clampMainHeight(rem)
-  if (persist) {
-    storeValue(MAIN_HEIGHT_KEY, String(mainHeightRem.value))
-  }
-}
-
-function onResizeStart(event) {
-  if (event.button) {
-    return
-  }
-  event.preventDefault()
-  event.currentTarget.setPointerCapture?.(event.pointerId)
-  // Start from the rendered height, which the viewport cap may have reduced
-  const renderedPx = mainEl.value?.getBoundingClientRect().height
-  resizeDrag = {
-    startY: event.clientY,
-    startRem: renderedPx ? renderedPx / rootFontSizePx() : mainHeightRem.value,
-  }
-}
-
-// The handle sits on the edge of the box that moves, so it follows the
-// pointer: under the fields for a box below its row, which grows downward, and
-// at the top of a flipped box, which grows upward from a fixed bottom edge.
-function onResizeMove(event) {
-  if (!resizeDrag) {
-    return
-  }
-  const deltaPx = (event.clientY - resizeDrag.startY) * (flippedAbove.value ? -1 : 1)
-  setMainHeight(resizeDrag.startRem + deltaPx / rootFontSizePx())
-}
-
-function onResizeEnd() {
-  if (!resizeDrag) {
-    return
-  }
-  resizeDrag = null
-  setMainHeight(mainHeightRem.value, { persist: true })
-}
-
-function onResizeKey(event) {
-  const step = { ArrowUp: -1, ArrowDown: 1 }[event.key]
-  if (!step) {
-    return
-  }
-  event.preventDefault()
-  setMainHeight(mainHeightRem.value + (flippedAbove.value ? -step : step), { persist: true })
-}
-
-function resetMainHeight() {
-  setMainHeight(MAIN_HEIGHT_DEFAULT_REM, { persist: true })
+const resizeHandleAttrs = {
+  'class': 'review-edit-popover__resize-handle',
+  'role': 'separator',
+  'aria-orientation': 'horizontal',
+  'aria-label': 'Resize the review fields',
+  'tabindex': 0,
+  'title': 'Drag to resize. Double-click to reset.',
 }
 
 // Form state and business logic from composable
@@ -347,7 +306,9 @@ function placePopover() {
   const roomAbove = anchorRect.top - edge
   flippedAbove.value = reachable > roomBelow && roomAbove > roomBelow
   const room = flippedAbove.value ? roomAbove : roomBelow
-  el.style.setProperty('--sm-popover-max-height', `${Math.max(room, 200)}px`)
+  // Below this the box is not usable, so let it overrun a cramped side
+  const minRoom = 200
+  el.style.setProperty('--sm-popover-max-height', `${Math.max(room, minRoom)}px`)
   el.classList.toggle('p-popover-flipped', flippedAbove.value)
   el.style.transformOrigin = flippedAbove.value ? 'bottom' : 'top'
   pinToAnchor()
@@ -360,7 +321,7 @@ function placePopover() {
   const width = el.offsetWidth
   const targetX = anchorEvent.clientX ?? (anchorRect.left + anchorRect.width / 2)
   const gridRect = anchorEvent.boundary?.getBoundingClientRect()
-  const maxRight = gridRect?.width ? Math.min(viewportW - gutter, gridRect.right) : viewportW - gutter
+  const maxRight = Math.min(viewportW - gutter, gridRect?.width ? gridRect.right : Infinity)
   const left = Math.max(gutter, Math.min(targetX - width / 2, maxRight - width))
   el.style.insetInlineStart = `${left + window.scrollX}px`
   el.style.setProperty('--sm-popover-arrow-left', `${targetX - left - 10}px`)
@@ -421,7 +382,7 @@ function openForRow(event, isSameRow) {
     currentTarget: anchorEl.value,
     target: anchorEl.value,
     clientX: clickX,
-    boundary: row?.closest('.p-datatable') ?? null,
+    boundary: row?.closest('.p-datatable'),
   }
   if (isSameRow) {
     toggle(anchorEvent)
@@ -498,7 +459,7 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
         'data-tour': 'review-popover',
       },
       content: {
-        style: { maxHeight: 'min(85vh, var(--sm-popover-max-height, 85vh))', overflowY: 'auto', overflowX: 'hidden' },
+        style: { maxHeight: 'min(85vh, var(--sm-popover-max-height, 100vh))', overflowY: 'auto', overflowX: 'hidden' },
       },
       transition: {
         enterActiveClass: 'review-popover-enter',
@@ -514,8 +475,9 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
       </button>
       <div v-if="subjectLabel" class="review-edit-popover__subject" :class="{ 'review-edit-popover__subject--with-handle': flippedAbove }">
         <span class="review-edit-popover__subject-value" :title="subjectLabel">{{ subjectLabel }}</span>
+        <div v-if="flippedAbove" v-bind="resizeHandleAttrs" v-on="resizeHandleListeners" />
       </div>
-      <div ref="mainEl" class="review-edit-popover__main" :style="{ '--sm-main-height': `${mainHeightRem}rem` }">
+      <div ref="mainEl" class="review-edit-popover__main" :style="mainStyle">
         <div class="review-edit-popover__result" :class="{ 'review-edit-popover__result--emphasis': showResultEmphasis }">
           <label class="review-edit-popover__label">
             Result
@@ -605,23 +567,12 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
         </div>
       </div>
 
+      <!-- A flipped box with a subject strip carries the handle in the strip -->
       <div
-        class="review-edit-popover__resize-handle"
-        :class="{
-          'review-edit-popover__resize-handle--top': flippedAbove,
-          'review-edit-popover__resize-handle--in-subject': flippedAbove && subjectLabel,
-        }"
-        role="separator"
-        aria-orientation="horizontal"
-        aria-label="Resize the review fields"
-        tabindex="0"
-        title="Drag to resize. Double-click to reset."
-        @pointerdown="onResizeStart"
-        @pointermove="onResizeMove"
-        @pointerup="onResizeEnd"
-        @pointercancel="onResizeEnd"
-        @keydown="onResizeKey"
-        @dblclick="resetMainHeight"
+        v-if="!(flippedAbove && subjectLabel)"
+        v-bind="resizeHandleAttrs"
+        :class="{ 'review-edit-popover__resize-handle--top': flippedAbove }"
+        v-on="resizeHandleListeners"
       />
 
       <div v-if="saveFailure" class="review-edit-popover__save-error" role="alert">
@@ -704,7 +655,7 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
      Statused pills, fewer for an unstatused review). Wide enough for that row
      and for the Review Resources tables (history, other assets) to show their
      columns without a horizontal scroller. */
-  width: 1080px;
+  width: 90rem;
   max-width: calc(100vw - 24px);
   position: relative;
 }
@@ -741,7 +692,7 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
      fields leave room for the rest of the box on one side of a row */
   height: var(--sm-main-height);
   max-height: 40vh;
-  min-height: 14rem;
+  min-height: var(--sm-main-min-height);
 }
 
 .review-edit-popover__resize-handle {
@@ -755,27 +706,33 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
   border-radius: 3px;
 }
 
-/* First in the column, above the subject strip */
+/* Flipped, no subject strip: first in the column, on the top edge */
 .review-edit-popover__resize-handle--top {
   order: -1;
   margin: -0.5rem 0 -0.15rem;
 }
 
-/* With a subject strip, share it: the grip sits in the middle of the strip
-   and the subject text keeps the half before it. */
-.review-edit-popover__resize-handle--in-subject {
-  position: absolute;
-  top: -0.4rem;
-  left: 50%;
-  width: 8rem;
-  height: 2.3rem;
-  margin: 0 0 0 -4rem;
+/* Flipped, with a subject strip: the strip becomes a row of subject text,
+   handle and an equal spacer, which centres the handle in the box */
+.review-edit-popover__subject--with-handle {
+  display: flex;
+  align-items: center;
+}
+
+.review-edit-popover__subject--with-handle::after {
+  content: '';
+  flex: 1 1 0;
 }
 
 .review-edit-popover__subject--with-handle .review-edit-popover__subject-value {
-  display: inline-block;
-  max-width: calc(50% - 5rem);
-  vertical-align: bottom;
+  flex: 1 1 0;
+}
+
+.review-edit-popover__subject--with-handle .review-edit-popover__resize-handle {
+  flex: 0 0 8rem;
+  align-self: stretch;
+  height: auto;
+  margin: 0;
 }
 
 .review-edit-popover__resize-handle::before {
