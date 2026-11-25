@@ -217,7 +217,7 @@ const historyStats = computed(() => {
         </template>
       </Column>
 
-      <Column field="ruleId" header="Rule" :style="{ width: '12rem' }" :pt="columnPt.left">
+      <Column field="ruleId" header="Rule" :style="{ width: '13.5rem' }" :pt="columnPt.left">
         <template #body="{ data }">
           <span
             class="cell-text--mono cell-text--ellipsis"
@@ -227,7 +227,7 @@ const historyStats = computed(() => {
         </template>
       </Column>
 
-      <Column field="result" header="Result" :style="{ width: '6.25rem' }" :pt="columnPt.center">
+      <Column field="result" header="Result" :style="{ width: '6rem' }" :pt="columnPt.center">
         <template #body="{ data }">
           <ResultBadge v-if="getResultDisplay(data.result)" :status="getResultDisplay(data.result)" />
         </template>
@@ -267,7 +267,7 @@ const historyStats = computed(() => {
         </template>
       </Column>
 
-      <Column field="detail" header="Detail" :style="{ width: '10.25rem' }" :pt="columnPt.left">
+      <Column field="detail" header="Detail" :pt="columnPt.left">
         <template #body="{ data }">
           <span
             v-if="data.detail"
@@ -281,7 +281,7 @@ const historyStats = computed(() => {
         </template>
       </Column>
 
-      <Column field="comment" header="Comment" :style="{ width: '10.25rem' }" :pt="columnPt.left">
+      <Column field="comment" header="Comment" :pt="columnPt.left">
         <template #body="{ data }">
           <span
             v-if="data.comment"
@@ -309,7 +309,7 @@ const historyStats = computed(() => {
         </template>
       </Column>
 
-      <Column field="_statusLabel" header="Status" :style="{ width: '6.25rem' }" :pt="columnPt.center">
+      <Column field="_statusLabel" header="Status" :style="{ width: '6rem' }" :pt="columnPt.center">
         <template #body="{ data }">
           <StatusBadge v-if="data.status?.label" :status="data.status.label" />
         </template>
@@ -392,9 +392,12 @@ const historyStats = computed(() => {
   border-top: none;
 }
 
-/* Allow table to expand and scroll horizontally if needed. */
+/* Fixed layout: every column keeps its set width except Detail and Comment,
+   which have none and share what is left. The floor keeps those two readable
+   in a narrow box, where the table scrolls horizontally instead. */
 :deep(.p-datatable-table) {
   table-layout: fixed;
+  min-width: max(100%, 83.5rem);
 }
 
 :deep(.p-datatable-table-container),

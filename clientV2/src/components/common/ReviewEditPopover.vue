@@ -4,6 +4,7 @@ import Textarea from 'primevue/textarea'
 import { computed, nextTick, onBeforeUnmount, provide, ref, toRefs, watch } from 'vue'
 import { useResizableHeight } from '../../shared/composables/useResizableHeight.js'
 import { useReviewEditForm } from '../../shared/composables/useReviewEditForm.js'
+import { rootFontSizePx } from '../../shared/lib/remToPx.js'
 import { REVIEW_STATUS } from '../../shared/lib/reviewConstants.js'
 import { formatReviewDate, resultOptions } from '../../shared/lib/reviewFormUtils.js'
 import { getReviewFieldTooltipHtml, TOOLTIPS } from '../../shared/lib/tooltips.js'
@@ -84,11 +85,19 @@ const saveFailure = ref(null)
 // every review they open from this grid until they fold it again.
 const showResources = ref(false)
 
-// Height of the Review Resources panel, in px. Lives here rather than in the
-// stylesheet so the flip decision can reserve the space before the panel
+// Height of the Review Resources panel, in px: room for five History rows,
+// the default number of history entries a Collection keeps, so a longer
+// history scrolls. Less on a short viewport. Both figures are measured from
+// the History tab: a row is its 32px Apply button plus cell padding, and the
+// chrome is the tab bar, table header and footer. Lives here rather than in
+// the stylesheet so the flip decision can reserve the space before the panel
 // exists; the panel CSS reads it back via --sm-resources-height.
+const RESOURCES_ROWS = 5
+const RESOURCES_ROW_REM = 3.05
+const RESOURCES_CHROME_REM = 8.25
 function resourcesHeightPx() {
-  return Math.min(350, Math.max(200, window.innerHeight * 0.45))
+  const rowsPx = (RESOURCES_CHROME_REM + RESOURCES_ROWS * RESOURCES_ROW_REM) * rootFontSizePx()
+  return Math.min(rowsPx, Math.max(200, window.innerHeight * 0.45))
 }
 
 function toggleResources() {
