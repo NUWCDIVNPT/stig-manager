@@ -17,6 +17,7 @@ import HighlightText from '../../../components/common/HighlightText.vue'
 import ManualBadge from '../../../components/common/ManualBadge.vue'
 import OverrideBadge from '../../../components/common/OverrideBadge.vue'
 import { REVIEW_FILTER_OPTIONS } from '../../../components/common/reviewFilterOptions.js'
+import ReviewTextCell from '../../../components/common/ReviewTextCell.vue'
 import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useLinkTo } from '../../../router/links.js'
@@ -24,7 +25,6 @@ import { useColumnVisibility } from '../../../shared/composables/useColumnVisibi
 import { useGridDensity } from '../../../shared/composables/useGridDensity.js'
 import { useGridSearch } from '../../../shared/composables/useGridSearch.js'
 import { durationToNow } from '../../../shared/lib.js'
-import { compactCellText } from '../../../shared/lib/cellText.js'
 import { getEngineDisplay } from '../../../shared/lib/checklistUtils.js'
 import { compactTablePt } from '../../../shared/lib/dataTablePt.js'
 import { capitalize, statusText } from '../../../shared/lib/exportCells.js'
@@ -281,12 +281,12 @@ const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-con
           </Column>
           <Column v-if="visibleFields.has('detail')" field="detail" header="Detail" :style="{ minWidth: '12rem' }" :pt="borderPt">
             <template #body="{ data }">
-              <span class="cell-text cell-text--clamped cell-text--multiline" :title="data.detail"><HighlightText :text="compactCellText(data.detail) || '—'" :term="highlightTerm('detail')" /></span>
+              <ReviewTextCell :text="data.detail" :term="highlightTerm('detail')" placeholder="—" />
             </template>
           </Column>
           <Column v-if="visibleFields.has('comment')" field="comment" header="Comment" :style="{ minWidth: '12rem' }" :pt="borderPt">
             <template #body="{ data }">
-              <span class="cell-text cell-text--clamped cell-text--multiline" :title="data.comment"><HighlightText :text="compactCellText(data.comment) || '—'" :term="highlightTerm('comment')" /></span>
+              <ReviewTextCell :text="data.comment" :term="highlightTerm('comment')" placeholder="—" />
             </template>
           </Column>
           <Column v-if="visibleFields.has('resultEngine')" field="resultEngine" export-header="Engine" :pt="centerBorderPt" :style="{ width: '2.8rem', minWidth: '2.8rem', textAlign: 'center' }">
@@ -493,12 +493,6 @@ const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-con
   white-space: normal;
   overflow-wrap: anywhere;
   word-break: break-word;
-}
-
-/* Detail and Comment keep the line breaks their author typed, except at a
-   clamp of one line (see useGridDensity) */
-.cell-text--multiline {
-  white-space: var(--cell-multiline-white-space, pre-wrap);
 }
 
 .asset-cell {

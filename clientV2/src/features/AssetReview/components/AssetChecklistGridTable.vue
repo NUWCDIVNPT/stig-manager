@@ -9,10 +9,10 @@ import HighlightText from '../../../components/common/HighlightText.vue'
 import ManualBadge from '../../../components/common/ManualBadge.vue'
 import OverrideBadge from '../../../components/common/OverrideBadge.vue'
 import ResultBadge from '../../../components/common/ResultBadge.vue'
+import ReviewTextCell from '../../../components/common/ReviewTextCell.vue'
 import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { durationToNow } from '../../../shared/lib.js'
-import { compactCellText } from '../../../shared/lib/cellText.js'
 import { calculateChecklistStats, getEngineDisplay, getResultDisplay, severityMap } from '../../../shared/lib/checklistUtils.js'
 import { gridColumnPt } from '../../../shared/lib/dataTablePt.js'
 import { exportTimestamp } from '../../../shared/lib/exportCells.js'
@@ -246,22 +246,13 @@ const dataTablePt = {
 
     <Column v-if="visibleFields.has('detail')" header="Detail" field="detail" sortable :style="{ width: '25%', minWidth: '14rem' }" :pt="columnPt.left">
       <template #body="{ data }">
-        <div class="cell-text-field">
-          <span v-if="data.detail" class="cell-text cell-text--clamped cell-text--multiline" :title="data.detail">
-            <HighlightText :text="compactCellText(data.detail)" :term="highlightTerm('detail')" />
-          </span>
-          <span v-else class="cell-text cell-text--placeholder">Add review...</span>
-        </div>
+        <ReviewTextCell :text="data.detail" :term="highlightTerm('detail')" placeholder="Add review..." />
       </template>
     </Column>
 
     <Column v-if="visibleFields.has('comment')" header="Comment" field="comment" sortable :style="{ width: '25%', minWidth: '14rem' }" :pt="columnPt.left">
       <template #body="{ data }">
-        <div class="cell-text-field">
-          <span class="cell-text cell-text--clamped cell-text--multiline" :title="data.comment">
-            <HighlightText :text="compactCellText(data.comment)" :term="highlightTerm('comment')" />
-          </span>
-        </div>
+        <ReviewTextCell :text="data.comment" :term="highlightTerm('comment')" />
       </template>
     </Column>
 
@@ -400,12 +391,6 @@ const dataTablePt = {
   word-break: break-word;
 }
 
-/* Detail and Comment keep the line breaks their author typed, except at a
-   clamp of one line (see useGridDensity) */
-.cell-text--multiline {
-  white-space: var(--cell-multiline-white-space, pre-wrap);
-}
-
 .cell-result {
   display: flex;
   align-items: center;
@@ -427,12 +412,6 @@ const dataTablePt = {
 .cell-text-field .cell-text--clamped {
   flex: 1;
   min-width: 0;
-}
-
-.cell-text--placeholder {
-  color: var(--color-text-dim);
-  font-style: italic;
-  opacity: 0.5;
 }
 
 .engine-header-icon {
