@@ -47,8 +47,6 @@ const ROOT_PX = 12
 // Five History rows plus chrome at a 12px root: (8.25 + 5 * 3.05) * 12
 const RESOURCES_PX = 282
 const BOX_WIDTH = 1080
-// Padding and border of the box around its content
-const BOX_CHROME = 26
 const VIEWPORT_WIDTH = 1600
 const HEIGHT_KEY = 'stigman:reviewPopoverMainHeight'
 
@@ -77,10 +75,7 @@ describe('reviewEditPopover placement', () => {
       return this.dataset.testid === 'popover-box' ? boxHeight : 0
     })
     vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(function () {
-      if (this.dataset.testid === 'popover-box') {
-        return BOX_WIDTH
-      }
-      return this.classList.contains('review-edit-popover') ? BOX_WIDTH - BOX_CHROME : 0
+      return this.dataset.testid === 'popover-box' ? BOX_WIDTH : 0
     })
     vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function () {
       if (this.tagName === 'TR') {
@@ -335,31 +330,22 @@ describe('reviewEditPopover placement', () => {
   describe('width limit', () => {
     const maxWidth = () => box().style.getPropertyValue('--sm-popover-max-width')
 
-    it('gives the stylesheet a width that follows the window up to 1920px', () => {
-      mount()
-      const style = document.querySelector('.review-edit-popover').style
-      expect(style.getPropertyValue('--sm-popover-width-max')).toBe('98rem')
-      expect(style.getPropertyValue('--sm-popover-width-min')).toBe('84rem')
-      // 98rem is 1176px at a 12px root, which is 61.25% of 1920px
-      expect(style.getPropertyValue('--sm-popover-width-fluid')).toBe('61.25vw')
-    })
-
     it('is the viewport less its gutters when the row is in no grid', async () => {
       mount()
       await clickRow()
-      expect(maxWidth()).toBe('1550px') // 1600 - 2 * 12, less the box's own 26
+      expect(maxWidth()).toBe('1576px') // 1600 - 2 * 12
     })
 
-    it('fits the box to a grid inside the viewport', async () => {
+    it('is the width of a grid inside the viewport', async () => {
       mount()
       await clickRow({ grid: rect(0, 300, 1000, 900) })
-      expect(maxWidth()).toBe('974px') // 1000 - 26
+      expect(maxWidth()).toBe('1000px')
     })
 
     it('stops at the viewport gutters for a grid that runs past them', async () => {
       mount()
       await clickRow({ grid: rect(0, 0, 2400, 900) })
-      expect(maxWidth()).toBe('1550px')
+      expect(maxWidth()).toBe('1576px')
     })
 
     it('does not go under 60rem for a narrower grid', async () => {
@@ -379,7 +365,7 @@ describe('reviewEditPopover placement', () => {
         return 0
       })
       await clickRow({ grid: rect(0, 300, 1000, 900) })
-      expect(seen[0]).toBe('974px')
+      expect(seen[0]).toBe('1000px')
     })
   })
 

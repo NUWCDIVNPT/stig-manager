@@ -104,21 +104,9 @@ function toggleResources() {
   showResources.value = !showResources.value
 }
 
-// Width of the box, in rem. It is at its widest on a window of
-// FULL_WIDTH_VIEWPORT_PX or more, where the Detail and Comment fields hold
-// about as many characters per line as the legacy client's, and shrinks in
-// proportion on a narrower window, down to FLUID_MIN_WIDTH_REM. Only a grid
-// narrower than the box squeezes it below that, and no further than
-// MIN_WIDTH_REM; see placePopover.
-const MAX_WIDTH_REM = 98
-const FLUID_MIN_WIDTH_REM = 84
+// Narrowest a narrow grid squeezes the box to, in rem; see placePopover and
+// the width rule in the stylesheet
 const MIN_WIDTH_REM = 60
-const FULL_WIDTH_VIEWPORT_PX = 1920
-const boxStyle = {
-  '--sm-popover-width-max': `${MAX_WIDTH_REM}rem`,
-  '--sm-popover-width-min': `${FLUID_MIN_WIDTH_REM}rem`,
-  '--sm-popover-width-fluid': `${Number((MAX_WIDTH_REM * rootFontSizePx() / FULL_WIDTH_VIEWPORT_PX * 100).toFixed(3))}vw`,
-}
 
 // Whether the box sits above its row; decided in placePopover
 const flippedAbove = ref(false)
@@ -333,13 +321,10 @@ function placePopover() {
   const gutter = 12
   const viewportW = document.documentElement.clientWidth
   const gridRect = anchorEvent.boundary?.getBoundingClientRect()
-  const hasGrid = Boolean(gridRect?.width)
-  const maxRight = Math.min(viewportW - gutter, hasGrid ? gridRect.right : Infinity)
-  const minLeft = Math.max(gutter, hasGrid ? gridRect.left : 0)
-  // The limit is applied to the content, so take off the box's padding and border
-  const content = el.querySelector('.review-edit-popover')
-  const chrome = content ? el.offsetWidth - content.offsetWidth : 0
-  const maxWidth = Math.max(maxRight - minLeft - chrome, MIN_WIDTH_REM * rootFontSizePx())
+  const grid = gridRect?.width ? gridRect : { left: 0, right: Infinity }
+  const maxRight = Math.min(viewportW - gutter, grid.right)
+  const minLeft = Math.max(gutter, grid.left)
+  const maxWidth = Math.max(maxRight - minLeft, MIN_WIDTH_REM * rootFontSizePx())
   el.style.setProperty('--sm-popover-max-width', `${maxWidth}px`)
 
   // Measure without the limit left by the last placement
@@ -509,7 +494,7 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
     @show="onPopoverShow"
     @hide="onPopoverHide"
   >
-    <div class="review-edit-popover" :style="boxStyle">
+    <div class="review-edit-popover">
       <button class="review-edit-popover__close" :title="isDirty ? 'Close (discards unsaved changes)' : 'Close'" :disabled="isSaving" @click="dismiss">
         <i class="pi pi-times" />
       </button>
@@ -694,11 +679,13 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
      it, rather than sized by the attribution row (engine badges plus up to
      five Evaluated and Statused pills, fewer for an unstatused review). Wide
      enough for that row and for the Review Resources tables (history, other
-     assets) to show their columns without a horizontal scroller. It follows
-     the window width between the bounds in boxStyle, and is narrower still
-     only where the grid is: placePopover sets that limit. */
-  width: clamp(var(--sm-popover-width-min), var(--sm-popover-width-fluid), var(--sm-popover-width-max));
-  max-width: min(calc(100vw - 24px), var(--sm-popover-max-width, 100vw));
+     assets) to show their columns without a horizontal scroller. At its
+     widest, on a window of 160rem (1920px) or more, the Detail and Comment
+     fields hold about as many characters per line as the legacy client's;
+     it shrinks in proportion on a narrower window, down to 84rem. It is
+     narrower still only where the grid is: see the limit on the box below. */
+  width: clamp(84rem, 61.25vw, 98rem);
+  max-width: min(calc(100vw - 24px), 100%);
   position: relative;
 }
 
@@ -1005,6 +992,9 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
    row by a few px while the body stays clear of it, in both flip directions */
 :global(.p-popover.review-popover) {
   margin-block-start: 4px;
+  /* set by placePopover: the room the grid leaves */
+  box-sizing: border-box;
+  max-width: var(--sm-popover-max-width);
 }
 
 :global(.p-popover.review-popover.p-popover-flipped) {
