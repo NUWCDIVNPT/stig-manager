@@ -17,6 +17,7 @@ import HighlightText from '../../../components/common/HighlightText.vue'
 import ManualBadge from '../../../components/common/ManualBadge.vue'
 import OverrideBadge from '../../../components/common/OverrideBadge.vue'
 import { REVIEW_FILTER_OPTIONS } from '../../../components/common/reviewFilterOptions.js'
+import ReviewTextCell from '../../../components/common/ReviewTextCell.vue'
 import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useLinkTo } from '../../../router/links.js'
@@ -280,12 +281,12 @@ const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-con
           </Column>
           <Column v-if="visibleFields.has('detail')" field="detail" header="Detail" :style="{ minWidth: '12rem' }" :pt="borderPt">
             <template #body="{ data }">
-              <span class="cell-text cell-text--clamped" :title="data.detail"><HighlightText :text="data.detail || '—'" :term="highlightTerm('detail')" /></span>
+              <ReviewTextCell :text="data.detail" :term="highlightTerm('detail')" placeholder="—" />
             </template>
           </Column>
           <Column v-if="visibleFields.has('comment')" field="comment" header="Comment" :style="{ minWidth: '12rem' }" :pt="borderPt">
             <template #body="{ data }">
-              <span class="cell-text cell-text--clamped" :title="data.comment"><HighlightText :text="data.comment || '—'" :term="highlightTerm('comment')" /></span>
+              <ReviewTextCell :text="data.comment" :term="highlightTerm('comment')" placeholder="—" />
             </template>
           </Column>
           <Column v-if="visibleFields.has('resultEngine')" field="resultEngine" export-header="Engine" :pt="centerBorderPt" :style="{ width: '2.8rem', minWidth: '2.8rem', textAlign: 'center' }">
@@ -473,8 +474,7 @@ const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-con
 }
 
 /* Size and line height come from the grid geometry (useGridDensity textSize),
-   so N clamped lines fill exactly N rows. Only the clamped Detail/Comment
-   cells use it. */
+   so N clamped lines fill exactly N rows. */
 .cell-text {
   font-size: var(--cell-font-size);
   line-height: var(--cell-line-height, 1.3);

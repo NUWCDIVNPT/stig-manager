@@ -14,6 +14,7 @@ import ManualBadge from '../../../components/common/ManualBadge.vue'
 import OverrideBadge from '../../../components/common/OverrideBadge.vue'
 import ResultBadge from '../../../components/common/ResultBadge.vue'
 import ReviewEditPopover from '../../../components/common/ReviewEditPopover.vue'
+import ReviewTextCell from '../../../components/common/ReviewTextCell.vue'
 import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { useAsyncState } from '../../../shared/composables/useAsyncState.js'
@@ -472,10 +473,7 @@ const dataTablePt = {
         Detail <HelpIcon :content="detailTooltipHtml" @click.stop />
       </template>
       <template #body="{ data }">
-        <div class="cell-text-field">
-          <span v-if="data.detail" class="cell-text cell-text--clamped" :title="data.detail"><HighlightText :text="data.detail" :term="highlightTerm('detail')" /></span>
-          <span v-else class="cell-text cell-text--placeholder">—</span>
-        </div>
+        <ReviewTextCell :text="data.detail" :term="highlightTerm('detail')" placeholder="—" />
       </template>
     </Column>
 
@@ -485,7 +483,7 @@ const dataTablePt = {
         Comment <HelpIcon :content="commentTooltipHtml" @click.stop />
       </template>
       <template #body="{ data }">
-        <span class="cell-text cell-text--clamped" :title="data.comment"><HighlightText :text="data.comment" :term="highlightTerm('comment')" /></span>
+        <ReviewTextCell :text="data.comment" :term="highlightTerm('comment')" />
       </template>
     </Column>
 
@@ -599,36 +597,6 @@ const dataTablePt = {
   font-size: var(--cell-font-size);
   line-height: var(--cell-line-height, 1.3);
   color: var(--color-text-primary);
-}
-
-.cell-text--clamped {
-  display: -webkit-box;
-  line-clamp: var(--line-clamp, 1);
-  -webkit-line-clamp: var(--line-clamp, 1);
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  width: 100%;
-  min-width: 0;
-  white-space: normal;
-  overflow-wrap: anywhere;
-  word-break: break-word;
-}
-
-.cell-text-field {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.25rem;
-}
-
-.cell-text-field .cell-text--clamped {
-  flex: 1;
-  min-width: 0;
-}
-
-.cell-text--placeholder {
-  color: var(--color-text-dim);
-  font-style: italic;
-  opacity: 0.5;
 }
 
 .cell-result__empty {

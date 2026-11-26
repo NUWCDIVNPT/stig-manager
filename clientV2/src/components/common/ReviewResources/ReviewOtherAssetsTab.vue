@@ -257,7 +257,7 @@ watch([() => ruleId.value, () => collectionId.value], () => {
         </template>
       </Column>
 
-      <Column field="detail" header="Detail" :style="{ width: '13.75rem' }" :pt="columnPt.left">
+      <Column field="detail" header="Detail" :pt="columnPt.left">
         <template #body="{ data }">
           <span
             v-if="data.detail"
@@ -271,7 +271,7 @@ watch([() => ruleId.value, () => collectionId.value], () => {
         </template>
       </Column>
 
-      <Column field="comment" header="Comment" :style="{ width: '13.75rem' }" :pt="columnPt.left">
+      <Column field="comment" header="Comment" :pt="columnPt.left">
         <template #body="{ data }">
           <span
             v-if="data.comment"
@@ -372,9 +372,12 @@ watch([() => ruleId.value, () => collectionId.value], () => {
   border-top: none;
 }
 
-/* Allow table to expand and scroll horizontally if needed. */
+/* Fixed layout: every column keeps its set width except Detail and Comment,
+   which have none and share what is left. The floor keeps those two readable
+   in a narrow box, where the table scrolls horizontally instead. */
 :deep(.p-datatable-table) {
   table-layout: fixed;
+  min-width: max(100%, 72rem);
 }
 
 :deep(.p-datatable-table-container),
@@ -393,8 +396,7 @@ watch([() => ruleId.value, () => collectionId.value], () => {
 }
 
 .cell-text--mono {
-  font-family: var(--font-mono);
-  color: var(--color-text-dim);
+  color: var(--color-text-primary);
   font-size: var(--text-md);
 }
 

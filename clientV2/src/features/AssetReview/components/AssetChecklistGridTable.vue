@@ -9,6 +9,7 @@ import HighlightText from '../../../components/common/HighlightText.vue'
 import ManualBadge from '../../../components/common/ManualBadge.vue'
 import OverrideBadge from '../../../components/common/OverrideBadge.vue'
 import ResultBadge from '../../../components/common/ResultBadge.vue'
+import ReviewTextCell from '../../../components/common/ReviewTextCell.vue'
 import StatusBadge from '../../../components/common/StatusBadge.vue'
 import StatusFooter from '../../../components/common/StatusFooter.vue'
 import { durationToNow } from '../../../shared/lib.js'
@@ -245,22 +246,13 @@ const dataTablePt = {
 
     <Column v-if="visibleFields.has('detail')" header="Detail" field="detail" sortable :style="{ width: '25%', minWidth: '14rem' }" :pt="columnPt.left">
       <template #body="{ data }">
-        <div class="cell-text-field">
-          <span v-if="data.detail" class="cell-text cell-text--clamped" :title="data.detail">
-            <HighlightText :text="data.detail" :term="highlightTerm('detail')" />
-          </span>
-          <span v-else class="cell-text cell-text--placeholder">Add review...</span>
-        </div>
+        <ReviewTextCell :text="data.detail" :term="highlightTerm('detail')" placeholder="Add review..." />
       </template>
     </Column>
 
     <Column v-if="visibleFields.has('comment')" header="Comment" field="comment" sortable :style="{ width: '25%', minWidth: '14rem' }" :pt="columnPt.left">
       <template #body="{ data }">
-        <div class="cell-text-field">
-          <span class="cell-text cell-text--clamped" :title="data.comment">
-            <HighlightText :text="data.comment" :term="highlightTerm('comment')" />
-          </span>
-        </div>
+        <ReviewTextCell :text="data.comment" :term="highlightTerm('comment')" />
       </template>
     </Column>
 
@@ -420,12 +412,6 @@ const dataTablePt = {
 .cell-text-field .cell-text--clamped {
   flex: 1;
   min-width: 0;
-}
-
-.cell-text--placeholder {
-  color: var(--color-text-dim);
-  font-style: italic;
-  opacity: 0.5;
 }
 
 .engine-header-icon {

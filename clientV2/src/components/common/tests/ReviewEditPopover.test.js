@@ -1,6 +1,6 @@
 import { fireEvent, screen } from '@testing-library/vue'
 import { flushPromises } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { h, reactive, ref } from 'vue'
 import { renderWithProviders } from '../../../testUtils/utils.js'
 
@@ -351,6 +351,96 @@ describe('reviewEditPopover.vue', () => {
 
       // Warning should be gone
       expect(screen.queryByText(/Please/i)).not.toBeInTheDocument()
+    })
+  })
+
+  describe('resizing the review fields', () => {
+    const KEY = 'stigman:reviewPopoverMainHeight'
+    const mainHeight = () => document.querySelector('.review-edit-popover__main').style.getPropertyValue('--sm-main-height')
+
+    // The fields are capped at 40% of the viewport height; jsdom's root
+    // font-size is 16px, so 2000px allows 50rem
+    const innerHeight = window.innerHeight
+
+    beforeEach(() => {
+      localStorage.removeItem(KEY)
+      window.innerHeight = 2000
+    })
+
+    afterEach(() => {
+      window.innerHeight = innerHeight
+    })
+
+    it('starts at the default height', () => {
+      createWrapper({ currentReview: defaultReview })
+      expect(mainHeight()).toBe('20rem')
+    })
+
+    it('restores the stored height', () => {
+      localStorage.setItem(KEY, '25')
+      createWrapper({ currentReview: defaultReview })
+      expect(mainHeight()).toBe('25rem')
+    })
+
+    it('ignores a stored value that is not a height', () => {
+      localStorage.setItem(KEY, 'tall')
+      createWrapper({ currentReview: defaultReview })
+      expect(mainHeight()).toBe('20rem')
+    })
+
+    it('arrow keys on the handle resize and store the height', async () => {
+      createWrapper({ currentReview: defaultReview })
+      const handle = screen.getByRole('separator')
+
+      await fireEvent.keyDown(handle, { key: 'ArrowDown' })
+      expect(mainHeight()).toBe('21rem')
+      expect(localStorage.getItem(KEY)).toBe('21')
+
+      await fireEvent.keyDown(handle, { key: 'ArrowUp' })
+      await fireEvent.keyDown(handle, { key: 'ArrowUp' })
+      expect(mainHeight()).toBe('19rem')
+    })
+
+    it('does not shrink below the minimum', async () => {
+      localStorage.setItem(KEY, '14')
+      createWrapper({ currentReview: defaultReview })
+      await fireEvent.keyDown(screen.getByRole('separator'), { key: 'ArrowUp' })
+      expect(mainHeight()).toBe('14rem')
+    })
+
+    it('does not grow past the viewport cap', async () => {
+      window.innerHeight = 840 // 40% is 336px, 21rem
+      createWrapper({ currentReview: defaultReview })
+      const handle = screen.getByRole('separator')
+
+      await fireEvent.keyDown(handle, { key: 'ArrowDown' })
+      await fireEvent.keyDown(handle, { key: 'ArrowDown' })
+      expect(mainHeight()).toBe('21rem')
+      expect(localStorage.getItem(KEY)).toBe('21')
+    })
+
+    it('shrinks on the first key press when the stored height is over the cap', async () => {
+      localStorage.setItem(KEY, '45')
+      window.innerHeight = 800
+      createWrapper({ currentReview: defaultReview })
+
+      await fireEvent.keyDown(screen.getByRole('separator'), { key: 'ArrowUp' })
+      expect(mainHeight()).toBe('19rem')
+    })
+
+    it('passes the cap to the stylesheet', () => {
+      createWrapper({ currentReview: defaultReview })
+      const main = document.querySelector('.review-edit-popover__main')
+      expect(main.style.getPropertyValue('--sm-main-max-height')).toBe('40vh')
+      expect(main.style.getPropertyValue('--sm-main-min-height')).toBe('14rem')
+    })
+
+    it('double-click resets to the default', async () => {
+      localStorage.setItem(KEY, '30')
+      createWrapper({ currentReview: defaultReview })
+      await fireEvent.dblClick(screen.getByRole('separator'))
+      expect(mainHeight()).toBe('20rem')
+      expect(localStorage.getItem(KEY)).toBe('20')
     })
   })
 

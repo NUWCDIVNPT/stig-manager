@@ -2,7 +2,9 @@
 import Popover from 'primevue/popover'
 import Textarea from 'primevue/textarea'
 import { computed, nextTick, onBeforeUnmount, provide, ref, toRefs, watch } from 'vue'
+import { useResizableHeight } from '../../shared/composables/useResizableHeight.js'
 import { useReviewEditForm } from '../../shared/composables/useReviewEditForm.js'
+import { rootFontSizePx } from '../../shared/lib/remToPx.js'
 import { REVIEW_STATUS } from '../../shared/lib/reviewConstants.js'
 import { formatReviewDate, resultOptions } from '../../shared/lib/reviewFormUtils.js'
 import { getReviewFieldTooltipHtml, TOOLTIPS } from '../../shared/lib/tooltips.js'
@@ -83,15 +85,65 @@ const saveFailure = ref(null)
 // every review they open from this grid until they fold it again.
 const showResources = ref(false)
 
-// Height of the Review Resources panel, in px. Lives here rather than in the
-// stylesheet so the flip decision can reserve the space before the panel
+// Height of the Review Resources panel, in px: room for five History rows,
+// the default number of history entries a Collection keeps, so a longer
+// history scrolls. Less on a short viewport. Both figures are measured from
+// the History tab: a row is its 32px Apply button plus cell padding, and the
+// chrome is the tab bar, table header and footer. Lives here rather than in
+// the stylesheet so the flip decision can reserve the space before the panel
 // exists; the panel CSS reads it back via --sm-resources-height.
+const RESOURCES_ROWS = 5
+const RESOURCES_ROW_REM = 3.05
+const RESOURCES_CHROME_REM = 8.25
 function resourcesHeightPx() {
-  return Math.min(350, Math.max(200, window.innerHeight * 0.45))
+  const rowsPx = (RESOURCES_CHROME_REM + RESOURCES_ROWS * RESOURCES_ROW_REM) * rootFontSizePx()
+  return Math.min(rowsPx, Math.max(200, window.innerHeight * 0.45))
 }
 
 function toggleResources() {
   showResources.value = !showResources.value
+}
+
+// Narrowest a narrow grid squeezes the box to, in rem; see placePopover and
+// the width rule in the stylesheet
+const MIN_WIDTH_REM = 60
+
+// Whether the box sits above its row; decided in placePopover
+const flippedAbove = ref(false)
+
+// Height of the Result/Detail/Comment area, set by the user with the resize
+// handle and shared by every grid that opens this popover. It is capped under
+// half the viewport so the fields leave room for the rest of the box on one
+// side of a row. The handle sits on the edge of the box
+// that moves, so it follows the pointer: under the fields for a box below its
+// row, which grows downward, and at the top of a flipped box, which grows
+// upward from a fixed bottom edge.
+const MAIN_HEIGHT_MIN_REM = 14
+const MAIN_HEIGHT_MAX_VH = 40
+const {
+  heightRem: mainHeightRem,
+  targetEl: mainEl,
+  handleListeners: resizeHandleListeners,
+} = useResizableHeight({
+  storageKey: 'stigman:reviewPopoverMainHeight',
+  defaultRem: 20,
+  minRem: MAIN_HEIGHT_MIN_REM,
+  maxRem: () => window.innerHeight * MAIN_HEIGHT_MAX_VH / 100 / rootFontSizePx(),
+  inverted: flippedAbove,
+})
+const mainStyle = computed(() => ({
+  '--sm-main-height': `${mainHeightRem.value}rem`,
+  '--sm-main-min-height': `${MAIN_HEIGHT_MIN_REM}rem`,
+  '--sm-main-max-height': `${MAIN_HEIGHT_MAX_VH}vh`,
+}))
+
+const resizeHandleAttrs = {
+  'class': 'review-edit-popover__resize-handle',
+  'role': 'separator',
+  'aria-orientation': 'horizontal',
+  'aria-label': 'Resize the review fields',
+  'tabindex': 0,
+  'title': 'Drag to resize. Double-click to reset.',
 }
 
 // Form state and business logic from composable
@@ -241,12 +293,15 @@ function hide() {
 // Hidden fixed element the popover is anchored to. It is sized to the clicked
 // row so PrimeVue's target tracking has a stable, non-scrolling element.
 const anchorEl = ref(null)
-let flippedAbove = false
 
 // Place the box against the anchored row. PrimeVue only flips above the row
 // when the box as it is now would not fit below; decide instead from the
 // height it can reach with Review Resources open, so opening the panel never
-// moves the box to the other side of the row. The decision is made here, on
+// moves the box to the other side of the row. A box too tall for either side
+// takes the roomier one and is held to the room there, scrolling inside
+// rather than running off the screen. The box is also held to the width of
+// the grid, down to a floor, before anything is measured, since a narrower box
+// can be a taller one. The decision is made here, on
 // show and reposition, and pinToAnchor only keeps it. (PrimeVue closes the
 // popover on window resize, so there is nothing to re-place then.)
 function placePopover() {
@@ -259,23 +314,40 @@ function placePopover() {
   const reserve = resourcesHeightPx()
   el.style.setProperty('--sm-resources-height', `${reserve}px`)
 
-  const anchorRect = anchor.getBoundingClientRect()
-  const reachable = el.offsetHeight + (showResources.value ? 0 : reserve)
-  flippedAbove = anchorRect.bottom + reachable > window.innerHeight
-  el.classList.toggle('p-popover-flipped', flippedAbove)
-  el.style.transformOrigin = flippedAbove ? 'bottom' : 'top'
-  pinToAnchor()
-
-  // Centre on the click, kept inside the viewport, with the arrow on the click
+  // The box stays inside the viewport and, when it fits, left of the grid's
+  // right edge so it does not cover the panel beside the grid. A grid
+  // narrower than the box squeezes it, but not below the floor: past that it
+  // overruns the grid's left edge instead.
   const gutter = 12
   const viewportW = document.documentElement.clientWidth
+  const gridRect = anchorEvent.boundary?.getBoundingClientRect()
+  const grid = gridRect?.width ? gridRect : { left: 0, right: Infinity }
+  const maxRight = Math.min(viewportW - gutter, grid.right)
+  const minLeft = Math.max(gutter, grid.left)
+  const maxWidth = Math.max(maxRight - minLeft, MIN_WIDTH_REM * rootFontSizePx())
+  el.style.setProperty('--sm-popover-max-width', `${maxWidth}px`)
+
+  // Measure without the limit left by the last placement
+  el.style.removeProperty('--sm-popover-max-height')
+  const anchorRect = anchor.getBoundingClientRect()
+  const reachable = el.offsetHeight + (showResources.value ? 0 : reserve)
+  // Clear of the viewport edge, the arrow and the box border
+  const edge = 20
+  const roomBelow = window.innerHeight - anchorRect.bottom - edge
+  const roomAbove = anchorRect.top - edge
+  flippedAbove.value = reachable > roomBelow && roomAbove > roomBelow
+  const room = flippedAbove.value ? roomAbove : roomBelow
+  // Below this the box is not usable, so let it overrun a cramped side
+  const minRoom = 200
+  el.style.setProperty('--sm-popover-max-height', `${Math.max(room, minRoom)}px`)
+  el.classList.toggle('p-popover-flipped', flippedAbove.value)
+  el.style.transformOrigin = flippedAbove.value ? 'bottom' : 'top'
+  pinToAnchor()
+
+  // Centre on the click, with the arrow on the click
   const width = el.offsetWidth
   const targetX = anchorEvent.clientX ?? (anchorRect.left + anchorRect.width / 2)
-  let left = targetX - width / 2
-  left = Math.max(gutter, Math.min(left, viewportW - gutter - width))
-  if (width > viewportW - gutter * 2) {
-    left = gutter
-  }
+  const left = Math.max(gutter, Math.min(targetX - width / 2, maxRight - width))
   el.style.insetInlineStart = `${left + window.scrollX}px`
   el.style.setProperty('--sm-popover-arrow-left', `${targetX - left - 10}px`)
 }
@@ -289,7 +361,7 @@ function pinToAnchor() {
     return
   }
   const anchorRect = anchor.getBoundingClientRect()
-  const top = flippedAbove ? Math.max(0, anchorRect.top - el.offsetHeight) : anchorRect.bottom
+  const top = flippedAbove.value ? Math.max(0, anchorRect.top - el.offsetHeight) : anchorRect.bottom
   el.style.top = `${top + window.scrollY}px`
 }
 
@@ -331,7 +403,12 @@ function openForRow(event, isSameRow) {
   anchorEl.value.style.top = `${rowRect.top}px`
   anchorEl.value.style.height = `${rowRect.height}px`
 
-  const anchorEvent = { currentTarget: anchorEl.value, target: anchorEl.value, clientX: clickX }
+  const anchorEvent = {
+    currentTarget: anchorEl.value,
+    target: anchorEl.value,
+    clientX: clickX,
+    boundary: row?.closest('.p-datatable'),
+  }
   if (isSameRow) {
     toggle(anchorEvent)
   }
@@ -407,7 +484,7 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
         'data-tour': 'review-popover',
       },
       content: {
-        style: { maxHeight: '85vh', overflowY: 'auto', overflowX: 'hidden' },
+        style: { maxHeight: 'min(85vh, var(--sm-popover-max-height, 100vh))', overflowY: 'auto', overflowX: 'hidden' },
       },
       transition: {
         enterActiveClass: 'review-popover-enter',
@@ -421,10 +498,11 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
       <button class="review-edit-popover__close" :title="isDirty ? 'Close (discards unsaved changes)' : 'Close'" :disabled="isSaving" @click="dismiss">
         <i class="pi pi-times" />
       </button>
-      <div v-if="subjectLabel" class="review-edit-popover__subject">
+      <div v-if="subjectLabel" class="review-edit-popover__subject" :class="{ 'review-edit-popover__subject--with-handle': flippedAbove }">
         <span class="review-edit-popover__subject-value" :title="subjectLabel">{{ subjectLabel }}</span>
+        <div v-if="flippedAbove" v-bind="resizeHandleAttrs" v-on="resizeHandleListeners" />
       </div>
-      <div class="review-edit-popover__main">
+      <div ref="mainEl" class="review-edit-popover__main" :style="mainStyle">
         <div class="review-edit-popover__result" :class="{ 'review-edit-popover__result--emphasis': showResultEmphasis }">
           <label class="review-edit-popover__label">
             Result
@@ -514,6 +592,14 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
         </div>
       </div>
 
+      <!-- A flipped box with a subject strip carries the handle in the strip -->
+      <div
+        v-if="!(flippedAbove && subjectLabel)"
+        v-bind="resizeHandleAttrs"
+        :class="{ 'review-edit-popover__resize-handle--top': flippedAbove }"
+        v-on="resizeHandleListeners"
+      />
+
       <div v-if="saveFailure" class="review-edit-popover__save-error" role="alert">
         <i class="pi pi-exclamation-triangle" />
         <span>Could not save: {{ saveFailure }}</span>
@@ -589,13 +675,18 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  /* Fixed width so the popover is the same size in every grid, rather than
-     sized by the attribution row (engine badges plus up to five Evaluated and
-     Statused pills, fewer for an unstatused review). Wide enough for that row
-     and for the Review Resources tables (history, other assets) to show their
-     columns without a horizontal scroller. */
-  width: 1000px;
-  max-width: calc(100vw - 24px);
+  /* A set width so the popover is the same size in every grid with room for
+     it, rather than sized by the attribution row (engine badges plus up to
+     five Evaluated and Statused pills, fewer for an unstatused review). Wide
+     enough for that row and for the Review Resources tables (history, other
+     assets) to show their columns without a horizontal scroller. At its
+     widest, on a window of 160rem (1920px) or more, the Detail and Comment
+     fields hold about as many characters per line as the legacy client's;
+     it shrinks in proportion on a narrower window, down to 84rem. It is
+     narrower still only where the grid is: see the limit on the box below.
+     24px is placePopover's gutter on both sides. */
+  width: clamp(84rem, 61.25vw, 98rem);
+  max-width: min(calc(100vw - 24px), 100%);
   position: relative;
 }
 
@@ -627,7 +718,68 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
   display: flex;
   gap: 0.5rem;
   align-items: stretch;
-  min-height: 16rem;
+  /* all three set in mainStyle */
+  height: var(--sm-main-height);
+  max-height: var(--sm-main-max-height);
+  min-height: var(--sm-main-min-height);
+}
+
+.review-edit-popover__resize-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 0.6rem;
+  margin: -0.15rem 0;
+  cursor: ns-resize;
+  touch-action: none;
+  border-radius: 3px;
+}
+
+/* Flipped, no subject strip: first in the column, on the top edge */
+.review-edit-popover__resize-handle--top {
+  order: -1;
+  margin: -0.5rem 0 -0.15rem;
+}
+
+/* Flipped, with a subject strip: the strip becomes a row of subject text,
+   handle and an equal spacer, which centres the handle in the box */
+.review-edit-popover__subject--with-handle {
+  display: flex;
+  align-items: center;
+}
+
+.review-edit-popover__subject--with-handle::after {
+  content: '';
+  flex: 1 1 0;
+}
+
+.review-edit-popover__subject--with-handle .review-edit-popover__subject-value {
+  flex: 1 1 0;
+}
+
+.review-edit-popover__subject--with-handle .review-edit-popover__resize-handle {
+  flex: 0 0 8rem;
+  align-self: stretch;
+  height: auto;
+  margin: 0;
+}
+
+.review-edit-popover__resize-handle::before {
+  content: '';
+  width: 3rem;
+  height: 2px;
+  border-radius: 1px;
+  background-color: var(--color-border-light);
+  transition: background-color 0.15s ease;
+}
+
+.review-edit-popover__resize-handle:hover::before,
+.review-edit-popover__resize-handle:focus-visible::before {
+  background-color: var(--p-primary-color);
+}
+
+.review-edit-popover__resize-handle:focus-visible {
+  outline: 1px solid var(--p-primary-color);
 }
 
 .review-edit-popover__subject {
@@ -841,6 +993,9 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
    row by a few px while the body stays clear of it, in both flip directions */
 :global(.p-popover.review-popover) {
   margin-block-start: 4px;
+  /* set by placePopover: the room the grid leaves */
+  box-sizing: border-box;
+  max-width: var(--sm-popover-max-width);
 }
 
 :global(.p-popover.review-popover.p-popover-flipped) {

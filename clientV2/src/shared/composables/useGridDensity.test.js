@@ -98,10 +98,23 @@ describe('useGridDensity', () => {
       '--item-size': '32px',
       '--cell-font-size': 'var(--text-md)',
       '--cell-line-height': '1.3rem',
+      '--cell-multiline-white-space': 'pre-wrap',
     })
     increaseRowHeight()
     expect(gridStyle.value['--line-clamp']).toBe(3)
     expect(gridStyle.value['--item-size']).toBe('45px')
+  })
+
+  it('flows multi-line cells as one line at a clamp of 1, and keeps their line breaks above it', () => {
+    const { gridStyle, increaseRowHeight, decreaseRowHeight } = useGridDensity('collection-rule-table')
+    expect(gridStyle.value['--line-clamp']).toBe(1)
+    expect(gridStyle.value['--cell-multiline-white-space']).toBe('normal')
+
+    increaseRowHeight()
+    expect(gridStyle.value['--cell-multiline-white-space']).toBe('pre-wrap')
+
+    decreaseRowHeight()
+    expect(gridStyle.value['--cell-multiline-white-space']).toBe('normal')
   })
 
   it('throws for an unregistered grid key', () => {
