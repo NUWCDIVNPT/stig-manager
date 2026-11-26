@@ -6,7 +6,9 @@ import HighlightText from './HighlightText.vue'
 // A review's Detail or Comment in a density grid: clamped to the grid's line
 // count, keeping the author's line breaks and indentation. The tooltip carries
 // the text as entered. The grid root must bind useGridDensity's gridStyle,
-// which supplies the clamp, the text size and the single-line flow.
+// which supplies the clamp, the text size and the single-line flow. The
+// cell-text class is a hook for the grid's own rules: its text colour, and
+// any row-state colour such as the row being edited.
 const props = defineProps({
   text: {
     type: String,
@@ -46,12 +48,14 @@ const displayText = computed(() => compactCellText(props.text))
   font-size: var(--cell-font-size);
   line-height: var(--cell-line-height, 1.3);
   /* line breaks are kept, except at a clamp of one line; see useGridDensity */
-  white-space: var(--cell-multiline-white-space, pre-wrap);
+  white-space: var(--cell-multiline-white-space, normal);
   overflow-wrap: anywhere;
   word-break: break-word;
 }
 
-.review-text-cell__placeholder {
+/* With cell-text, to outrank the grid's own cell-text colour whatever order
+   the stylesheets load in */
+.cell-text.review-text-cell__placeholder {
   font-size: var(--cell-font-size);
   line-height: var(--cell-line-height, 1.3);
   color: var(--color-text-dim);

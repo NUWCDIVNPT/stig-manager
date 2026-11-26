@@ -683,7 +683,8 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
      widest, on a window of 160rem (1920px) or more, the Detail and Comment
      fields hold about as many characters per line as the legacy client's;
      it shrinks in proportion on a narrower window, down to 84rem. It is
-     narrower still only where the grid is: see the limit on the box below. */
+     narrower still only where the grid is: see the limit on the box below.
+     24px is placePopover's gutter on both sides. */
   width: clamp(84rem, 61.25vw, 98rem);
   max-width: min(calc(100vw - 24px), 100%);
   position: relative;

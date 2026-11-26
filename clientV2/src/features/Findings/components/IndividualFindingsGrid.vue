@@ -474,8 +474,7 @@ const centerBorderPt = { ...borderPt, columnHeaderContent: { style: 'justify-con
 }
 
 /* Size and line height come from the grid geometry (useGridDensity textSize),
-   so N clamped lines fill exactly N rows. Only the clamped Detail/Comment
-   cells use it. */
+   so N clamped lines fill exactly N rows. */
 .cell-text {
   font-size: var(--cell-font-size);
   line-height: var(--cell-line-height, 1.3);
