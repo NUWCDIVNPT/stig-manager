@@ -47,6 +47,8 @@ const ROOT_PX = 12
 // Five History rows plus chrome at a 12px root: (8.25 + 5 * 3.05) * 12
 const RESOURCES_PX = 282
 const BOX_WIDTH = 1080
+// Padding and border of the box around its content
+const BOX_CHROME = 26
 const VIEWPORT_WIDTH = 1600
 const HEIGHT_KEY = 'stigman:reviewPopoverMainHeight'
 
@@ -75,7 +77,10 @@ describe('reviewEditPopover placement', () => {
       return this.dataset.testid === 'popover-box' ? boxHeight : 0
     })
     vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(function () {
-      return this.dataset.testid === 'popover-box' ? BOX_WIDTH : 0
+      if (this.dataset.testid === 'popover-box') {
+        return BOX_WIDTH
+      }
+      return this.classList.contains('review-edit-popover') ? BOX_WIDTH - BOX_CHROME : 0
     })
     vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function () {
       if (this.tagName === 'TR') {
@@ -327,6 +332,57 @@ describe('reviewEditPopover placement', () => {
     })
   })
 
+  describe('width limit', () => {
+    const maxWidth = () => box().style.getPropertyValue('--sm-popover-max-width')
+
+    it('gives the stylesheet a width that follows the window up to 1920px', () => {
+      mount()
+      const style = document.querySelector('.review-edit-popover').style
+      expect(style.getPropertyValue('--sm-popover-width-max')).toBe('98rem')
+      expect(style.getPropertyValue('--sm-popover-width-min')).toBe('84rem')
+      // 98rem is 1176px at a 12px root, which is 61.25% of 1920px
+      expect(style.getPropertyValue('--sm-popover-width-fluid')).toBe('61.25vw')
+    })
+
+    it('is the viewport less its gutters when the row is in no grid', async () => {
+      mount()
+      await clickRow()
+      expect(maxWidth()).toBe('1550px') // 1600 - 2 * 12, less the box's own 26
+    })
+
+    it('fits the box to a grid inside the viewport', async () => {
+      mount()
+      await clickRow({ grid: rect(0, 300, 1000, 900) })
+      expect(maxWidth()).toBe('974px') // 1000 - 26
+    })
+
+    it('stops at the viewport gutters for a grid that runs past them', async () => {
+      mount()
+      await clickRow({ grid: rect(0, 0, 2400, 900) })
+      expect(maxWidth()).toBe('1550px')
+    })
+
+    it('does not go under 60rem for a narrower grid', async () => {
+      mount()
+      await clickRow({ grid: rect(0, 300, 600, 900) })
+      expect(maxWidth()).toBe('720px') // 60rem at a 12px root
+    })
+
+    it('is set before the box is measured for the flip', async () => {
+      const seen = []
+      mount()
+      vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockImplementation(function () {
+        if (this.dataset.testid === 'popover-box') {
+          seen.push(this.style.getPropertyValue('--sm-popover-max-width'))
+          return boxHeight
+        }
+        return 0
+      })
+      await clickRow({ grid: rect(0, 300, 1000, 900) })
+      expect(seen[0]).toBe('974px')
+    })
+  })
+
   describe('following the box height', () => {
     it('watches the container in place of PrimeVue', async () => {
       mount()
@@ -386,8 +442,8 @@ describe('reviewEditPopover placement', () => {
       expect(handle).not.toHaveClass('review-edit-popover__resize-handle--top')
 
       await dragHandle(300, 324)
-      expect(mainHeight()).toBe('21rem') // 19 + 24px / 12px
-      expect(localStorage.getItem(HEIGHT_KEY)).toBe('21')
+      expect(mainHeight()).toBe('22rem') // 20 + 24px / 12px
+      expect(localStorage.getItem(HEIGHT_KEY)).toBe('22')
     })
 
     it('moves into the subject strip of a flipped box, and dragging up grows the fields', async () => {
@@ -399,7 +455,7 @@ describe('reviewEditPopover placement', () => {
       expect(handles[0].closest('.review-edit-popover__subject')).not.toBeNull()
 
       await dragHandle(300, 276)
-      expect(mainHeight()).toBe('21rem')
+      expect(mainHeight()).toBe('22rem')
     })
 
     it('goes to the top edge of a flipped box with no subject strip', async () => {
@@ -409,7 +465,7 @@ describe('reviewEditPopover placement', () => {
       expect(screen.getByRole('separator')).toHaveClass('review-edit-popover__resize-handle--top')
 
       await dragHandle(300, 276)
-      expect(mainHeight()).toBe('21rem')
+      expect(mainHeight()).toBe('22rem')
     })
 
     it('arrow keys follow the edge that moves: up grows a flipped box', async () => {
@@ -417,7 +473,7 @@ describe('reviewEditPopover placement', () => {
       await clickRow({ top: 600 })
 
       await fireEvent.keyDown(screen.getByRole('separator'), { key: 'ArrowUp' })
-      expect(mainHeight()).toBe('20rem')
+      expect(mainHeight()).toBe('21rem')
     })
 
     it('a drag stops at 40% of the viewport height', async () => {

@@ -373,7 +373,7 @@ describe('reviewEditPopover.vue', () => {
 
     it('starts at the default height', () => {
       createWrapper({ currentReview: defaultReview })
-      expect(mainHeight()).toBe('19rem')
+      expect(mainHeight()).toBe('20rem')
     })
 
     it('restores the stored height', () => {
@@ -385,7 +385,7 @@ describe('reviewEditPopover.vue', () => {
     it('ignores a stored value that is not a height', () => {
       localStorage.setItem(KEY, 'tall')
       createWrapper({ currentReview: defaultReview })
-      expect(mainHeight()).toBe('19rem')
+      expect(mainHeight()).toBe('20rem')
     })
 
     it('arrow keys on the handle resize and store the height', async () => {
@@ -393,12 +393,12 @@ describe('reviewEditPopover.vue', () => {
       const handle = screen.getByRole('separator')
 
       await fireEvent.keyDown(handle, { key: 'ArrowDown' })
-      expect(mainHeight()).toBe('20rem')
-      expect(localStorage.getItem(KEY)).toBe('20')
+      expect(mainHeight()).toBe('21rem')
+      expect(localStorage.getItem(KEY)).toBe('21')
 
       await fireEvent.keyDown(handle, { key: 'ArrowUp' })
       await fireEvent.keyDown(handle, { key: 'ArrowUp' })
-      expect(mainHeight()).toBe('18rem')
+      expect(mainHeight()).toBe('19rem')
     })
 
     it('does not shrink below the minimum', async () => {
@@ -409,14 +409,14 @@ describe('reviewEditPopover.vue', () => {
     })
 
     it('does not grow past the viewport cap', async () => {
-      window.innerHeight = 800 // 40% is 320px, 20rem
+      window.innerHeight = 840 // 40% is 336px, 21rem
       createWrapper({ currentReview: defaultReview })
       const handle = screen.getByRole('separator')
 
       await fireEvent.keyDown(handle, { key: 'ArrowDown' })
       await fireEvent.keyDown(handle, { key: 'ArrowDown' })
-      expect(mainHeight()).toBe('20rem')
-      expect(localStorage.getItem(KEY)).toBe('20')
+      expect(mainHeight()).toBe('21rem')
+      expect(localStorage.getItem(KEY)).toBe('21')
     })
 
     it('shrinks on the first key press when the stored height is over the cap', async () => {
@@ -439,8 +439,8 @@ describe('reviewEditPopover.vue', () => {
       localStorage.setItem(KEY, '30')
       createWrapper({ currentReview: defaultReview })
       await fireEvent.dblClick(screen.getByRole('separator'))
-      expect(mainHeight()).toBe('19rem')
-      expect(localStorage.getItem(KEY)).toBe('19')
+      expect(mainHeight()).toBe('20rem')
+      expect(localStorage.getItem(KEY)).toBe('20')
     })
   })
 

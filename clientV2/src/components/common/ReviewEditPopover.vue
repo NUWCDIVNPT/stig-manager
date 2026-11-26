@@ -104,6 +104,22 @@ function toggleResources() {
   showResources.value = !showResources.value
 }
 
+// Width of the box, in rem. It is at its widest on a window of
+// FULL_WIDTH_VIEWPORT_PX or more, where the Detail and Comment fields hold
+// about as many characters per line as the legacy client's, and shrinks in
+// proportion on a narrower window, down to FLUID_MIN_WIDTH_REM. Only a grid
+// narrower than the box squeezes it below that, and no further than
+// MIN_WIDTH_REM; see placePopover.
+const MAX_WIDTH_REM = 98
+const FLUID_MIN_WIDTH_REM = 84
+const MIN_WIDTH_REM = 60
+const FULL_WIDTH_VIEWPORT_PX = 1920
+const boxStyle = {
+  '--sm-popover-width-max': `${MAX_WIDTH_REM}rem`,
+  '--sm-popover-width-min': `${FLUID_MIN_WIDTH_REM}rem`,
+  '--sm-popover-width-fluid': `${Number((MAX_WIDTH_REM * rootFontSizePx() / FULL_WIDTH_VIEWPORT_PX * 100).toFixed(3))}vw`,
+}
+
 // Whether the box sits above its row; decided in placePopover
 const flippedAbove = ref(false)
 
@@ -122,7 +138,7 @@ const {
   handleListeners: resizeHandleListeners,
 } = useResizableHeight({
   storageKey: 'stigman:reviewPopoverMainHeight',
-  defaultRem: 19,
+  defaultRem: 20,
   minRem: MAIN_HEIGHT_MIN_REM,
   maxRem: () => window.innerHeight * MAIN_HEIGHT_MAX_VH / 100 / rootFontSizePx(),
   inverted: flippedAbove,
@@ -295,7 +311,9 @@ const anchorEl = ref(null)
 // height it can reach with Review Resources open, so opening the panel never
 // moves the box to the other side of the row. A box too tall for either side
 // takes the roomier one and is held to the room there, scrolling inside
-// rather than running off the screen. The decision is made here, on
+// rather than running off the screen. The box is also held to the width of
+// the grid, down to a floor, before anything is measured, since a narrower box
+// can be a taller one. The decision is made here, on
 // show and reposition, and pinToAnchor only keeps it. (PrimeVue closes the
 // popover on window resize, so there is nothing to re-place then.)
 function placePopover() {
@@ -307,6 +325,22 @@ function placePopover() {
   }
   const reserve = resourcesHeightPx()
   el.style.setProperty('--sm-resources-height', `${reserve}px`)
+
+  // The box stays inside the viewport and, when it fits, left of the grid's
+  // right edge so it does not cover the panel beside the grid. A grid
+  // narrower than the box squeezes it, but not below the floor: past that it
+  // overruns the grid's left edge instead.
+  const gutter = 12
+  const viewportW = document.documentElement.clientWidth
+  const gridRect = anchorEvent.boundary?.getBoundingClientRect()
+  const hasGrid = Boolean(gridRect?.width)
+  const maxRight = Math.min(viewportW - gutter, hasGrid ? gridRect.right : Infinity)
+  const minLeft = Math.max(gutter, hasGrid ? gridRect.left : 0)
+  // The limit is applied to the content, so take off the box's padding and border
+  const content = el.querySelector('.review-edit-popover')
+  const chrome = content ? el.offsetWidth - content.offsetWidth : 0
+  const maxWidth = Math.max(maxRight - minLeft - chrome, MIN_WIDTH_REM * rootFontSizePx())
+  el.style.setProperty('--sm-popover-max-width', `${maxWidth}px`)
 
   // Measure without the limit left by the last placement
   el.style.removeProperty('--sm-popover-max-height')
@@ -325,15 +359,9 @@ function placePopover() {
   el.style.transformOrigin = flippedAbove.value ? 'bottom' : 'top'
   pinToAnchor()
 
-  // Centre on the click, with the arrow on the click. The box stays inside
-  // the viewport and, when it fits, left of the grid's right edge so it does
-  // not cover the panel beside the grid.
-  const gutter = 12
-  const viewportW = document.documentElement.clientWidth
+  // Centre on the click, with the arrow on the click
   const width = el.offsetWidth
   const targetX = anchorEvent.clientX ?? (anchorRect.left + anchorRect.width / 2)
-  const gridRect = anchorEvent.boundary?.getBoundingClientRect()
-  const maxRight = Math.min(viewportW - gutter, gridRect?.width ? gridRect.right : Infinity)
   const left = Math.max(gutter, Math.min(targetX - width / 2, maxRight - width))
   el.style.insetInlineStart = `${left + window.scrollX}px`
   el.style.setProperty('--sm-popover-arrow-left', `${targetX - left - 10}px`)
@@ -481,7 +509,7 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
     @show="onPopoverShow"
     @hide="onPopoverHide"
   >
-    <div class="review-edit-popover">
+    <div class="review-edit-popover" :style="boxStyle">
       <button class="review-edit-popover__close" :title="isDirty ? 'Close (discards unsaved changes)' : 'Close'" :disabled="isSaving" @click="dismiss">
         <i class="pi pi-times" />
       </button>
@@ -662,13 +690,15 @@ defineExpose({ openForRow, hide, isDirty, triggerUnsavedWarning })
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  /* Fixed width so the popover is the same size in every grid, rather than
-     sized by the attribution row (engine badges plus up to five Evaluated and
-     Statused pills, fewer for an unstatused review). Wide enough for that row
-     and for the Review Resources tables (history, other assets) to show their
-     columns without a horizontal scroller. */
-  width: 90rem;
-  max-width: calc(100vw - 24px);
+  /* A set width so the popover is the same size in every grid with room for
+     it, rather than sized by the attribution row (engine badges plus up to
+     five Evaluated and Statused pills, fewer for an unstatused review). Wide
+     enough for that row and for the Review Resources tables (history, other
+     assets) to show their columns without a horizontal scroller. It follows
+     the window width between the bounds in boxStyle, and is narrower still
+     only where the grid is: placePopover sets that limit. */
+  width: clamp(var(--sm-popover-width-min), var(--sm-popover-width-fluid), var(--sm-popover-width-max));
+  max-width: min(calc(100vw - 24px), var(--sm-popover-max-width, 100vw));
   position: relative;
 }
 
